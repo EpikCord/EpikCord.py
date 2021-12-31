@@ -33,3 +33,8 @@ Submitting a pull request is fairly simple, just make sure it focuses on a singl
 - Commits regarding the commands extension must be prefixed with `[commands]`
 
 If you do not meet any of these guidelines, don't fret. Chances are they will be fixed upon rebasing but please do try to meet them to remove some of the workload.
+
+### Git Commit Rules
+
+- Don't commit anything that is not related to the project.
+- Don't commit anything that you do not have the rights of. If you don't have the rights to something, but still commit it, we will remove it.
