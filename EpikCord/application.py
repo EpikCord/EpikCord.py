@@ -18,5 +18,5 @@ class Application:
         self.owner: PartialUser = PartialUser(data["user"])
         self.summary: str = data["summary"]
         self.verify_key: str = data["verify_key"]
-        self.team: Optional[Team] = Team(data["team"])
+        self.team: Optional[Team] = Team(data["team"]) or None
         self.flags: int = data["flags"]
