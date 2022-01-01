@@ -1,3 +1,4 @@
+from .user import User
 from .application import Application
 from .route import Route
 from aiohttp import ClientSession, ClientResponse

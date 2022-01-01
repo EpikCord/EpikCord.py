@@ -9,3 +9,5 @@ from .role import *
 from .rolemanager import *
 from .route import *
 from .team import *
+from .user import *
+from .components import *

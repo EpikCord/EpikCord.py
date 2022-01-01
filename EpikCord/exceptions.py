@@ -27,3 +27,10 @@ class GateawayUnavailable502(Exception):
     
 class InternalServerError5xx(Exception):
     ...
+    
+class TooManyComponents(Exception):
+    ...
+
+class InvalidMessageButtonStyle(Exception):
+    ...
+
