@@ -1,12 +1,15 @@
 from .team import Team
 from .partials import PartialUser
+from aiohttp import ClientSession
 from typing import (
     Optional
 )
+from .client import Client
 
 class Application:
-    def __init__(self, data: dict):
+    def __init__(self, client: Client, data: dict):
         self.id: str = data["id"]
+        self.client: Client = client
         self.name: str = data["name"]
         self.icon: Optional[str] = data["icon"] or None
         self.description: str = data["description"]
@@ -19,5 +22,10 @@ class Application:
         self.summary: str = data["summary"]
         self.verify_key: str = data["verify_key"]
         self.team: Optional[Team] = Team(data["team"]) or None
-        self.cover_image:: Optional[str] = data["cover_image"] or None
+        self.cover_image: Optional[str] = data["cover_image"] or None
         self.flags: int = data["flags"]
+
+    async def fetch(self):
+        response: ClientResponse = await self.client.api(self, "oauth2/applications/@me").request("GET")
+        response: dict = await response.json()
+        self.application = Application(response)
