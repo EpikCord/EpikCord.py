@@ -1,5 +1,6 @@
 from typing import (
-    Optional
+    Optional,
+    List
 )
 
 class PartialUser:
@@ -16,3 +17,12 @@ class PartialEmoji:
         self.name: str = data["name"]
         self.id: str = data["id"]
         self.animated: bool = data["animated"]
+    
+class PartialGuild:
+    def __init__(self, data):
+        self.data: dict = data
+        self.id: str = data["id"]
+        self.name: str = data["name"]
+        self.permissions: int = int(data["permissions"])
+        self.features: List[str] = data["features"]
+        
