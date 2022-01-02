@@ -3,6 +3,7 @@ from typing import (
 )
 
 from .guild import Guild
+from .member import Member
 from .user import User
 from .application import Application
 from .route import Route
@@ -28,3 +29,8 @@ class ClientUser(User):
         response = await self.client.http.get("users/@me")
         data = await response.json()
         super().__init__(data) # Reinitialse the class with the new data.
+    
+class ClientGuildMember(Member):
+    def __init__(self, client: Client,data: dict):
+        super().__init__(data)
+        
