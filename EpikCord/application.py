@@ -1,6 +1,6 @@
 from .team import Team
 from .partials import PartialUser
-from aiohttp import ClientSession
+from aiohttp import ClientResponse
 from typing import (
     Optional
 )
@@ -27,5 +27,5 @@ class Application:
 
     async def fetch(self):
         response: ClientResponse = await self.client.api(self, "oauth2/applications/@me").request("GET")
-        response: dict = await response.json()
-        self.application = Application(response)
+        data: dict = await response.json()
+        self.application = Application(data)
