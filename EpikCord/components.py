@@ -20,7 +20,9 @@ class MessageButton:
         self.settings = {
             "type": 2,
             "style": 1,
-            
+            "label": "Click me!",
+            "emoji": None,
+            "disabled": False
         }
     
     def set_label(self, label: str):
