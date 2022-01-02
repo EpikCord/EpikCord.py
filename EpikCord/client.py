@@ -1,15 +1,30 @@
+from typing import (
+    List
+)
+
+from .guild import Guild
 from .user import User
 from .application import Application
 from .route import Route
-from aiohttp import ClientSession, ClientResponse
+from aiohttp import ClientSession
 
 class Client:
+
     def __init__(self, token: str):
         self.http = ClientSession(headers = {"Authorization": f"Bot {token}"}, base_url="https://discord.com/api/v9/")
         self.api = Route
-        self.application = Application(self)
+        self.application: Application = Application(self, self.user) # Processes whatever it can
+        self.user: ClientUser = ClientUser({"id": str(self.application.id)})
+        self.guilds: List[Guild] = []
         
-    async def fetch_application(self):
-        response: ClientResponse = await self.api(self, "oauth2/applications/@me").request("GET")
-        response: ClientResponse = await response.json()
-        self.application = Application(response)
+
+class ClientUser(User):
+    
+    def __init__(self, client: Client, data: dict):
+        super().__init__(data)
+        self.client: Client = client
+    
+    async def fetch(self):
+        response = await self.client.http.get("users/@me")
+        data = await response.json()
+        super().__init__(data) # Reinitialse the class with the new data.
