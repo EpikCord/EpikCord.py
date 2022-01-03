@@ -1,6 +1,10 @@
 from websocket import WebSocket
+from .interactions import Interaction
 from .client import ClientUser
 from asyncio import run
+from typing import (
+    List
+)
 from time import sleep
 from json import loads, dumps
 from threading import _start_new_thread
@@ -26,15 +30,17 @@ class WebsocketClient:
         self.interval = None
         self.session_id = None
         self.events = {}
+        self.commands = {}
         self.hearbeats = []
         self.average_latency = 0
+        
+    async def interaction(self, interaction: Interaction):
+        await self.commands[interaction.command_name]["callback"](interaction)
         
     
     def heartbeat(self):
         while True:
-            print("Sleeping")
             sleep(self.interval / 1000)
-            print("Sending heartbeat")
             self.ws.send(dumps({"op": self.HEARTBEAT, "d": "null"}))
             event = self.receive_event()
             if event:
@@ -61,7 +67,12 @@ class WebsocketClient:
                     self.handle_event(event["t"].lower())
                 
     def event(self, func):
-        self.events[func.__name__.lower()] = func
+        self.events[func.__name__.lower().replace("on_")] = func
+
+    def command(self, *, name: str, description: str, guild_ids: List[str], options):
+        def register_slash_command(func):
+            self.commands[func.__name__] = {"callback": func, "name": name, "description": description, "guild_ids": guild_ids}
+        return register_slash_command
 
     def login(self):
         self.ws.connect("wss://gateway.discord.gg/?v=9&encoding=json")
@@ -84,5 +95,5 @@ class WebsocketClient:
         )
         
         _start_new_thread(self.heartbeat, ())
-        self.infinitely_retreive_events()
         
+        self.infinitely_retreive_events()
