@@ -25,4 +25,3 @@ class PartialGuild:
         self.name: str = data["name"]
         self.permissions: int = int(data["permissions"])
         self.features: List[str] = data["features"]
-        
