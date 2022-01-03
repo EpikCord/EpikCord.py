@@ -1,3 +1,4 @@
+from .abc import BaseComponent
 from .partials import PartialEmoji
 from .exceptions import TooManyComponents, InvalidMessageButtonStyle, CustomIdIsTooBig, InvalidArgumentType, TooManySelectMenuOptions, LabelIsTooBig
 from typing import (
@@ -6,7 +7,7 @@ from typing import (
 )
 
 
-class MessageSelectMenuOption:
+class MessageSelectMenuOption(BaseComponent):
     def __init__(self, **kwargs):
         self.data: dict = kwargs
         self.label: str = kwargs.get("label", "")
@@ -15,7 +16,7 @@ class MessageSelectMenuOption:
         self.emoji: PartialEmoji = kwargs.get("emoji", None)
         self.default: bool = kwargs.get("default", False)
 
-class MessageButton:
+class MessageButton(BaseComponent):
     def __init__(self):
         self.settings = {
             "type": 2,
@@ -62,24 +63,7 @@ class MessageButton:
             self.settings["emoji"] = emoji.data
             return
         raise InvalidArgumentType("Emoji must be a PartialEmoji or a dict that represents a PartialEmoji.")
-        
-    def set_custom_id(self, custom_id: str):
-        
-        if not isinstance(custom_id, str):
-            raise InvalidArgumentType("Custom Id must be a string.")
-        
-        elif len(custom_id) > 100:
-            raise CustomIdIsTooBig("Custom Id must be 100 characters or less.")
-
-        self.settings["custom_id"] = custom_id
-        
-    def disabled(self, disabled: bool):
-        
-        if not isinstance(disabled, bool):
-            raise InvalidArgumentType("You must provide a boolean.")
-        
-        self.settings["disabled"] = disabled
-    
+                    
     def set_url(self, url: str):
         
         if not isinstance(url, str):
@@ -98,13 +82,7 @@ class MessageSelectMenu:
             "max_values": 1,
             "disabled": False
         }
-        
-    def set_custom_id(self, custom_id: str):
-        if not isinstance(custom_id, str):
-            raise InvalidArgumentType("Custom Id must be a string.")
-
-        self.settings["custom_id"] = custom_id
-    
+            
     def add_options(self, options: List[MessageSelectMenuOption]):
         for option in options:
             
@@ -129,14 +107,7 @@ class MessageSelectMenu:
         if not isinstance(max, int):
             raise InvalidArgumentType("Max must be an integer.")
         
-        self.options["max_values"] = max
-    
-    def set_disabled(self, disabled: bool):
-        if not isinstance(disabled, bool):
-            raise InvalidArgumentType("You must provide a boolean.")
-        
-        self.settings["disabled"] = disabled
-    
+        self.options["max_values"] = max    
 
 class MessageActionRow:
     def __init__(self):
