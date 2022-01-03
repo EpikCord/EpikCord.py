@@ -1,4 +1,5 @@
 from websocket import WebSocket
+from .client import ClientUser
 from asyncio import run
 from time import sleep
 from json import loads, dumps
@@ -81,5 +82,7 @@ class WebsocketClient:
                 }
             })
         )
+        
         _start_new_thread(self.heartbeat, ())
         self.infinitely_retreive_events()
+        
