@@ -1,3 +1,0 @@
-python-dateutil
-aiohttp
-websocket-client
