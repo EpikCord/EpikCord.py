@@ -1,6 +1,8 @@
 from .thread import Thread
+from .stickers import StickerItem
+from .components import MessageSelectMenu, MessageButton
 from .interactions import MessageInteraction
-from .abc import PartialMember
+from .partials import PartialMember
 from .role import Role
 from .mentions import (
     MentionedUser,
@@ -12,7 +14,8 @@ from .user import User
 from .reaction import Reaction
 from typing import (
     Optional,
-    List
+    List,
+    Union
 )
 from .embed import Embed
 
@@ -43,4 +46,5 @@ class Message:
         self.referenced_message: Optional[Message] = Message(data["referenced_message"]) if data["referenced_message"] else None
         self.interaction: Optional[MessageInteraction] = MessageInteraction(data["interaction"]) if data["interaction"] else None
         self.thread: Thread = Thread(data["thread"]) if data["thread"] else None
-        self.components: List[]
+        self.components: List[Union[MessageSelectMenu, MessageButton]] = [MessageSelectMenu(component) if component["type"] == 1 else MessageButton(component) for component in data["components"]]
+        self.stickers: List[StickerItem] = [StickerItem(sticker) for sticker in data["stickers"]]
