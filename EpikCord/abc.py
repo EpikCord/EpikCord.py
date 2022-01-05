@@ -1,6 +1,8 @@
 from typing import (
-    List
+    List,
+    Optional
 )
+from .channels import TextBasedChannel
 from .channels import TextBasedChannel
 from .embed import Embed
 from .client import Client
@@ -36,10 +38,12 @@ class BaseSlashCommandOption:
         }
     
 class BaseChannel:
-    def __init__(self, data: dict):
+    def __init__(self, client, data: dict):
         self.id: str = data["id"]
+        self.client: Client = client
         self.type = data["type"]
         
+            
 
 class BaseComponent:
     def __init__(self):
@@ -58,4 +62,4 @@ class BaseComponent:
 class BaseInteraction:
     def __init__(self, data: dict):
         self.application_id: str = data["application_id"]
-        self.channel: TextBasedChannel = 
+        self.channel: TextBasedChannel = TextBasedChannel(data["channel"])
