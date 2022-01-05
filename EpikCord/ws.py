@@ -1,3 +1,4 @@
+import inspect
 from websocket import WebSocket
 from .interactions import Interaction
 from .client import ClientUser
@@ -30,6 +31,9 @@ class WebsocketClient:
         self.interval = None
         self.session_id = None
         self.events = {}
+        self.events_to_handle = {
+            
+        }
         self.commands = {}
         self.hearbeats = []
         self.average_latency = 0
@@ -55,7 +59,9 @@ class WebsocketClient:
     
     def handle_event(self, event_name: str):
         try:
-            run(self.events[event_name]())
+            function = self.events[event_name]
+            signature = inspect.signature(function)
+            
         except KeyError:
             print(f"You have not registered an event handler for {event_name} but still receive the event. Either make a handler or remove the intent to view this event if possible.") # Someone change this to logger
 
@@ -65,10 +71,12 @@ class WebsocketClient:
             if event:
                 if event["op"] == self.EVENT:
                     self.handle_event(event["t"].lower())
-                
-    def event(self, func):
-        self.events[func.__name__.lower().replace("on_")] = func
 
+    def event(self, func):
+        def register_event():
+            self.events[func.__name__.lower().replace("on_")] = func
+        return register_event
+    
     def command(self, *, name: str, description: str, guild_ids: List[str], options):
         def register_slash_command(func):
             self.commands[func.__name__] = {"callback": func, "name": name, "description": description, "guild_ids": guild_ids}
