@@ -1,14 +1,13 @@
+from .abc import Messageable
+from .invite import Invite
 from .client import Client
-from .message import AllowedMention
-from .components import MessageSelectMenu, MessageButton
-from .embed import Embed
+from .permissions import Overwrite
 from .message import Message
 from .partials import PartialUser
 from .abc import BaseChannel
 from typing import (
     List,
-    Optional,
-    Union
+    Optional
 )
 
 class GuildChannel(BaseChannel):
@@ -27,27 +26,37 @@ class GuildChannel(BaseChannel):
             headers["reason"] = reason
             
         response = await self.client.http.delete(f"channels/{self.id}", headers=headers)
-
-    async def fetch_messages(self,*, around: Optional[str] = None, before: Optional[str] = None, after: Optional[str] = None, limit: Optional[int] = None) -> List[Message]:
-        response = await self.client.http.get(f"channels/{self.id}/messages", params={"around": around, "before": before, "after": after, "limit": limit})
+        return await response.json()
+    
+    async def fetch_invites(self) -> List[Invite]: 
+        response = await self.client.http.get(f"/channels/{self.id}/invites")
+        return await response.json()
+    
+    async def create_invite(self, *, max_age: Optional[int], max_uses: Optional[int], temporary: Optional[bool], unique: Optional[bool], target_type: Optional[int], target_user_id: Optional[str], target_application_id: Optional[str]):
+        data = {}
+        data["max_age"] = max_age or None
+        data["max_uses"] = max_uses or None
+        data["temporary"] = temporary or None
+        data["unique"] = unique or None
+        data["target_type"] = target_type or None
+        data["target_user_id"] = target_user_id or None
+        data["target_application_id"] = target_application_id or None
+        await self.client.http.post(f"/channels/{self.id}/invites", data=data)   
+        
+    async def delete_overwrite(self, overwrites: Overwrite) -> None:
+        response = await self.client.http.delete(f"/channels/{self.id}/permissions/{overwrites.id}")
+        return await response.json()
+    
+    async def follow(self, webhook_channel_id: str):
+        response = await self.client.http.post(f"/channels/{self.id}/followers", data={"webhook_channel_id": webhook_channel_id})
+        return await response.json()
+        
+    async def fetch_pinned_messages(self) -> List[Message]:
+        response = await self.client.http.get(f"/channels/{self.id}/pins")
         data = await response.json()
         return [Message(message) for message in data]
     
-    async def fetch_message(self,*, message_id: str) -> Message:
-        response = await self.client.http.get(f"channels/{self.id}/messages/{message_id}")
-        data = await response.json()
-        return Message(data)
-
-    async def send(self,*, content: str, tts: Optional[bool], embeds: Optional[List[Embed]], allowed_mentions: Optional[AllowedMention], message_reference: Optional[dict], components: List[Union[MessageSelectMenu, MessageButton]], sticker_ids: Optional[List[str]]) -> Message:
-        response = await self.client.http.post(f"channels/{self.id}/messages", data={"content": content, "tts": tts, "embeds": embeds, "allowed_mentions": allowed_mentions, "message_reference": message_reference, "components": components, "sticker_ids": sticker_ids})
-        data = await response.json()
-        return Message(data)
-
-    async def crosspost(self, message_id: str):
-        response = await self.client.http.post(f"channels/{self.id}/messages/{message_id}/crosspost")
-        data = await response.json()
-        return Message(data)
-    
+    # async def edit_permission_overwrites I'll do this later
     
     
     # async def edit(self, *,name: str, position: str, permission_overwrites: List[dict], reason: Optional[str] = None):
