@@ -1,3 +1,5 @@
+from urllib.parse import quote
+from .reaction import Reaction
 from .thread import Thread
 from .stickers import StickerItem
 from .components import MessageSelectMenu, MessageButton
@@ -9,6 +11,7 @@ from .mentions import (
     MentionedChannel
 )    
 from .application import Application
+from .client import Client
 from .webhook import WebhookUser
 from .user import User
 from .reaction import Reaction
@@ -35,7 +38,8 @@ class AllowedMention:
     
 
 class Message:
-    def __init__(self, data: dict):
+    def __init__(self, client: Client, data: dict):
+        self.client = client
         self.id: str = data["id"]
         self.channel_id: str = data["channel_id"]
         self.guild_id: Optional[str] = data["guild_id"] or None
@@ -63,3 +67,43 @@ class Message:
         self.thread: Thread = Thread(data["thread"]) if data["thread"] else None
         self.components: Optional[List[Union[MessageSelectMenu, MessageButton]]] = [MessageSelectMenu(component) if component["type"] == 1 else MessageButton(component) for component in data["components"]] or None
         self.stickers: Optional[List[StickerItem]] = [StickerItem(sticker) for sticker in data["stickers"]] or None
+        
+    async def add_reaction(self, emoji: str):
+        emoji = quote(emoji)
+        response = await self.client.http.put(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/@me")
+        return await response.json()
+    
+    async def remove_reaction(self, emoji: str, user: Optional[User] = None):
+        emoji = quote(emoji)
+        if not user:        
+            response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/@me")
+        else:
+            response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/{user.id}")
+        return await response.json()
+    
+    async def fetch_reactions(self,*, after, limit) -> List[Reaction]:
+        response = await self.client.http.get(f"channels/{self.channel_id}/messages/{self.id}/reactions?after={after}&limit={limit}")
+        return await response.json()
+    
+    async def delete_all_reactions(self):
+        response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions")
+        return await response.json()
+    
+    async def delete_reaction_for_emoji(self, emoji: str):
+        emoji = quote(emoji)
+        response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}")
+        return await response.json()
+    
+    async def edit(self, message_data: dict):
+        response = await self.client.http.patch(f"channels/{self.channel_id}/messages/{self.id}", data=message_data)
+        return await response.json()
+    
+    async def delete(self):
+        response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}")
+        return await response.json()
+    
+    async def pin(self, *, reason: Optional[str] = None):
+        headers = self.client.http.headers
+        headers["X-Audit-Log-Reason"] = reason
+        response = await self.client.http.put(f"channels/{self.channel_id}/pins/{self.id}", headers=headers)
+        return await response.json()
