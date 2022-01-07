@@ -1,4 +1,6 @@
 from .abc import Messageable
+from .member import ThreadMember
+from .exceptions import ThreadArchived, NotFound404
 from .invite import Invite
 from .client import Client
 from .permissions import Overwrite
@@ -83,6 +85,23 @@ class GuildTextChannel(GuildChannel):
         self.last_message_id: str = data["last_message_id"]
         self.default_auto_archive_duration: int = data["default_auto_archive_duration"]
     
+    async def start_thread(self, name: str,* , auto_archive_duration: Optional[int], type: Optional[int], invitable: Optional[bool], rate_limit_per_user: Optional[int], reason: Optional[str]):
+        data = {"name": name}
+        if auto_archive_duration:
+            data["auto_archive_duration"] = auto_archive_duration
+        if type:
+            data["type"] = type
+        if invitable is not None: # Geez having a bool is gonna be a pain
+            data["invitable"] = invitable
+        if rate_limit_per_user:
+            data["rate_limit_per_user"] = rate_limit_per_user
+        
+        headers = self.client.http.headers.copy()
+        headers["X-Audit-Log-Reason"] = reason
+        
+        response = await self.client.http.post(f"channels/{self.id}/threads", data=data, headers=headers)
+        self.client.guilds[self.guild_id].append(Thread(await response.json()))
+    
     # async def edit(self,*, name: Optional[str], position: Optional[str], permission_overwrites: Optional[List[dict]], reason: Optional[str], topic: Optional[str], nsfw: bool, rate_limit_per_user: Optional[int], parent_id: Optional[int], default_auto_archive_duration: Optional[int]):
     #     data = {}
     #     if name:
@@ -135,7 +154,43 @@ class Thread(GuildChannel):
         self.auto_archive_duration: int = data["auto_archive_duration"]
         self.archive_timestamp: str = data["archive_timestamp"]
         self.locked: bool = data["locked"]
-
+    
+    async def join(self):
+        if self.archived:
+            raise ThreadArchived("This thread has been archived so it is no longer joinable")
+        response = await self.client.http.put(f"/channels/{self.id}/thread-members/@me")
+        return await response.json()
+    
+    async def add_member(self, member_id: ThreadMember.id):
+        if self.archived:
+            raise ThreadArchived("This thread has been archived so it is no longer joinable")
+        
+        response = await self.client.http.put(f"/channels/{self.id}/thread-members/{member_id}")
+        return await response.json()
+    
+    async def leave(self):
+        if self.archived:
+            raise ThreadArchived("This thread has been archived so it is no longer leaveable")
+        response = await self.client.http.delete(f"/channels/{self.id}/thread-members/@me")
+        return await response.json()
+    
+    async def remove_member(self, member_id: ThreadMember.id):
+        if self.archived:
+            raise ThreadArchived("This thread has been archived so it is no longer leaveable")
+        
+        response = await self.client.http.delete(f"/channels/{self.id}/thread-members/{member_id}")
+        return await response.json()
+    
+    async def fetch_member(self, member_id: ThreadMember.user_id) -> ThreadMember:
+        response = await self.client.http.get(f"/channels/{self.id}/thread-members/{member_id}")
+        if response.status == 404:
+            raise NotFound404("The member you are trying to fetch does not exist")
+        return ThreadMember(await response.json())
+    
+    async def list_members(self) -> List[ThreadMember]:
+        response = await self.client.http.get(f"/channels/{self.id}/thread-members")
+        return [ThreadMember(member) for member in await response.json()]
+            
 class GuildNewsThread(Thread, GuildNewsChannel):
     def __init__(self, client: Client, data: dict):
         super().__init__(client, data)

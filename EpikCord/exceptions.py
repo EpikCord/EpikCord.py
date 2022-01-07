@@ -45,3 +45,6 @@ class TooManySelectMenuOptions(Exception):
     
 class LabelIsTooBig(Exception):
     ...
+    
+class ThreadArchived(Exception):
+    ...
