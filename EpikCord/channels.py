@@ -22,7 +22,7 @@ class GuildChannel(BaseChannel):
         
     async def delete(self, *, reason: Optional[str] = None) -> None:
         if reason:
-            headers = self.client.http.headers
+            headers = self.client.http.headers.copy()
             headers["reason"] = reason
             
         response = await self.client.http.delete(f"channels/{self.id}", headers=headers)
@@ -55,6 +55,8 @@ class GuildChannel(BaseChannel):
         response = await self.client.http.get(f"/channels/{self.id}/pins")
         data = await response.json()
         return [Message(message) for message in data]
+    
+    
     
     # async def edit_permission_overwrites I'll do this later
     

@@ -46,7 +46,7 @@ class Messageable:
     async def bulk_delete(self, message_ids: List[Message.id], reason: Optional[str]) -> None:
 
         if reason:
-            headers = self.client.http.headers
+            headers = self.client.http.headers.copy()
             headers["X-Audit-Log-Reason"] = reason
             
         response = await self.client.http.post(f"channels/{self.id}/messages/bulk-delete", data={"messages": message_ids}, headers=headers)
