@@ -118,6 +118,3 @@ class Message:
         response = await self.client.http.post(f"channels/{self.channel_id}/messages/{self.id}/threads", data={"name": name, "auto_archive_duration": auto_archive_duration, "rate_limit_per_user": rate_limit_per_user})
         self.client.guilds[self.guild_id].append(Thread(await response.json())) # Cache it
         return Thread(await response.json())
-    
-    
-        
