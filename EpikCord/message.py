@@ -102,8 +102,14 @@ class Message:
         response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}")
         return await response.json()
     
-    async def pin(self, *, reason: Optional[str] = None):
-        headers = self.client.http.headers
+    async def pin(self, *, reason: Optional[str]):
+        headers = self.client.http.headers.copy()
         headers["X-Audit-Log-Reason"] = reason
         response = await self.client.http.put(f"channels/{self.channel_id}/pins/{self.id}", headers=headers)
+        return await response.json()
+    
+    async def unpin(self, *, reason: Optional[str]):
+        headers = self.client.http.headers.copy()
+        headers["X-Audit-Log-Reason"] = reason
+        response = await self.client.http.delete(f"channels/{self.channel_id}/pins/{self.id}", headers=headers)
         return await response.json()
