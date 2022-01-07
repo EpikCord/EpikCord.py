@@ -113,3 +113,11 @@ class Message:
         headers["X-Audit-Log-Reason"] = reason
         response = await self.client.http.delete(f"channels/{self.channel_id}/pins/{self.id}", headers=headers)
         return await response.json()
+
+    async def start_thread(self, name: str, auto_archive_duration: Optional[int], rate_limit_per_user: Optional[int]):
+        response = await self.client.http.post(f"channels/{self.channel_id}/messages/{self.id}/threads", data={"name": name, "auto_archive_duration": auto_archive_duration, "rate_limit_per_user": rate_limit_per_user})
+        self.client.guilds[self.guild_id].append(Thread(await response.json())) # Cache it
+        return Thread(await response.json())
+    
+    
+        
