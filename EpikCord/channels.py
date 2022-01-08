@@ -102,6 +102,15 @@ class GuildTextChannel(GuildChannel):
         response = await self.client.http.post(f"channels/{self.id}/threads", data=data, headers=headers)
         self.client.guilds[self.guild_id].append(Thread(await response.json()))
     
+    async def bulk_delete(self, message_ids: List[Message.id], reason: Optional[str]) -> None:
+
+        if reason:
+            headers = self.client.http.headers.copy()
+            headers["X-Audit-Log-Reason"] = reason
+            
+        response = await self.client.http.post(f"channels/{self.id}/messages/bulk-delete", data={"messages": message_ids}, headers=headers)
+        return await response.json()
+
     # async def edit(self,*, name: Optional[str], position: Optional[str], permission_overwrites: Optional[List[dict]], reason: Optional[str], topic: Optional[str], nsfw: bool, rate_limit_per_user: Optional[int], parent_id: Optional[int], default_auto_archive_duration: Optional[int]):
     #     data = {}
     #     if name:

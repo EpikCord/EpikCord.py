@@ -42,16 +42,7 @@ class Messageable:
         response = await self.client.http.post(f"channels/{self.id}/messages/{message_id}/crosspost")
         data = await response.json()
         return Message(data)
-    
-    async def bulk_delete(self, message_ids: List[Message.id], reason: Optional[str]) -> None:
-
-        if reason:
-            headers = self.client.http.headers.copy()
-            headers["X-Audit-Log-Reason"] = reason
-            
-        response = await self.client.http.post(f"channels/{self.id}/messages/bulk-delete", data={"messages": message_ids}, headers=headers)
-        return await response.json()
-    
+        
 class BaseSlashCommandOption:
     def __init__(self, *, name: str, description: str, required: bool = False):
         self.name: str = name
