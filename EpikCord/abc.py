@@ -3,8 +3,6 @@ from typing import (
     Optional
 )
 from .channels import TextBasedChannel
-from .channels import TextBasedChannel
-from .embed import Embed
 from .client import Client
 from .message import Message
 from .exceptions import (
