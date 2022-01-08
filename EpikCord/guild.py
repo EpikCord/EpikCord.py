@@ -1,8 +1,13 @@
 from typing import (
     Optional
 )
+from .emoji import Emoji
 from .user import User
 from .client import ClientGuildMember, Client
+from .role import Role
+from typing import (
+    List
+)
 
 class Guild:
     def __init__(self, client: Client, data: dict):
@@ -16,10 +21,26 @@ class Guild:
         self.splash: Optional[str] = data["splash"] or None
         self.discovery_splash: Optional[str] = data["discovery_splash"] or None
         self.owner_id: str = data["owner_id"]
-        self.me = ClientGuildMember(self.client)
-        # self.me.permissions = data["permissions"]
+        self.permissions: str = data["permissions"]
+        self.afk_channel_id: str = data["afk_channel_id"]
+        self.afk_timeout: int = data["afk_timeout"]
+        self.verification_level: str = "NONE" if data["verification_level"] == 0 else "LOW" if data["verification_level"] == 1 else "MEDIUM" if data["verification_level"] == 2 else "HIGH" if data["verification_level"] == 3 else "VERY_HIGH"
+        self.default_message_notifications: str = "ALL" if data["default_message_notifications"] == 0 else "MENTIONS" 
+        self.explicit_content_filter: str = "DISABLED" if data["explicit_content_filter"] == 0 else "MEMBERS_WITHOUT_ROLES" if data["explicit_content_filter"] == 1 else "ALL_MEMBERS"
+        self.roles: List[Role] = [Role(role) for role in data["roles"]]
+        self.emojis: List[Emoji] = [Emoji(emoji) for emoji in data["emojis"]]
+        self.features: List[str] = data["features"]
+        self.mfa_level: str = "NONE" if data["mfa_level"] == 0 else "ELEVATED"
+        self.application_id: Optional[str] = data["application_id"] or None
+        self.system_channel_id: Optional[str] = data["system_channel_id"] or None
+        self.system_channel_flags: int = data["system_channel_flags"]
+        self.rules_channel_id: Optional[int] = data["rules_channel_id"] or None
+        self.joined_at: Optional[str] = data["joined_at"] or None
+        self.large: bool = data["large"]
+        self.unavailable: bool = data["unavailable"]
+        self.member_count: int = data["member_count"]
         
-        
+
 class GuildScheduledEvent:
     def __init__(self, client: Client, data: dict):
         self.id: str = data["id"]
