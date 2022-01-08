@@ -35,8 +35,7 @@ class Messageable:
 
     async def send(self, message_data: dict) -> Message:
         response = await self.client.http.post(f"channels/{self.id}/messages", data=message_data)
-        data = await response.json()
-        return Message(message_data)
+        return Message(await response.json())
     
 class BaseSlashCommandOption:
     def __init__(self, *, name: str, description: str, required: bool = False):
