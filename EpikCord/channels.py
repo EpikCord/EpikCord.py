@@ -102,6 +102,12 @@ class GuildTextChannel(GuildChannel):
         response = await self.client.http.post(f"channels/{self.id}/threads", data=data, headers=headers)
         self.client.guilds[self.guild_id].append(Thread(await response.json()))
     
+    async def crosspost(self, message_id: str):
+        response = await self.client.http.post(f"channels/{self.id}/messages/{message_id}/crosspost")
+        data = await response.json()
+        return Message(data)
+    
+    
     async def bulk_delete(self, message_ids: List[Message.id], reason: Optional[str]) -> None:
 
         if reason:

@@ -37,12 +37,7 @@ class Messageable:
         response = await self.client.http.post(f"channels/{self.id}/messages", data=message_data)
         data = await response.json()
         return Message(message_data)
-
-    async def crosspost(self, message_id: str):
-        response = await self.client.http.post(f"channels/{self.id}/messages/{message_id}/crosspost")
-        data = await response.json()
-        return Message(data)
-        
+    
 class BaseSlashCommandOption:
     def __init__(self, *, name: str, description: str, required: bool = False):
         self.name: str = name
