@@ -9,7 +9,9 @@ from .partials import PartialUser
 from .abc import BaseChannel
 from typing import (
     List,
-    Optional
+    Optional,
+    Dict,
+    Union
 )
 
 class GuildChannel(BaseChannel):
@@ -74,7 +76,7 @@ class GuildChannel(BaseChannel):
     #     data = await response.json()
     #     return GuildChannel(self.client, data)
     
-class GuildTextChannel(GuildChannel):
+class GuildTextChannel(GuildChannel, Messageable):
     def __init__(self, client: Client, data: dict):
         super().__init__(client, data)
         self.topic: str = data["topic"]
@@ -111,6 +113,18 @@ class GuildTextChannel(GuildChannel):
         response = await self.client.http.post(f"channels/{self.id}/messages/bulk-delete", data={"messages": message_ids}, headers=headers)
         return await response.json()
 
+    async def list_public_archived_threads(self,*, before: Optional[str], limit: Optional[int]) -> Dict[str, Union[List[Messageable], List[ThreadMember], bool]]: # It returns a List of Threads but I can't typehint that...
+        response = await self.client.http.get(f"/channels/{self.id}/threads/archived/public",params={"before": before, "limit": limit})
+        return await response.json()
+    
+    async def list_private_archived_threads(self,*, before: Optional[str], limit: Optional[int]) -> Dict[str, Union[List[Messageable], List[ThreadMember], bool]]: # It returns a List of Threads but I can't typehint that...
+        response = await self.client.http.get(f"/channels/{self.id}/threads/archived/private",params={"before": before, "limit": limit})
+        return await response.json()
+    
+    async def list_joined_private_archived_threads(self,*, before: Optional[str], limit: Optional[int]) -> Dict[str, Union[List[Messageable], List[ThreadMember], bool]]:
+        response = await self.client.http.get(f"/channels/{self.id}/threads/archived/private",params={"before": before, "limit": limit})
+        return await response.json()
+    
     # async def edit(self,*, name: Optional[str], position: Optional[str], permission_overwrites: Optional[List[dict]], reason: Optional[str], topic: Optional[str], nsfw: bool, rate_limit_per_user: Optional[int], parent_id: Optional[int], default_auto_archive_duration: Optional[int]):
     #     data = {}
     #     if name:
@@ -157,7 +171,7 @@ class GuildStoreChannel(GuildChannel):
     def __init__(self, client: Client, data: dict):
         super().__init__(client, data)
         
-class Thread(GuildChannel):
+class Thread(GuildTextChannel):
     def __init__(self, client: Client, data: dict):
         super().__init__(client, data)
         self.owner_id: str = data["owner_id"]
