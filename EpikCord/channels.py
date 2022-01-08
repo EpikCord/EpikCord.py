@@ -49,9 +49,6 @@ class GuildChannel(BaseChannel):
         response = await self.client.http.delete(f"/channels/{self.id}/permissions/{overwrites.id}")
         return await response.json()
     
-    async def follow(self, webhook_channel_id: str):
-        response = await self.client.http.post(f"/channels/{self.id}/followers", data={"webhook_channel_id": webhook_channel_id})
-        return await response.json()
         
     async def fetch_pinned_messages(self) -> List[Message]:
         response = await self.client.http.get(f"/channels/{self.id}/pins")
@@ -102,6 +99,10 @@ class GuildTextChannel(GuildChannel):
         response = await self.client.http.post(f"channels/{self.id}/threads", data=data, headers=headers)
         self.client.guilds[self.guild_id].append(Thread(await response.json()))
     
+    async def follow(self, webhook_channel_id: str):
+        response = await self.client.http.post(f"/channels/{self.id}/followers", data={"webhook_channel_id": webhook_channel_id})
+        return await response.json()
+
     async def crosspost(self, message_id: str):
         response = await self.client.http.post(f"channels/{self.id}/messages/{message_id}/crosspost")
         data = await response.json()
