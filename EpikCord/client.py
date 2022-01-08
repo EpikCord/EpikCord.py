@@ -9,7 +9,7 @@ from .member import Member
 from .user import User
 from .application import Application
 from .route import Route
-
+from .abc import Messageable
 from aiohttp import ClientSession
 
 
@@ -18,7 +18,7 @@ class Client(WebsocketClient):
     def __init__(self, token: str, intents: int = 0, **options):
         super().__init__(token, intents)
         
-        self.channels: List[BaseChannel] = []
+        self.channels: List[Messageable] = []
         
         self.options: dict = options
         self.global_slash_commands: bool = options.get("global_slash_commands", True)
