@@ -99,14 +99,7 @@ class GuildTextChannel(GuildChannel):
         response = await self.client.http.post(f"channels/{self.id}/threads", data=data, headers=headers)
         self.client.guilds[self.guild_id].append(Thread(await response.json()))
     
-    async def follow(self, webhook_channel_id: str):
-        response = await self.client.http.post(f"/channels/{self.id}/followers", data={"webhook_channel_id": webhook_channel_id})
-        return await response.json()
 
-    async def crosspost(self, message_id: str):
-        response = await self.client.http.post(f"channels/{self.id}/messages/{message_id}/crosspost")
-        data = await response.json()
-        return Message(data)
     
     
     async def bulk_delete(self, message_ids: List[Message.id], reason: Optional[str]) -> None:
@@ -139,7 +132,11 @@ class GuildNewsChannel(GuildTextChannel):
     def __init__(self, client: Client, data: dict):
         super().__init__(client, data)
         self.default_auto_archive_duration: int = data["default_auto_archive_duration"]
-        
+
+    async def follow(self, webhook_channel_id: str):
+        response = await self.client.http.post(f"/channels/{self.id}/followers", data={"webhook_channel_id": webhook_channel_id})
+        return await response.json()
+
 class GuildVoiceChannel(GuildChannel):
     def __init__(self, client: Client, data: dict):
         super().__init__(client, data)
