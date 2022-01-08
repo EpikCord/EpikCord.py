@@ -15,12 +15,6 @@ class Messageable:
         self.channel_id: str = channel_id
         self.client = client
         
-    async def send(self, message_data: dict) -> Message:
-        
-        response = await self.client.http.post(f"channels/{self.channel_id}/messages", data=message_data)
-        data = await response.json()
-        return Message(data)
-
     async def fetch_messages(self,*, around: Optional[str] = None, before: Optional[str] = None, after: Optional[str] = None, limit: Optional[int] = None) -> List[Message]:
         response = await self.client.http.get(f"channels/{self.id}/messages", params={"around": around, "before": before, "after": after, "limit": limit})
         data = await response.json()
