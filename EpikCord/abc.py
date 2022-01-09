@@ -31,25 +31,18 @@ class Messageable:
     
 class BaseSlashCommandOption:
     def __init__(self, *, name: str, description: str, required: bool = False):
-        self.name: str = name
-        self.description: str = description
-        self.required: bool = required
-        # People shouldn't use this class, this is just a base class for other options
-
-    def to_json(self):
-        return {
-            "name": self.name,
-            "description": self.description,
-            "required": self.required
+        self.settings = {
+            "name": name,
+            "description": description,
+            "required": required
         }
+        # People shouldn't use this class, this is just a base class for other options
     
 class BaseChannel:
     def __init__(self, client, data: dict):
         self.id: str = data["id"]
         self.client: Client = client
         self.type = data["type"]
-        
-            
 
 class BaseComponent:
     def __init__(self):
