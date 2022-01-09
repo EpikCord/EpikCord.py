@@ -1,6 +1,7 @@
 from typing import (
     List
 )
+from .section import Section
 from .channels import TextBasedChannel
 from .abc import BaseChannel
 from .ws import WebsocketClient
@@ -21,8 +22,6 @@ class Client(WebsocketClient):
         self.channels: List[Messageable] = []
         
         self.options: dict = options
-        self.global_slash_commands: bool = options.get("global_slash_commands", True)
-        self.slash_command_guilds: List[str] = options.get("slash_command_guilds", [])
 
         self.http = ClientSession(headers = {"Authorization": f"Bot {token}"}, base_url="https://discord.com/api/v9/")
         self.api = Route
@@ -36,6 +35,14 @@ class Client(WebsocketClient):
             response = await self.http.get(f"channels/{channel_id}")
             data = await response.json()
             return TextBasedChannel(data)
+    
+    def add_section(self, section: Section):
+        for name, command_object in section.commands:
+            self.client.commands[name] = command_object
+
+        for event_name, event_func in section.events:
+            self.events[event_name.lower().replace("on_")] = event_func
+        # Successfully extracted all the valuable stuff from the section        
 
 # class ClientUser(User):
     
