@@ -2,7 +2,7 @@ from distutils.core import setup
 setup(
   name = 'EpikCord.py', 
   packages = ['EpikCord'], 
-  version = '0.2',      
+  version = '0.3',      
   license='MIT',        
   description = 'Have you ever wanted to make a Discord Bot? Are you upset that Discord.py has been discontinued? We introduce EpikCord.py, a Discord.py replacement.',
   long_description = "I present to you, EpikCord.py, this is a python package which will hopefully be a great replacement for Discord.py as the creator has decided to discontinue the package. Whilst there are forks of the discord.py repo, we have started this library from scratch. We hope you enjoy using it!",
