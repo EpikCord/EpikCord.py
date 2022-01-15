@@ -2,8 +2,7 @@ from .team import Team
 from .partials import PartialUser
 from aiohttp import ClientResponse
 from typing import (
-    Optional,
-    List
+    Optional
 )
 from .client import Client
 
