@@ -17,6 +17,8 @@ from typing import (
 class GuildChannel(BaseChannel):
     def __init__(self, client: Client, data: dict):
         super().__init__(client, data)
+        if data["type"] == 0:
+            return TextBasedChannel(client, data)
         self.guild_id: str = data["guild_id"]
         self.position: int = data["position"]
         self.nsfw: bool = data["nsfw"]
@@ -100,9 +102,6 @@ class GuildTextChannel(GuildChannel, Messageable):
         
         response = await self.client.http.post(f"channels/{self.id}/threads", data=data, headers=headers)
         self.client.guilds[self.guild_id].append(Thread(await response.json()))
-    
-
-    
     
     async def bulk_delete(self, message_ids: List[Message.id], reason: Optional[str]) -> None:
 
