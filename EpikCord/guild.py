@@ -1,9 +1,11 @@
 from typing import (
     Optional
 )
+from .channels import GuildChannel, Thread
 from .emoji import Emoji
 from .user import User
-from .client import ClientGuildMember, Client
+from .member import Member
+from .client import Client
 from .role import Role
 from typing import (
     List
@@ -11,7 +13,6 @@ from typing import (
 
 class Guild:
     def __init__(self, client: Client, data: dict):
-        self.member_cache: dict = {}
         self.client = client
         self.data: dict = data
         self.id: str = data["id"]
@@ -39,8 +40,15 @@ class Guild:
         self.large: bool = data["large"]
         self.unavailable: bool = data["unavailable"]
         self.member_count: int = data["member_count"]
+        # self.voice_states: List[dict] = data["voice_states"]
+        self.members: List[Member] = [Member(member) for member in data["members"]]
+        self.channels: List[GuildChannel] = [GuildChannel(channel) for channel in data["channels"]]
+        self.threads: List[Thread] = [Thread(thread) for thread in data["threads"]]
+        self.presences: List[dict] = data["presences"]
+        self.max_presences: int = data["max_presences"]
+        self.max_members: int = data["max_members"]
+        self.features
         
-
 class GuildScheduledEvent:
     def __init__(self, client: Client, data: dict):
         self.id: str = data["id"]
