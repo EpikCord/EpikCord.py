@@ -1,10 +1,10 @@
-import inspect
+from .abc import BaseInteraction
 from websocket import WebSocket
-from .interactions import Interaction
-from .client import ClientUser
 from asyncio import run
+from .slash_command import Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption
 from typing import (
-    List
+    List,
+    Union
 )
 from time import sleep
 from json import loads, dumps
@@ -30,7 +30,9 @@ class WebsocketClient:
         self.intents = intents
         self.interval = None
         self.session_id = None
-        self.events = {}
+        self.events = {
+            "interaction": self.interaction
+        }
         self.events_to_handle = {
             
         }
@@ -38,7 +40,7 @@ class WebsocketClient:
         self.hearbeats = []
         self.average_latency = 0
         
-    async def interaction(self, interaction: Interaction):
+    async def interaction(self, interaction: BaseInteraction):
         await self.commands[interaction.command_name]["callback"](interaction)
         
     
@@ -50,6 +52,7 @@ class WebsocketClient:
             if event:
                 if event["op"] == self.HEARTBEAT_ACK:
                     self.heartbeats.append(event["d"])
+                    self.sequence = event["s"]
             print("Sent heartbeat!")
     
     def receive_event(self):
@@ -57,11 +60,10 @@ class WebsocketClient:
         if response:
             return loads(response)
     
-    def handle_event(self, event_name: str):
+    def handle_event(self, event_name: str, data: dict):
         try:
             function = self.events[event_name]
-            signature = inspect.signature(function)
-            
+            run(function(data))
         except KeyError:
             print(f"You have not registered an event handler for {event_name} but still receive the event. Either make a handler or remove the intent to view this event if possible.") # Someone change this to logger
 
@@ -70,16 +72,18 @@ class WebsocketClient:
             event = self.receive_event()
             if event:
                 if event["op"] == self.EVENT:
-                    self.handle_event(event["t"].lower())
+                    self.handle_event(event["t"].lower(), event["d"])
+                elif event["op"] == self.HEARTBEAT:
+                    self.ws.send(dumps({"op": self.HEARTBEAT, "d": self.sequence or "null"}))
 
     def event(self, func):
         def register_event():
             self.events[func.__name__.lower().replace("on_")] = func
         return register_event
     
-    def command(self, *, name: str, description: str, guild_ids: List[str], options):
+    def command(self, *, name: str, description: str, guild_ids: List[str], options:Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]):
         def register_slash_command(func):
-            self.commands[func.__name__] = {"callback": func, "name": name, "description": description, "guild_ids": guild_ids}
+            self.commands[func.__name__] = {"callback": func, "name": name, "description": description, "guild_ids": guild_ids, "options": options}
         return register_slash_command
 
     def login(self):
@@ -101,7 +105,6 @@ class WebsocketClient:
                 }
             })
         )
-        
         _start_new_thread(self.heartbeat, ())
         
         self.infinitely_retreive_events()
