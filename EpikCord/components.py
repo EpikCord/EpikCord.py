@@ -1,20 +1,64 @@
 from .abc import BaseComponent
 from .partials import PartialEmoji
-from .exceptions import TooManyComponents, InvalidMessageButtonStyle, CustomIdIsTooBig, InvalidArgumentType, TooManySelectMenuOptions, LabelIsTooBig
+from .exceptions import TooManyComponents, InvalidMessageButtonStyle, InvalidArgumentType, TooManySelectMenuOptions, LabelIsTooBig
 from typing import (
     Union,
-    List
+    List,
+    Optional
 )
 
+class MessageSelectMenuOption:
+    def __init__(self, label: str, value: str, description: Optional[str], emoji: Optional[PartialEmoji], default: Optional[bool]):
+        self.settings = {
+            "label": label,
+            "value": value,
+            "description": description or None,
+            "emoji": emoji or None,
+            "default": default or None            
+        }
+    
+    def __repr__(self):
+        return self.settings
 
-class MessageSelectMenuOption(BaseComponent):
-    def __init__(self, **kwargs):
-        self.data: dict = kwargs
-        self.label: str = kwargs.get("label", "")
-        self.value: str = kwargs.get("value", "")
-        self.description: str = kwargs.get("description", "")
-        self.emoji: PartialEmoji = kwargs.get("emoji", None)
-        self.default: bool = kwargs.get("default", False)
+class MessageSelectMenu(BaseComponent):
+    def __init__(self):
+        self.settings = {
+            "options": [], 
+            "type": 3,
+            "min_values": 1,
+            "max_values": 1,
+            "disabled": False
+        }
+    
+    def __repr__(self):
+        return self.settings
+
+    def add_options(self, options: List[MessageSelectMenuOption]):
+        for option in options:
+            
+            if len(self.settings["options"] > 25):
+                raise TooManySelectMenuOptions("You can only have 25 options in a select menu.")
+            
+            self.settings["options"].append(option.data)
+        
+    def set_placeholder(self, placeholder: str):
+        if not isinstance(placeholder, str):
+            raise InvalidArgumentType("Placeholder must be a string.")
+        
+        self.settings["placeholder"] = placeholder
+    
+    def set_min_values(self, min: int):
+        if not isinstance(min, int):
+            raise InvalidArgumentType("Min must be an integer.")
+        
+        self.options["min_values"] = min
+        
+    def set_max_values(self, max: int):
+        if not isinstance(max, int):
+            raise InvalidArgumentType("Max must be an integer.")
+        
+        self.options["max_values"] = max    
+
 
 class MessageButton(BaseComponent):
     def __init__(self):
@@ -26,6 +70,9 @@ class MessageButton(BaseComponent):
             "disabled": False
         }
     
+    def __repr__(self):
+        return self.settings
+
     def set_label(self, label: str):
 
         if not isinstance(label, str):
@@ -73,49 +120,20 @@ class MessageButton(BaseComponent):
         self.settings["style"] = 5
         
         
-class MessageSelectMenu:
-    def __init__(self):
-        self.settings = {
-            "options": [], 
-            "type": 3,
-            "min_values": 1,
-            "max_values": 1,
-            "disabled": False
-        }
-            
-    def add_options(self, options: List[MessageSelectMenuOption]):
-        for option in options:
-            
-            if len(self.settings["options"] > 25):
-                raise TooManySelectMenuOptions("You can only have 25 options in a select menu.")
-            
-            self.settings["options"].append(option.data)
-        
-    def set_placeholder(self, placeholder: str):
-        if not isinstance(placeholder, str):
-            raise InvalidArgumentType("Placeholder must be a string.")
-        
-        self.settings["placeholder"] = placeholder
-    
-    def set_min_values(self, min: int):
-        if not isinstance(min, int):
-            raise InvalidArgumentType("Min must be an integer.")
-        
-        self.options["min_values"] = min
-        
-    def set_max_values(self, max: int):
-        if not isinstance(max, int):
-            raise InvalidArgumentType("Max must be an integer.")
-        
-        self.options["max_values"] = max    
 
 class MessageActionRow:
-    def __init__(self):
-        self.components = []
+    def __init__(self, components: Optional[List[Union[MessageButton, MessageSelectMenu]]]):
+        self.settings = {
+            "type": 1,
+            "components": components
+        }
+
+    def __repr__(self):
+        return self.settings
         
     def add_components(self, components: List[Union[MessageButton, MessageSelectMenu]]):
         buttons = 0
-        for component in self.components:
+        for component in self.settings["components"]:
             if type(component) == MessageButton:
                 buttons += 1
             
@@ -124,4 +142,4 @@ class MessageActionRow:
             
             elif type(component) == MessageSelectMenu:
                 raise TooManyComponents("You can only have 1 select menu per row. No buttons along that select menu.")
-        self.components.append(components.settings)
+        self.settings["components"].append(components)
