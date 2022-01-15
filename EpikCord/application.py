@@ -2,7 +2,8 @@ from .team import Team
 from .partials import PartialUser
 from aiohttp import ClientResponse
 from typing import (
-    Optional
+    Optional,
+    List
 )
 from .client import Client
 
@@ -29,3 +30,15 @@ class Application:
         response: ClientResponse = await self.client.api(self, "oauth2/applications/@me").request("GET")
         data: dict = await response.json()
         self.application = Application(data)
+        
+class ApplicationCommand:
+    def __init__(self, data: dict):
+        self.id: str = data["id"]
+        self.type: int = data["type"]
+        self.application_id: str = data["application_id"]
+        self.guild_id: Optional[str] = data["guild_id"] or None
+        self.name: str = data["name"]
+        self.description: str = data["description"]
+        self.options = data["options"] # Typehint once I have the class ready
+        self.default_permissions: bool = data["default_permissions"]
+        self.version: str = data["version"]
