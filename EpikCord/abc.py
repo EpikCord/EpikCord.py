@@ -4,7 +4,9 @@ from typing import (
 )
 from .channels import TextBasedChannel
 from .client import Client
+from .user import User
 from .message import Message
+from .member import GuildMember
 from .exceptions import (
     InvalidArgumentType,
     CustomIdIsTooBig
@@ -60,5 +62,29 @@ class BaseComponent:
         
 class BaseInteraction:
     def __init__(self, data: dict):
-        self.application_id: str = data["application_id"]
-        self.channel: TextBasedChannel = TextBasedChannel(data["channel"])
+        self.id: str = data["id"]
+        self.application_id: int = data["application_id"]
+        self.type: int = data["type"]
+        self.data: Optional[dict] = data["data"] or None
+        self.guild_id: Optional[str] = data["guild_id"] or None
+        self.channel_id: Optional[str] = data["channel_id"] or None
+        self.member: Optional[GuildMember] = GuildMember(data["member"]) or None
+        self.user: Optional[User] = User(data["user"]) or None
+        self.token: str = data["token"]
+        self.version: int = data["version"]
+        self.message: Optional[Message] = Message(data["message"]) or None
+        self.locale: Optional[str] = data["locale"] or None
+        self.guild_locale: Optional[str] = data["guild_locale"] or None
+        
+    def is_ping(self):
+        return self.type == 1
+    
+    def is_application_command(self):
+        return self.type == 2
+    
+    def is_message_component(self):
+        return self.type == 3
+    
+    def is_autocomplete(self):
+        return self.type == 4
+    
