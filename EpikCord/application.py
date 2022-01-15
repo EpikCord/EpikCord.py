@@ -39,6 +39,5 @@ class ApplicationCommand:
         self.guild_id: Optional[str] = data["guild_id"] or None
         self.name: str = data["name"]
         self.description: str = data["description"]
-        self.options = data["options"] # Typehint once I have the class ready
         self.default_permissions: bool = data["default_permissions"]
         self.version: str = data["version"]
