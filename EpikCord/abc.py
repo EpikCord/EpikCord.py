@@ -2,7 +2,6 @@ from typing import (
     List,
     Optional
 )
-from .channels import TextBasedChannel
 from .client import Client
 from .user import User
 from .message import Message
