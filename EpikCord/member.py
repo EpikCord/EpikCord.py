@@ -1,4 +1,4 @@
-import EpikCord.role
+import EpikCord.role as role
 from typing import (
     Optional,
     List
@@ -19,7 +19,7 @@ class GuildMember:
         self.user: Optional[User] = User(data["user"]) or None
         self.nick: Optional[str] = data["nick"] or None
         self.avatar: Optional[str] = data["avatar"] or None
-        self.roles: List[Role] = [Role(role) for role in data["roles"]]
+        self.roles: List[role.Role] = [role.Role(role) for role in data["roles"]]
         self.joined_at:str = data["joined_at"]
         self.premium_since: Optional[str] = data["premium_since"] or None
         self.deaf: bool = data["deaf"]
