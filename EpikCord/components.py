@@ -66,15 +66,19 @@ class MessageSelectMenu(BaseComponent):
 
 
 class MessageButton(BaseComponent):
-    def __init__(self):
+    def __init__(self,*, style: Optional[Union[int, str]] = 1, label: Optional[str], emoji: Optional[Union[PartialEmoji, dict]], url: Optional[str]):
         self.settings = {
             "type": 2,
-            "style": 1,
-            "label": "Click me!",
+            "style": style or 1,
+            "label": label or "Click me!",
             "emoji": None,
-            "disabled": False
+            "disabled": False,
         }
-    
+        if url:
+            self.settings["url"] = url
+            self.settings["style"] = 5
+        if emoji:
+            self.settings["emoji"] = emoji
     def __repr__(self):
         return self.settings
 
