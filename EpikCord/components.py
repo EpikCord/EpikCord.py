@@ -40,24 +40,29 @@ class MessageSelectMenu(BaseComponent):
                 raise TooManySelectMenuOptions("You can only have 25 options in a select menu.")
             
             self.settings["options"].append(option.data)
+        return self
         
     def set_placeholder(self, placeholder: str):
         if not isinstance(placeholder, str):
             raise InvalidArgumentType("Placeholder must be a string.")
         
         self.settings["placeholder"] = placeholder
+        return self
     
     def set_min_values(self, min: int):
         if not isinstance(min, int):
             raise InvalidArgumentType("Min must be an integer.")
         
         self.options["min_values"] = min
-        
+        return self
+
+
     def set_max_values(self, max: int):
         if not isinstance(max, int):
             raise InvalidArgumentType("Max must be an integer.")
         
-        self.options["max_values"] = max    
+        self.options["max_values"] = max  
+        return self  
 
 
 class MessageButton(BaseComponent):
@@ -82,6 +87,7 @@ class MessageButton(BaseComponent):
             raise LabelIsTooBig("Label must be 80 characters or less.")
             
         self.settings["label"] = label
+        return self
     
     def set_style(self, style: Union[int, str]):
         valid_styles = {
@@ -94,21 +100,23 @@ class MessageButton(BaseComponent):
         if isinstance(style, str):
             if style.upper() not in valid_styles:
                 raise InvalidMessageButtonStyle("Invalid button style. Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS.")
-            self.settings["style"] = style.upper()
+            self.settings["style"] = valid_styles[style.upper()]
+            return self
             
         elif isinstance(style, int):
             if style not in valid_styles.values():
                 raise InvalidMessageButtonStyle("Invalid button style. Style must be in range 1 to 5 inclusive.")
-    
+            self.settings["style"] = style
+            return self
     def set_emoji(self, emoji: Union[PartialEmoji, dict]):
 
         if isinstance(emoji, dict):
             self.settings["emoji"] = emoji
-            return
+            return self
 
         elif isinstance(emoji, PartialEmoji):
             self.settings["emoji"] = emoji.data
-            return
+            return self
         raise InvalidArgumentType("Emoji must be a PartialEmoji or a dict that represents a PartialEmoji.")
                     
     def set_url(self, url: str):
@@ -118,7 +126,8 @@ class MessageButton(BaseComponent):
         
         self.settings["url"] = url
         self.settings["style"] = 5
-        
+        return self
+
         
 
 class MessageActionRow:
@@ -143,3 +152,4 @@ class MessageActionRow:
             elif type(component) == MessageSelectMenu:
                 raise TooManyComponents("You can only have 1 select menu per row. No buttons along that select menu.")
         self.settings["components"].append(components)
+        return self
