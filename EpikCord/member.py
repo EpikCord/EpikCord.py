@@ -1,4 +1,3 @@
-from .client import Client
 from .role import Role
 from typing import (
     Optional,
@@ -14,7 +13,7 @@ class ThreadMember:
         self.flags: int = data["flags"]
         
 class GuildMember:
-    def __init__(self, client: Client, data: dict):
+    def __init__(self, client, data: dict):
         self.data = data
         self.client = client
         self.user: Optional[User] = User(data["user"]) or None
