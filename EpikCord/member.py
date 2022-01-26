@@ -1,4 +1,4 @@
-from .role import Role
+import EpikCord.role
 from typing import (
     Optional,
     List
