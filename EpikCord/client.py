@@ -42,6 +42,7 @@ class Client(WebsocketClient):
 
         for event_name, event_func in section.events:
             self.events[event_name.lower().replace("on_")] = event_func
+        
         # Successfully extracted all the valuable stuff from the section        
 
 # class ClientUser(User):

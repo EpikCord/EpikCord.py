@@ -12,7 +12,6 @@ EpikCord\embed.py
 EpikCord\emoji.py
 EpikCord\exceptions.py
 EpikCord\guild.py
-EpikCord\interactions.py
 EpikCord\invite.py
 EpikCord\member.py
 EpikCord\mentions.py
@@ -26,7 +25,7 @@ EpikCord\section.py
 EpikCord\slash_command.py
 EpikCord\stickers.py
 EpikCord\team.py
-EpikCord\thread.py
+EpikCord\testing.py
 EpikCord\user.py
 EpikCord\webhook.py
 EpikCord\ws.py

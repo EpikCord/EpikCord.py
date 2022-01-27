@@ -68,4 +68,3 @@ class SlashCommand(ApplicationCommand):
     def __init__(self, data: dict):
         super().__init__(data)
         self.options: Optional[List[Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]]] = data["options"] or None # Return the type hinted class later this will take too long and is very tedious, I'll probably get Copilot to do it for me lmao
-
