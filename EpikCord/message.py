@@ -1,9 +1,9 @@
 from urllib.parse import quote
 from .reaction import Reaction
-from .thread import Thread
+from .channels import Thread
 from .stickers import StickerItem
 from .components import MessageSelectMenu, MessageButton
-from .interactions import MessageInteraction
+from .abc import BaseInteraction
 from .partials import PartialMember
 from .role import Role
 from .mentions import (
@@ -63,7 +63,7 @@ class Message:
         self.application: Application = Application(data["application"]) # Despite there being a PartialApplication, Discord don't specify what attributes it has
         self.flags: int = data["flags"]
         self.referenced_message: Optional[Message] = Message(data["referenced_message"]) if data["referenced_message"] else None
-        self.interaction: Optional[MessageInteraction] = MessageInteraction(data["interaction"]) if data["interaction"] else None
+        self.interaction: Optional[Interaction] = MessageInteraction(data["interaction"]) if data["interaction"] else None
         self.thread: Thread = Thread(data["thread"]) if data["thread"] else None
         self.components: Optional[List[Union[MessageSelectMenu, MessageButton]]] = [MessageSelectMenu(component) if component["type"] == 1 else MessageButton(component) for component in data["components"]] or None
         self.stickers: Optional[List[StickerItem]] = [StickerItem(sticker) for sticker in data["stickers"]] or None

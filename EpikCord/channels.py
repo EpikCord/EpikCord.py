@@ -1,4 +1,3 @@
-from .abc import Messageable
 from .member import ThreadMember
 from .exceptions import ThreadArchived, NotFound404
 from .invite import Invite
@@ -6,13 +5,15 @@ from .client import Client
 from .permissions import Overwrite
 from .message import Message
 from .partials import PartialUser
-from .abc import BaseChannel
+from .abc import BaseChannel, Messageable
 from typing import (
     List,
     Optional,
     Dict,
     Union
 )
+
+
 
 class GuildChannel(BaseChannel):
     def __init__(self, client: Client, data: dict):

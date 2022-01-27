@@ -4,12 +4,11 @@ from aiohttp import ClientResponse
 from typing import (
     Optional
 )
-from .client import Client
 
 class Application:
-    def __init__(self, client: Client, data: dict):
+    def __init__(self, client, data: dict):
         self.id: str = data["id"]
-        self.client: Client = client
+        self.client = client
         self.name: str = data["name"]
         self.icon: Optional[str] = data["icon"] or None
         self.description: str = data["description"]
