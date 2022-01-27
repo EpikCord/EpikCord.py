@@ -2,15 +2,9 @@ from typing import (
     List
 )
 from .section import Section
-from .channels import TextBasedChannel
-from .abc import BaseChannel
 from .ws import WebsocketClient
-from asyncio import run
-from .member import Member
-from .user import User
-from .application import Application
+from .application import Application, ApplicationCommand
 from .route import Route
-from .abc import Messageable
 from aiohttp import ClientSession
 
 
@@ -19,7 +13,7 @@ class Client(WebsocketClient):
     def __init__(self, token: str, intents: int = 0, **options):
         super().__init__(token, intents)
         
-        self.channels: List[Messageable] = []
+        self.commands: List[ApplicationCommand] = []
         
         self.options: dict = options
 
@@ -29,7 +23,7 @@ class Client(WebsocketClient):
 
     def add_section(self, section: Section):
         for name, command_object in section.commands:
-            self.client.commands[name] = command_object
+            self.commands[name] = command_object
 
         for event_name, event_func in section.events:
             self.events[event_name.lower().replace("on_")] = event_func

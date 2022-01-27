@@ -30,12 +30,7 @@ class WebsocketClient:
         self.intents = intents
         self.interval = None
         self.session_id = None
-        self.events = {
-            "interaction": self.interaction
-        }
-        self.events_to_handle = {
-            
-        }
+        self.events = {}
         self.commands = {}
         self.hearbeats = []
         self.average_latency = 0
