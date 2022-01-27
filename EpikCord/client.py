@@ -27,15 +27,6 @@ class Client(WebsocketClient):
         self.api = Route
         self.application: Application = Application(self, self.user) # Processes whatever it can        
 
-    async def get_channel(self, channel_id: str):
-        try:
-            if self.channels[channel_id]:
-                return self.channels[channel_id]
-        except KeyError:
-            response = await self.http.get(f"channels/{channel_id}")
-            data = await response.json()
-            return TextBasedChannel(data)
-    
     def add_section(self, section: Section):
         for name, command_object in section.commands:
             self.client.commands[name] = command_object
