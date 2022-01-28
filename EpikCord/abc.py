@@ -119,5 +119,3 @@ class BaseInteraction:
     async def delete_followup(self, message_id: Message.id):
         response = await self.client.http.delete(f"/webhooks/{self.application_id}/{self.token}/messages/{message_id}")
         return await response.json()
-    
-    
