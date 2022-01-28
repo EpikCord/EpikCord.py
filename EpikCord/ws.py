@@ -1,6 +1,6 @@
 from .abc import BaseInteraction
 from websocket import WebSocket
-from asyncio import run
+from asyncio import get_event_loop
 from .slash_command import Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption
 from typing import (
     List,
@@ -10,7 +10,13 @@ from time import sleep
 from json import loads, dumps
 from threading import _start_new_thread
 
-class WebsocketClient:
+class EventHandler:
+    # Class that'll contain all methods that'll be called when an event is triggered.    
+
+    async def ready(self, data: dict):
+        ... # Do this later
+
+class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
 
         self.EVENT = 0
@@ -33,11 +39,7 @@ class WebsocketClient:
         self.events = {}
         self.commands = {}
         self.hearbeats = []
-        self.average_latency = 0
-        
-    async def interaction(self, interaction: BaseInteraction):
-        await self.commands[interaction.command_name]["callback"](interaction)
-        
+        self.average_latency = 0        
     
     def heartbeat(self):
         while True:
@@ -57,11 +59,11 @@ class WebsocketClient:
     
     def handle_event(self, event_name: str, data: dict):
         try:
-            function = self.events[event_name]
-            run(function(data))
+            get_event_loop().run_until_complete(getattr(self, event_name)(data))
+            get_event_loop().run_until_complete(self.events[event_name](data))
         except KeyError:
-            print(f"You have not registered an event handler for {event_name} but still receive the event. Either make a handler or remove the intent to view this event if possible.") # Someone change this to logger
-
+            pass
+        
     def infinitely_retreive_events(self):
         while True:
             event = self.receive_event()
@@ -84,7 +86,6 @@ class WebsocketClient:
     def login(self):
         self.ws.connect("wss://gateway.discord.gg/?v=9&encoding=json")
         event = self.receive_event()
-        print(event)
         self.interval = event["d"]["heartbeat_interval"]
         self.ws.send(
             dumps({
@@ -94,8 +95,8 @@ class WebsocketClient:
                 "intents": self.intents,
                 "properties": {
                     "$os": "linux",
-                    "$browser": "EpikCord",
-                    "$device": "EpikCord"
+                    "$browser": "EpikCord.py",
+                    "$device": "EpikCord.py"
                     },
                 }
             })
