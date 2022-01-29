@@ -39,7 +39,7 @@ pip install EpikCord.py
 
 ### Install in an Virtual Environment (venv)
 
-Sometimes you might want to keep this library from conflicting with other libraries or use a different version of libs than the ones in the system.You also might not have permissions for installing libraries. Luckily Virtual Environments are here to save you. From Python3.3, there is a concept called Virtual Environment to help maintain these libs
+Sometimes you might want to keep this library from conflicting with other libraries or use a different version of libs than the ones in the system. You also might not have permissions for installing libraries. Luckily Virtual Environments are here to save you. From Python3.3, there is a concept called Virtual Environment to help maintain these libs
 
 
 #### For the quick and dirty:
