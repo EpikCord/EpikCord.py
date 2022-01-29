@@ -3,15 +3,13 @@ from .reaction import Reaction
 from .channels import Thread
 from .stickers import StickerItem
 from .components import MessageSelectMenu, MessageButton
-from .abc import BaseInteraction
+from .abc import BaseInteraction as Interaction
 from .partials import PartialMember
-from .role import Role
 from .mentions import (
     MentionedUser,
     MentionedChannel
 )    
 from .application import Application
-from .client import Client
 from .webhook import WebhookUser
 from .user import User
 from .reaction import Reaction
@@ -38,7 +36,7 @@ class AllowedMention:
     
 
 class Message:
-    def __init__(self, client: Client, data: dict):
+    def __init__(self, client, data: dict):
         self.client = client
         self.id: str = data["id"]
         self.channel_id: str = data["channel_id"]
@@ -46,7 +44,7 @@ class Message:
         self.webhook_id: Optional[str] = data["webhook_id"] or None
         self.author: Optional[User] if not self.webhook_id else WebhookUser = WebhookUser(data["author"]) if self.webhook_id else User(data["author"])
         self.member: Optional[PartialMember] = PartialMember(data["member"]) if data["member"] else None
-        self.content: str = data["content"]
+        self.content: Optional[str] = data["content"] or None # I forgot Message Intents are gonna stop this.
         self.timestamp: str = data["timestamp"]
         self.edited_timestamp: Optional[str] = data["edited_timestamp"] or None
         self.tts: bool = data["tts"]
@@ -63,7 +61,7 @@ class Message:
         self.application: Application = Application(data["application"]) # Despite there being a PartialApplication, Discord don't specify what attributes it has
         self.flags: int = data["flags"]
         self.referenced_message: Optional[Message] = Message(data["referenced_message"]) if data["referenced_message"] else None
-        self.interaction: Optional[Interaction] = MessageInteraction(data["interaction"]) if data["interaction"] else None
+        self.interaction: Optional[Interaction] = InteractionMessage(data["interaction"]) if data["interaction"] else None
         self.thread: Thread = Thread(data["thread"]) if data["thread"] else None
         self.components: Optional[List[Union[MessageSelectMenu, MessageButton]]] = [MessageSelectMenu(component) if component["type"] == 1 else MessageButton(component) for component in data["components"]] or None
         self.stickers: Optional[List[StickerItem]] = [StickerItem(sticker) for sticker in data["stickers"]] or None
@@ -122,3 +120,7 @@ class Message:
     async def crosspost(self):
         response = await self.client.http.post(f"channels/{self.channel_id}/messages/{self.id}/crosspost")
         return await response.json()
+    
+class InteractionMessage(Message):
+    def __init__(self,client, data: dict):
+        return super().__init__(client, data)

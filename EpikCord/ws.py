@@ -1,4 +1,3 @@
-from .abc import BaseInteraction
 from websocket import WebSocket
 from asyncio import get_event_loop
 from .slash_command import Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption

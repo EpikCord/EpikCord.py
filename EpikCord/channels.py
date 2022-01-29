@@ -1,11 +1,9 @@
 from .member import ThreadMember
 from .exceptions import ThreadArchived, NotFound404
-from .invite import Invite
-from .client import Client
 from .permissions import Overwrite
 from .message import Message
 from .partials import PartialUser
-from .abc import BaseChannel, Messageable
+from .abc import BaseChannel
 from typing import (
     List,
     Optional,
@@ -13,10 +11,27 @@ from typing import (
     Union
 )
 
+class Messageable:
+    def __init__(self, client, channel_id: str):
+        self.channel_id: str = channel_id
+        self.client = client
+        
+    async def fetch_messages(self,*, around: Optional[str] = None, before: Optional[str] = None, after: Optional[str] = None, limit: Optional[int] = None) -> List[Message]:
+        response = await self.client.http.get(f"channels/{self.id}/messages", params={"around": around, "before": before, "after": after, "limit": limit})
+        data = await response.json()
+        return [Message(message) for message in data]
+    
+    async def fetch_message(self,*, message_id: str) -> Message:
+        response = await self.client.http.get(f"channels/{self.id}/messages/{message_id}")
+        data = await response.json()
+        return Message(data)
 
+    async def send(self, message_data: dict) -> Message:
+        response = await self.client.http.post(f"channels/{self.id}/messages", form=message_data)
+        return Message(await response.json())
 
 class GuildChannel(BaseChannel):
-    def __init__(self, client: Client, data: dict):
+    def __init__(self, client, data: dict):
         super().__init__(client, data)
         if data["type"] == 0:
             return TextBasedChannel(client, data)
@@ -35,7 +50,7 @@ class GuildChannel(BaseChannel):
         response = await self.client.http.delete(f"channels/{self.id}", headers=headers)
         return await response.json()
     
-    async def fetch_invites(self) -> List[Invite]: 
+    async def fetch_invites(self): 
         response = await self.client.http.get(f"/channels/{self.id}/invites")
         return await response.json()
     
@@ -80,7 +95,7 @@ class GuildChannel(BaseChannel):
     #     return GuildChannel(self.client, data)
     
 class GuildTextChannel(GuildChannel, Messageable):
-    def __init__(self, client: Client, data: dict):
+    def __init__(self, client, data: dict):
         super().__init__(client, data)
         self.topic: str = data["topic"]
         self.rate_limit_per_user: int = data["rate_limit_per_user"]
@@ -143,7 +158,7 @@ class GuildTextChannel(GuildChannel, Messageable):
 
     
 class GuildNewsChannel(GuildTextChannel):
-    def __init__(self, client: Client, data: dict):
+    def __init__(self, client, data: dict):
         super().__init__(client, data)
         self.default_auto_archive_duration: int = data["default_auto_archive_duration"]
 
@@ -152,27 +167,27 @@ class GuildNewsChannel(GuildTextChannel):
         return await response.json()
 
 class GuildVoiceChannel(GuildChannel):
-    def __init__(self, client: Client, data: dict):
+    def __init__(self, client, data: dict):
         super().__init__(client, data)
         self.bitrate: int = data["bitrate"]
         self.user_limit: int = data["user_limit"]
         self.rtc_region: str = data["rtc_region"]
             
 class DMChannel(BaseChannel):
-    def __init__(self, client: Client, data: dict):
+    def __init__(self, client, data: dict):
         super().__init__(client, data)
         self.recipient: List[PartialUser] = PartialUser(data["recipient"])
 
 class ChannelCategory(GuildChannel):
-    def __init__(self, client: Client, data: dict):
+    def __init__(self, client, data: dict):
         super().__init__(client, data)
 
 class GuildStoreChannel(GuildChannel):
-    def __init__(self, client: Client, data: dict):
+    def __init__(self, client, data: dict):
         super().__init__(client, data)
         
 class Thread(GuildTextChannel):
-    def __init__(self, client: Client, data: dict):
+    def __init__(self, client, data: dict):
         super().__init__(client, data)
         self.owner_id: str = data["owner_id"]
         self.message_count: int = data["message_count"]
@@ -219,11 +234,11 @@ class Thread(GuildTextChannel):
         return [ThreadMember(member) for member in await response.json()]
             
 class GuildNewsThread(Thread, GuildNewsChannel):
-    def __init__(self, client: Client, data: dict):
+    def __init__(self, client, data: dict):
         super().__init__(client, data)
 
 class GuildStageChannel(BaseChannel):
-    def __init__(self, client: Client, data: dict):
+    def __init__(self, client, data: dict):
         super().__init__(client, data)
         self.guild_id: str = data["guild_id"]
         self.channel_id: str = data["channel_id"]
@@ -231,7 +246,7 @@ class GuildStageChannel(BaseChannel):
         self.discoverable_disabled: bool = data["discoverable_disabled"]
 
 class TextBasedChannel(BaseChannel):
-    def __init__(self, client: Client, data: dict):
+    def __init__(self, client, data: dict):
         super().__init__(data)
         if self.type == 0:
             return GuildTextChannel(client, data)

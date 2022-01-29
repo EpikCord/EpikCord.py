@@ -3,8 +3,16 @@ from typing import (
     List,
     Union
 )
-from .abc import BaseSlashCommandOption
 from .application import ApplicationCommand
+
+class BaseSlashCommandOption:
+    def __init__(self, *, name: str, description: str, required: bool = False):
+        self.settings = {
+            "name": name,
+            "description": description,
+            "required": required
+        }
+        # People shouldn't use this class, this is just a base class for other options
 
 class Subcommand(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):

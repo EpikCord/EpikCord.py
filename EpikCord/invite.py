@@ -22,4 +22,3 @@ class Invite:
         self.stage_instance: Optional[GuildStageChannel] = GuildStageChannel(data["stage_instance"]) or None
         self.guild_scheduled_event: Optional[GuildScheduledEvent] = GuildScheduledEvent(data["guild_scheduled_event"]) or None
     # Dabmaster is gonna work on this
-    

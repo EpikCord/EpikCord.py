@@ -1,7 +1,5 @@
-from .client import Client
-
 class Route:
-    def __init__(self, client: Client,url: str):
+    def __init__(self, client,url: str):
         self.client = client
         self.base_url = "https://discord.com/api/v9/"
         self.url = f"{self.base_url}{url}"
