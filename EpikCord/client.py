@@ -17,9 +17,12 @@ class Client(WebsocketClient):
         
         self.options: dict = options
 
-        self.http = ClientSession(headers = {"Authorization": f"Bot {token}"}, base_url="https://discord.com/api/v9/")
+        self.http = ClientSession(
+            headers = {"Authorization": f"Bot {token}"},
+            base_url = "https://discord.com"
+            )
         self.api = Route
-        self.application: Application = Application(self, self.user) # Processes whatever it can        
+        # self.application: Application = Application(self, self.user) # Processes whatever it can        
 
     def add_section(self, section: Section):
         for name, command_object in section.commands:
