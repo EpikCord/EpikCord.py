@@ -1,17 +1,17 @@
 from typing import (
-    List
+    List,
+    Optional
 )
-from .channels import GuildTextChannel
 from .exceptions import ThreadArchived, NotFound404
 
 class ThreadMember:
     def __init__(self, data: dict):
+        self.id: str = data["user_id"]
         self.thread_id: str = data["thread_id"]
-        self.user_id: str = data["user_id"]
         self.join_timestamp: str = data["join_timestamp"]
         self.flags: int = data["flags"]
 
-class Thread(GuildTextChannel):
+class Thread:
     def __init__(self, client, data: dict):
         super().__init__(client, data)
         self.owner_id: str = data["owner_id"]
@@ -28,7 +28,7 @@ class Thread(GuildTextChannel):
         response = await self.client.http.put(f"/channels/{self.id}/thread-members/@me")
         return await response.json()
     
-    async def add_member(self, member_id: ThreadMember.id):
+    async def add_member(self, member_id: str):
         if self.archived:
             raise ThreadArchived("This thread has been archived so it is no longer joinable")
         
@@ -41,14 +41,14 @@ class Thread(GuildTextChannel):
         response = await self.client.http.delete(f"/channels/{self.id}/thread-members/@me")
         return await response.json()
     
-    async def remove_member(self, member_id: ThreadMember.id):
+    async def remove_member(self, member_id: str):
         if self.archived:
             raise ThreadArchived("This thread has been archived so it is no longer leaveable")
         
         response = await self.client.http.delete(f"/channels/{self.id}/thread-members/{member_id}")
         return await response.json()
     
-    async def fetch_member(self, member_id: ThreadMember.user_id) -> ThreadMember:
+    async def fetch_member(self, member_id: str) -> ThreadMember:
         response = await self.client.http.get(f"/channels/{self.id}/thread-members/{member_id}")
         if response.status == 404:
             raise NotFound404("The member you are trying to fetch does not exist")
@@ -57,3 +57,12 @@ class Thread(GuildTextChannel):
     async def list_members(self) -> List[ThreadMember]:
         response = await self.client.http.get(f"/channels/{self.id}/thread-members")
         return [ThreadMember(member) for member in await response.json()]
+
+    async def bulk_delete(self, message_ids: List[str], reason: Optional[str]) -> None:
+
+        if reason:
+            headers = self.client.http.headers.copy()
+            headers["X-Audit-Log-Reason"] = reason
+            
+        response = await self.client.http.post(f"channels/{self.id}/messages/bulk-delete", data={"messages": message_ids}, headers=headers)
+        return await response.json()

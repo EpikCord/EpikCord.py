@@ -1,5 +1,4 @@
-from .member import ThreadMember
-from .thread import Thread
+from .thread import ThreadMember, Thread
 from .permissions import Overwrite
 from .message import Message
 from .partials import PartialUser
@@ -76,7 +75,7 @@ class GuildChannel(BaseChannel):
         data = await response.json()
         return [Message(message) for message in data]
     
-    
+
     
     # async def edit_permission_overwrites I'll do this later
     
@@ -120,7 +119,7 @@ class GuildTextChannel(GuildChannel, Messageable):
         response = await self.client.http.post(f"channels/{self.id}/threads", data=data, headers=headers)
         self.client.guilds[self.guild_id].append(Thread(await response.json()))
     
-    async def bulk_delete(self, message_ids: List[Message.id], reason: Optional[str]) -> None:
+    async def bulk_delete(self, message_ids: List[str], reason: Optional[str]) -> None:
 
         if reason:
             headers = self.client.http.headers.copy()
