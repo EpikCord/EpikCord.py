@@ -7,6 +7,29 @@ from .application import Application, ApplicationCommand
 from .route import Route
 from aiohttp import ClientSession
 
+class HTTPClient:
+    def __init__(self, *args, **kwargs):
+        self.session = ClientSession(*args, **kwargs)
+        self.base_uri: str = "https://discord.com/api/v9"
+
+    async def get(self, url, *args, **kwargs):
+        return await self.session.get(f"{self.base_uri}{url}", *args, **kwargs)
+
+    async def post(self, url, *args, **kwargs):
+        return await self.session.post(f"{self.base_uri}{url}", *args, **kwargs)
+
+    async def patch(self, url, *args, **kwargs):
+        return await self.session.patch(f"{self.base_uri}{url}", *args, **kwargs)
+
+    async def delete(self, url, *args, **kwargs):
+        return await self.session.delete(f"{self.base_uri}{url}", *args, **kwargs)
+
+    async def put(self, url, *args, **kwargs):
+        return await self.session.put(f"{self.base_uri}{url}", *args, **kwargs)
+
+    async def head(self, url, *args, **kwargs):
+        return await self.session.head(f"{self.base_uri}{url}", *args, **kwargs)
+
 
 class Client(WebsocketClient):
 
