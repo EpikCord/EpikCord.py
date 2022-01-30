@@ -1,13 +1,10 @@
-from websocket import WebSocket
-from asyncio import get_event_loop
 from .slash_command import Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption
 from typing import (
     List,
     Union
 )
-from asyncio import sleep
-from json import loads, dumps
-from threading import _start_new_thread
+from aiohttp import ClientSession
+import asyncio
 
 class EventHandler:
     # Class that'll contain all methods that'll be called when an event is triggered.    
@@ -42,17 +39,17 @@ class WebsocketClient(EventHandler):
         self.HELLO = 10
         self.HEARTBEAT_ACK = 11
 
-        self.ws = self.http
         self.token = token
         self.intents = intents
         self.interval = None
         self.session_id = None
+        self.session = ClientSession()
         self.commands = {}
         self.hearbeats = []
         self.average_latency = 0        
     
     async def heartbeat(self):
-        await sleep(self.interval / 1000)
+        await asyncio.sleep(self.interval / 1000)
         await self.ws.send_json({"op": self.HEARTBEAT, "d": "null"})
         event = await self.receive_event()
         if event:
@@ -60,12 +57,6 @@ class WebsocketClient(EventHandler):
                 self.heartbeats.append(event["d"])
                 self.sequence = event["s"]
         print("Sent heartbeat!")
-    
-    async def receive_event(self):
-
-        response = await self.ws.receive()
-        if response:
-            return response.json()
     
     async def handle_event(self, event_name: str, data: dict):
         try:
@@ -85,24 +76,31 @@ class WebsocketClient(EventHandler):
         return register_slash_command
 
     async def connect(self):
-        await self.ws.connect("wss://gateway.discord.gg/?v=9&encoding=json")
-        event = await self.receive_event()
-        self.interval = event["d"]["heartbeat_interval"]
-        await self.ws.send_json({
-            "op": self.IDENTIFY,
-            "d": {
-                "token": self.token,
-                "intents": self.intents,
-                "properties": {
-                    "$os": "linux",
-                    "$browser": "EpikCord.py",
-                    "$device": "EpikCord.py"
-                    },
-                }
-            }
-        )
-        await self.receive_event()
-    
+        async with self.session.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json") as ws:
+            self.ws = ws
+            async for event in ws:
+                event = event.json()
+                if event["op"] == self.HELLO:
+                    self.interval = event["d"]["heartbeat_interval"]
+                    await self.ws.send_json({
+                        "op": self.IDENTIFY,
+                        "d": {
+                            "token": self.token,
+                            "intents": self.intents,
+                            "properties": {
+                                "$os": "linux",
+                                "$browser": "EpikCord.py",
+                                "$device": "EpikCord.py"
+                                }
+                            }
+                        }
+                    )
+                elif event["op"] == self.EVENT:
+                    await self.handle_event(event["t"], event["d"])
+                elif event["op"] == self.HEARTBEAT_ACK:
+                    self.heartbeats.append(event["d"])
+                    self.sequence = event["s"]
+                
 
     def login(self):
-        asyncio.get_event_loop().run_forever(self.connect())
+        asyncio.get_event_loop().runself.connect()
