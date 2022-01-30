@@ -1,3 +1,4 @@
+from .colours import Colour
 from typing import (
     Optional,
     List
@@ -18,7 +19,7 @@ class Embed: # Always wanted to make this class :D
         self.description: Optional[str] = data["description"] or None
         self.url: Optional[str] = data["url"] or None
         self.timestamp: Optional[str] = data["timestamp"] or None
-        self.color: Optional[str] = data["color"] or None
+        self.color: Optional[Colour] = data["color"] or None
         self.footer: Optional[str] = data["footer"] or None
         self.image: Optional[str] = data["image"] or None
         self.thumbnail: Optional[str] = data["thumbnail"] or None
