@@ -45,7 +45,8 @@ class GuildChannel(BaseChannel):
     async def delete(self, *, reason: Optional[str] = None) -> None:
         if reason:
             headers = self.client.http.headers.copy()
-            headers["reason"] = reason
+            if reason:
+                headers["reason"] = reason
             
         response = await self.client.http.delete(f"channels/{self.id}", headers=headers)
         return await response.json()
