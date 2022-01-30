@@ -1,4 +1,5 @@
 from .role import Role
+
 from typing import (
     Optional,
     List
