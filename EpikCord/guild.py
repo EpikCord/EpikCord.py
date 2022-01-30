@@ -4,7 +4,7 @@ from typing import (
 from .channels import GuildChannel, Thread
 from .emoji import Emoji
 from .user import User
-from .member import Member
+from .member import GuildMember
 from .client import Client
 from .role import Role
 from typing import (
@@ -41,7 +41,7 @@ class Guild:
         self.unavailable: bool = data["unavailable"]
         self.member_count: int = data["member_count"]
         # self.voice_states: List[dict] = data["voice_states"]
-        self.members: List[Member] = [Member(member) for member in data["members"]]
+        self.members: List[GuildMember] = [GuildMember(member) for member in data["members"]]
         self.channels: List[GuildChannel] = [GuildChannel(channel) for channel in data["channels"]]
         self.threads: List[Thread] = [Thread(thread) for thread in data["threads"]]
         self.presences: List[dict] = data["presences"]

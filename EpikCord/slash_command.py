@@ -71,7 +71,6 @@ class SlashCommandOptionChoice:
             "value": value
         }
 
-
 class SlashCommand(ApplicationCommand):
     def __init__(self, data: dict):
         super().__init__(data)

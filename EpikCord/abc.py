@@ -9,6 +9,7 @@ class BaseChannel:
         self.client = client
         self.type = data["type"]
 
+
 class BaseComponent:
     def __init__(self):
         self.settings = {}

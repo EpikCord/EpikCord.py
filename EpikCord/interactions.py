@@ -3,7 +3,6 @@ from typing import (
     )
 
 from .user import User
-from .message import Message
 from .member import GuildMember
 
 class BaseInteraction:
@@ -19,7 +18,6 @@ class BaseInteraction:
         self.user: Optional[User] = User(data["user"]) or None
         self.token: str = data["token"]
         self.version: int = data["version"]
-        self.message: Optional[Message] = Message(data["message"]) or None
         self.locale: Optional[str] = data["locale"] or None
         self.guild_locale: Optional[str] = data["guild_locale"] or None
         

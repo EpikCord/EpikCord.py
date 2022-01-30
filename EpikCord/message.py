@@ -3,13 +3,13 @@ from .reaction import Reaction
 from .channels import Thread
 from .stickers import StickerItem
 from .components import MessageSelectMenu, MessageButton
-from .abc import BaseInteraction as Interaction
-from .partials import PartialMember
+from .interactions import BaseInteraction as Interaction
 from .mentions import (
     MentionedUser,
     MentionedChannel
 )    
 from .application import Application
+from .member import GuildMember
 from .webhook import WebhookUser
 from .user import User
 from .reaction import Reaction
@@ -43,7 +43,7 @@ class Message:
         self.guild_id: Optional[str] = data["guild_id"] or None
         self.webhook_id: Optional[str] = data["webhook_id"] or None
         self.author: Optional[User] if not self.webhook_id else WebhookUser = WebhookUser(data["author"]) if self.webhook_id else User(data["author"])
-        self.member: Optional[PartialMember] = PartialMember(data["member"]) if data["member"] else None
+        self.member: Optional[GuildMember] = GuildMember(data["member"]) if data["member"] else None
         self.content: Optional[str] = data["content"] or None # I forgot Message Intents are gonna stop this.
         self.timestamp: str = data["timestamp"]
         self.edited_timestamp: Optional[str] = data["edited_timestamp"] or None
