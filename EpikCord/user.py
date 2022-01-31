@@ -1,11 +1,9 @@
 from typing import (
-    Optional,
-    List
+    Optional
 )
-from .message import Message
-from .partials import PartialUser
 from .exceptions import InvalidArgumentType
 from base64 import b64encode
+from .channels import Messageable
 
 def _get_mime_type_for_image(data: bytes):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
@@ -28,7 +26,7 @@ def _bytes_to_base64_data(data: bytes) -> str:
 
 
 
-class User:
+class User(Messageable):
     def __init__(self, client, data: dict):
         self.data = data
         self.id: str = data["id"]
@@ -47,20 +45,6 @@ class User:
         self.flags: int = data["flags"]
         self.premium_type: int = data["premium_type"]
         self.public_flags: int = data["public_flags"]
-
-    async def fetch_messages(self,*, around: Optional[str] = None, before: Optional[str] = None, after: Optional[str] = None, limit: Optional[int] = None) -> List[Message]:
-        response = await self.client.http.get(f"channels/{self.id}/messages", params={"around": around, "before": before, "after": after, "limit": limit})
-        data = await response.json()
-        return [Message(message) for message in data]
-    
-    async def fetch_message(self,*, message_id: str) -> Message:
-        response = await self.client.http.get(f"channels/{self.id}/messages/{message_id}")
-        data = await response.json()
-        return Message(data)
-
-    async def send(self, message_data: dict) -> Message:
-        response = await self.client.http.post(f"channels/{self.id}/messages", form=message_data)
-        return Message(await response.json())
 
 class ClientUser(User):
     
