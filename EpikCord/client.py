@@ -4,10 +4,10 @@ from typing import (
 )
 from .slash_command import Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption
 from .exceptions import InvalidArgumentType
+from .user import ClientUser
 from .section import Section
 from .websocket import WebsocketClient
 from .application import Application, ApplicationCommand
-from .route import Route
 from aiohttp import ClientSession
 
 class HTTPClient:
@@ -46,8 +46,8 @@ class Client(WebsocketClient):
         self.http = HTTPClient(
             headers = {"Authorization": f"Bot {token}"}
             )
-        self.api = Route
-        # self.application: Application = Application(self, self.user) # Processes whatever it can        
+        self.user: ClientUser = None
+        self.application: Application = Application(self, self.user) # Processes whatever it can
 
     def command(self, *, name: str, description: str, guild_ids: List[str], options: Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]):
         def register_slash_command(func):
@@ -64,17 +64,6 @@ class Client(WebsocketClient):
             self.events[event_name.lower().replace("on_")] = event_func
         
         # Successfully extracted all the valuable stuff from the section        
-
-# class ClientUser(User):
-    
-#     def __init__(self, client: Client, data: dict):
-#         super().__init__(data)
-    
-#     async def fetch(self):
-#         response = await self.client.http.get("users/@me")
-#         data = await response.json()
-#         super().__init__(data) # Reinitialse the class with the new data.
-    
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
 #         super().__init__(data)
