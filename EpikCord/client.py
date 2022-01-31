@@ -42,8 +42,7 @@ class Client(WebsocketClient):
         self.options: dict = options
 
         self.http = HTTPClient(
-            headers = {"Authorization": f"Bot {token}"},
-            base_url = "https://discord.com"
+            headers = {"Authorization": f"Bot {token}"}
             )
         self.api = Route
         # self.application: Application = Application(self, self.user) # Processes whatever it can        
