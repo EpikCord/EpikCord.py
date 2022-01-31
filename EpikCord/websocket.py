@@ -1,4 +1,3 @@
-from .slash_command import Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption
 from typing import (
     List,
     Union
@@ -69,11 +68,7 @@ class WebsocketClient(EventHandler):
         except KeyError:
             pass
     
-    
-    def command(self, *, name: str, description: str, guild_ids: List[str], options:Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]):
-        def register_slash_command(func):
-            self.commands[func.__name__] = {"callback": func, "name": name, "description": description, "guild_ids": guild_ids, "options": options}
-        return register_slash_command
+
 
     async def connect(self):
         async with self.session.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json") as ws:
@@ -97,10 +92,11 @@ class WebsocketClient(EventHandler):
                     )
                 elif event["op"] == self.EVENT:
                     await self.handle_event(event["t"], event["d"])
+
                 elif event["op"] == self.HEARTBEAT_ACK:
                     self.heartbeats.append(event["d"])
                     self.sequence = event["s"]
-                
+
 
     def login(self):
         try:

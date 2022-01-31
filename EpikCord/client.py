@@ -1,6 +1,8 @@
 from typing import (
-    List
+    List,
+    Union
 )
+from .slash_command import Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption
 from .exceptions import InvalidArgumentType
 from .section import Section
 from .websocket import WebsocketClient
@@ -46,6 +48,11 @@ class Client(WebsocketClient):
             )
         self.api = Route
         # self.application: Application = Application(self, self.user) # Processes whatever it can        
+
+    def command(self, *, name: str, description: str, guild_ids: List[str], options: Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]):
+        def register_slash_command(func):
+            self.commands[func.__name__] = {"callback": func, "name": name, "description": description, "guild_ids": guild_ids, "options": options}
+        return register_slash_command
 
     def add_section(self, section: Section):
         if not isinstance(section, Section):
