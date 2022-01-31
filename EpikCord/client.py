@@ -3,7 +3,7 @@ from typing import (
 )
 from .exceptions import InvalidArgumentType
 from .section import Section
-from .ws import WebsocketClient
+from .websocket import WebsocketClient
 from .application import Application, ApplicationCommand
 from .route import Route
 from aiohttp import ClientSession

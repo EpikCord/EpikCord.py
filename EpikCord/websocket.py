@@ -103,4 +103,7 @@ class WebsocketClient(EventHandler):
                 
 
     def login(self):
-        asyncio.get_event_loop().runself.connect()
+        try:
+            asyncio.run(self.connect())
+        except KeyboardInterrupt:
+            exit()
