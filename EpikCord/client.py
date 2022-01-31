@@ -16,21 +16,33 @@ class HTTPClient:
         self.base_uri: str = "https://discord.com/api/v9"
 
     async def get(self, url, *args, **kwargs):
+        if url.endswith("/"):
+            url = url[:-1]
         return await self.session.get(f"{self.base_uri}{url}", *args, **kwargs)
 
     async def post(self, url, *args, **kwargs):
+        if url.endswith("/"):
+            url = url[:-1]
         return await self.session.post(f"{self.base_uri}{url}", *args, **kwargs)
 
     async def patch(self, url, *args, **kwargs):
+        if url.endswith("/"):
+            url = url[:-1]
         return await self.session.patch(f"{self.base_uri}{url}", *args, **kwargs)
 
     async def delete(self, url, *args, **kwargs):
+        if url.endswith("/"):
+            url = url[:-1]
         return await self.session.delete(f"{self.base_uri}{url}", *args, **kwargs)
 
     async def put(self, url, *args, **kwargs):
+        if url.endswith("/"):
+            url = url[:-1]
         return await self.session.put(f"{self.base_uri}{url}", *args, **kwargs)
 
     async def head(self, url, *args, **kwargs):
+        if url.endswith("/"):
+            url = url[:-1]
         return await self.session.head(f"{self.base_uri}{url}", *args, **kwargs)
 
 
@@ -47,7 +59,7 @@ class Client(WebsocketClient):
             headers = {"Authorization": f"Bot {token}"}
             )
         self.user: ClientUser = None
-        self.application: Application = Application(self, self.user) # Processes whatever it can
+        self.application: Application = Application(self, self.user)
 
     def command(self, *, name: str, description: str, guild_ids: List[str], options: Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]):
         def register_slash_command(func):
