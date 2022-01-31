@@ -150,7 +150,7 @@ class MessageActionRow:
             if type(component) == MessageButton:
                 buttons += 1
             
-            elif buttons >= 5:
+            elif buttons > 5:
                 raise TooManyComponents("You can only have 5 buttons per row.")
             
             elif type(component) == MessageSelectMenu:
