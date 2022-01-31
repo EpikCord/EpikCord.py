@@ -12,21 +12,21 @@ class EmbedAuthor:
         self.proxy_icon_url: Optional[str] = data["proxy_icon_url"] or None
 
 class Embed: # Always wanted to make this class :D
-    def __init__(self, data: dict):
-        self.data = data
-        self.title: Optional[str] = data["title"] or None
-        self.type: Optional[str] = data["type"] or None
-        self.description: Optional[str] = data["description"] or None
-        self.url: Optional[str] = data["url"] or None
-        self.timestamp: Optional[str] = data["timestamp"] or None
-        self.color: Optional[Colour] = data["color"] or None
-        self.footer: Optional[str] = data["footer"] or None
-        self.image: Optional[str] = data["image"] or None
-        self.thumbnail: Optional[str] = data["thumbnail"] or None
-        self.valid_styles: Optional[str] = data["valid_styles"] or None
-        self.provider: Optional[str] = data["provider"] or None
-        self.author: Optional[EmbedAuthor] = EmbedAuthor(data["author"]) or None
-        self.fields: Optional[List[str]] = data["fields"] or None
+    def __init__(self, title:Optional[str],*,type: Optional[str], description: Optional[str],color:Optional[Colour],colour:Optional[Colour], url:Optional[str]):
+        
+        self.title: Optional[str] = title
+        self.type: Optional[str] = type
+        self.description: Optional[str] = description
+        self.url: Optional[str] = url
+        self.timestamp: Optional[str] = None
+        self.color: Optional[Colour] = color or colour
+        self.footer: Optional[str] = None
+        self.image: Optional[str] = None
+        self.thumbnail: Optional[str] =None
+        self.valid_styles: Optional[str] =None
+        self.provider: Optional[str] = None
+        self.author: Optional[EmbedAuthor] =None
+        self.fields: Optional[List[str]] =None
         
     def add_field(self, name: str, value: str, inline: bool):
         self.fields.append({"name": name, "value": value, "inline": inline})
