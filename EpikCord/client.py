@@ -1,6 +1,7 @@
 from typing import (
     List
 )
+from .exceptions import InvalidArgumentType
 from .section import Section
 from .ws import WebsocketClient
 from .application import Application, ApplicationCommand
@@ -40,7 +41,7 @@ class Client(WebsocketClient):
         
         self.options: dict = options
 
-        self.http = ClientSession(
+        self.http = HTTPClient(
             headers = {"Authorization": f"Bot {token}"},
             base_url = "https://discord.com"
             )
@@ -48,6 +49,8 @@ class Client(WebsocketClient):
         # self.application: Application = Application(self, self.user) # Processes whatever it can        
 
     def add_section(self, section: Section):
+        if not isinstance(section, Section):
+            raise InvalidArgumentType("You must pass in a class that inherits from the Section class.")
         for name, command_object in section.commands:
             self.commands[name] = command_object
 
