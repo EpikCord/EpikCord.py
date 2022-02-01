@@ -2,7 +2,6 @@ from .managers import *
 from aiohttp import *
 import asyncio 
 from base64 import b64encode
-from threading import _start_new_thread
 from typing import *
 from urllib.parse import quote
 
@@ -201,9 +200,10 @@ class WebsocketClient(EventHandler):
         self.sequence = None
 
     async def heartbeat(self):
-        await asyncio.sleep(self.interval / 1000)
-        await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
-        print("Sent heartbeat!")
+        if self.interval:
+            await asyncio.sleep(self.interval / 1000)
+            await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
+            print("Sent heartbeat!")
     
     async def handle_event(self, event_name: str, data: dict):
         event_name = event_name.lower()
@@ -224,26 +224,13 @@ class WebsocketClient(EventHandler):
         async with self.session.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json") as ws:
             self.ws = ws
             async for event in ws:
-
                 event = event.json()
 
                 if event["op"] == self.HELLO:
 
                     self.interval = event["d"]["heartbeat_interval"]
 
-                    await self.send_json({
-                        "op": self.IDENTIFY,
-                        "d": {
-                            "token": self.token,
-                            "intents": self.intents,
-                            "properties": {
-                                "$os": "linux",
-                                "$browser": "EpikCord.py",
-                                "$device": "EpikCord.py"
-                                }
-                            }
-                        }
-                    )
+                    await self.heartbeat()
                 elif event["op"] == self.EVENT:
                     await self.handle_event(event["t"], event["d"])
 
@@ -253,6 +240,8 @@ class WebsocketClient(EventHandler):
                     except AttributeError:
                         self.heartbeats = [event["d"]]
                     self.sequence = event["s"]
+                    await asyncio.sleep(self.interval / 1000)
+                    await self.heartbeat()
 
                 print(event["op"])
 
@@ -266,15 +255,25 @@ class WebsocketClient(EventHandler):
             }
         })
 
-    def login(self):
-        task = asyncio.create_task(self.connect())
+    async def identify():
+        await self.send_json({
+            "op": self.IDENTIFY,
+            "d": {
+                "token": self.token,
+                "intents": self.intents,
+                "properties": {
+                    "$os": "linux",
+                    "$browser": "EpikCord.py",
+                    "$device": "EpikCord.py"
+                    }
+                }
+            }
+        )
 
-        async def cancel_once_done(task):
-            task.cancel()
+    def login(self):
+        asyncio.ensure_future(self.connect())
         
-        task.add_done_callback(cancel_once_done)
-        asyncio.ensure_future(self.heartbeat())
-        asyncio.get_event_loop().run_forever
+
 class BaseSlashCommandOption:
     def __init__(self, *, name: str, description: str, required: bool = False):
         self.settings = {
