@@ -25,4 +25,4 @@ from .team import *
 from .thread import *
 from .user import *
 from .webhook import *
-from .ws import *
+from .websocket import *

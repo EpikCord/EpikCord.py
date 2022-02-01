@@ -1,7 +1,7 @@
 from typing import ( 
     Optional
 )
-from .user import User
+# from .user import User
 from .partials import PartialGuild
 
 class SourceChannel:
@@ -16,7 +16,7 @@ class Webhook: # Not used for making webhooks.
         self.type: int = "Incoming" if data["type"] == 1 else "Channel Follower" if data["type"] == 2 else "Application"
         self.guild_id: Optional[str] = data["guild_id"]
         self.channel_id: Optional[str] = data["channel_id"]
-        self.user: Optional[User] = User(data["user"])
+        self.user: Optional[WebhookUser] = WebhookUser(data["user"])
         self.name: Optional[str] = data["name"]
         self.avatar: Optional[str] = data["avatar"]
         self.token: str = data["token"]

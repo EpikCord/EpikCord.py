@@ -47,7 +47,14 @@ class Guild:
         self.presences: List[dict] = data["presences"]
         self.max_presences: int = data["max_presences"]
         self.max_members: int = data["max_members"]
-        self.features
+        self.vanity_url_code: Optional[str] = data["vanity_url_code"] or None
+        self.description: Optional[str] = data["description"] or None
+        self.banner: Optional[str] = data["banner"] or None
+        self.premium_tier: int = data["premium_tier"]
+        self.premium_subscription_count: int = data["premium_subscription_count"]
+        self.preferred_locale: str = data["preferred_locale"]
+        self.public_updates_channel_id: Optional[str] = data["public_updates_channel_id"] or None
+        
         
 class GuildScheduledEvent:
     def __init__(self, client: Client, data: dict):
@@ -67,3 +74,4 @@ class GuildScheduledEvent:
         self.entity_metadata: dict = data["entity_metadata"]
         self.creator: Optional[User] = User(data["creator"]) or None
         self.user_count: Optional[int] = data["user_count"] or None
+

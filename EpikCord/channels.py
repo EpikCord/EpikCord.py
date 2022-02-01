@@ -47,7 +47,7 @@ class GuildChannel(BaseChannel):
             if reason:
                 headers["reason"] = reason
             
-        response = await self.client.http.delete(f"channels/{self.id}", headers=headers)
+        response = await self.client.http.delete(f"/channels/{self.id}", headers=headers)
         return await response.json()
     
     async def fetch_invites(self): 
@@ -116,7 +116,7 @@ class GuildTextChannel(GuildChannel, Messageable):
         headers = self.client.http.headers.copy()
         headers["X-Audit-Log-Reason"] = reason
         
-        response = await self.client.http.post(f"channels/{self.id}/threads", data=data, headers=headers)
+        response = await self.client.http.post(f"/channels/{self.id}/threads", data=data, headers=headers)
         self.client.guilds[self.guild_id].append(Thread(await response.json()))
     
     async def bulk_delete(self, message_ids: List[str], reason: Optional[str]) -> None:

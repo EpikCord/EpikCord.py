@@ -3,11 +3,6 @@ from .reaction import Reaction
 from .channels import Thread
 from .stickers import StickerItem
 from .components import MessageSelectMenu, MessageButton
-from .interactions import BaseInteraction as Interaction
-from .mentions import (
-    MentionedUser,
-    MentionedChannel
-)    
 from .application import Application
 from .member import GuildMember
 from .webhook import WebhookUser
@@ -19,6 +14,18 @@ from typing import (
     Union
 )
 from .embed import Embed
+
+class MentionedChannel:
+    def __init__(self, data: dict):
+        self.id: str = data["id"]
+        self.guild_id: str = data["guild_id"]
+        self.type: int = data["type"]
+        self.name: str = data["name"]
+        
+class MentionedUser(User):
+    def __init__(self, client, data: dict):
+        super().__init__(client, data)
+        self.member = GuildMember(data["member"])
 
 class MessageActivity:
     def __init__(self, data: dict):
@@ -34,6 +41,57 @@ class AllowedMention:
         self.data["users"] = users
         return self.data
     
+class MessageInteraction:
+    def __init__(self, client, data: dict):
+        self.id: str = data["id"]
+        self.type: int = data["type"]
+        self.name: str = data["name"]
+        self.user: User = User(client, data["user"])
+        self.member: GuildMember = GuildMember(client, data["member"])
+
+    def is_ping(self):
+        return self.type == 1
+    
+    def is_application_command(self):
+        return self.type == 2
+    
+    def is_message_component(self):
+        return self.type == 3
+    
+    def is_autocomplete(self):
+        return self.type == 4
+    
+    async def reply(self, message_data: dict):
+        response = await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", data=message_data)
+        return await response.json()
+    
+    async def fetch_reply(self):
+        response = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/{self.token}/messages/@original")
+        return await response.json()
+    
+    async def edit_reply(self, message_data: dict):
+        response = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/@original", data=message_data)
+        return await response.json()
+    
+    async def delete_reply(self):
+        response = await self.client.http.delete(f"/webhooks/{self.application_id}/{self.token}/messages/@original")
+        return await response.json()
+    
+    async def followup(self, message_data: dict):
+        response = await self.client.http.post(f"/webhooks/{self.application_id}/{self.token}", data=message_data)
+        return await response.json()
+    
+    async def fetch_followup_message(self, message_id: str):
+        response = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/messages/{message_id}")
+        return await response.json()
+    
+    async def edit_followup(self, message_id: str, message_data):
+        response = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/{message_id}", data=message_data)
+        return await response.json()
+    
+    async def delete_followup(self, message_id: str):
+        response = await self.client.http.delete(f"/webhooks/{self.application_id}/{self.token}/messages/{message_id}")
+        return await response.json()
 
 class Message:
     def __init__(self, client, data: dict):
@@ -61,7 +119,7 @@ class Message:
         self.application: Application = Application(data["application"]) # Despite there being a PartialApplication, Discord don't specify what attributes it has
         self.flags: int = data["flags"]
         self.referenced_message: Optional[Message] = Message(data["referenced_message"]) if data["referenced_message"] else None
-        self.interaction: Optional[Interaction] = InteractionMessage(data["interaction"]) if data["interaction"] else None
+        self.interaction: Optional[MessageInteraction] = MessageInteraction(client, data["interaction"]) if data["interaction"] else None
         self.thread: Thread = Thread(data["thread"]) if data["thread"] else None
         self.components: Optional[List[Union[MessageSelectMenu, MessageButton]]] = [MessageSelectMenu(component) if component["type"] == 1 else MessageButton(component) for component in data["components"]] or None
         self.stickers: Optional[List[StickerItem]] = [StickerItem(sticker) for sticker in data["stickers"]] or None
@@ -120,7 +178,3 @@ class Message:
     async def crosspost(self):
         response = await self.client.http.post(f"channels/{self.channel_id}/messages/{self.id}/crosspost")
         return await response.json()
-    
-class InteractionMessage(Message):
-    def __init__(self,client, data: dict):
-        return super().__init__(client, data)

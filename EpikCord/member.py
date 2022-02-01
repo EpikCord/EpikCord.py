@@ -4,13 +4,13 @@ from typing import (
     Optional,
     List
 )
-from .user import User
+# from .user import User
         
 class GuildMember:
     def __init__(self, client, data: dict):
         self.data = data
         self.client = client
-        self.user: Optional[User] = User(data["user"]) or None
+        # self.user: Optional[User] = User(data["user"]) or None
         self.nick: Optional[str] = data["nick"] or None
         self.avatar: Optional[str] = data["avatar"] or None
         self.roles: List[Role] = [role.Role(role) for role in data["roles"]]
@@ -21,4 +21,3 @@ class GuildMember:
         self.pending: Optional[bool] = data["pending"] or None
         self.permissions: Optional[str] = data["permissions"] or None
         self.communication_disabled_until: Optional[str] = data["communication_disabled_until"] or None
-        
