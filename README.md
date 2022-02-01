@@ -23,7 +23,10 @@ We plan on launching a 1.0 version which will work, until that comes out you jus
 
 ## I need help!
 If you need help, you can join our [EpikCord.py Discord Server](https://discord.gg/4R473R73kQ) and ask for help there.
-<iframe src="https://ptb.discord.com/widget?id=937364424208039957&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+
+<a href="https://discord.gg/4R473R73kQ" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.shields.io/discord/937364424208039957?color=9cf&logo=discord&label=discord" alt="Discord server">
+</a>
 
 # Installing Epikcord.py
 
