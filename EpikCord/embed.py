@@ -31,10 +31,21 @@ class Embed: # Always wanted to make this class :D
     def add_field(self, name: str, value: str, inline: bool):
         self.fields.append({"name": name, "value": value, "inline": inline})
         
-    def set_title(self, title: str):
-        self.title = title
+    def set_thumbnail(self, url: str):
+        self.thumbnail = url
     
-    def set_description(self, description: str):
-        self.description = description
+    def set_image(self, url:str):
+        self.image = url
     
-    # Someone else do this icba
+    def set_footer(self, footertxt:str):
+        self.footer = footertxt
+
+    def set_author(self, author:EmbedAuthor):
+        self.author = author
+
+    def set_timestamp(self, timestamp):
+        pass #someone do this??
+
+    @property
+    def fields(self):
+        return self.fields #needs improvement
