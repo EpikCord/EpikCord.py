@@ -1,5 +1,5 @@
-from ..abc import Base
-from ..guild import Guild
+from ..__init__ import Base
+from ..__init__ import Guild
 from typing import List
 
 class RoleManager(Base):

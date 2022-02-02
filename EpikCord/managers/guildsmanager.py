@@ -3,7 +3,7 @@ from typing import (
     Union
 )
 from .cachemanager import CacheManager
-from ..guild import Guild, UnavailableGuild
+from ..__init__ import Guild, UnavailableGuild
 
 
 class GuildManager(CacheManager):
