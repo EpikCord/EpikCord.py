@@ -255,7 +255,7 @@ class WebsocketClient(EventHandler):
             }
         })
 
-    async def identify():
+    async def identify(self):
         await self.send_json({
             "op": self.IDENTIFY,
             "d": {
