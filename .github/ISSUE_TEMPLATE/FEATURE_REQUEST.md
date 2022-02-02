@@ -24,8 +24,8 @@ labels: enhancement
 
 <!--To check an item in the checklist, put an x between the square brackets without spaces. Like - [x]-->
 
-- [] - You have checked that there is no issue already mentioning this feature, open or closed
-- [] - Full details of the requested feature have been provided/shown
+- [ ] - You have checked that there is no issue already mentioning this feature, open or closed
+- [ ] - Full details of the requested feature have been provided/shown
 
 ## Additional context
 
