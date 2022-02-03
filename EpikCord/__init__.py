@@ -1,4 +1,4 @@
-from .managers import *
+from .managers import * #manager bugged out. Any fixes?
 from aiohttp import *
 import asyncio 
 from base64 import b64encode
@@ -255,7 +255,7 @@ class WebsocketClient(EventHandler):
             }
         })
 
-    async def identify():
+    async def identify(self):
         await self.send_json({
             "op": self.IDENTIFY,
             "d": {
