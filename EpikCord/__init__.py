@@ -420,7 +420,7 @@ class Thread:
 def _get_mime_type_for_image(data: bytes):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
         return 'image/png'
-    elif data[0:3] == b'\xff\xd8\xff' or data[6:10] in (b'JFIF', b'Exif'):
+    elif data[:3] == b'\xff\xd8\xff' or data[6:10] in (b'JFIF', b'Exif'):
         return 'image/jpeg'
     elif data.startswith((b'\x47\x49\x46\x38\x37\x61', b'\x47\x49\x46\x38\x39\x61')):
         return 'image/gif'
@@ -518,9 +518,9 @@ class GuildChannel(BaseChannel):
     async def delete(self, *, reason: Optional[str] = None) -> None:
         if reason:
             headers = self.client.http.headers.copy()
-            if reason:
-                headers["reason"] = reason
-            
+        if reason:
+            headers["reason"] = reason
+
         response = await self.client.http.delete(f"/channels/{self.id}", headers=headers)
         return await response.json()
     
@@ -529,14 +529,16 @@ class GuildChannel(BaseChannel):
         return await response.json()
     
     async def create_invite(self, *, max_age: Optional[int], max_uses: Optional[int], temporary: Optional[bool], unique: Optional[bool], target_type: Optional[int], target_user_id: Optional[str], target_application_id: Optional[str]):
-        data = {}
-        data["max_age"] = max_age or None
-        data["max_uses"] = max_uses or None
-        data["temporary"] = temporary or None
-        data["unique"] = unique or None
-        data["target_type"] = target_type or None
-        data["target_user_id"] = target_user_id or None
-        data["target_application_id"] = target_application_id or None
+        data = {
+            'max_age': max_age or None,
+            'max_uses': max_uses or None,
+            'temporary': temporary or None,
+            'unique': unique or None,
+            'target_type': target_type or None,
+            'target_user_id': target_user_id or None,
+            'target_application_id': target_application_id or None,
+        }
+
         await self.client.http.post(f"/channels/{self.id}/invites", json=data)   
         
     async def delete_overwrite(self, overwrites: Overwrite) -> None:
@@ -677,25 +679,25 @@ class TextBasedChannel(BaseChannel):
         super().__init__(data)
         if self.type == 0:
             return GuildTextChannel(client, data)
-        
+
         elif self.type == 1:
             return DMChannel(data)
 
         elif self.type == 4:
             return ChannelCategory(client, data)
-        
+
         elif self.type == 5:
             return GuildNewsChannel(client, data)
-        
+
         elif self.type == 6:
             return GuildStoreChannel(client, data)
-        
+
         elif self.type == 10:
             return GuildNewsThread(client, data)
-        
-        elif self.type == 11 or self.type == 12:
+
+        elif self.type in [11, 12]:
             return Thread(client, data)
-        
+
         elif self.type == 13:
             return GuildStageChannel(client, data)
 
