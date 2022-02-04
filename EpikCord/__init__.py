@@ -170,12 +170,22 @@ class EventHandler:
     def __init__(self):
         self.events = {}
 
+    async def handle_event(self, event_name: str, data: dict):
+        event_name = event_name.lower()
+        try:
+            await getattr(self, event_name)(data)
+        except AttributeError:
+            print(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
+
+
     def event(self, func):
         self.events[func.__name__.lower().replace("on_", "")] = func
 
     async def ready(self, data: dict):
         self.user: ClientUser = ClientUser(self.session, data["user"])
         self.application: Application = await self.session.get("https://discord.com/api/v9/oauth2/applications/@me", headers={"Authorization": f"Bot {self.token}"})
+        await self.events["ready"]()
+
     
 
 class WebsocketClient(EventHandler):
@@ -211,19 +221,7 @@ class WebsocketClient(EventHandler):
             await asyncio.sleep(self.interval / 1000)
             await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
             print("Sent heartbeat!")
-    
-    async def handle_event(self, event_name: str, data: dict):
-        event_name = event_name.lower()
-        try:
-            await getattr(self, event_name)(data)
-        except AttributeError:
-            print(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
-        try:
-            await self.events[event_name]()
-            print("Ran event!")
-        except KeyError:
-            pass
-    
+        
     async def send_json(self, json: dict):
         await self.ws.send_json(json)
 
@@ -262,7 +260,7 @@ class WebsocketClient(EventHandler):
             }
         })
 
-    async def identify():
+    async def identify(self):
         await self.send_json({
             "op": self.IDENTIFY,
             "d": {
