@@ -1,4 +1,5 @@
-from .managers import * #manager bugged out. Any fixes?
+from .managers import *
+import signal
 from aiohttp import *
 import asyncio 
 from base64 import b64encode
@@ -17,6 +18,12 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
+
+class UnavailableGuild:
+    def __init__(self, data):
+        self.data = data
+        self.id: str = data["id"]
+        self.available: bool = data["available"]
 
 class PartialEmoji:
     def __init__(self, data):
@@ -255,7 +262,7 @@ class WebsocketClient(EventHandler):
             }
         })
 
-    async def identify(self):
+    async def identify():
         await self.send_json({
             "op": self.IDENTIFY,
             "d": {
@@ -270,8 +277,60 @@ class WebsocketClient(EventHandler):
             }
         )
 
-    def login(self):
-        asyncio.ensure_future(self.connect())
+    def login(self, *args: Any, **kwargs: Any) -> None:
+        """A blocking call that abstracts away the event loop
+        initialisation from you.
+        If you want more control over the event loop then this
+        function should not be used. Use :meth:`start` coroutine
+        or :meth:`connect` + :meth:`login`.
+        Roughly Equivalent to: ::
+            try:
+                loop.run_until_complete(start(*args, **kwargs))
+            except KeyboardInterrupt:
+                loop.run_until_complete(close())
+                # cancel all tasks lingering
+            finally:
+                loop.close()
+        .. warning::
+            This function must be the last function to call due to the fact that it
+            is blocking. That means that registration of events or anything being
+            called after this function call will not execute until it returns.
+        """
+        loop = self.loop
+
+        try:
+            loop.add_signal_handler(signal.SIGINT, lambda: loop.stop())
+            loop.add_signal_handler(signal.SIGTERM, lambda: loop.stop())
+        except NotImplementedError:
+            pass
+
+        async def runner():
+            try:
+                await self.start(*args, **kwargs)
+            finally:
+                if not self.is_closed():
+                    await self.close()
+
+        def stop_loop_on_completion(f):
+            loop.stop()
+
+        future = asyncio.ensure_future(runner(), loop=loop)
+        future.add_done_callback(stop_loop_on_completion)
+        try:
+            loop.run_forever()
+        except KeyboardInterrupt:
+            _log.info('Received signal to terminate bot and event loop.')
+        finally:
+            future.remove_done_callback(stop_loop_on_completion)
+            _log.info('Cleaning up tasks.')
+            _cleanup_loop(loop)
+
+        if not future.cancelled():
+            try:
+                return future.result()
+            except KeyboardInterrupt:
+                # I am unsure why this gets raised here but suppress it anyway
+                return None
         
 
 class BaseSlashCommandOption:
@@ -420,7 +479,7 @@ class Thread:
 def _get_mime_type_for_image(data: bytes):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
         return 'image/png'
-    elif data[:3] == b'\xff\xd8\xff' or data[6:10] in (b'JFIF', b'Exif'):
+    elif data[0:3] == b'\xff\xd8\xff' or data[6:10] in (b'JFIF', b'Exif'):
         return 'image/jpeg'
     elif data.startswith((b'\x47\x49\x46\x38\x37\x61', b'\x47\x49\x46\x38\x39\x61')):
         return 'image/gif'
@@ -518,9 +577,9 @@ class GuildChannel(BaseChannel):
     async def delete(self, *, reason: Optional[str] = None) -> None:
         if reason:
             headers = self.client.http.headers.copy()
-        if reason:
-            headers["reason"] = reason
-
+            if reason:
+                headers["reason"] = reason
+            
         response = await self.client.http.delete(f"/channels/{self.id}", headers=headers)
         return await response.json()
     
@@ -529,16 +588,14 @@ class GuildChannel(BaseChannel):
         return await response.json()
     
     async def create_invite(self, *, max_age: Optional[int], max_uses: Optional[int], temporary: Optional[bool], unique: Optional[bool], target_type: Optional[int], target_user_id: Optional[str], target_application_id: Optional[str]):
-        data = {
-            'max_age': max_age or None,
-            'max_uses': max_uses or None,
-            'temporary': temporary or None,
-            'unique': unique or None,
-            'target_type': target_type or None,
-            'target_user_id': target_user_id or None,
-            'target_application_id': target_application_id or None,
-        }
-
+        data = {}
+        data["max_age"] = max_age or None
+        data["max_uses"] = max_uses or None
+        data["temporary"] = temporary or None
+        data["unique"] = unique or None
+        data["target_type"] = target_type or None
+        data["target_user_id"] = target_user_id or None
+        data["target_application_id"] = target_application_id or None
         await self.client.http.post(f"/channels/{self.id}/invites", json=data)   
         
     async def delete_overwrite(self, overwrites: Overwrite) -> None:
@@ -679,25 +736,25 @@ class TextBasedChannel(BaseChannel):
         super().__init__(data)
         if self.type == 0:
             return GuildTextChannel(client, data)
-
+        
         elif self.type == 1:
             return DMChannel(data)
 
         elif self.type == 4:
             return ChannelCategory(client, data)
-
+        
         elif self.type == 5:
             return GuildNewsChannel(client, data)
-
+        
         elif self.type == 6:
             return GuildStoreChannel(client, data)
-
+        
         elif self.type == 10:
             return GuildNewsThread(client, data)
-
-        elif self.type in [11, 12]:
+        
+        elif self.type == 11 or self.type == 12:
             return Thread(client, data)
-
+        
         elif self.type == 13:
             return GuildStageChannel(client, data)
 
@@ -1150,7 +1207,6 @@ class LabelIsTooBig(Exception):
     
 class ThreadArchived(Exception):
     ...
-
 class Guild:
     def __init__(self, client: Client, data: dict):
         self.client = client

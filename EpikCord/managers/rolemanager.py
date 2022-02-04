@@ -1,8 +1,7 @@
-from ..__init__ import Base
 from ..__init__ import Guild
 from typing import List
 
-class RoleManager(Base):
+class RoleManager:
     def __init__(self, guild: Guild):
         self.roles = guild.roles
     
