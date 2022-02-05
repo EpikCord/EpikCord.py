@@ -1,5 +1,6 @@
-from .managers import *
 import signal
+from .managers import *
+from threading import Event
 from aiohttp import *
 import asyncio 
 from base64 import b64encode
@@ -206,9 +207,12 @@ class WebsocketClient(EventHandler):
         self.HEARTBEAT_ACK = 11
 
         self.token = token
+        self.heartbeat_event = Event
         self.intents = intents
+        self.loop = asyncio.new_event_loop()
         self.session = ClientSession()
         self.commands = {}
+        self._closed: bool = False # Well nah we're starting closed.
         self.hearbeats = []
         self.average_latency = 0        
 
@@ -216,7 +220,9 @@ class WebsocketClient(EventHandler):
         self.session_id = None
         self.sequence = None
 
-    async def heartbeat(self):
+    async def heartbeat(self, forced: Optional[bool]):
+        if forced:
+            return await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
         if self.interval:
             await asyncio.sleep(self.interval / 1000)
             await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
@@ -236,8 +242,13 @@ class WebsocketClient(EventHandler):
                     self.interval = event["d"]["heartbeat_interval"]
 
                     await self.heartbeat()
+
+
                 elif event["op"] == self.EVENT:
                     await self.handle_event(event["t"], event["d"])
+
+                elif event["op"] == self.HEARTBEAT:
+                    await self.heartbeat(True) # I shouldn't wait the remaining delay according to the docs.
 
                 elif event["op"] == self.HEARTBEAT_ACK:
                     try:
@@ -245,7 +256,6 @@ class WebsocketClient(EventHandler):
                     except AttributeError:
                         self.heartbeats = [event["d"]]
                     self.sequence = event["s"]
-                    await asyncio.sleep(self.interval / 1000)
                     await self.heartbeat()
 
                 print(event["op"])
@@ -274,31 +284,28 @@ class WebsocketClient(EventHandler):
                 }
             }
         )
+    async def close(self) -> None:
+        if self._closed:
+            return
 
-    def login(self, *args: Any, **kwargs: Any) -> None:
-        """A blocking call that abstracts away the event loop
-        initialisation from you.
-        If you want more control over the event loop then this
-        function should not be used. Use :meth:`start` coroutine
-        or :meth:`connect` + :meth:`login`.
-        Roughly Equivalent to: ::
-            try:
-                loop.run_until_complete(start(*args, **kwargs))
-            except KeyboardInterrupt:
-                loop.run_until_complete(close())
-                # cancel all tasks lingering
-            finally:
-                loop.close()
-        .. warning::
-            This function must be the last function to call due to the fact that it
-            is blocking. That means that registration of events or anything being
-            called after this function call will not execute until it returns.
-        """
-        loop = self.loop
+        self._closed = True
 
+        # for voice in self.voice_clients:
+        #     try:
+        #         await voice.disconnect(force=True)
+        #     except Exception:
+        #         # if an error happens during disconnects, disregard it.
+        #         pass
+
+        if self.ws is not None and self.ws.open:
+            await self.ws.close(code=1000)
+
+        await self.http.close()
+
+    def login(self, *args, **kwargs):
         try:
-            loop.add_signal_handler(signal.SIGINT, lambda: loop.stop())
-            loop.add_signal_handler(signal.SIGTERM, lambda: loop.stop())
+            self.loop.add_signal_handler(signal.SIGINT, lambda: self.loop.stop())
+            self.loop.add_signal_handler(signal.SIGTERM, lambda: self.loop.stop())
         except NotImplementedError:
             pass
 
@@ -306,22 +313,17 @@ class WebsocketClient(EventHandler):
             try:
                 await self.start(*args, **kwargs)
             finally:
-                if not self.is_closed():
-                    await self.close()
+                await self.close()
 
         def stop_loop_on_completion(f):
-            loop.stop()
+            self.loop.stop()
 
-        future = asyncio.ensure_future(runner(), loop=loop)
+        future = asyncio.ensure_future(runner(), loop=self.loop)
         future.add_done_callback(stop_loop_on_completion)
         try:
-            loop.run_forever()
-        except KeyboardInterrupt:
-            _log.info('Received signal to terminate bot and event loop.')
+            self.loop.run_forever()
         finally:
             future.remove_done_callback(stop_loop_on_completion)
-            _log.info('Cleaning up tasks.')
-            _cleanup_loop(loop)
 
         if not future.cancelled():
             try:
@@ -329,7 +331,7 @@ class WebsocketClient(EventHandler):
             except KeyboardInterrupt:
                 # I am unsure why this gets raised here but suppress it anyway
                 return None
-        
+
 
 class BaseSlashCommandOption:
     def __init__(self, *, name: str, description: str, required: bool = False):
@@ -633,6 +635,12 @@ class GuildTextChannel(GuildChannel, Messageable):
         self.last_message_id: str = data["last_message_id"]
         self.default_auto_archive_duration: int = data["default_auto_archive_duration"]
     
+    async def create_webhook(self,*, name: str, avatar: Optional[str] = None, reason: Optional[str] = None):
+        headers = client.http.headers.clone()
+        if reason:
+            headers["X-Audit-Log-Reason"] = reason
+        
+
     async def start_thread(self, name: str,* , auto_archive_duration: Optional[int], type: Optional[int], invitable: Optional[bool], rate_limit_per_user: Optional[int], reason: Optional[str]):
         data = {"name": name}
         if auto_archive_duration:
@@ -1205,6 +1213,19 @@ class LabelIsTooBig(Exception):
     
 class ThreadArchived(Exception):
     ...
+
+class WelcomeChannel:
+    def __init__(self, data: dict):
+        self.channel_id: str = data["channel_id"]
+        self.description: str = data["description"]
+        self.emoji_id: Optional[str] = data["emoji_id"]
+        self.emoji_name: Optional[str] = data["emoji_name"]
+
+class WelcomeScreen:
+    def __init__(self, data: dict):
+        self.description: Optional[str] = data["description"] or None
+        self.welcome_channels: List[WelcomeChannel] = [WelcomeChannel(welcome_channel) for welcome_channel in data["welcome_channels"]]
+
 class Guild:
     def __init__(self, client: Client, data: dict):
         self.client = client
@@ -1248,8 +1269,14 @@ class Guild:
         self.premium_subscription_count: int = data["premium_subscription_count"]
         self.preferred_locale: str = data["preferred_locale"]
         self.public_updates_channel_id: Optional[str] = data["public_updates_channel_id"] or None
-        
-        
+        self.max_video_channel_users: Optional[int] = data["max_video_channel_users"] or None
+        self.approximate_member_count: Optional[int] = data["approximate_member_count"] or None
+        self.approximate_presence_count: Optional[int] = data["approximate_presense_count"] or None
+        self.welcome_screen: Optional[WelcomeScreen] = WelcomeScreen(data["welcome_screen"]) if data["welcome_screen"] else None
+        self.nsfw_level: int = data["nsfw_level"]
+        self.stage_instances: List[GuildStageChannel] = [GuildStageChannel(channel) for channel in data["stage_instances"]]
+        self.stickers
+
 class GuildScheduledEvent:
     def __init__(self, client: Client, data: dict):
         self.id: str = data["id"]
@@ -1269,6 +1296,33 @@ class GuildScheduledEvent:
         self.creator: Optional[User] = User(data["creator"]) or None
         self.user_count: Optional[int] = data["user_count"] or None
 
+class WebhookUser:
+    def __init__(self, data: dict):
+        self.webhook_id: str = data["webhook_id"]
+        self.username: str = data["username"]
+        self.avatar: str = data["avatar"]
+
+
+class Webhook:
+    def __init__(self, client, data: dict = None):
+        """
+        Don't pass in data if you're making a webhook, the lib passes data to construct an already existing webhook
+        """
+        self.client = client
+        self.data = data
+        if data:
+            self.id: str = data["id"] 
+            self.type: str = "Incoming" if data["type"] == 1 else "Channel Follower" if data["type"] == 2 else "Application"
+            self.guild_id: Optional[str] = data["guild_id"] or None
+            self.channel_id: Optional[str] = data["channel_id"] or None
+            self.user: Optional[User] = User(client, data["user"])
+            self.name: Optional[str] = data["name"] or None
+            self.avatar: Optional[str] = data["avatar"] or None
+            self.token: Optional[str] = data["token"] or None
+            self.application_id: Optional[str] = data["application_id"] or None
+            self.source_guild: Optional[PartialGuild] = PartialGuild(data["source_guild"])
+            self.url: Optional[str] = data["url"]
+    
 class BaseInteraction:
     def __init__(self, client, data: dict):
         self.id: str = data["id"]
@@ -1546,12 +1600,6 @@ class Webhook: # Not used for making webhooks.
         self.source_guild: Optional[PartialGuild] = PartialGuild(data["source_guild"])
         self.source_channel: Optional[SourceChannel] = SourceChannel(data["source_channel"]) or None
         self.url: Optional[str] = data["url"]
-
-class WebhookUser:
-    def __init__(self, data: dict):
-        self.webhook_id: str = data["webhook_id"]
-        self.username: str = data["username"]
-        self.avatar: str = data["avatar"]
 
 class Message:
     def __init__(self, client, data: dict):
