@@ -327,7 +327,9 @@ class WebsocketClient(EventHandler):
         future.add_done_callback(stop_loop_on_completion)
         
         try:
-            loop.run_forever() # TODO: Add a KeyboardInterrupt Exception handler
+            loop.run_forever()
+        except KeyboardInterrupt:
+            self.close()
         finally:
             loop.close() # TODO: Add a loop cleaner (Cleans up the loop then closes the loop)
             
