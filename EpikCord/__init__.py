@@ -220,7 +220,7 @@ class WebsocketClient(EventHandler):
         self.session_id = None
         self.sequence = None
 
-    async def heartbeat(self, forced: Optional[bool]):
+    async def heartbeat(self, forced: Optional[bool] = None):
         if forced:
             return await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
         if self.interval:
@@ -232,7 +232,7 @@ class WebsocketClient(EventHandler):
         await self.ws.send_json(json)
 
     async def connect(self):
-        async with self.session.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json") as ws:
+        async with await self.session.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json") as ws:
             self.ws = ws
             async for event in ws:
                 event = event.json()
@@ -297,40 +297,17 @@ class WebsocketClient(EventHandler):
         #         # if an error happens during disconnects, disregard it.
         #         pass
 
-        if self.ws is not None and self.ws.open:
-            await self.ws.close(code=1000)
+        if self.ws is not None:
+            if self.ws.open:
+                await self.ws.close(code=1000)
 
         await self.http.close()
 
-    def login(self, *args, **kwargs):
-        try:
-            self.loop.add_signal_handler(signal.SIGINT, lambda: self.loop.stop())
-            self.loop.add_signal_handler(signal.SIGTERM, lambda: self.loop.stop())
-        except NotImplementedError:
-            pass
+    def login(self):
+        asyncio.new_event_loop().create_task(self.connect())
+        heartbeat_loop = asyncio.new_event_loop()
+        heartbeat_loop.create_task(self.heartbeat())
 
-        async def runner():
-            try:
-                await self.start(*args, **kwargs)
-            finally:
-                await self.close()
-
-        def stop_loop_on_completion(f):
-            self.loop.stop()
-
-        future = asyncio.ensure_future(runner(), loop=self.loop)
-        future.add_done_callback(stop_loop_on_completion)
-        try:
-            self.loop.run_forever()
-        finally:
-            future.remove_done_callback(stop_loop_on_completion)
-
-        if not future.cancelled():
-            try:
-                return future.result()
-            except KeyboardInterrupt:
-                # I am unsure why this gets raised here but suppress it anyway
-                return None
 
 
 class BaseSlashCommandOption:
