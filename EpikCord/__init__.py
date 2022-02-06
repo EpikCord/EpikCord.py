@@ -212,9 +212,9 @@ class WebsocketClient(EventHandler):
         self.loop = asyncio.new_event_loop()
         self.session = ClientSession()
         self.commands = {}
-        self._closed: bool = False # Well nah we're starting closed.
+        self._closed = True # Well nah we're starting closed
         self.hearbeats = []
-        self.average_latency = 0        
+        self.average_latency = 0
 
         self.interval = None # How frequently to heartbeat
         self.session_id = None
@@ -232,7 +232,7 @@ class WebsocketClient(EventHandler):
         await self.ws.send_json(json)
 
     async def connect(self):
-        async with await self.session.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json") as ws:
+        async with self.session.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json") as ws:
             self.ws = ws
             async for event in ws:
                 event = event.json()
@@ -259,6 +259,8 @@ class WebsocketClient(EventHandler):
                     await self.heartbeat()
 
                 print(event["op"])
+        
+        self._closed = False
 
     async def resume(self):
         await self.send_json({
@@ -269,6 +271,7 @@ class WebsocketClient(EventHandler):
                 'token': self.token
             }
         })
+        self._closed = False
 
     async def identify(self):
         await self.send_json({
@@ -284,6 +287,7 @@ class WebsocketClient(EventHandler):
                 }
             }
         )
+
     async def close(self) -> None:
         if self._closed:
             return
@@ -302,14 +306,33 @@ class WebsocketClient(EventHandler):
                 await self.ws.close(code=1000)
 
         await self.http.close()
+        self._closed = True
 
     def login(self):
-        asyncio.new_event_loop().create_task(self.connect())
-        heartbeat_loop = asyncio.new_event_loop()
-        heartbeat_loop.create_task(self.heartbeat())
+        async def runner():
+            try:
+                await self.connect()
+                loop_to_heartbeat_on = asyncio.new_event_loop()
+                loop_to_heartbeat_on.ensure_future(self.heartbeat())
+                loop_to_heartbeat_on.run_forever()
+            finally:
+                if not self._closed():
+                    await self.close()
+        loop = asyncio.get_event_loop()
+        
+        def stop_loop_on_completion(f):
+            loop.stop()
 
-
-
+        future = asyncio.ensure_future(runner(), loop=loop)
+        future.add_done_callback(stop_loop_on_completion)
+        
+        try:
+            loop.run_forever()
+        except KeyboardInterrupt:
+            self.close()
+        finally:
+            loop.close() # TODO: Add a loop cleaner (Cleans up the loop then closes the loop)
+            
 class BaseSlashCommandOption:
     def __init__(self, *, name: str, description: str, required: bool = False):
         self.settings = {
