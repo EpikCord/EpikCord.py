@@ -212,7 +212,7 @@ class WebsocketClient(EventHandler):
         self.loop = asyncio.new_event_loop()
         self.session = ClientSession()
         self.commands = {}
-        self._closed: bool = True # Well nah we're starting closed
+        self._closed = True # Well nah we're starting closed
         self.hearbeats = []
         self.average_latency = 0
 
