@@ -242,7 +242,7 @@ class WebsocketClient(EventHandler):
     async def heartbeat(self, forced: Optional[bool] = None):
         if forced:
             return await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
-        if self.interval:
+        while True:
             await asyncio.sleep(self.interval / 1000)
             await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
             print("Sent heartbeat!")
@@ -260,7 +260,7 @@ class WebsocketClient(EventHandler):
 
                     self.interval = event["d"]["heartbeat_interval"]
 
-                    await self.heartbeat()
+                    await self.identify()
 
 
                 elif event["op"] == self.EVENT:
@@ -321,23 +321,21 @@ class WebsocketClient(EventHandler):
         #         pass
 
         if self.ws is not None:
-            if self.ws.open:
+            if not self.ws.closed:
                 await self.ws.close(code=1000)
 
         await self.http.close()
         self._closed = True
 
     def login(self):
+        loop = asyncio.get_event_loop()
         async def runner():
             try:
                 await self.connect()
-                loop_to_heartbeat_on = asyncio.new_event_loop()
-                loop_to_heartbeat_on.ensure_future(self.heartbeat())
-                loop_to_heartbeat_on.run_forever()
+                await self.heartbeat()
             finally:
-                if not self._closed():
+                if not self._closed:
                     await self.close()
-        loop = asyncio.get_event_loop()
         
         def stop_loop_on_completion(f):
             loop.stop()
@@ -783,9 +781,9 @@ class TextBasedChannel(BaseChannel):
         elif self.type == 13:
             return GuildStageChannel(client, data)
 
-class HTTPClient:
+class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
-        self.session = ClientSession(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.base_uri: str = "https://discord.com/api/v9"
 
     async def get(self, url, *args, **kwargs):
