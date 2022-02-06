@@ -232,7 +232,7 @@ class WebsocketClient(EventHandler):
         await self.ws.send_json(json)
 
     async def connect(self):
-        async with await self.session.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json") as ws:
+        async with self.session.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json") as ws:
             self.ws = ws
             async for event in ws:
                 event = event.json()
