@@ -312,7 +312,9 @@ class WebsocketClient(EventHandler):
         async def runner():
             try:
                 await self.connect()
-                await self.heartbeat()
+                loop_to_heartbeat_on = asyncio.new_event_loop()
+                loop_to_heartbeat_on.ensure_future(self.heartbeat())
+                loop_to_heartbeat_on.run_forever()
             finally:
                 if not self._closed():
                     await self.close()
