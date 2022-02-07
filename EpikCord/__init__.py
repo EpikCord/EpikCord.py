@@ -176,7 +176,7 @@ class EventHandler:
         try:
             await getattr(self, event_name)(data)
         except AttributeError:
-            print(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
+            raise UnhandledException(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
 
 
     def event(self, func):
@@ -409,7 +409,12 @@ class StickerItem:
     def __init__(self, data: dict):
         self.id: str = data["id"]
         self.name: str = data["name"]
+        self.description: str = data["description"]
+        self.tags: str = data["tags"]
+        self.type: str = data["image"]
         self.format_type: int = data["format_type"]
+        self.pack_id: int = data["pack_id"]
+        self.sort_value: int = data["sort_value"]
 
 class ThreadMember:
     def __init__(self, data: dict):
@@ -1167,6 +1172,11 @@ class DiscordAPIError(Exception): #
 class InvalidToken(Exception):
     ...
 
+class UnhandledException(Exception):
+    ... 
+
+
+
 class BadRequest400(Exception):
     ...
 
@@ -1273,7 +1283,7 @@ class Guild:
         self.welcome_screen: Optional[WelcomeScreen] = WelcomeScreen(data["welcome_screen"]) if data["welcome_screen"] else None
         self.nsfw_level: int = data["nsfw_level"]
         self.stage_instances: List[GuildStageChannel] = [GuildStageChannel(channel) for channel in data["stage_instances"]]
-        self.stickers
+        self.stickers: Optional[StickerItem] = StickerItem(data["stickers"]) if data["stickers"] else None
 
 class GuildScheduledEvent:
     def __init__(self, client: Client, data: dict):
