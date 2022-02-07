@@ -11,7 +11,7 @@ setup(
   packages = ['EpikCord'], 
   version = '0.4.3',      
   license='MIT',        
-  description = 'A Modern API wrapper for Discord, Intended for replacement of the now deprecated Discord.py library',
+  description = 'A Modern API wrapper for Discord, Intended for replacement of the now discontinued Discord.py library',
   long_description = long_description,
   long_description_content_type = "text/markdown",
   author = 'EpikHost',                   
