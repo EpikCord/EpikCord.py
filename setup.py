@@ -1,11 +1,19 @@
 from distutils.core import setup
+packagePartsReq = {
+  "voice": ["PyNaCl"] #one part is enough for now
+}
+
+#Read The Readme
+with open("README.md") as f:
+    long_description = f.read()
 setup(
   name = 'EpikCord.py', 
   packages = ['EpikCord'], 
   version = '0.4.3',      
   license='MIT',        
-  description = 'Have you ever wanted to make a Discord Bot? Are you upset that Discord.py has been discontinued? We introduce EpikCord.py, a Discord.py replacement.',
-  long_description = "I present to you, EpikCord.py, this is a python package which will hopefully be a great replacement for Discord.py as the creator has decided to discontinue the package. Whilst there are forks of the discord.py repo, we have started this library from scratch. We hope you enjoy using it!",
+  description = 'A Modern API wrapper for Discord, Intended for replacement of the now deprecated Discord.py library',
+  long_description = long_description,
+  long_description_content_type = "text/markdown",
   author = 'EpikHost',                   
   author_email = 'support@epikhost.xyz',      
   url = 'https://github.com/EpikHost/EpikCord.py',   
@@ -15,6 +23,9 @@ setup(
           'aiohttp',
           "websocket-client"
       ],
+  extras_require=packagePartsReq,
+  python_requires='>=3.8',    
+
   classifiers=[
     'Development Status :: 3 - Alpha',      
     'Intended Audience :: Developers',      
