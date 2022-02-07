@@ -195,7 +195,7 @@ class EventHandler:
         try:
             await getattr(self, event_name)(data)
         except AttributeError:
-            raise UnhandledException(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
+            print(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
 
 
     def event(self, func):
