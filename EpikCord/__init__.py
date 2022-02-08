@@ -6,11 +6,14 @@ import asyncio
 from base64 import b64encode
 import datetime
 import re
+from logging import getLogger
 from typing import *
 from urllib.parse import quote
 
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
+logger = getLogger(__name__)
+
 
 """
 Some parts of the code is done by discord.py and their amazing team of contributers
@@ -227,14 +230,14 @@ class EventHandler:
                 except AttributeError:
                     self.heartbeats = [event["d"]]
                 self.sequence = event["s"]
-            print(event["op"])
+            logger.debug(f"Received event {event['t']}")
 
     async def handle_event(self, event_name: str, data: dict):
         event_name = event_name.lower()
         try:
             await getattr(self, event_name)(data)
         except AttributeError:
-            print(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
+            logger.warning(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
 
     async def message_create(self, data: dict):
         await self.events["message_create"](Message(self.client, data))
@@ -294,13 +297,13 @@ class WebsocketClient(EventHandler):
             while True:
                 await asyncio.sleep(self.interval / 1000)
                 await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
-                print("Sent heartbeat!")
+                logger.debug("Sent a heartbeat!")
         
     async def send_json(self, json: dict):
         try:
             await self.ws.send_json(json)
         except:
-            print(self.ws.close_code)
+            logger.debug(f"Exited with code: {self.ws.close_code}")
 
     async def connect(self):
         self.ws = await self.session.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json")
@@ -1622,7 +1625,7 @@ class ClientUser():
         self.bot: bool = data["bot"]
         self.avatar: str = data["avatar"]
         if not self.bot: # if they're a user account
-            print("Self botting is against Discord ToS. You can get ban.")
+            print("Self botting is against Discord ToS. You can get ban.") # Yeah I'm keeping this as a print
     async def fetch(self):
         response = await self.client.http.get("users/@me")
         data = await response.json()
@@ -1791,4 +1794,4 @@ def escape_mentions(text: str) -> str:
     return re.sub(r'@(everyone|here|[!&]?[0-9]{17,20})', '@\u200b\\1', text)
 
 def utcnow() -> datetime.datetime:
-    return datetime.datetime.now(datetime.timezone.utc)
+    return datetime.datetime.now(datetime.timezone.utc)a
