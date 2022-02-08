@@ -4,10 +4,13 @@ from threading import Event
 from aiohttp import *
 import asyncio 
 from base64 import b64encode
+import datetime
+import re
 from typing import *
 from urllib.parse import quote
 
 CT = TypeVar('CT', bound='Colour')
+T = TypeVar('T')
 
 """
 Some parts of the code is done by discord.py and their amazing team of contributers
@@ -19,6 +22,18 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
+
+
+_MARKDOWN_ESCAPE_SUBREGEX = '|'.join(r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(c) for c in ('*', '`', '_', '~', '|'))
+
+_MARKDOWN_ESCAPE_COMMON = r'^>(?:>>)?\s|\[.+\]\(.+\)'
+
+_MARKDOWN_ESCAPE_REGEX = re.compile(fr'(?P<markdown>{_MARKDOWN_ESCAPE_SUBREGEX}|{_MARKDOWN_ESCAPE_COMMON})', re.MULTILINE)
+
+_URL_REGEX = r'(?P<url><[^: >]+:\/[^ >]+>|(?:https?|steam):\/\/[^\s<]+[^<.,:;\"\'\]\s])'
+
+_MARKDOWN_STOCK_REGEX = fr'(?P<markdown>[_\\~|\*`]|{_MARKDOWN_ESCAPE_COMMON})'
+
 
 def _cancel_tasks(loop) -> None:
     tasks = {t for t in asyncio.all_tasks(loop=loop) if not t.done()}
@@ -1730,3 +1745,50 @@ class Message:
     async def crosspost(self):
         response = await self.client.http.post(f"channels/{self.channel_id}/messages/{self.id}/crosspost")
         return await response.json()
+    
+def compute_timedelta(dt: datetime.datetime):
+    if dt.tzinfo is None:
+        dt = dt.astimezone()
+    now = datetime.datetime.now(datetime.timezone.utc)
+    return max((dt - now).total_seconds(), 0)
+  
+  
+async def sleep_until(when: Union[datetime.datetime, int, float], result: Optional[T] = None) -> Optional[T]:
+    if when == datetime.datetime:
+        delta = compute_timedelta(when)
+    
+    return await asyncio.sleep(delta if when == datetime.datetime else when, result)
+  
+def remove_markdown(text: str, *, ignore_links: bool = True) -> str:
+    def replacement(match):
+        groupdict = match.groupdict()
+        return groupdict.get('url', '')
+
+    regex = _MARKDOWN_STOCK_REGEX
+    if ignore_links:
+        regex = f'(?:{_URL_REGEX}|{regex})'
+    return re.sub(regex, replacement, text, 0, re.MULTILINE)
+  
+def escape_markdown(text: str, *, as_needed: bool = False, ignore_links: bool = True) -> str:
+    if not as_needed:
+
+        def replacement(match):
+            groupdict = match.groupdict()
+            is_url = groupdict.get('url')
+            if is_url:
+                return is_url
+            return '\\' + groupdict['markdown']
+
+        regex = _MARKDOWN_STOCK_REGEX
+        if ignore_links:
+            regex = f'(?:{_URL_REGEX}|{regex})'
+        return re.sub(regex, replacement, text, 0, re.MULTILINE)
+    else:
+        text = re.sub(r'\\', r'\\\\', text)
+        return _MARKDOWN_ESCAPE_REGEX.sub(r'\\\1', text)
+      
+def escape_mentions(text: str) -> str:
+    return re.sub(r'@(everyone|here|[!&]?[0-9]{17,20})', '@\u200b\\1', text)
+
+def utcnow() -> datetime.datetime:
+    return datetime.datetime.now(datetime.timezone.utc)
