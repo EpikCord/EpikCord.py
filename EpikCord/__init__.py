@@ -46,12 +46,13 @@ def _cancel_tasks(loop) -> None:
 
     for task in tasks:
         task.cancel()
-
+    logger.debug(f"Cancelled {len(tasks)} tasks")
     loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
 
 def _cleanup_loop(loop) -> None:
     try:
         _cancel_tasks(loop)
+        logger.debug("Shutting down async generators.")
         loop.run_until_complete(loop.shutdown_asyncgens())
     finally:
         loop.close()
@@ -109,56 +110,73 @@ class Message:
         
     async def add_reaction(self, emoji: str):
         emoji = quote(emoji)
+        logger.debug(f"Added a reaction to message ({self.id}).")
         response = await self.client.http.put(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/@me")
         return await response.json()
     
     async def remove_reaction(self, emoji: str, user = None):
         emoji = quote(emoji)
-        if not user:        
+        logger.debug(f"Removed reaction {emoji} from message ({self.id}) for user {user.username}.")
+        if not user:
             response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/@me")
         else:
             response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/{user.id}")
         return await response.json()
     
     async def fetch_reactions(self,*, after, limit) -> List[Reaction]:
+        logger.debug(f"Fetching reactions from message ({self.id}).")
         response = await self.client.http.get(f"channels/{self.channel_id}/messages/{self.id}/reactions?after={after}&limit={limit}")
         return await response.json()
     
     async def delete_all_reactions(self):
+        logger.debug(f"Deleting all reactions from message ({self.id}).")
         response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions")
         return await response.json()
     
     async def delete_reaction_for_emoji(self, emoji: str):
+        logger.debug(f"Deleting a reaction from message ({self.id}) for emoji {emoji}.")
         emoji = quote(emoji)
         response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}")
         return await response.json()
     
     async def edit(self, message_data: dict):
+        logger.debug(f"Editing message {self.id} with message_data {message_data}.")
         response = await self.client.http.patch(f"channels/{self.channel_id}/messages/{self.id}", data=message_data)
         return await response.json()
     
     async def delete(self):
+        logger.debug(f"Deleting message {self.id}.")
         response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}")
         return await response.json()
     
     async def pin(self, *, reason: Optional[str]):
         headers = self.client.http.headers.copy()
-        headers["X-Audit-Log-Reason"] = reason
+        if reason:
+            headers["X-Audit-Log-Reason"] = reason
+            logger.debug(f"Pinning message {self.id} with reason {reason}.")
+        else:
+            logger.debug(f"Pinning message {self.id}.")
         response = await self.client.http.put(f"channels/{self.channel_id}/pins/{self.id}", headers=headers)
         return await response.json()
     
     async def unpin(self, *, reason: Optional[str]):
         headers = self.client.http.headers.copy()
-        headers["X-Audit-Log-Reason"] = reason
+        if reason:
+            headers["X-Audit-Log-Reason"] = reason
+            logger.debug(f"Unpinning message {self.id} with reason {reason}.")
+        else:
+            logger.debug(f"Unpinning message {self.id}.")
         response = await self.client.http.delete(f"channels/{self.channel_id}/pins/{self.id}", headers=headers)
         return await response.json()
 
     async def start_thread(self, name: str, auto_archive_duration: Optional[int], rate_limit_per_user: Optional[int]):
+        logger.debug(f"Starting thread for message {self.id} with name {name}, auto archive duration {auto_archive_duration or None}, ratelimit per user {rate_limit_per_user or None}.")
         response = await self.client.http.post(f"channels/{self.channel_id}/messages/{self.id}/threads", data={"name": name, "auto_archive_duration": auto_archive_duration, "rate_limit_per_user": rate_limit_per_user})
         self.client.guilds[self.guild_id].append(Thread(await response.json())) # Cache it
         return Thread(await response.json())
     
     async def crosspost(self):
+        logger.debug(f"Crossposting message {self.id}.")
         response = await self.client.http.post(f"channels/{self.channel_id}/messages/{self.id}/crosspost")
         return await response.json()
         
@@ -200,7 +218,6 @@ class User(Messageable):
         self.flags: int = data["flags"]
         self.premium_type: int = data["premium_type"]
         self.public_flags: int = data["public_flags"]
-
 
 class EventHandler:
     # Class that'll contain all methods that'll be called when an event is triggered.    
