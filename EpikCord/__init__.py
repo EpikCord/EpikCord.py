@@ -1794,4 +1794,4 @@ def escape_mentions(text: str) -> str:
     return re.sub(r'@(everyone|here|[!&]?[0-9]{17,20})', '@\u200b\\1', text)
 
 def utcnow() -> datetime.datetime:
-    return datetime.datetime.now(datetime.timezone.utc)a
+    return datetime.datetime.now(datetime.timezone.utc)
