@@ -6,6 +6,7 @@ import asyncio
 from base64 import b64encode
 from typing import *
 from urllib.parse import quote
+from .utils import *
 
 CT = TypeVar('CT', bound='Colour')
 
