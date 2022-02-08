@@ -1,4 +1,4 @@
-import signal
+import threading
 from .managers import *
 from threading import Event
 from aiohttp import *
@@ -190,6 +190,30 @@ class EventHandler:
     def __init__(self):
         self.events = {}
 
+    async def handle_events(self):
+        async for event in self.ws:
+            event = event.json()
+
+            if event["op"] == self.HELLO:
+
+                self.interval = event["d"]["heartbeat_interval"]
+
+                await self.identify()
+
+            elif event["op"] == self.EVENT:
+                await self.handle_event(event["t"], event["d"])
+
+            elif event["op"] == self.HEARTBEAT:
+                await self.heartbeat(True) # I shouldn't wait the remaining delay according to the docs.
+
+            elif event["op"] == self.HEARTBEAT_ACK:
+                try:
+                    self.heartbeats.append(event["d"])
+                except AttributeError:
+                    self.heartbeats = [event["d"]]
+                self.sequence = event["s"]
+            print(event["op"])
+
     async def handle_event(self, event_name: str, data: dict):
         event_name = event_name.lower()
         try:
@@ -197,6 +221,8 @@ class EventHandler:
         except AttributeError:
             print(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
 
+    async def message_create(self, data: dict):
+        await self.events["message_create"](Message(self.client, data))
 
     def event(self, func):
         self.events[func.__name__.lower().replace("on_", "")] = func
@@ -204,6 +230,12 @@ class EventHandler:
     async def ready(self, data: dict):
         self.user: ClientUser = ClientUser(self.session, data["user"])
         self.application: Application = await self.session.get("https://discord.com/api/v9/oauth2/applications/@me", headers={"Authorization": f"Bot {self.token}"})
+
+        def heartbeater():
+            loop = asyncio.new_event_loop()
+            loop.run_until_complete(self.heartbeat(False))
+
+        thread = threading._start_new_thread(heartbeater, ())
         await self.events["ready"]()
 
     
@@ -242,43 +274,22 @@ class WebsocketClient(EventHandler):
     async def heartbeat(self, forced: Optional[bool] = None):
         if forced:
             return await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
-        while True:
-            await asyncio.sleep(self.interval / 1000)
-            await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
-            print("Sent heartbeat!")
+
+        if self.interval:
+            while True:
+                await asyncio.sleep(self.interval / 1000)
+                await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
+                print("Sent heartbeat!")
         
     async def send_json(self, json: dict):
-        await self.ws.send_json(json)
+        try:
+            await self.ws.send_json(json)
+        except:
+            print(self.ws.close_code)
 
     async def connect(self):
-        async with self.session.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json") as ws:
-            self.ws = ws
-            async for event in ws:
-                event = event.json()
-
-                if event["op"] == self.HELLO:
-
-                    self.interval = event["d"]["heartbeat_interval"]
-
-                    await self.identify()
-
-
-                elif event["op"] == self.EVENT:
-                    await self.handle_event(event["t"], event["d"])
-
-                elif event["op"] == self.HEARTBEAT:
-                    await self.heartbeat(True) # I shouldn't wait the remaining delay according to the docs.
-
-                elif event["op"] == self.HEARTBEAT_ACK:
-                    try:
-                        self.heartbeats.append(event["d"])
-                    except AttributeError:
-                        self.heartbeats = [event["d"]]
-                    self.sequence = event["s"]
-                    await self.heartbeat()
-
-                print(event["op"])
-        
+        self.ws = await self.session.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json")
+        await self.handle_events()
         self._closed = False
 
     async def resume(self):
@@ -324,20 +335,24 @@ class WebsocketClient(EventHandler):
             if not self.ws.closed:
                 await self.ws.close(code=1000)
 
-        await self.http.close()
+        if self.http is not None:
+            if not self.http.closed:
+                await self.http.close()
+
         self._closed = True
 
     def login(self):
+
         loop = asyncio.get_event_loop()
+
         async def runner():
             try:
                 await self.connect()
-                await self.heartbeat()
             finally:
-                if not self._closed:
+                if self._closed != True:
                     await self.close()
-        
-        def stop_loop_on_completion(f):
+
+        def stop_loop_on_completion(f: asyncio.Future):
             loop.stop()
 
         future = asyncio.ensure_future(runner(), loop=loop)
@@ -346,8 +361,9 @@ class WebsocketClient(EventHandler):
         try:
             loop.run_forever()
         except KeyboardInterrupt:
-            self.close()
+            ...
         finally:
+            future.remove_done_callback(stop_loop_on_completion)
             _cleanup_loop(loop)
             
 class BaseSlashCommandOption:
@@ -1633,6 +1649,7 @@ class Message:
         self.client = client
         self.id: str = data["id"]
         self.channel_id: str = data["channel_id"]
+        self.channel: Messageable = Messageable(self.client, data["channel_id"])
         self.guild_id: Optional[str] = data["guild_id"] or None
         self.webhook_id: Optional[str] = data["webhook_id"] or None
         self.author: Optional[User] if not self.webhook_id else WebhookUser = WebhookUser(data["author"]) if self.webhook_id else User(data["author"])
