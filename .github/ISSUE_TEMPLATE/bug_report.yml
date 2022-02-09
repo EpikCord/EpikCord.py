@@ -41,14 +41,6 @@ body:
         What actually happened?
     validations:
       required: true
-  - type: input
-    attributes:
-      label: Intents
-      description: >
-        What intents are you using for your bot?
-        This is the `discord.Intents` class you pass to the client.
-    validations:
-      required: true
   - type: textarea
     attributes:
       label: System Information
