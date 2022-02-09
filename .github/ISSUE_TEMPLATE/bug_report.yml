@@ -5,7 +5,7 @@ body:
     attributes:
       value: >
         Thanks for taking the time to fill out a bug.
-        If you want real-time support, consider joining our Discord at https://discord.gg/r3sSKJJ instead.
+        If you want real-time support, consider joining our development server https://discord.gg/4R473R73kQ instead.
 
         Please note that this form is for bugs only!
   - type: input
