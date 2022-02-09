@@ -1,6 +1,6 @@
 name: Feature Request
 description: Suggest a feature for this library
-labels: enchancement
+labels: enhancement
 body:
   - type: input
     attributes:
