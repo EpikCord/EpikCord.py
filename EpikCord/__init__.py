@@ -56,8 +56,25 @@ def _cleanup_loop(loop) -> None:
         loop.run_until_complete(loop.shutdown_asyncgens())
     finally:
         loop.close()
-    
-    
+
+class Status:
+    def __init__(self, status: str):
+        setattr(self, "status", status)
+
+
+class Activity:
+    def __init__(self, *, name: str, type: int, url: Optional[str]):
+        self.name = name
+        self.type = type
+        self.url = url or None
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "type": self.type,
+            "url": self.url
+        }
+
 class UnavailableGuild:
     def __init__(self, data):
         self.data = data
@@ -1027,7 +1044,7 @@ class Colour:
     @classmethod
     def white(cls: Type[CT]) -> CT:
         return cls(0xffffff)
-Color=Colour
+Color = Colour
 
 class MessageSelectMenuOption:
     def __init__(self, label: str, value: str, description: Optional[str], emoji: Optional[PartialEmoji], default: Optional[bool]):
@@ -1039,7 +1056,7 @@ class MessageSelectMenuOption:
             "default": default or None            
         }
     
-    def __repr__(self):
+    def to_dict(self):
         return self.settings
 
 class MessageSelectMenu(BaseComponent):
@@ -1052,7 +1069,7 @@ class MessageSelectMenu(BaseComponent):
             "disabled": False
         }
     
-    def __repr__(self):
+    def to_dict(self):
         return self.settings
 
     def add_options(self, options: List[MessageSelectMenuOption]):
@@ -1086,6 +1103,33 @@ class MessageSelectMenu(BaseComponent):
         self.options["max_values"] = max  
         return self  
 
+class MessageTextInputComponent(BaseComponent):
+    def __init__(self, *, custom_id: str, style: Union[int, str], label: str, min_length: Optional[int], max_length: Optional[int], required: Optional[bool], value: Optional[str], placeholder: Optional[str]):
+        VALID_STYLES = {
+            "Short": 1,
+            "Paragraph": 2
+        }
+
+        if isinstance(style, str):
+            if style not in VALID_STYLES:
+                raise InvalidComponentStyle("Style must be either 'Short' or 'Paragraph'.")
+            style = VALID_STYLES[style]
+
+        elif isinstance(style, int):
+            if style not in VALID_STYLES.values():
+                raise InvalidComponentStyle("Style must be either 1 or 2.")
+
+        self.settings = {
+            "custom_id": custom_id,
+            "style": style,
+            "label": label,
+            "min_length": min_length or None,
+            "max_length": max_length or None,
+            "required": required or None,
+            "value": value or None,
+            "placeholder": placeholder or None
+        }
+
 
 class MessageButton(BaseComponent):
     def __init__(self,*, style: Optional[Union[int, str]] = 1, label: Optional[str], emoji: Optional[Union[PartialEmoji, dict]], url: Optional[str]):
@@ -1101,7 +1145,8 @@ class MessageButton(BaseComponent):
             self.settings["style"] = 5
         if emoji:
             self.settings["emoji"] = emoji
-    def __repr__(self):
+
+    def to_dict(self):
         return self.settings
 
     def set_label(self, label: str):
@@ -1125,13 +1170,13 @@ class MessageButton(BaseComponent):
         }
         if isinstance(style, str):
             if style.upper() not in valid_styles:
-                raise InvalidMessageButtonStyle("Invalid button style. Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS.")
+                raise InvalidComponentStyle("Invalid button style. Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS.")
             self.settings["style"] = valid_styles[style.upper()]
             return self
             
         elif isinstance(style, int):
             if style not in valid_styles.values():
-                raise InvalidMessageButtonStyle("Invalid button style. Style must be in range 1 to 5 inclusive.")
+                raise InvalidComponentStyle("Invalid button style. Style must be in range 1 to 5 inclusive.")
             self.settings["style"] = style
             return self
     def set_emoji(self, emoji: Union[PartialEmoji, dict]):
@@ -1163,7 +1208,7 @@ class MessageActionRow:
             "components": components
         }
 
-    def __repr__(self):
+    def to_dict(self):
         return self.settings
         
     def add_components(self, components: List[Union[MessageButton, MessageSelectMenu]]):
@@ -1274,7 +1319,7 @@ class InternalServerError5xx(Exception):
 class TooManyComponents(Exception):
     ...
 
-class InvalidMessageButtonStyle(Exception):
+class InvalidComponentStyle(Exception):
     ...
 
 class CustomIdIsTooBig(Exception):
