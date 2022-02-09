@@ -101,7 +101,7 @@ class Message:
         self.channel_id: str = data["channel_id"]
         self.guild_id: Optional[str] = data.get("guild_id") 
         self.webhook_id: Optional[str] = data.get("webhook_id")
-        self.author: Optional[User] if not self.webhook_id else WebhookUser = WebhookUser(data["author"]) if self.webhook_id else User(data["author"])
+        self.author: Optional[User] if not self.webhook_id else WebhookUser = WebhookUser(data["author"]) if self.webhook_id else User(client, data["author"])
         if data.get("member"):
             self.member: GuildMember = GuildMember(data["member"])
         self.content: Optional[str] = data.get("content") # I forgot Message Intents are gonna stop this.
@@ -225,7 +225,7 @@ class User(Messageable):
         self.username: str = data["username"]
         self.discriminator: str = data["discriminator"]
         self.avatar: Optional[str] = data["avatar"]
-        self.bot: bool = data["bot"]
+        self.bot: Optional[bool] = data.get("bot")
         self.system: Optional[bool] = data["system"]
         self.mfa_enabled: bool = data["mfa_enabled"]
         self.banner: Optional[str] = data["banner"] or None
@@ -1452,9 +1452,9 @@ class GuildScheduledEvent:
 
 class WebhookUser:
     def __init__(self, data: dict):
-        self.webhook_id: str = data["webhook_id"]
-        self.username: str = data["username"]
-        self.avatar: str = data["avatar"]
+        self.webhook_id: str = data.get("webhook_id")
+        self.username: str = data.get("username")
+        self.avatar: str = data.get("avatar")
 
 
 class Webhook:
