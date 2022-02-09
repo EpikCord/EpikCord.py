@@ -1,5 +1,5 @@
 """
-Some parts of the code is done by discord.py and their amazing team of contributers
+Some parts of the code is done by discord.py and their amazing team of contributors
 The MIT License (MIT)
 Copyright © 2015-2021 Rapptz
 Copyright © 2021-present EpikHost

@@ -1,0 +1,50 @@
+name: Feature Request
+description: Suggest a feature for this library
+labels: enchancement
+body:
+  - type: input
+    attributes:
+      label: Summary
+      description: >
+        A short summary of what your feature request is.
+    validations:
+      required: true
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: The Problem
+      description: >
+        What problem is your feature trying to solve?
+        What becomes easier or possible when this feature is implemented?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: The Ideal Solution
+      description: >
+        What is your ideal solution to the problem?
+        What would you like this feature to do?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: The Current Solution
+      description: >
+        What is the current solution to the problem, if any?
+    validations:
+      required: false
+  - type: checkboxes
+    attributes:
+      label: Checklist
+      description: >
+        Let's make sure you've properly done due dilligence when reporting this issue!
+      options:
+        - label: This bug was found on the latest version of EpikCord
+          required: true
+        - label: Full details of the requested feature have been provided/shown
+          required: true
+  - type: textarea
+    attributes:
+      label: Additional Context
+      description: If there is anything else to say, please do so here.
