@@ -1,4 +1,5 @@
 from distutils.core import setup
+from EpikCord.__main__ import __version__
 packagePartsReq = {
   "voice": ["PyNaCl"] #one part is enough for now
 }
@@ -6,10 +7,13 @@ packagePartsReq = {
 #Read The Readme
 with open("README.md") as f:
     long_description = f.read()
+
+#read version
+ver = __version__()
 setup(
   name = 'EpikCord.py', 
   packages = ['EpikCord'], 
-  version = '0.4.3',      
+  version = ver,      
   license='MIT',        
   description = 'A Modern API wrapper for Discord, Intended for replacement of the now discontinued Discord.py library',
   long_description = long_description,
@@ -28,9 +32,14 @@ setup(
 
   classifiers=[
     'Development Status :: 3 - Alpha',      
-    'Intended Audience :: Developers',      
+    'Intended Audience :: Developers',   
+    'Natural Language :: English',
+    'Operating System :: OS Independent' ,  
     'Topic :: Software Development :: Build Tools',
     'License :: OSI Approved :: MIT License',   
     'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10'
   ],
+  include_package_data=True
 )
