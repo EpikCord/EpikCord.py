@@ -1,47 +1,47 @@
-from .embed import *
+from .embed import Embed
 class PartialEmoji:
     def __init__(self, data:dict):
         self.data: dict = data
-        self.name: str = data["name"]
-        self.id: str = data["id"]
-        self.animated: bool = data["animated"]
+        self.name: str = data.get("name")
+        self.id: str = data.get("id")
+        self.animated: bool = data.get("animated")
     
 class Reaction:
     def __init__(self, data: dict):
-        self.count: int = data["count"]
-        self.me: bool = data["me"]
-        self.emoji: PartialEmoji = PartialEmoji(data["emoji"])
+        self.count: int = data.get("count")
+        self.me: bool = data.get("me")
+        self.emoji: PartialEmoji = PartialEmoji(data.get["emoji"])
 
 class Message:
     def __init__(self, client, data: dict):
         self.client = client
-        self.id: str = data["id"]
-        self.channel_id: str = data["channel_id"]
-        self.guild_id: Optional[str] = data["guild_id"] or None
-        self.webhook_id: Optional[str] = data["webhook_id"] or None
-        self.author: Optional[User] if not self.webhook_id else WebhookUser = WebhookUser(data["author"]) if self.webhook_id else User(data["author"])
-        self.member: Optional[GuildMember] = GuildMember(data["member"]) if data["member"] else None
-        self.content: Optional[str] = data["content"] or None # I forgot Message Intents are gonna stop this.
-        self.timestamp: str = data["timestamp"]
-        self.edited_timestamp: Optional[str] = data["edited_timestamp"] or None
-        self.tts: bool = data["tts"]
-        self.mention_everyone: bool = data["mention_everyone"]
-        self.mentions: Optional[List[MentionedUser]] = [MentionedUser(mention) for mention in data["mentions"]] or None
-        self.mention_roles: Optional[List[int]] = data["mention_roles"] or None
-        self.mention_channels: Optional[List[MentionedChannel]] = [MentionedChannel(channel) for channel in data["mention_channels"]] or None
-        self.embeds: Optional[List[Embed]] = [Embed(embed) for embed in data["embeds"]] or None
-        self.reactions: Optional[List[Reaction]] = [Reaction(reaction) for reaction in data["reactions"]] or None
-        self.nonce: Optional[Union[int, str]] = data["nonce"] or None
-        self.pinned: bool = data["pinned"]
-        self.type: int = data["type"]
-        self.activity: MessageActivity = MessageActivity(data["activity"])
-        self.application: Application = Application(data["application"]) # Despite there being a PartialApplication, Discord don't specify what attributes it has
-        self.flags: int = data["flags"]
-        self.referenced_message: Optional[Message] = Message(data["referenced_message"]) if data["referenced_message"] else None
-        self.interaction: Optional[MessageInteraction] = MessageInteraction(client, data["interaction"]) if data["interaction"] else None
-        self.thread: Thread = Thread(data["thread"]) if data["thread"] else None
-        self.components: Optional[List[Union[MessageSelectMenu, MessageButton]]] = [MessageSelectMenu(component) if component["type"] == 1 else MessageButton(component) for component in data["components"]] or None
-        self.stickers: Optional[List[StickerItem]] = [StickerItem(sticker) for sticker in data["stickers"]] or None
+        self.id: str = data.get("id")
+        self.channel_id: str = data.get("channel_id")
+        self.guild_id: Optional[str] = data.get("guild_id") or None
+        self.webhook_id: Optional[str] = data.get("webhook_id") or None
+        self.author: Optional[User] if not self.webhook_id else WebhookUser = WebhookUser(data.get("author")) if self.webhook_id else User(data["author"])
+        self.member: Optional[GuildMember] = GuildMember(data.get("member")) if data.get("member") else None
+        self.content: Optional[str] = data.get("content") or None # I forgot Message Intents are gonna stop this.
+        self.timestamp: str = data.get("timestamp")
+        self.edited_timestamp: Optional[str] = data.get("edited_timestamp") or None
+        self.tts: bool = data.get("tts")
+        self.mention_everyone: bool = data.get("mention_everyone")
+        self.mentions: Optional[List[MentionedUser]] = [MentionedUser(mention) for mention in data.get("mentions")] or None
+        self.mention_roles: Optional[List[int]] = data.get("mention_roles") or None
+        self.mention_channels: Optional[List[MentionedChannel]] = [MentionedChannel(channel) for channel in data.get("mention_channels")] or None
+        self.embeds: Optional[List[Embed]] = [Embed(embed) for embed in data.get("embeds")] or None
+        self.reactions: Optional[List[Reaction]] = [Reaction(reaction) for reaction in data.get("reactions")] or None
+        self.nonce: Optional[Union[int, str]] = data.get("nonce") or None
+        self.pinned: bool = data.get("pinned")
+        self.type: int = data.get("type")
+        self.activity: MessageActivity = MessageActivity(data.get("activity"))
+        self.application: Application = Application(data.get("application")) # Despite there being a PartialApplication, Discord don't specify what attributes it has
+        self.flags: int = data.get("flags")
+        self.referenced_message: Optional[Message] = Message(data.get("referenced_message")) if data.get("referenced_message") else None
+        self.interaction: Optional[MessageInteraction] = MessageInteraction(client, data.get("interaction")) if data.get("interaction") else None
+        self.thread: Thread = Thread(data.get("thread")) if data.get("thread") else None
+        self.components: Optional[List[Union[MessageSelectMenu, MessageButton]]] = [MessageSelectMenu(component) if component.get("type") == 1 else MessageButton(component) for component in data.get("components")] or None
+        self.stickers: Optional[List[StickerItem]] = [StickerItem(sticker) for sticker in data.get("stickers")] or None
         
     async def add_reaction(self, emoji: str):
         emoji = quote(emoji)
