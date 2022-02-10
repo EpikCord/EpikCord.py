@@ -13,7 +13,7 @@ We may include a series on the EpikHost YouTube channel for helping people migra
 
 ## I want to contribute!
 We love contributions that help us, so feel free to! You won't be rewarded for this, but it helps us and we'd be very pleased with any contribution.
-See [Contributing.md](./Contributing.md) for more information.
+See [Contributing](./Contributing) for more information.
 
 ## Where are your docs?
 SoonTM
