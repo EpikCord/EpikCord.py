@@ -78,46 +78,46 @@ class Activity:
 class UnavailableGuild:
     def __init__(self, data):
         self.data = data
-        self.id: str = data["id"]
-        self.available: bool = data["available"]
+        self.id: str = data.get("id")
+        self.available: bool = data.get("available")
 
 class PartialEmoji:
     def __init__(self, data):
         self.data: dict = data
-        self.name: str = data["name"]
-        self.id: str = data["id"]
-        self.animated: bool = data["animated"]
+        self.name: str = data.get("name")
+        self.id: str = data.get("id")
+        self.animated: bool = data.get("animated")
     
 class Reaction:
     def __init__(self, data: dict):
-        self.count: int = data["count"]
-        self.me: bool = data["me"]
-        self.emoji: PartialEmoji = PartialEmoji(data["emoji"])
+        self.count: int = data.get("count")
+        self.me: bool = data.get("me")
+        self.emoji: PartialEmoji = PartialEmoji(data.get("emoji"))
 
 class Message:
     def __init__(self, client, data: dict):
         self.client = client
-        self.id: str = data["id"]
-        self.channel_id: str = data["channel_id"]
+        self.id: str = data.get("id")
+        self.channel_id: str = data.get("channel_id")
         self.guild_id: Optional[str] = data.get("guild_id") 
         self.webhook_id: Optional[str] = data.get("webhook_id")
-        self.author: Optional[User] if not self.webhook_id else WebhookUser = WebhookUser(data["author"]) if self.webhook_id else User(client, data["author"])
+        self.author: Optional[Union[User, WebhookUser] = WebhookUser(data.get("author")) if self.webhook_id else User(client, data.get("author"))
         if data.get("member"):
-            self.member: GuildMember = GuildMember(data["member"])
+            self.member: GuildMember = GuildMember(data.get("member"))
         self.content: Optional[str] = data.get("content") # I forgot Message Intents are gonna stop this.
-        self.timestamp: str = data["timestamp"]
+        self.timestamp: str = data.get("timestamp")
         self.edited_timestamp: Optional[str] = data.get("edited_timestamp")
-        self.tts: bool = data["tts"]
-        self.mention_everyone: bool = data["mention_everyone"]
-        self.mentions: Optional[List[MentionedUser]] = [MentionedUser(mention) for mention in data["mentions"]]
-        self.mention_roles: Optional[List[int]] = data["mention_roles"] or None
-        self.mention_channels: Optional[List[MentionedChannel]] = [MentionedChannel(channel) for channel in data["mention_channels"]] or None
-        self.embeds: Optional[List[Embed]] = [Embed(embed) for embed in data["embeds"]] or None
-        self.reactions: Optional[List[Reaction]] = [Reaction(reaction) for reaction in data["reactions"]] or None
-        self.nonce: Optional[Union[int, str]] = data["nonce"] or None
-        self.pinned: bool = data["pinned"]
-        self.type: int = data["type"]
-        self.activity: MessageActivity = MessageActivity(data["activity"])
+        self.tts: bool = data.get("tts")
+        self.mention_everyone: bool = data.get("mention_everyone")
+        self.mentions: Optional[List[MentionedUser]] = [MentionedUser(mention) for mention in data.get("mentions")]
+        self.mention_roles: Optional[List[int]] = data.get("mention_roles")
+        self.mention_channels: Optional[List[MentionedChannel]] = [MentionedChannel(channel) for channel in data.get("mention_channels")]
+        self.embeds: Optional[List[Embed]] = [Embed(embed) for embed in data.get("embeds")]
+        self.reactions: Optional[List[Reaction]] = [Reaction(reaction) for reaction in data.get("reactions")]
+        self.nonce: Optional[Union[int, str]] = data.get("nonce")
+        self.pinned: bool = data.get("pinned")
+        self.type: int = data.get("type")
+        self.activity: MessageActivity = MessageActivity(data.get("activity"))
         self.application: Application = Application(data["application"]) # Despite there being a PartialApplication, Discord don't specify what attributes it has
         self.flags: int = data["flags"]
         self.referenced_message: Optional[Message] = Message(data["referenced_message"]) if data["referenced_message"] else None
