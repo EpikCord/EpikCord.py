@@ -118,14 +118,25 @@ class Message:
         self.pinned: bool = data.get("pinned")
         self.type: int = data.get("type")
         self.activity: MessageActivity = MessageActivity(data.get("activity"))
-        self.application: Application = Application(data["application"]) # Despite there being a PartialApplication, Discord don't specify what attributes it has
-        self.flags: int = data["flags"]
-        self.referenced_message: Optional[Message] = Message(data["referenced_message"]) if data["referenced_message"] else None
-        self.interaction: Optional[MessageInteraction] = MessageInteraction(client, data["interaction"]) if data["interaction"] else None
-        self.thread: Thread = Thread(data["thread"]) if data["thread"] else None
-        self.components: Optional[List[Union[MessageSelectMenu, MessageButton]]] = [MessageSelectMenu(component) if component["type"] == 1 else MessageButton(component) for component in data["components"]] or None
-        self.stickers: Optional[List[StickerItem]] = [StickerItem(sticker) for sticker in data["stickers"]] or None
-        
+        self.application: Application = Application(data.get("application")) # Despite there being a PartialApplication, Discord don't specify what attributes it has
+        self.flags: int = data.get("flags")
+        self.referenced_message: Optional[Message] = Message(data.get("referenced_message")) if data.get("referenced_message")
+        self.interaction: Optional[MessageInteraction] = MessageInteraction(client, data.get("interaction")) if date.get("interaction") else None
+        self.thread: Optional[Thread] = Thread(data.get("thread")) if data.get("thread") else None
+        if data.get("components"):
+            components: List[Any] = []
+            for component in data.get("components"):
+                if component.get("type") == 1:
+                    components.append(MessageActionRow(component))
+                elif component.get("type") == 2:
+                    components.append(MessageButton(component))
+                elif components.get("type") == 3:
+                    components.append(MessageSelectMenu(component))
+                elif components.get("type") == 4:
+                    components.append(MessageTextInputComponent(component))
+        self.components: Optional[List[Union[MessageTextInputComponent, MessageSelectMenu, MessageButton]]] = components
+        self.stickers: Optional[List[StickerItem]] = [StickerItem(sticker) for sticker in data.get("stickers")] or None
+
     async def add_reaction(self, emoji: str):
         emoji = quote(emoji)
         logger.debug(f"Added a reaction to message ({self.id}).")
@@ -221,21 +232,21 @@ class User(Messageable):
     def __init__(self, client, data: dict):
         self.data = data
         self.client = client
-        self.id: str = data["id"]
-        self.username: str = data["username"]
-        self.discriminator: str = data["discriminator"]
-        self.avatar: Optional[str] = data["avatar"]
+        self.id: str = data.get("id")
+        self.username: str = data.get("username")
+        self.discriminator: str = data.get("discriminator")
+        self.avatar: Optional[str] = data.get("avatar")
         self.bot: Optional[bool] = data.get("bot")
-        self.system: Optional[bool] = data["system"]
-        self.mfa_enabled: bool = data["mfa_enabled"]
-        self.banner: Optional[str] = data["banner"] or None
-        self.accent_color: Optional[int] = data["accent_color"] or None # the user's banner color encoded as an integer representation of hexadecimal color code	
-        self.locale: Optional[str] = data["locale"] or None
-        self.verified: bool = data["verified"]
-        self.email: Optional[str] = data["email"] or None
-        self.flags: int = data["flags"]
-        self.premium_type: int = data["premium_type"]
-        self.public_flags: int = data["public_flags"]
+        self.system: Optional[bool] = data.get("system")
+        self.mfa_enabled: bool = data.get("mfa_enabled")
+        self.banner: Optional[str] = data.get("banner")
+        self.accent_color: Optional[int] = data.get("accent_color")  # the user's banner color encoded as an integer representation of hexadecimal color code	
+        self.locale: Optional[str] = data.get("locale")
+        self.verified: bool = data.get("verified")
+        self.email: Optional[str] = data.get("email")
+        self.flags: int = data.get("flags")
+        self.premium_type: int = data.get("premium_type")
+        self.public_flags: int = data.get("public_flags")
 
 class EventHandler:
     # Class that'll contain all methods that'll be called when an event is triggered.    
@@ -286,7 +297,7 @@ class EventHandler:
         self.events[func.__name__.lower().replace("on_", "")] = func
 
     async def ready(self, data: dict):
-        self.user: ClientUser = ClientUser(self.session, data["user"])
+        self.user: ClientUser = ClientUser(self.session, data.get("user"))
         self.application: Application = await self.session.get("https://discord.com/api/v9/oauth2/applications/@me", headers={"Authorization": f"Bot {self.token}"})
 
         def heartbeater():
@@ -509,22 +520,22 @@ class SlashCommandOptionChoice:
 
 class Overwrite:
     def __init__(self, data: dict):
-        self.id: str = data["id"]
-        self.type: int = data["type"]
-        self.allow: str = data["allow"]
-        self.deny: str = data["deny"]
+        self.id: str = data.get("id")
+        self.type: int = data.get("type")
+        self.allow: str = data.get("allow")
+        self.deny: str = data.get("deny")
 
 
 class StickerItem:
     def __init__(self, data: dict):
-        self.id: str = data["id"]
-        self.name: str = data["name"]
-        self.description: str = data["description"]
-        self.tags: str = data["tags"]
-        self.type: str = data["image"]
-        self.format_type: int = data["format_type"]
-        self.pack_id: int = data["pack_id"]
-        self.sort_value: int = data["sort_value"]
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+        self.description: str = data.get("description")
+        self.tags: str = data.get("tags")
+        self.type: str = data.get("image")
+        self.format_type: int = data.get("format_type")
+        self.pack_id: int = data.get("pack_id")
+        self.sort_value: int = data.get("sort_value")
 
 class ThreadMember:
     def __init__(self, data: dict):
