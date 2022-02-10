@@ -16,7 +16,7 @@ logger = getLogger(__name__)
 
 
 """
-Some parts of the code is done by discord.py and their amazing team of contributers
+Some parts of the code is done by discord.py and their amazing team of contributors
 The MIT License (MIT)
 Copyright © 2015-2021 Rapptz
 Copyright © 2021-present EpikHost
@@ -56,8 +56,25 @@ def _cleanup_loop(loop) -> None:
         loop.run_until_complete(loop.shutdown_asyncgens())
     finally:
         loop.close()
-    
-    
+
+class Status:
+    def __init__(self, status: str):
+        setattr(self, "status", status)
+
+
+class Activity:
+    def __init__(self, *, name: str, type: int, url: Optional[str]):
+        self.name = name
+        self.type = type
+        self.url = url or None
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "type": self.type,
+            "url": self.url
+        }
+
 class UnavailableGuild:
     def __init__(self, data):
         self.data = data
@@ -82,16 +99,17 @@ class Message:
         self.client = client
         self.id: str = data["id"]
         self.channel_id: str = data["channel_id"]
-        self.guild_id: Optional[str] = data["guild_id"] or None
-        self.webhook_id: Optional[str] = data["webhook_id"] or None
-        self.author: Optional[User] if not self.webhook_id else WebhookUser = WebhookUser(data["author"]) if self.webhook_id else User(data["author"])
-        self.member: Optional[GuildMember] = GuildMember(data["member"]) if data["member"] else None
-        self.content: Optional[str] = data["content"] or None # I forgot Message Intents are gonna stop this.
+        self.guild_id: Optional[str] = data.get("guild_id") 
+        self.webhook_id: Optional[str] = data.get("webhook_id")
+        self.author: Optional[User] if not self.webhook_id else WebhookUser = WebhookUser(data["author"]) if self.webhook_id else User(client, data["author"])
+        if data.get("member"):
+            self.member: GuildMember = GuildMember(data["member"])
+        self.content: Optional[str] = data.get("content") # I forgot Message Intents are gonna stop this.
         self.timestamp: str = data["timestamp"]
-        self.edited_timestamp: Optional[str] = data["edited_timestamp"] or None
+        self.edited_timestamp: Optional[str] = data.get("edited_timestamp")
         self.tts: bool = data["tts"]
         self.mention_everyone: bool = data["mention_everyone"]
-        self.mentions: Optional[List[MentionedUser]] = [MentionedUser(mention) for mention in data["mentions"]] or None
+        self.mentions: Optional[List[MentionedUser]] = [MentionedUser(mention) for mention in data["mentions"]]
         self.mention_roles: Optional[List[int]] = data["mention_roles"] or None
         self.mention_channels: Optional[List[MentionedChannel]] = [MentionedChannel(channel) for channel in data["mention_channels"]] or None
         self.embeds: Optional[List[Embed]] = [Embed(embed) for embed in data["embeds"]] or None
@@ -207,7 +225,7 @@ class User(Messageable):
         self.username: str = data["username"]
         self.discriminator: str = data["discriminator"]
         self.avatar: Optional[str] = data["avatar"]
-        self.bot: bool = data["bot"]
+        self.bot: Optional[bool] = data.get("bot")
         self.system: Optional[bool] = data["system"]
         self.mfa_enabled: bool = data["mfa_enabled"]
         self.banner: Optional[str] = data["banner"] or None
@@ -248,16 +266,21 @@ class EventHandler:
                     self.heartbeats = [event["d"]]
                 self.sequence = event["s"]
             logger.debug(f"Received event {event['t']}")
+        await self.handle_close()
+
 
     async def handle_event(self, event_name: str, data: dict):
         event_name = event_name.lower()
-        try:
-            await getattr(self, event_name)(data)
-        except AttributeError:
-            logger.warning(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
+        # try:
+        await getattr(self, event_name)(data)
+        # except AttributeError:
+        #     logger.warning(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
+
+    async def guild_create(self, data):
+        pass
 
     async def message_create(self, data: dict):
-        await self.events["message_create"](Message(self.client, data))
+        await self.events["message_create"](Message(self, data))
 
     def event(self, func):
         self.events[func.__name__.lower().replace("on_", "")] = func
@@ -270,9 +293,11 @@ class EventHandler:
             loop = asyncio.new_event_loop()
             loop.run_until_complete(self.heartbeat(False))
 
-        thread = threading._start_new_thread(heartbeater, ())
-        await self.events["ready"]()
-
+        threading._start_new_thread(heartbeater, ())
+        try:
+            await self.events["ready"]()
+        except KeyError:
+            return
     
 
 class WebsocketClient(EventHandler):
@@ -294,7 +319,13 @@ class WebsocketClient(EventHandler):
 
         self.token = token
         self.heartbeat_event = Event
-        self.intents = intents
+
+        if isinstance(intents, int):
+            self.intents = intents
+        elif isinstance(intents, Intents):
+            self.intents = intents.value
+        else:
+            self.intents = intents
         self.loop = asyncio.new_event_loop()
         self.session = ClientSession()
         self.commands = {}
@@ -315,7 +346,16 @@ class WebsocketClient(EventHandler):
                 await asyncio.sleep(self.interval / 1000)
                 await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
                 logger.debug("Sent a heartbeat!")
-        
+    
+    async def handle_close(self):
+        if self.ws.close_code == 4014:
+            raise DisallowedIntents("You cannot use privellaged intents with this token, go to the developer portal and allow the privellaged intents needed.")
+        elif self.ws.close_code == 4004:
+            raise InvalidToken("The token you provided is invalid.")
+        elif self.ws.close_code == 4008:
+            raise Ratelimited429("You've been rate limited. Try again in a few minutes.")
+        elif self.ws.close_code == 4013:
+            raise InvalidIntents("The intents you provided are invalid.")
     async def send_json(self, json: dict):
         try:
             await self.ws.send_json(json)
@@ -1027,7 +1067,7 @@ class Colour:
     @classmethod
     def white(cls: Type[CT]) -> CT:
         return cls(0xffffff)
-Color=Colour
+Color = Colour
 
 class MessageSelectMenuOption:
     def __init__(self, label: str, value: str, description: Optional[str], emoji: Optional[PartialEmoji], default: Optional[bool]):
@@ -1039,7 +1079,7 @@ class MessageSelectMenuOption:
             "default": default or None            
         }
     
-    def __repr__(self):
+    def to_dict(self):
         return self.settings
 
 class MessageSelectMenu(BaseComponent):
@@ -1052,7 +1092,7 @@ class MessageSelectMenu(BaseComponent):
             "disabled": False
         }
     
-    def __repr__(self):
+    def to_dict(self):
         return self.settings
 
     def add_options(self, options: List[MessageSelectMenuOption]):
@@ -1086,6 +1126,33 @@ class MessageSelectMenu(BaseComponent):
         self.options["max_values"] = max  
         return self  
 
+class MessageTextInputComponent(BaseComponent):
+    def __init__(self, *, custom_id: str, style: Union[int, str], label: str, min_length: Optional[int], max_length: Optional[int], required: Optional[bool], value: Optional[str], placeholder: Optional[str]):
+        VALID_STYLES = {
+            "Short": 1,
+            "Paragraph": 2
+        }
+
+        if isinstance(style, str):
+            if style not in VALID_STYLES:
+                raise InvalidComponentStyle("Style must be either 'Short' or 'Paragraph'.")
+            style = VALID_STYLES[style]
+
+        elif isinstance(style, int):
+            if style not in VALID_STYLES.values():
+                raise InvalidComponentStyle("Style must be either 1 or 2.")
+
+        self.settings = {
+            "custom_id": custom_id,
+            "style": style,
+            "label": label,
+            "min_length": min_length or None,
+            "max_length": max_length or None,
+            "required": required or None,
+            "value": value or None,
+            "placeholder": placeholder or None
+        }
+
 
 class MessageButton(BaseComponent):
     def __init__(self,*, style: Optional[Union[int, str]] = 1, label: Optional[str], emoji: Optional[Union[PartialEmoji, dict]], url: Optional[str]):
@@ -1101,7 +1168,8 @@ class MessageButton(BaseComponent):
             self.settings["style"] = 5
         if emoji:
             self.settings["emoji"] = emoji
-    def __repr__(self):
+
+    def to_dict(self):
         return self.settings
 
     def set_label(self, label: str):
@@ -1125,13 +1193,13 @@ class MessageButton(BaseComponent):
         }
         if isinstance(style, str):
             if style.upper() not in valid_styles:
-                raise InvalidMessageButtonStyle("Invalid button style. Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS.")
+                raise InvalidComponentStyle("Invalid button style. Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS.")
             self.settings["style"] = valid_styles[style.upper()]
             return self
             
         elif isinstance(style, int):
             if style not in valid_styles.values():
-                raise InvalidMessageButtonStyle("Invalid button style. Style must be in range 1 to 5 inclusive.")
+                raise InvalidComponentStyle("Invalid button style. Style must be in range 1 to 5 inclusive.")
             self.settings["style"] = style
             return self
     def set_emoji(self, emoji: Union[PartialEmoji, dict]):
@@ -1163,7 +1231,7 @@ class MessageActionRow:
             "components": components
         }
 
-    def __repr__(self):
+    def to_dict(self):
         return self.settings
         
     def add_components(self, components: List[Union[MessageButton, MessageSelectMenu]]):
@@ -1238,14 +1306,21 @@ class Emoji:
         self.available: bool = data["available"]
 class DiscordAPIError(Exception): # 
     ...
-    
+
+class InvalidIntents(Exception):
+    ...
+
+class ShardingRequired(Exception):
+    ...
+
 class InvalidToken(Exception):
     ...
 
 class UnhandledException(Exception):
     ... 
 
-
+class DisallowedIntents(Exception):
+    ...
 
 class BadRequest400(Exception):
     ...
@@ -1274,7 +1349,8 @@ class InternalServerError5xx(Exception):
 class TooManyComponents(Exception):
     ...
 
-class InvalidMessageButtonStyle(Exception):
+
+class InvalidComponentStyle(Exception):
     ...
 
 class CustomIdIsTooBig(Exception):
@@ -1376,9 +1452,9 @@ class GuildScheduledEvent:
 
 class WebhookUser:
     def __init__(self, data: dict):
-        self.webhook_id: str = data["webhook_id"]
-        self.username: str = data["username"]
-        self.avatar: str = data["avatar"]
+        self.webhook_id: str = data.get("webhook_id")
+        self.username: str = data.get("username")
+        self.avatar: str = data.get("avatar")
 
 
 class Webhook:
@@ -1678,93 +1754,6 @@ class Webhook: # Not used for making webhooks.
         self.source_guild: Optional[PartialGuild] = PartialGuild(data["source_guild"])
         self.source_channel: Optional[SourceChannel] = SourceChannel(data["source_channel"]) or None
         self.url: Optional[str] = data["url"]
-
-class Message:
-    def __init__(self, client, data: dict):
-        self.client = client
-        self.id: str = data["id"]
-        self.channel_id: str = data["channel_id"]
-        self.channel: Messageable = Messageable(self.client, data["channel_id"])
-        self.guild_id: Optional[str] = data["guild_id"] or None
-        self.webhook_id: Optional[str] = data["webhook_id"] or None
-        self.author: Optional[User] if not self.webhook_id else WebhookUser = WebhookUser(data["author"]) if self.webhook_id else User(data["author"])
-        self.member: Optional[GuildMember] = GuildMember(data["member"]) if data["member"] else None
-        self.content: Optional[str] = data["content"] or None # I forgot Message Intents are gonna stop this.
-        self.timestamp: str = data["timestamp"]
-        self.edited_timestamp: Optional[str] = data["edited_timestamp"] or None
-        self.tts: bool = data["tts"]
-        self.mention_everyone: bool = data["mention_everyone"]
-        self.mentions: Optional[List[MentionedUser]] = [MentionedUser(mention) for mention in data["mentions"]] or None
-        self.mention_roles: Optional[List[int]] = data["mention_roles"] or None
-        self.mention_channels: Optional[List[MentionedChannel]] = [MentionedChannel(channel) for channel in data["mention_channels"]] or None
-        self.embeds: Optional[List[Embed]] = [Embed(embed) for embed in data["embeds"]] or None
-        self.reactions: Optional[List[Reaction]] = [Reaction(reaction) for reaction in data["reactions"]] or None
-        self.nonce: Optional[Union[int, str]] = data["nonce"] or None
-        self.pinned: bool = data["pinned"]
-        self.type: int = data["type"]
-        self.activity: MessageActivity = MessageActivity(data["activity"])
-        self.application: Application = Application(data["application"]) # Despite there being a PartialApplication, Discord don't specify what attributes it has
-        self.flags: int = data["flags"]
-        self.referenced_message: Optional[Message] = Message(data["referenced_message"]) if data["referenced_message"] else None
-        self.interaction: Optional[MessageInteraction] = MessageInteraction(client, data["interaction"]) if data["interaction"] else None
-        self.thread: Thread = Thread(data["thread"]) if data["thread"] else None
-        self.components: Optional[List[Union[MessageSelectMenu, MessageButton]]] = [MessageSelectMenu(component) if component["type"] == 1 else MessageButton(component) for component in data["components"]] or None
-        self.stickers: Optional[List[StickerItem]] = [StickerItem(sticker) for sticker in data["stickers"]] or None
-        
-    async def add_reaction(self, emoji: str):
-        emoji = quote(emoji)
-        response = await self.client.http.put(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/@me")
-        return await response.json()
-    
-    async def remove_reaction(self, emoji: str, user: Optional[User] = None):
-        emoji = quote(emoji)
-        if not user:        
-            response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/@me")
-        else:
-            response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/{user.id}")
-        return await response.json()
-    
-    async def fetch_reactions(self,*, after, limit) -> List[Reaction]:
-        response = await self.client.http.get(f"channels/{self.channel_id}/messages/{self.id}/reactions?after={after}&limit={limit}")
-        return await response.json()
-    
-    async def delete_all_reactions(self):
-        response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions")
-        return await response.json()
-    
-    async def delete_reaction_for_emoji(self, emoji: str):
-        emoji = quote(emoji)
-        response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}")
-        return await response.json()
-    
-    async def edit(self, message_data: dict):
-        response = await self.client.http.patch(f"channels/{self.channel_id}/messages/{self.id}", data=message_data)
-        return await response.json()
-    
-    async def delete(self):
-        response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}")
-        return await response.json()
-    
-    async def pin(self, *, reason: Optional[str]):
-        headers = self.client.http.headers.copy()
-        headers["X-Audit-Log-Reason"] = reason
-        response = await self.client.http.put(f"channels/{self.channel_id}/pins/{self.id}", headers=headers)
-        return await response.json()
-    
-    async def unpin(self, *, reason: Optional[str]):
-        headers = self.client.http.headers.copy()
-        headers["X-Audit-Log-Reason"] = reason
-        response = await self.client.http.delete(f"channels/{self.channel_id}/pins/{self.id}", headers=headers)
-        return await response.json()
-
-    async def start_thread(self, name: str, auto_archive_duration: Optional[int], rate_limit_per_user: Optional[int]):
-        response = await self.client.http.post(f"channels/{self.channel_id}/messages/{self.id}/threads", data={"name": name, "auto_archive_duration": auto_archive_duration, "rate_limit_per_user": rate_limit_per_user})
-        self.client.guilds[self.guild_id].append(Thread(await response.json())) # Cache it
-        return Thread(await response.json())
-    
-    async def crosspost(self):
-        response = await self.client.http.post(f"channels/{self.channel_id}/messages/{self.id}/crosspost")
-        return await response.json()
     
 def compute_timedelta(dt: datetime.datetime):
     if dt.tzinfo is None:
@@ -1812,3 +1801,454 @@ def escape_mentions(text: str) -> str:
 
 def utcnow() -> datetime.datetime:
     return datetime.datetime.now(datetime.timezone.utc)
+
+class BaseFlags:
+    VALID_FLAGS: ClassVar[Dict[str, int]]
+    DEFAULT_VALUE: ClassVar[int]
+
+    value: int
+
+    __slots__ = ('value',)
+
+    def __init__(self, **kwargs: bool):
+        self.value = self.DEFAULT_VALUE
+        for key, value in kwargs.items():
+            if key not in self.VALID_FLAGS:
+                raise TypeError(f'{key!r} is not a valid flag name.')
+            setattr(self, key, value)
+
+    @classmethod
+    def _from_value(cls, value):
+        self = cls.__new__(cls)
+        self.value = value
+        return self
+
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, self.__class__) and self.value == other.value
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash(self.value)
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} value={self.value}>'
+
+    def __iter__(self) -> Iterator[Tuple[str, bool]]:
+        for name, value in self.__class__.__dict__.items():
+            if isinstance(value, alias_flag_value):
+                continue
+
+            if isinstance(value, flag_value):
+                yield (name, self._has_flag(value.flag))
+
+    def _has_flag(self, o: int) -> bool:
+        return (self.value & o) == o
+
+    def _set_flag(self, o: int, toggle: bool) -> None:
+        if toggle is True:
+            self.value |= o
+        elif toggle is False:
+            self.value &= ~o
+        else:
+            raise TypeError(f'Value to set for {self.__class__.__name__} must be a bool.')
+
+
+BF = TypeVar('BF', bound='BaseFlags')
+FV = TypeVar('FV', bound='flag_value')
+
+class flag_value:
+    def __init__(self, func: Callable[[Any], int]):
+        self.flag = func(None)
+        self.__doc__ = func.__doc__
+
+    @overload
+    def __get__(self: FV, instance: None, owner: Type[BF]) -> FV:
+        ...
+
+    @overload
+    def __get__(self, instance: BF, owner: Type[BF]) -> bool:
+        ...
+
+    def __get__(self, instance: Optional[BF], owner: Type[BF]) -> Any:
+        if instance is None:
+            return self
+        return instance._has_flag(self.flag)
+
+    def __set__(self, instance: BF, value: bool) -> None:
+        instance._set_flag(self.flag, value)
+
+    def __repr__(self):
+        return f'<flag_value flag={self.flag!r}>'
+
+alias_flag_value = flag_value
+
+def fill_with_flags(*, inverted: bool = False):
+    def decorator(cls: Type[BF]):
+        # fmt: off
+        cls.VALID_FLAGS = {
+            name: value.flag
+            for name, value in cls.__dict__.items()
+            if isinstance(value, flag_value)
+        }
+        # fmt: on
+
+        if inverted:
+            max_bits = max(cls.VALID_FLAGS.values()).bit_length()
+            cls.DEFAULT_VALUE = -1 + (2 ** max_bits)
+        else:
+            cls.DEFAULT_VALUE = 0
+
+        return cls
+
+    return decorator
+
+@fill_with_flags()
+class Intents(BaseFlags):
+    r"""Wraps up a Discord gateway intent flag.
+    Similar to :class:`Permissions`\, the properties provided are two way.
+    You can set and retrieve individual bits using the properties as if they
+    were regular bools.
+    To construct an object you can pass keyword arguments denoting the flags
+    to enable or disable.
+    This is used to disable certain gateway features that are unnecessary to
+    run your bot. To make use of this, it is passed to the ``intents`` keyword
+    argument of :class:`Client`.
+    .. versionadded:: 1.5
+    .. container:: operations
+        .. describe:: x == y
+            Checks if two flags are equal.
+        .. describe:: x != y
+            Checks if two flags are not equal.
+        .. describe:: hash(x)
+               Return the flag's hash.
+        .. describe:: iter(x)
+               Returns an iterator of ``(name, value)`` pairs. This allows it
+               to be, for example, constructed as a dict or a list of pairs.
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. You should query flags via the properties
+        rather than using this raw value.
+    """
+
+    __slots__ = ()
+
+    def __init__(self, **kwargs: bool):
+        self.value = self.DEFAULT_VALUE
+        for key, value in kwargs.items():
+            if key not in self.VALID_FLAGS:
+                raise TypeError(f'{key!r} is not a valid flag name.')
+            setattr(self, key, value)
+
+    @classmethod
+    def all(cls):
+        """A factory method that creates a :class:`Intents` with everything enabled."""
+        bits = max(cls.VALID_FLAGS.values()).bit_length()
+        value = (1 << bits) - 1
+        self = cls.__new__(cls)
+        self.value = value
+        return self
+
+    @classmethod
+    def none(cls):
+        """A factory method that creates a :class:`Intents` with everything disabled."""
+        self = cls.__new__(cls)
+        self.value = self.DEFAULT_VALUE
+        return self
+
+    @classmethod
+    def default(cls):
+        """A factory method that creates a :class:`Intents` with everything enabled
+        except :attr:`presences` and :attr:`members`.
+        """
+        self = cls.all()
+        self.presences = False
+        self.members = False
+        return self
+
+    @flag_value
+    def guilds(self):
+        """:class:`bool`: Whether guild related events are enabled.
+        This corresponds to the following events:
+        - :func:`on_guild_join`
+        - :func:`on_guild_remove`
+        - :func:`on_guild_available`
+        - :func:`on_guild_unavailable`
+        - :func:`on_guild_channel_update`
+        - :func:`on_guild_channel_create`
+        - :func:`on_guild_channel_delete`
+        - :func:`on_guild_channel_pins_update`
+        This also corresponds to the following attributes and classes in terms of cache:
+        - :attr:`Client.guilds`
+        - :class:`Guild` and all its attributes.
+        - :meth:`Client.get_channel`
+        - :meth:`Client.get_all_channels`
+        It is highly advisable to leave this intent enabled for your bot to function.
+        """
+        return 1 << 0
+
+    @flag_value
+    def members(self):
+        """:class:`bool`: Whether guild member related events are enabled.
+        This corresponds to the following events:
+        - :func:`on_member_join`
+        - :func:`on_member_remove`
+        - :func:`on_member_update`
+        - :func:`on_user_update`
+        This also corresponds to the following attributes and classes in terms of cache:
+        - :meth:`Client.get_all_members`
+        - :meth:`Client.get_user`
+        - :meth:`Guild.chunk`
+        - :meth:`Guild.fetch_members`
+        - :meth:`Guild.get_member`
+        - :attr:`Guild.members`
+        - :attr:`Member.roles`
+        - :attr:`Member.nick`
+        - :attr:`Member.premium_since`
+        - :attr:`User.name`
+        - :attr:`User.avatar`
+        - :attr:`User.discriminator`
+        For more information go to the :ref:`member intent documentation <need_members_intent>`.
+        .. note::
+            Currently, this requires opting in explicitly via the developer portal as well.
+            Bots in over 100 guilds will need to apply to Discord for verification.
+        """
+        return 1 << 1
+
+    @flag_value
+    def bans(self):
+        """:class:`bool`: Whether guild ban related events are enabled.
+        This corresponds to the following events:
+        - :func:`on_member_ban`
+        - :func:`on_member_unban`
+        This does not correspond to any attributes or classes in the library in terms of cache.
+        """
+        return 1 << 2
+
+    @flag_value
+    def emojis(self):
+        """:class:`bool`: Alias of :attr:`.emojis_and_stickers`.
+        .. versionchanged:: 2.0
+            Changed to an alias.
+        """
+        return 1 << 3
+
+    @alias_flag_value
+    def emojis_and_stickers(self):
+        """:class:`bool`: Whether guild emoji and sticker related events are enabled.
+        .. versionadded:: 2.0
+        This corresponds to the following events:
+        - :func:`on_guild_emojis_update`
+        - :func:`on_guild_stickers_update`
+        This also corresponds to the following attributes and classes in terms of cache:
+        - :class:`Emoji`
+        - :class:`GuildSticker`
+        - :meth:`Client.get_emoji`
+        - :meth:`Client.get_sticker`
+        - :meth:`Client.emojis`
+        - :meth:`Client.stickers`
+        - :attr:`Guild.emojis`
+        - :attr:`Guild.stickers`
+        """
+        return 1 << 3
+
+    @flag_value
+    def integrations(self):
+        """:class:`bool`: Whether guild integration related events are enabled.
+        This corresponds to the following events:
+        - :func:`on_guild_integrations_update`
+        - :func:`on_integration_create`
+        - :func:`on_integration_update`
+        - :func:`on_raw_integration_delete`
+        This does not correspond to any attributes or classes in the library in terms of cache.
+        """
+        return 1 << 4
+
+    @flag_value
+    def webhooks(self):
+        """:class:`bool`: Whether guild webhook related events are enabled.
+        This corresponds to the following events:
+        - :func:`on_webhooks_update`
+        This does not correspond to any attributes or classes in the library in terms of cache.
+        """
+        return 1 << 5
+
+    @flag_value
+    def invites(self):
+        """:class:`bool`: Whether guild invite related events are enabled.
+        This corresponds to the following events:
+        - :func:`on_invite_create`
+        - :func:`on_invite_delete`
+        This does not correspond to any attributes or classes in the library in terms of cache.
+        """
+        return 1 << 6
+
+    @flag_value
+    def voice_states(self):
+        """:class:`bool`: Whether guild voice state related events are enabled.
+        This corresponds to the following events:
+        - :func:`on_voice_state_update`
+        This also corresponds to the following attributes and classes in terms of cache:
+        - :attr:`VoiceChannel.members`
+        - :attr:`VoiceChannel.voice_states`
+        - :attr:`Member.voice`
+        .. note::
+            This intent is required to connect to voice.
+        """
+        return 1 << 7
+
+    @flag_value
+    def presences(self):
+        """:class:`bool`: Whether guild presence related events are enabled.
+        This corresponds to the following events:
+        - :func:`on_presence_update`
+        This also corresponds to the following attributes and classes in terms of cache:
+        - :attr:`Member.activities`
+        - :attr:`Member.status`
+        - :attr:`Member.raw_status`
+        For more information go to the :ref:`presence intent documentation <need_presence_intent>`.
+        .. note::
+            Currently, this requires opting in explicitly via the developer portal as well.
+            Bots in over 100 guilds will need to apply to Discord for verification.
+        """
+        return 1 << 8
+
+    @alias_flag_value
+    def messages(self):
+        """:class:`bool`: Whether guild and direct message related events are enabled.
+        This is a shortcut to set or get both :attr:`guild_messages` and :attr:`dm_messages`.
+        This corresponds to the following events:
+        - :func:`on_message` (both guilds and DMs)
+        - :func:`on_message_edit` (both guilds and DMs)
+        - :func:`on_message_delete` (both guilds and DMs)
+        - :func:`on_raw_message_delete` (both guilds and DMs)
+        - :func:`on_raw_message_edit` (both guilds and DMs)
+        This also corresponds to the following attributes and classes in terms of cache:
+        - :class:`Message`
+        - :attr:`Client.cached_messages`
+        Note that due to an implicit relationship this also corresponds to the following events:
+        - :func:`on_reaction_add` (both guilds and DMs)
+        - :func:`on_reaction_remove` (both guilds and DMs)
+        - :func:`on_reaction_clear` (both guilds and DMs)
+        """
+        return (1 << 9) | (1 << 12)
+
+    @flag_value
+    def guild_messages(self):
+        """:class:`bool`: Whether guild message related events are enabled.
+        See also :attr:`dm_messages` for DMs or :attr:`messages` for both.
+        This corresponds to the following events:
+        - :func:`on_message` (only for guilds)
+        - :func:`on_message_edit` (only for guilds)
+        - :func:`on_message_delete` (only for guilds)
+        - :func:`on_raw_message_delete` (only for guilds)
+        - :func:`on_raw_message_edit` (only for guilds)
+        This also corresponds to the following attributes and classes in terms of cache:
+        - :class:`Message`
+        - :attr:`Client.cached_messages` (only for guilds)
+        Note that due to an implicit relationship this also corresponds to the following events:
+        - :func:`on_reaction_add` (only for guilds)
+        - :func:`on_reaction_remove` (only for guilds)
+        - :func:`on_reaction_clear` (only for guilds)
+        """
+        return 1 << 9
+
+    @flag_value
+    def dm_messages(self):
+        """:class:`bool`: Whether direct message related events are enabled.
+        See also :attr:`guild_messages` for guilds or :attr:`messages` for both.
+        This corresponds to the following events:
+        - :func:`on_message` (only for DMs)
+        - :func:`on_message_edit` (only for DMs)
+        - :func:`on_message_delete` (only for DMs)
+        - :func:`on_raw_message_delete` (only for DMs)
+        - :func:`on_raw_message_edit` (only for DMs)
+        This also corresponds to the following attributes and classes in terms of cache:
+        - :class:`Message`
+        - :attr:`Client.cached_messages` (only for DMs)
+        Note that due to an implicit relationship this also corresponds to the following events:
+        - :func:`on_reaction_add` (only for DMs)
+        - :func:`on_reaction_remove` (only for DMs)
+        - :func:`on_reaction_clear` (only for DMs)
+        """
+        return 1 << 12
+
+    @alias_flag_value
+    def reactions(self):
+        """:class:`bool`: Whether guild and direct message reaction related events are enabled.
+        This is a shortcut to set or get both :attr:`guild_reactions` and :attr:`dm_reactions`.
+        This corresponds to the following events:
+        - :func:`on_reaction_add` (both guilds and DMs)
+        - :func:`on_reaction_remove` (both guilds and DMs)
+        - :func:`on_reaction_clear` (both guilds and DMs)
+        - :func:`on_raw_reaction_add` (both guilds and DMs)
+        - :func:`on_raw_reaction_remove` (both guilds and DMs)
+        - :func:`on_raw_reaction_clear` (both guilds and DMs)
+        This also corresponds to the following attributes and classes in terms of cache:
+        - :attr:`Message.reactions` (both guild and DM messages)
+        """
+        return (1 << 10) | (1 << 13)
+
+    @flag_value
+    def guild_reactions(self):
+        """:class:`bool`: Whether guild message reaction related events are enabled.
+        See also :attr:`dm_reactions` for DMs or :attr:`reactions` for both.
+        This corresponds to the following events:
+        - :func:`on_reaction_add` (only for guilds)
+        - :func:`on_reaction_remove` (only for guilds)
+        - :func:`on_reaction_clear` (only for guilds)
+        - :func:`on_raw_reaction_add` (only for guilds)
+        - :func:`on_raw_reaction_remove` (only for guilds)
+        - :func:`on_raw_reaction_clear` (only for guilds)
+        This also corresponds to the following attributes and classes in terms of cache:
+        - :attr:`Message.reactions` (only for guild messages)
+        """
+        return 1 << 10
+
+    @flag_value
+    def dm_reactions(self):
+        """:class:`bool`: Whether direct message reaction related events are enabled.
+        See also :attr:`guild_reactions` for guilds or :attr:`reactions` for both.
+        This corresponds to the following events:
+        - :func:`on_reaction_add` (only for DMs)
+        - :func:`on_reaction_remove` (only for DMs)
+        - :func:`on_reaction_clear` (only for DMs)
+        - :func:`on_raw_reaction_add` (only for DMs)
+        - :func:`on_raw_reaction_remove` (only for DMs)
+        - :func:`on_raw_reaction_clear` (only for DMs)
+        This also corresponds to the following attributes and classes in terms of cache:
+        - :attr:`Message.reactions` (only for DM messages)
+        """
+        return 1 << 13
+
+    @alias_flag_value
+    def typing(self):
+        """:class:`bool`: Whether guild and direct message typing related events are enabled.
+        This is a shortcut to set or get both :attr:`guild_typing` and :attr:`dm_typing`.
+        This corresponds to the following events:
+        - :func:`on_typing` (both guilds and DMs)
+        This does not correspond to any attributes or classes in the library in terms of cache.
+        """
+        return (1 << 11) | (1 << 14)
+
+    @flag_value
+    def guild_typing(self):
+        """:class:`bool`: Whether guild and direct message typing related events are enabled.
+        See also :attr:`dm_typing` for DMs or :attr:`typing` for both.
+        This corresponds to the following events:
+        - :func:`on_typing` (only for guilds)
+        This does not correspond to any attributes or classes in the library in terms of cache.
+        """
+        return 1 << 11
+
+    @flag_value
+    def dm_typing(self):
+        """:class:`bool`: Whether guild and direct message typing related events are enabled.
+        See also :attr:`guild_typing` for guilds or :attr:`typing` for both.
+        This corresponds to the following events:
+        - :func:`on_typing` (only for DMs)
+        This does not correspond to any attributes or classes in the library in terms of cache.
+        """
+        return 1 << 14
