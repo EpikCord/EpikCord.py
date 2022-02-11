@@ -831,14 +831,14 @@ class GuildNewsChannel(GuildTextChannel):
 class VoiceChannel(GuildChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.bitrate: int = data["bitrate"]
-        self.user_limit: int = data["user_limit"]
-        self.rtc_region: str = data["rtc_region"]
+        self.bitrate: int = data.get("bitrate")
+        self.user_limit: int = data.get("user_limit")
+        self.rtc_region: str = data.get("rtc_region")
             
 class DMChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.recipient: List[PartialUser] = PartialUser(data["recipient"])
+        self.recipient: List[PartialUser] = PartialUser(data.get("recipient"))
 
 class ChannelCategory(GuildChannel):
     def __init__(self, client, data: dict):
@@ -856,10 +856,10 @@ class GuildNewsThread(Thread, GuildNewsChannel):
 class GuildStageChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.guild_id: str = data["guild_id"]
-        self.channel_id: str = data["channel_id"]
-        self.privacy_level: int = data["privacy_level"]
-        self.discoverable_disabled: bool = data["discoverable_disabled"]
+        self.guild_id: str = data.get("guild_id")
+        self.channel_id: str = data.get("channel_id")
+        self.privacy_level: int = data.get("privacy_level")
+        self.discoverable_disabled: bool = data.get("discoverable_disabled")
 
 class TextBasedChannel(BaseChannel):
     def __init__(self, client, data: dict):
@@ -1261,10 +1261,10 @@ class MessageActionRow:
 
 class EmbedAuthor:
     def __init__(self, data: dict):
-        self.name: str = data["name"]
-        self.url: Optional[str] = data["url"] or None
-        self.icon_url: Optional[str] = data["icon_url"] or None
-        self.proxy_icon_url: Optional[str] = data["proxy_icon_url"] or None
+        self.name: str = data.get("name")
+        self.url: Optional[str] = data.get("url") or None
+        self.icon_url: Optional[str] = data.get("icon_url") or None
+        self.proxy_icon_url: Optional[str] = data.get("proxy_icon_url") or None
 
 class Embed: # Always wanted to make this class :D
     def __init__(self,*, title: Optional[str], description: Optional[str], color:Optional[Colour], colour:Optional[Colour], url:Optional[str]):
@@ -1307,14 +1307,14 @@ class Embed: # Always wanted to make this class :D
 
 class Emoji:
     def __init__(self, client, data: dict):
-        self.id: Optional[str] = data["id"]
-        self.name: Optional[str] = data["name"]
-        self.roles: List[Role] = [Role(role) for role in data["roles"]]
-        self.user: Optional[User] = User(data["user"]) if "user" in data else None
-        self.requires_colons: bool = data["require_colons"]
-        self.managed: bool = data["managed"]
-        self.animated: bool = data["animated"]
-        self.available: bool = data["available"]
+        self.id: Optional[str] = data.get("id")
+        self.name: Optional[str] = data.get("name")
+        self.roles: List[Role] = [Role(role) for role in data.get("roles")]
+        self.user: Optional[User] = User(data.get("user")) if "user" in data else None
+        self.requires_colons: bool = data.get("require_colons")
+        self.managed: bool = data.get("managed")
+        self.animated: bool = data.get("animated")
+        self.available: bool = data.get("available")
 class DiscordAPIError(Exception): # 
     ...
 
@@ -1381,15 +1381,15 @@ class ThreadArchived(Exception):
 
 class WelcomeChannel:
     def __init__(self, data: dict):
-        self.channel_id: str = data["channel_id"]
-        self.description: str = data["description"]
-        self.emoji_id: Optional[str] = data["emoji_id"]
-        self.emoji_name: Optional[str] = data["emoji_name"]
+        self.channel_id: str = data.get("channel_id")
+        self.description: str = data.get("description")
+        self.emoji_id: Optional[str] = data.get("emoji_id")
+        self.emoji_name: Optional[str] = data.get("emoji_name")
 
 class WelcomeScreen:
     def __init__(self, data: dict):
-        self.description: Optional[str] = data["description"] or None
-        self.welcome_channels: List[WelcomeChannel] = [WelcomeChannel(welcome_channel) for welcome_channel in data["welcome_channels"]]
+        self.description: Optional[str] = data.get("description") or None
+        self.welcome_channels: List[WelcomeChannel] = [WelcomeChannel(welcome_channel) for welcome_channel in data.get("welcome_channels")]
 
 class Guild:
     def __init__(self, client: Client, data: dict):
