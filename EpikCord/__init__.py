@@ -121,7 +121,7 @@ class Message:
         self.application: Application = Application(data.get("application")) # Despite there being a PartialApplication, Discord don't specify what attributes it has
         self.flags: int = data.get("flags")
         self.referenced_message: Optional[Message] = Message(data.get("referenced_message")) if data.get("referenced_message") else None
-        self.interaction: Optional[MessageInteraction] = MessageInteraction(client, data.get("interaction")) if date.get("interaction") else None
+        self.interaction: Optional[MessageInteraction] = MessageInteraction(client, data.get("interaction")) if data.get("interaction") else None
         self.thread: Optional[Thread] = Thread(data.get("thread")) if data.get("thread") else None
         if data.get("components"):
             components: List[Any] = []
