@@ -1395,52 +1395,52 @@ class Guild:
     def __init__(self, client: Client, data: dict):
         self.client = client
         self.data: dict = data
-        self.id: str = data["id"]
-        self.name: str = data["name"]
-        self.icon: Optional[str] = data["icon"] or None
-        self.icon_hash: Optional[str] = data["icon_hash"] or None
-        self.splash: Optional[str] = data["splash"] or None
-        self.discovery_splash: Optional[str] = data["discovery_splash"] or None
-        self.owner_id: str = data["owner_id"]
-        self.permissions: str = data["permissions"]
-        self.afk_channel_id: str = data["afk_channel_id"]
-        self.afk_timeout: int = data["afk_timeout"]
-        self.verification_level: str = "NONE" if data["verification_level"] == 0 else "LOW" if data["verification_level"] == 1 else "MEDIUM" if data["verification_level"] == 2 else "HIGH" if data["verification_level"] == 3 else "VERY_HIGH"
-        self.default_message_notifications: str = "ALL" if data["default_message_notifications"] == 0 else "MENTIONS" 
-        self.explicit_content_filter: str = "DISABLED" if data["explicit_content_filter"] == 0 else "MEMBERS_WITHOUT_ROLES" if data["explicit_content_filter"] == 1 else "ALL_MEMBERS"
-        self.roles: List[Role] = [Role(role) for role in data["roles"]]
-        self.emojis: List[Emoji] = [Emoji(emoji) for emoji in data["emojis"]]
-        self.features: List[str] = data["features"]
-        self.mfa_level: str = "NONE" if data["mfa_level"] == 0 else "ELEVATED"
-        self.application_id: Optional[str] = data["application_id"] or None
-        self.system_channel_id: Optional[str] = data["system_channel_id"] or None
-        self.system_channel_flags: int = data["system_channel_flags"]
-        self.rules_channel_id: Optional[int] = data["rules_channel_id"] or None
-        self.joined_at: Optional[str] = data["joined_at"] or None
-        self.large: bool = data["large"]
-        self.unavailable: bool = data["unavailable"]
-        self.member_count: int = data["member_count"]
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+        self.icon: Optional[str] = data.get("icon") or None
+        self.icon_hash: Optional[str] = data.get("icon_hash") or None
+        self.splash: Optional[str] = data.get("splash") or None
+        self.discovery_splash: Optional[str] = data.get("discovery_splash") or None
+        self.owner_id: str = data.get("owner_id")
+        self.permissions: str = data.get("permissions")
+        self.afk_channel_id: str = data.get("afk_channel_id")
+        self.afk_timeout: int = data.get("afk_timeout")
+        self.verification_level: str = "NONE" if data.get("verification_level") == 0 else "LOW" if data.get("verification_level") == 1 else "MEDIUM" if data.get("verification_level") == 2 else "HIGH" if data.get("verification_level") == 3 else "VERY_HIGH"
+        self.default_message_notifications: str = "ALL" if data.get("default_message_notifications") == 0 else "MENTIONS" 
+        self.explicit_content_filter: str = "DISABLED" if data.get("explicit_content_filter") == 0 else "MEMBERS_WITHOUT_ROLES" if data.get("explicit_content_filter") == 1 else "ALL_MEMBERS"
+        self.roles: List[Role] = [Role(role) for role in data.get("roles")]
+        self.emojis: List[Emoji] = [Emoji(emoji) for emoji in data.get("emojis")]
+        self.features: List[str] = data.get("features")
+        self.mfa_level: str = "NONE" if data.get("mfa_level") == 0 else "ELEVATED"
+        self.application_id: Optional[str] = data.get("application_id") or None
+        self.system_channel_id: Optional[str] = data.get("system_channel_id") or None
+        self.system_channel_flags: int = data.get("system_channel_flags")
+        self.rules_channel_id: Optional[int] = data.get("rules_channel_id") or None
+        self.joined_at: Optional[str] = data.get("joined_at") or None
+        self.large: bool = data.get("large")
+        self.unavailable: bool = data.get("unavailable")
+        self.member_count: int = data.get("member_count")
         # self.voice_states: List[dict] = data["voice_states"]
-        self.members: List[GuildMember] = [GuildMember(member) for member in data["members"]]
-        self.channels: List[GuildChannel] = [GuildChannel(channel) for channel in data["channels"]]
-        self.threads: List[Thread] = [Thread(thread) for thread in data["threads"]]
-        self.presences: List[dict] = data["presences"]
-        self.max_presences: int = data["max_presences"]
-        self.max_members: int = data["max_members"]
-        self.vanity_url_code: Optional[str] = data["vanity_url_code"] or None
-        self.description: Optional[str] = data["description"] or None
-        self.banner: Optional[str] = data["banner"] or None
-        self.premium_tier: int = data["premium_tier"]
-        self.premium_subscription_count: int = data["premium_subscription_count"]
-        self.preferred_locale: str = data["preferred_locale"]
-        self.public_updates_channel_id: Optional[str] = data["public_updates_channel_id"] or None
-        self.max_video_channel_users: Optional[int] = data["max_video_channel_users"] or None
-        self.approximate_member_count: Optional[int] = data["approximate_member_count"] or None
-        self.approximate_presence_count: Optional[int] = data["approximate_presense_count"] or None
-        self.welcome_screen: Optional[WelcomeScreen] = WelcomeScreen(data["welcome_screen"]) if data["welcome_screen"] else None
-        self.nsfw_level: int = data["nsfw_level"]
-        self.stage_instances: List[GuildStageChannel] = [GuildStageChannel(channel) for channel in data["stage_instances"]]
-        self.stickers: Optional[StickerItem] = StickerItem(data["stickers"]) if data["stickers"] else None
+        self.members: List[GuildMember] = [GuildMember(member) for member in data.get("members")]
+        self.channels: List[GuildChannel] = [GuildChannel(channel) for channel in data.get("channels")]
+        self.threads: List[Thread] = [Thread(thread) for thread in data.get("threads")]
+        self.presences: List[dict] = data.get("presences")
+        self.max_presences: int = data.get("max_presences")
+        self.max_members: int = data.get("max_members")
+        self.vanity_url_code: Optional[str] = data.get("vanity_url_code") or None
+        self.description: Optional[str] = data.get("description") or None
+        self.banner: Optional[str] = data.get("banner") or None
+        self.premium_tier: int = data.get("premium_tier")
+        self.premium_subscription_count: int = data.get("premium_subscription_count")
+        self.preferred_locale: str = data.get("preferred_locale")
+        self.public_updates_channel_id: Optional[str] = data.get("public_updates_channel_id") or None
+        self.max_video_channel_users: Optional[int] = data.get("max_video_channel_users") or None
+        self.approximate_member_count: Optional[int] = data.get("approximate_member_count") or None
+        self.approximate_presence_count: Optional[int] = data.get("approximate_presence_count") or None
+        self.welcome_screen: Optional[WelcomeScreen] = WelcomeScreen(data.get("welcome_screen")) if data.get("welcome_screen") else None
+        self.nsfw_level: int = data.get("nsfw_level")
+        self.stage_instances: List[GuildStageChannel] = [GuildStageChannel(channel) for channel in data.get("stage_instances")]
+        self.stickers: Optional[StickerItem] = StickerItem(data.get("stickers")) if data.get("stickers") else None
 
 class GuildScheduledEvent:
     def __init__(self, client: Client, data: dict):
