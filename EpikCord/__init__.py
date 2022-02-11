@@ -1719,17 +1719,17 @@ class ClientUser():
     def __init__(self, client, data: dict):
         self.client = client
         self.data = data
-        self.verified: bool = data["verified"]
-        self.username: str = data["username"]
-        self.mfa_enabled: bool = data["mfa_enabled"]
-        self.id: str = data["id"]
-        self.flags: int = data["flags"]
-        self.email: Optional[str] = data["email"] or None
-        self.discriminator: str = data["discriminator"]
-        self.bot: bool = data["bot"]
-        self.avatar: str = data["avatar"]
+        self.verified: bool = data.get("verified")
+        self.username: str = data.get("username")
+        self.mfa_enabled: bool = data.get("mfa_enabled")
+        self.id: str = data.get("id")
+        self.flags: int = data.get("flags")
+        self.email: Optional[str] = data.get("email") or None
+        self.discriminator: str = data.get("discriminator")
+        self.bot: bool = data.get("bot")
+        self.avatar: str = data.get("avatar")
         if not self.bot: # if they're a user account
-            print("Self botting is against Discord ToS. You can get ban.") # Yeah I'm keeping this as a print
+            print("Warning: Self botting is against Discord ToS. You can get banned.") # Yeah I'm keeping this as a print
     async def fetch(self):
         response = await self.client.http.get("users/@me")
         data = await response.json()
@@ -1747,24 +1747,24 @@ class ClientUser():
 
 class SourceChannel:
     def __init__(self, data: dict):
-        self.id: str = data["id"]
-        self.name: str = data["name"]
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
 
 class Webhook: # Not used for making webhooks.
     def __init__(self, client, data: dict):
-        self.id: str = data["id"]
+        self.id: str = data.get("id")
         self.client = client
-        self.type: int = "Incoming" if data["type"] == 1 else "Channel Follower" if data["type"] == 2 else "Application"
-        self.guild_id: Optional[str] = data["guild_id"]
-        self.channel_id: Optional[str] = data["channel_id"]
-        self.user: Optional[WebhookUser] = WebhookUser(data["user"])
-        self.name: Optional[str] = data["name"]
-        self.avatar: Optional[str] = data["avatar"]
-        self.token: str = data["token"]
-        self.application_id: Optional[str] = data["application_id"]
-        self.source_guild: Optional[PartialGuild] = PartialGuild(data["source_guild"])
-        self.source_channel: Optional[SourceChannel] = SourceChannel(data["source_channel"]) or None
-        self.url: Optional[str] = data["url"]
+        self.type: int = "Incoming" if data.get("type") == 1 else "Channel Follower" if data.get("type") == 2 else "Application"
+        self.guild_id: Optional[str] = data.get("guild_id")
+        self.channel_id: Optional[str] = data.get("channel_id")
+        self.user: Optional[WebhookUser] = WebhookUser(data.get("user"))
+        self.name: Optional[str] = data.get("name")
+        self.avatar: Optional[str] = data.get("avatar")
+        self.token: str = data.get("token")
+        self.application_id: Optional[str] = data.get("application_id")
+        self.source_guild: Optional[PartialGuild] = PartialGuild(data.get("source_guild"))
+        self.source_channel: Optional[SourceChannel] = SourceChannel(data.get("source_channel")) or None
+        self.url: Optional[str] = data.get("url")
     
 def compute_timedelta(dt: datetime.datetime):
     if dt.tzinfo is None:
