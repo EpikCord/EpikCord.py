@@ -101,7 +101,7 @@ class Message:
         self.channel_id: str = data.get("channel_id")
         self.guild_id: Optional[str] = data.get("guild_id") 
         self.webhook_id: Optional[str] = data.get("webhook_id")
-        self.author: Optional[Union[User, WebhookUser] = WebhookUser(data.get("author")) if self.webhook_id else User(client, data.get("author"))
+        self.author: Optional[Union[User, WebhookUser]] = WebhookUser(data.get("author")) if self.webhook_id else User(client, data.get("author"))
         if data.get("member"):
             self.member: GuildMember = GuildMember(data.get("member"))
         self.content: Optional[str] = data.get("content") # I forgot Message Intents are gonna stop this.
@@ -120,7 +120,7 @@ class Message:
         self.activity: MessageActivity = MessageActivity(data.get("activity"))
         self.application: Application = Application(data.get("application")) # Despite there being a PartialApplication, Discord don't specify what attributes it has
         self.flags: int = data.get("flags")
-        self.referenced_message: Optional[Message] = Message(data.get("referenced_message")) if data.get("referenced_message")
+        self.referenced_message: Optional[Message] = Message(data.get("referenced_message")) if data.get("referenced_message") else None
         self.interaction: Optional[MessageInteraction] = MessageInteraction(client, data.get("interaction")) if date.get("interaction") else None
         self.thread: Optional[Thread] = Thread(data.get("thread")) if data.get("thread") else None
         if data.get("components"):
@@ -539,21 +539,21 @@ class StickerItem:
 
 class ThreadMember:
     def __init__(self, data: dict):
-        self.id: str = data["user_id"]
-        self.thread_id: str = data["thread_id"]
-        self.join_timestamp: str = data["join_timestamp"]
-        self.flags: int = data["flags"]
+        self.id: str = data.get("user_id")
+        self.thread_id: str = data.get("thread_id")
+        self.join_timestamp: str = data.get("join_timestamp")
+        self.flags: int = data.get("flags")
 
 class Thread:
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.owner_id: str = data["owner_id"]
-        self.message_count: int = data["message_count"]
-        self.member_count: int = data["member_count"]
-        self.archived: bool = data["archived"]
-        self.auto_archive_duration: int = data["auto_archive_duration"]
-        self.archive_timestamp: str = data["archive_timestamp"]
-        self.locked: bool = data["locked"]
+        self.owner_id: str = data.get("owner_id")
+        self.message_count: int = data.get("message_count")
+        self.member_count: int = data.get("member_count")
+        self.archived: bool = data.get("archived")
+        self.auto_archive_duration: int = data.get("auto_archive_duration")
+        self.archive_timestamp: str = data.get("archive_timestamp")
+        self.locked: bool = data.get("locked")
     
     async def join(self):
         if self.archived:
@@ -621,9 +621,9 @@ def _bytes_to_base64_data(data: bytes) -> str:
 
 class BaseChannel:
     def __init__(self, client, data: dict):
-        self.id: str = data["id"]
+        self.id: str = data.get("id")
         self.client = client
-        self.type = data["type"]
+        self.type = data.get("type")
 
 
 class BaseComponent:
@@ -641,22 +641,22 @@ class BaseComponent:
         self.settings["custom_id"] = custom_id
 class Application:
     def __init__(self, client, data: dict):
-        self.id: str = data["id"]
+        self.id: str = data.get("id")
         self.client = client
-        self.name: str = data["name"]
-        self.icon: Optional[str] = data["icon"] or None
-        self.description: str = data["description"]
-        self.rpc_origins: Optional[list] = data["rpc_origins"] or None
-        self.bot_public: bool = data["bot_public"]
-        self.bot_require_code_grant: bool = data["bot_require_code_grant"]
-        self.terms_of_service_url: Optional[str] = data["terms_of_service"] or None
-        self.privacy_policy_url: Optional[str] = data["privacy_policy"] or None
-        self.owner: PartialUser = PartialUser(data["user"])
-        self.summary: str = data["summary"]
-        self.verify_key: str = data["verify_key"]
-        self.team: Optional[Team] = Team(data["team"]) or None
-        self.cover_image: Optional[str] = data["cover_image"] or None
-        self.flags: int = data["flags"]
+        self.name: str = data.get("name")
+        self.icon: Optional[str] = data.get("icon") or None
+        self.description: str = data.get("description")
+        self.rpc_origins: Optional[list] = data.get("rpc_origins") or None
+        self.bot_public: bool = data.get("bot_public")
+        self.bot_require_code_grant: bool = data.get("bot_require_code_grant")
+        self.terms_of_service_url: Optional[str] = data.get("terms_of_service") or None
+        self.privacy_policy_url: Optional[str] = data.get("privacy_policy") or None
+        self.owner: PartialUser = PartialUser(data.get("user"))
+        self.summary: str = data.get("summary")
+        self.verify_key: str = data.get("verify_key")
+        self.team: Optional[Team] = Team(data.get("team")) or None
+        self.cover_image: Optional[str] = data.get("cover_image") or None
+        self.flags: int = data.get("flags")
 
     async def fetch(self):
         response: ClientResponse = await self.client.http.get("oauth2/applications/@me")
@@ -665,38 +665,38 @@ class Application:
 
 class ApplicationCommand:
     def __init__(self, data: dict):
-        self.id: str = data["id"]
-        self.type: int = data["type"]
-        self.application_id: str = data["application_id"]
-        self.guild_id: Optional[str] = data["guild_id"] or None
-        self.name: str = data["name"]
-        self.description: str = data["description"]
-        self.default_permissions: bool = data["default_permissions"]
-        self.version: str = data["version"]
+        self.id: str = data.get("id")
+        self.type: int = data.get("type")
+        self.application_id: str = data.get("application_id")
+        self.guild_id: Optional[str] = data.get("guild_id") or None
+        self.name: str = data.get("name")
+        self.description: str = data.get("description")
+        self.default_permissions: bool = data.get("default_permissions")
+        self.version: str = data.get("version")
 
 class Attachment:
     def __init__(self, data: dict):
-        self.id: str = data["id"]
-        self.file_name: str = data["filename"]
-        self.description: Optional[str] = data["description"] or None
-        self.content_type: Optional[str] = data["content_type"] or None
-        self.size: int = data["size"]
-        self.proxy_url: str = data["proxy_url"]
-        self.width: Optional[int] = data["width"] or None
-        self.height: Optional[int] = data["height"] or None
-        self.ephemeral: Optional[bool] = data["ephemeral"] or None
+        self.id: str = data.get("id")
+        self.file_name: str = data.get("filename")
+        self.description: Optional[str] = data.get("description") or None
+        self.content_type: Optional[str] = data.get("content_type") or None
+        self.size: int = data.get("size")
+        self.proxy_url: str = data.get("proxy_url")
+        self.width: Optional[int] = data.get("width") or None
+        self.height: Optional[int] = data.get("height") or None
+        self.ephemeral: Optional[bool] = data.get("ephemeral") or None
 
 class GuildChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
         if data["type"] == 0:
             return TextBasedChannel(client, data)
-        self.guild_id: str = data["guild_id"]
-        self.position: int = data["position"]
-        self.nsfw: bool = data["nsfw"]
-        self.permission_overwrites: List[dict] = data["permission_overwrites"]
-        self.parent_id: str = data["parent_id"]
-        self.name: str = data["name"]
+        self.guild_id: str = data.get("guild_id")
+        self.position: int = data.get("position")
+        self.nsfw: bool = data.get("nsfw")
+        self.permission_overwrites: List[dict] = data.get("permission_overwrites")
+        self.parent_id: str = data.get("parent_id")
+        self.name: str = data.get("name")
         
     async def delete(self, *, reason: Optional[str] = None) -> None:
         if reason:
@@ -754,10 +754,10 @@ class GuildChannel(BaseChannel):
 class GuildTextChannel(GuildChannel, Messageable):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.topic: str = data["topic"]
-        self.rate_limit_per_user: int = data["rate_limit_per_user"]
-        self.last_message_id: str = data["last_message_id"]
-        self.default_auto_archive_duration: int = data["default_auto_archive_duration"]
+        self.topic: str = data.get("topic")
+        self.rate_limit_per_user: int = data.get("rate_limit_per_user")
+        self.last_message_id: str = data.get("last_message_id")
+        self.default_auto_archive_duration: int = data.get("default_auto_archive_duration")
     
     async def create_webhook(self,*, name: str, avatar: Optional[str] = None, reason: Optional[str] = None):
         headers = client.http.headers.clone()
@@ -822,7 +822,7 @@ class GuildTextChannel(GuildChannel, Messageable):
 class GuildNewsChannel(GuildTextChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.default_auto_archive_duration: int = data["default_auto_archive_duration"]
+        self.default_auto_archive_duration: int = data.get("default_auto_archive_duration")
 
     async def follow(self, webhook_channel_id: str):
         response = await self.client.http.post(f"/channels/{self.id}/followers", data={"webhook_channel_id": webhook_channel_id})
@@ -831,14 +831,14 @@ class GuildNewsChannel(GuildTextChannel):
 class VoiceChannel(GuildChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.bitrate: int = data["bitrate"]
-        self.user_limit: int = data["user_limit"]
-        self.rtc_region: str = data["rtc_region"]
+        self.bitrate: int = data.get("bitrate")
+        self.user_limit: int = data.get("user_limit")
+        self.rtc_region: str = data.get("rtc_region")
             
 class DMChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.recipient: List[PartialUser] = PartialUser(data["recipient"])
+        self.recipient: List[PartialUser] = PartialUser(data.get("recipient"))
 
 class ChannelCategory(GuildChannel):
     def __init__(self, client, data: dict):
@@ -856,10 +856,10 @@ class GuildNewsThread(Thread, GuildNewsChannel):
 class GuildStageChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.guild_id: str = data["guild_id"]
-        self.channel_id: str = data["channel_id"]
-        self.privacy_level: int = data["privacy_level"]
-        self.discoverable_disabled: bool = data["discoverable_disabled"]
+        self.guild_id: str = data.get("guild_id")
+        self.channel_id: str = data.get("channel_id")
+        self.privacy_level: int = data.get("privacy_level")
+        self.discoverable_disabled: bool = data.get("discoverable_disabled")
 
 class TextBasedChannel(BaseChannel):
     def __init__(self, client, data: dict):
@@ -1261,10 +1261,10 @@ class MessageActionRow:
 
 class EmbedAuthor:
     def __init__(self, data: dict):
-        self.name: str = data["name"]
-        self.url: Optional[str] = data["url"] or None
-        self.icon_url: Optional[str] = data["icon_url"] or None
-        self.proxy_icon_url: Optional[str] = data["proxy_icon_url"] or None
+        self.name: str = data.get("name")
+        self.url: Optional[str] = data.get("url") or None
+        self.icon_url: Optional[str] = data.get("icon_url") or None
+        self.proxy_icon_url: Optional[str] = data.get("proxy_icon_url") or None
 
 class Embed: # Always wanted to make this class :D
     def __init__(self,*, title: Optional[str], description: Optional[str], color:Optional[Colour], colour:Optional[Colour], url:Optional[str]):
@@ -1307,14 +1307,14 @@ class Embed: # Always wanted to make this class :D
 
 class Emoji:
     def __init__(self, client, data: dict):
-        self.id: Optional[str] = data["id"]
-        self.name: Optional[str] = data["name"]
-        self.roles: List[Role] = [Role(role) for role in data["roles"]]
-        self.user: Optional[User] = User(data["user"]) if "user" in data else None
-        self.requires_colons: bool = data["require_colons"]
-        self.managed: bool = data["managed"]
-        self.animated: bool = data["animated"]
-        self.available: bool = data["available"]
+        self.id: Optional[str] = data.get("id")
+        self.name: Optional[str] = data.get("name")
+        self.roles: List[Role] = [Role(role) for role in data.get("roles")]
+        self.user: Optional[User] = User(data.get("user")) if "user" in data else None
+        self.requires_colons: bool = data.get("require_colons")
+        self.managed: bool = data.get("managed")
+        self.animated: bool = data.get("animated")
+        self.available: bool = data.get("available")
 class DiscordAPIError(Exception): # 
     ...
 
@@ -1381,85 +1381,85 @@ class ThreadArchived(Exception):
 
 class WelcomeChannel:
     def __init__(self, data: dict):
-        self.channel_id: str = data["channel_id"]
-        self.description: str = data["description"]
-        self.emoji_id: Optional[str] = data["emoji_id"]
-        self.emoji_name: Optional[str] = data["emoji_name"]
+        self.channel_id: str = data.get("channel_id")
+        self.description: str = data.get("description")
+        self.emoji_id: Optional[str] = data.get("emoji_id")
+        self.emoji_name: Optional[str] = data.get("emoji_name")
 
 class WelcomeScreen:
     def __init__(self, data: dict):
-        self.description: Optional[str] = data["description"] or None
-        self.welcome_channels: List[WelcomeChannel] = [WelcomeChannel(welcome_channel) for welcome_channel in data["welcome_channels"]]
+        self.description: Optional[str] = data.get("description") or None
+        self.welcome_channels: List[WelcomeChannel] = [WelcomeChannel(welcome_channel) for welcome_channel in data.get("welcome_channels")]
 
 class Guild:
     def __init__(self, client: Client, data: dict):
         self.client = client
         self.data: dict = data
-        self.id: str = data["id"]
-        self.name: str = data["name"]
-        self.icon: Optional[str] = data["icon"] or None
-        self.icon_hash: Optional[str] = data["icon_hash"] or None
-        self.splash: Optional[str] = data["splash"] or None
-        self.discovery_splash: Optional[str] = data["discovery_splash"] or None
-        self.owner_id: str = data["owner_id"]
-        self.permissions: str = data["permissions"]
-        self.afk_channel_id: str = data["afk_channel_id"]
-        self.afk_timeout: int = data["afk_timeout"]
-        self.verification_level: str = "NONE" if data["verification_level"] == 0 else "LOW" if data["verification_level"] == 1 else "MEDIUM" if data["verification_level"] == 2 else "HIGH" if data["verification_level"] == 3 else "VERY_HIGH"
-        self.default_message_notifications: str = "ALL" if data["default_message_notifications"] == 0 else "MENTIONS" 
-        self.explicit_content_filter: str = "DISABLED" if data["explicit_content_filter"] == 0 else "MEMBERS_WITHOUT_ROLES" if data["explicit_content_filter"] == 1 else "ALL_MEMBERS"
-        self.roles: List[Role] = [Role(role) for role in data["roles"]]
-        self.emojis: List[Emoji] = [Emoji(emoji) for emoji in data["emojis"]]
-        self.features: List[str] = data["features"]
-        self.mfa_level: str = "NONE" if data["mfa_level"] == 0 else "ELEVATED"
-        self.application_id: Optional[str] = data["application_id"] or None
-        self.system_channel_id: Optional[str] = data["system_channel_id"] or None
-        self.system_channel_flags: int = data["system_channel_flags"]
-        self.rules_channel_id: Optional[int] = data["rules_channel_id"] or None
-        self.joined_at: Optional[str] = data["joined_at"] or None
-        self.large: bool = data["large"]
-        self.unavailable: bool = data["unavailable"]
-        self.member_count: int = data["member_count"]
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+        self.icon: Optional[str] = data.get("icon") or None
+        self.icon_hash: Optional[str] = data.get("icon_hash") or None
+        self.splash: Optional[str] = data.get("splash") or None
+        self.discovery_splash: Optional[str] = data.get("discovery_splash") or None
+        self.owner_id: str = data.get("owner_id")
+        self.permissions: str = data.get("permissions")
+        self.afk_channel_id: str = data.get("afk_channel_id")
+        self.afk_timeout: int = data.get("afk_timeout")
+        self.verification_level: str = "NONE" if data.get("verification_level") == 0 else "LOW" if data.get("verification_level") == 1 else "MEDIUM" if data.get("verification_level") == 2 else "HIGH" if data.get("verification_level") == 3 else "VERY_HIGH"
+        self.default_message_notifications: str = "ALL" if data.get("default_message_notifications") == 0 else "MENTIONS" 
+        self.explicit_content_filter: str = "DISABLED" if data.get("explicit_content_filter") == 0 else "MEMBERS_WITHOUT_ROLES" if data.get("explicit_content_filter") == 1 else "ALL_MEMBERS"
+        self.roles: List[Role] = [Role(role) for role in data.get("roles")]
+        self.emojis: List[Emoji] = [Emoji(emoji) for emoji in data.get("emojis")]
+        self.features: List[str] = data.get("features")
+        self.mfa_level: str = "NONE" if data.get("mfa_level") == 0 else "ELEVATED"
+        self.application_id: Optional[str] = data.get("application_id") or None
+        self.system_channel_id: Optional[str] = data.get("system_channel_id") or None
+        self.system_channel_flags: int = data.get("system_channel_flags")
+        self.rules_channel_id: Optional[int] = data.get("rules_channel_id") or None
+        self.joined_at: Optional[str] = data.get("joined_at") or None
+        self.large: bool = data.get("large")
+        self.unavailable: bool = data.get("unavailable")
+        self.member_count: int = data.get("member_count")
         # self.voice_states: List[dict] = data["voice_states"]
-        self.members: List[GuildMember] = [GuildMember(member) for member in data["members"]]
-        self.channels: List[GuildChannel] = [GuildChannel(channel) for channel in data["channels"]]
-        self.threads: List[Thread] = [Thread(thread) for thread in data["threads"]]
-        self.presences: List[dict] = data["presences"]
-        self.max_presences: int = data["max_presences"]
-        self.max_members: int = data["max_members"]
-        self.vanity_url_code: Optional[str] = data["vanity_url_code"] or None
-        self.description: Optional[str] = data["description"] or None
-        self.banner: Optional[str] = data["banner"] or None
-        self.premium_tier: int = data["premium_tier"]
-        self.premium_subscription_count: int = data["premium_subscription_count"]
-        self.preferred_locale: str = data["preferred_locale"]
-        self.public_updates_channel_id: Optional[str] = data["public_updates_channel_id"] or None
-        self.max_video_channel_users: Optional[int] = data["max_video_channel_users"] or None
-        self.approximate_member_count: Optional[int] = data["approximate_member_count"] or None
-        self.approximate_presence_count: Optional[int] = data["approximate_presense_count"] or None
-        self.welcome_screen: Optional[WelcomeScreen] = WelcomeScreen(data["welcome_screen"]) if data["welcome_screen"] else None
-        self.nsfw_level: int = data["nsfw_level"]
-        self.stage_instances: List[GuildStageChannel] = [GuildStageChannel(channel) for channel in data["stage_instances"]]
-        self.stickers: Optional[StickerItem] = StickerItem(data["stickers"]) if data["stickers"] else None
+        self.members: List[GuildMember] = [GuildMember(member) for member in data.get("members")]
+        self.channels: List[GuildChannel] = [GuildChannel(channel) for channel in data.get("channels")]
+        self.threads: List[Thread] = [Thread(thread) for thread in data.get("threads")]
+        self.presences: List[dict] = data.get("presences")
+        self.max_presences: int = data.get("max_presences")
+        self.max_members: int = data.get("max_members")
+        self.vanity_url_code: Optional[str] = data.get("vanity_url_code") or None
+        self.description: Optional[str] = data.get("description") or None
+        self.banner: Optional[str] = data.get("banner") or None
+        self.premium_tier: int = data.get("premium_tier")
+        self.premium_subscription_count: int = data.get("premium_subscription_count")
+        self.preferred_locale: str = data.get("preferred_locale")
+        self.public_updates_channel_id: Optional[str] = data.get("public_updates_channel_id") or None
+        self.max_video_channel_users: Optional[int] = data.get("max_video_channel_users") or None
+        self.approximate_member_count: Optional[int] = data.get("approximate_member_count") or None
+        self.approximate_presence_count: Optional[int] = data.get("approximate_presence_count") or None
+        self.welcome_screen: Optional[WelcomeScreen] = WelcomeScreen(data.get("welcome_screen")) if data.get("welcome_screen") else None
+        self.nsfw_level: int = data.get("nsfw_level")
+        self.stage_instances: List[GuildStageChannel] = [GuildStageChannel(channel) for channel in data.get("stage_instances")]
+        self.stickers: Optional[StickerItem] = StickerItem(data.get("stickers")) if data.get("stickers") else None
 
 class GuildScheduledEvent:
     def __init__(self, client: Client, data: dict):
-        self.id: str = data["id"]
+        self.id: str = data.get("id")
         self.client = client
-        self.guild_id: str = data["guild_id"]
-        self.channel_id: Optional[str] = data["channel_id"] or None
-        self.creator_id: Optional[str] = data["creator_id"] or None
-        self.name: str = data["name"]
-        self.description: Optional[str] = data["description"] or None
-        self.scheduled_start_time: str = data["scheduled_start_time"]
-        self.scheduled_end_time: Optional[str] = data["scheduled_end_time"] or None
-        self.privacy_level: int = data["privacy_level"]
-        self.status: str = "SCHEDULED" if data["status"] == 1 else "ACTIVE" if data["status"] == 2 else "COMPLETED" if data["status"] == 3 else "CANCELLED"
-        self.entity_type: str = "STAGE_INSTANCE" if data["status"] == 1 else "VOICE" if data["status"] == 2 else "EXTERNAL"
-        self.entity_id: str = data["entity_id"]
-        self.entity_metadata: dict = data["entity_metadata"]
-        self.creator: Optional[User] = User(data["creator"]) or None
-        self.user_count: Optional[int] = data["user_count"] or None
+        self.guild_id: str = data.get("guild_id")
+        self.channel_id: Optional[str] = data.get("channel_id") or None
+        self.creator_id: Optional[str] = data.get("creator_id") or None
+        self.name: str = data.get("name")
+        self.description: Optional[str] = data.get("description") or None
+        self.scheduled_start_time: str = data.get("scheduled_start_time")
+        self.scheduled_end_time: Optional[str] = data.get("scheduled_end_time") or None
+        self.privacy_level: int = data.get("privacy_level")
+        self.status: str = "SCHEDULED" if data.get("status") == 1 else "ACTIVE" if data.get("status") == 2 else "COMPLETED" if data.get("status") == 3 else "CANCELLED"
+        self.entity_type: str = "STAGE_INSTANCE" if data.get("entity_type") == 1 else "VOICE" if data.get("entity_type") == 2 else "EXTERNAL"
+        self.entity_id: str = data.get("entity_id")
+        self.entity_metadata: dict = data.get("entity_metadata")
+        self.creator: Optional[User] = User(data.get("creator")) or None
+        self.user_count: Optional[int] = data.get("user_count") or None
 
 class WebhookUser:
     def __init__(self, data: dict):
@@ -1476,33 +1476,33 @@ class Webhook:
         self.client = client
         self.data = data
         if data:
-            self.id: str = data["id"] 
-            self.type: str = "Incoming" if data["type"] == 1 else "Channel Follower" if data["type"] == 2 else "Application"
-            self.guild_id: Optional[str] = data["guild_id"] or None
-            self.channel_id: Optional[str] = data["channel_id"] or None
-            self.user: Optional[User] = User(client, data["user"])
-            self.name: Optional[str] = data["name"] or None
-            self.avatar: Optional[str] = data["avatar"] or None
-            self.token: Optional[str] = data["token"] or None
-            self.application_id: Optional[str] = data["application_id"] or None
-            self.source_guild: Optional[PartialGuild] = PartialGuild(data["source_guild"])
-            self.url: Optional[str] = data["url"]
+            self.id: str = data.get("id") 
+            self.type: str = "Incoming" if data.get("type") == 1 else "Channel Follower" if data.get("type") == 2 else "Application"
+            self.guild_id: Optional[str] = data.get("guild_id") or None
+            self.channel_id: Optional[str] = data.get("channel_id") or None
+            self.user: Optional[User] = User(client, data.get("user"))
+            self.name: Optional[str] = data.get("name") or None
+            self.avatar: Optional[str] = data.get("avatar") or None
+            self.token: Optional[str] = data.get("token") or None
+            self.application_id: Optional[str] = data.get("application_id") or None
+            self.source_guild: Optional[PartialGuild] = PartialGuild(data.get("source_guild"))
+            self.url: Optional[str] = data.get("url")
     
 class BaseInteraction:
     def __init__(self, client, data: dict):
-        self.id: str = data["id"]
+        self.id: str = data.get("id")
         self.client = client
-        self.application_id: int = data["application_id"]
-        self.type: int = data["type"]
-        self.data: Optional[dict] = data["data"] or None
-        self.guild_id: Optional[str] = data["guild_id"] or None
-        self.channel_id: Optional[str] = data["channel_id"] or None
-        self.member: Optional[GuildMember] = GuildMember(data["member"]) or None
-        self.user: Optional[User] = User(data["user"]) or None
-        self.token: str = data["token"]
-        self.version: int = data["version"]
-        self.locale: Optional[str] = data["locale"] or None
-        self.guild_locale: Optional[str] = data["guild_locale"] or None
+        self.application_id: int = data.get("application_id")
+        self.type: int = data.get("type")
+        self.data: Optional[dict] = data.get("data") or None
+        self.guild_id: Optional[str] = data.get("guild_id") or None
+        self.channel_id: Optional[str] = data.get("channel_id") or None
+        self.member: Optional[GuildMember] = GuildMember(data.get("member")) or None
+        self.user: Optional[User] = User(data.get("user")) or None
+        self.token: str = data.get("token")
+        self.version: int = data.get("version")
+        self.locale: Optional[str] = data.get("locale") or None
+        self.guild_locale: Optional[str] = data.get("guild_locale") or None
         
     def is_ping(self):
         return self.type == 1
@@ -1550,18 +1550,18 @@ class BaseInteraction:
 
 class Invite:
     def __init__(self, data: dict):
-        self.code: str = data["code"]
-        self.guild: Optional[PartialGuild] = PartialGuild(data["guild"]) or None
-        self.channel: GuildChannel = GuildChannel(data["channel"]) 
-        self.inviter: Optional[User] = User(data["inviter"]) or None
-        self.target_type: int = data["target_type"]
-        self.target_user: Optional[User] = User(data["target_user"]) or None
-        self.target_application: Optional[Application] = Application(data["target_application"]) or None
-        self.approximate_presence_count: Optional[int] = data["approximate_presence_count"] or None
-        self.approximate_member_count: Optional[int] = data["approximate_member_count"] or None
-        self.expires_at: Optional[str] = data["expires_at"] or None
-        self.stage_instance: Optional[GuildStageChannel] = GuildStageChannel(data["stage_instance"]) or None
-        self.guild_scheduled_event: Optional[GuildScheduledEvent] = GuildScheduledEvent(data["guild_scheduled_event"]) or None
+        self.code: str = data.get("code")
+        self.guild: Optional[PartialGuild] = PartialGuild(data.get("guild")) or None
+        self.channel: GuildChannel = GuildChannel(data.get("channel")) 
+        self.inviter: Optional[User] = User(data.get("inviter")) or None
+        self.target_type: int = data.get("target_type")
+        self.target_user: Optional[User] = User(data.get("target_user")) or None
+        self.target_application: Optional[Application] = Application(data.get("target_application")) or None
+        self.approximate_presence_count: Optional[int] = data.get("approximate_presence_count") or None
+        self.approximate_member_count: Optional[int] = data.get("approximate_member_count") or None
+        self.expires_at: Optional[str] = data.get("expires_at") or None
+        self.stage_instance: Optional[GuildStageChannel] = GuildStageChannel(data.get("stage_instance")) or None
+        self.guild_scheduled_event: Optional[GuildScheduledEvent] = GuildScheduledEvent(data.get("guild_scheduled_event")) or None
     # Dabmaster is gonna work on this
 
 class GuildMember:
@@ -1569,33 +1569,33 @@ class GuildMember:
         self.data = data
         self.client = client
         # self.user: Optional[User] = User(data["user"]) or None
-        self.nick: Optional[str] = data["nick"] or None
-        self.avatar: Optional[str] = data["avatar"] or None
-        self.roles: List[Role] = [role.Role(role) for role in data["roles"]]
-        self.joined_at:str = data["joined_at"]
-        self.premium_since: Optional[str] = data["premium_since"] or None
-        self.deaf: bool = data["deaf"]
-        self.mute: bool = data["mute"]
-        self.pending: Optional[bool] = data["pending"] or None
-        self.permissions: Optional[str] = data["permissions"] or None
-        self.communication_disabled_until: Optional[str] = data["communication_disabled_until"] or None
+        self.nick: Optional[str] = data.get("nick") or None
+        self.avatar: Optional[str] = data.get("avatar") or None
+        self.roles: List[Role] = [role.Role(role) for role in data.get("roles")]
+        self.joined_at:str = data.get("joined_at")
+        self.premium_since: Optional[str] = data.get("premium_since")or None
+        self.deaf: bool = data.get("deaf")
+        self.mute: bool = data.get("mute")
+        self.pending: Optional[bool] = data.get("pending") or None
+        self.permissions: Optional[str] = data.get("permissions") or None
+        self.communication_disabled_until: Optional[str] = data.get("communication_disabled_until") or None
 
 class MentionedChannel:
     def __init__(self, data: dict):
-        self.id: str = data["id"]
-        self.guild_id: str = data["guild_id"]
-        self.type: int = data["type"]
-        self.name: str = data["name"]
+        self.id: str = data.get("id")
+        self.guild_id: str = data.get("guild_id")
+        self.type: int = data.get("type")
+        self.name: str = data.get("name")
         
 class MentionedUser(User):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.member = GuildMember(data["member"])
+        self.member = GuildMember(data.get("member"))
 
 class MessageActivity:
     def __init__(self, data: dict):
-        self.type: int = data["type"]
-        self.party_id: Optional[str] = data["party_id"]
+        self.type: int = data.get("type")
+        self.party_id: Optional[str] = data.get("party_id")
 
 class AllowedMention:
     def __init__(self, allowed_mentions: List[str], replied_user: bool, roles: List[str], users: List[str]):
@@ -1608,11 +1608,11 @@ class AllowedMention:
     
 class MessageInteraction:
     def __init__(self, client, data: dict):
-        self.id: str = data["id"]
-        self.type: int = data["type"]
-        self.name: str = data["name"]
-        self.user: User = User(client, data["user"])
-        self.member: GuildMember = GuildMember(client, data["member"])
+        self.id: str = data.get("id")
+        self.type: int = data.get("type")
+        self.name: str = data.get("name")
+        self.user: User = User(client, data.get("user"))
+        self.member: GuildMember = GuildMember(client, data.get("member"))
 
     def is_ping(self):
         return self.type == 1
@@ -1661,75 +1661,75 @@ class MessageInteraction:
 class PartialUser:
     def __init__(self, data: dict):
         self.data: dict = data
-        self.id: str = data["id"]
-        self.username: str = data["username"]
-        self.discriminator: str = data["discriminator"]
-        self.avatar: Optional[str] = data["avatar"]
+        self.id: str = data.get("id")
+        self.username: str = data.get("username")
+        self.discriminator: str = data.get("discriminator")
+        self.avatar: Optional[str] = data.get("avatar")
 
 class PartialGuild:
     def __init__(self, data):
         self.data: dict = data
-        self.id: str = data["id"]
-        self.name: str = data["name"]
-        self.permissions: int = int(data["permissions"])
-        self.features: List[str] = data["features"]
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+        self.permissions: int = int(data.get("permissions"))
+        self.features: List[str] = data.get("features")
 
 
 class RoleTag:
     def __init__(self, data: dict):
-        self.bot_id: Optional[str] = data["bot_id"] or None
-        self.integration_id: Optional[str] = data["integration_id"] or None
-        self.premium_subscriber: Optional[bool] = data["premium_subscriber"] or None
+        self.bot_id: Optional[str] = data.get("bot_id") or None
+        self.integration_id: Optional[str] = data.get("integration_id") or None
+        self.premium_subscriber: Optional[bool] = data.get("premium_subscriber") or None
 class Role:
     def __init__(self, client, data: dict):
         self.data = data
         self.client = client
-        self.id: str = data["id"]
-        self.name: str = data["name"]
-        self.color: int = data["color"]
-        self.hoist: bool = data["hoist"]
-        self.icon: Optional[str] = data["icon"] or None
-        self.unicode_emoji: Optional[str] = data["unicode_emoji"] or None
-        self.position: int = data["position"]
-        self.permissions: str = data["permissions"] # Permissions soon
-        self.managed: bool = data["managed"]
-        self.mentionable: bool = data["mentionable"]
-        self.tags: RoleTag = RoleTag(self.data["tags"])
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+        self.color: int = data.get("color")
+        self.hoist: bool = data.get("hoist")
+        self.icon: Optional[str] = data.get("icon") or None
+        self.unicode_emoji: Optional[str] = data.get("unicode_emoji") or None
+        self.position: int = data.get("position")
+        self.permissions: str = data.get("permissions") # TODO: Permissions
+        self.managed: bool = data.get("managed")
+        self.mentionable: bool = data.get("mentionable")
+        self.tags: RoleTag = RoleTag(self.data.get("tags"))
 
 class SlashCommand(ApplicationCommand):
     def __init__(self, data: dict):
         super().__init__(data)
-        self.options: Optional[List[Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]]] = data["options"] or None # Return the type hinted class later this will take too long and is very tedious, I'll probably get Copilot to do it for me lmaofrom .stickers import *
+        self.options: Optional[List[Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]]] = data.get("options") or None # Return the type hinted class later this will take too long and is very tedious, I'll probably get Copilot to do it for me lmaofrom .stickers import *
 class TeamMember:
     def __init__(self, data: dict):
         self.data = data
-        self.membership_state: int = data["membership_state"]
-        self.team_id: str = data["team_id"]
-        self.user: PartialUser = PartialUser(data["user"])
+        self.membership_state: int = data.get("membership_state")
+        self.team_id: str = data.get("team_id")
+        self.user: PartialUser = PartialUser(data.get("user"))
 
 class Team:
     def __init__(self,data: dict):
         self.data = data
-        self.icon: str = data["icon"]
-        self.id: str = data["id"]
-        self.members: List[TeamMember] = data["members"]
+        self.icon: str = data.get("icon")
+        self.id: str = data.get("id")
+        self.members: List[TeamMember] = data.get("members")
 
 class ClientUser():
     
     def __init__(self, client, data: dict):
         self.client = client
         self.data = data
-        self.verified: bool = data["verified"]
-        self.username: str = data["username"]
-        self.mfa_enabled: bool = data["mfa_enabled"]
-        self.id: str = data["id"]
-        self.flags: int = data["flags"]
-        self.email: Optional[str] = data["email"] or None
-        self.discriminator: str = data["discriminator"]
-        self.bot: bool = data["bot"]
-        self.avatar: str = data["avatar"]
+        self.verified: bool = data.get("verified")
+        self.username: str = data.get("username")
+        self.mfa_enabled: bool = data.get("mfa_enabled")
+        self.id: str = data.get("id")
+        self.flags: int = data.get("flags")
+        self.email: Optional[str] = data.get("email") or None
+        self.discriminator: str = data.get("discriminator")
+        self.bot: bool = data.get("bot")
+        self.avatar: str = data.get("avatar")
         if not self.bot: # if they're a user account
-            print("Self botting is against Discord ToS. You can get ban.") # Yeah I'm keeping this as a print
+            print("Warning: Self botting is against Discord ToS. You can get banned.") # Yeah I'm keeping this as a print
     async def fetch(self):
         response = await self.client.http.get("users/@me")
         data = await response.json()
@@ -1747,24 +1747,24 @@ class ClientUser():
 
 class SourceChannel:
     def __init__(self, data: dict):
-        self.id: str = data["id"]
-        self.name: str = data["name"]
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
 
 class Webhook: # Not used for making webhooks.
     def __init__(self, client, data: dict):
-        self.id: str = data["id"]
+        self.id: str = data.get("id")
         self.client = client
-        self.type: int = "Incoming" if data["type"] == 1 else "Channel Follower" if data["type"] == 2 else "Application"
-        self.guild_id: Optional[str] = data["guild_id"]
-        self.channel_id: Optional[str] = data["channel_id"]
-        self.user: Optional[WebhookUser] = WebhookUser(data["user"])
-        self.name: Optional[str] = data["name"]
-        self.avatar: Optional[str] = data["avatar"]
-        self.token: str = data["token"]
-        self.application_id: Optional[str] = data["application_id"]
-        self.source_guild: Optional[PartialGuild] = PartialGuild(data["source_guild"])
-        self.source_channel: Optional[SourceChannel] = SourceChannel(data["source_channel"]) or None
-        self.url: Optional[str] = data["url"]
+        self.type: int = "Incoming" if data.get("type") == 1 else "Channel Follower" if data.get("type") == 2 else "Application"
+        self.guild_id: Optional[str] = data.get("guild_id")
+        self.channel_id: Optional[str] = data.get("channel_id")
+        self.user: Optional[WebhookUser] = WebhookUser(data.get("user"))
+        self.name: Optional[str] = data.get("name")
+        self.avatar: Optional[str] = data.get("avatar")
+        self.token: str = data.get("token")
+        self.application_id: Optional[str] = data.get("application_id")
+        self.source_guild: Optional[PartialGuild] = PartialGuild(data.get("source_guild"))
+        self.source_channel: Optional[SourceChannel] = SourceChannel(data.get("source_channel")) or None
+        self.url: Optional[str] = data.get("url")
     
 def compute_timedelta(dt: datetime.datetime):
     if dt.tzinfo is None:
