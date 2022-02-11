@@ -101,7 +101,7 @@ class Message:
         self.channel_id: str = data.get("channel_id")
         self.guild_id: Optional[str] = data.get("guild_id") 
         self.webhook_id: Optional[str] = data.get("webhook_id")
-        self.author: Optional[Union[User, WebhookUser] = WebhookUser(data.get("author")) if self.webhook_id else User(client, data.get("author"))
+        self.author: Optional[Union[User, WebhookUser]] = WebhookUser(data.get("author")) if self.webhook_id else User(client, data.get("author"))
         if data.get("member"):
             self.member: GuildMember = GuildMember(data.get("member"))
         self.content: Optional[str] = data.get("content") # I forgot Message Intents are gonna stop this.
@@ -120,7 +120,7 @@ class Message:
         self.activity: MessageActivity = MessageActivity(data.get("activity"))
         self.application: Application = Application(data.get("application")) # Despite there being a PartialApplication, Discord don't specify what attributes it has
         self.flags: int = data.get("flags")
-        self.referenced_message: Optional[Message] = Message(data.get("referenced_message")) if data.get("referenced_message")
+        self.referenced_message: Optional[Message] = Message(data.get("referenced_message")) if data.get("referenced_message") else None
         self.interaction: Optional[MessageInteraction] = MessageInteraction(client, data.get("interaction")) if date.get("interaction") else None
         self.thread: Optional[Thread] = Thread(data.get("thread")) if data.get("thread") else None
         if data.get("components"):
@@ -539,21 +539,21 @@ class StickerItem:
 
 class ThreadMember:
     def __init__(self, data: dict):
-        self.id: str = data["user_id"]
-        self.thread_id: str = data["thread_id"]
-        self.join_timestamp: str = data["join_timestamp"]
-        self.flags: int = data["flags"]
+        self.id: str = data.get("user_id")
+        self.thread_id: str = data.get("thread_id")
+        self.join_timestamp: str = data.get("join_timestamp")
+        self.flags: int = data.get("flags")
 
 class Thread:
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.owner_id: str = data["owner_id"]
-        self.message_count: int = data["message_count"]
-        self.member_count: int = data["member_count"]
-        self.archived: bool = data["archived"]
-        self.auto_archive_duration: int = data["auto_archive_duration"]
-        self.archive_timestamp: str = data["archive_timestamp"]
-        self.locked: bool = data["locked"]
+        self.owner_id: str = data.get("owner_id")
+        self.message_count: int = data.get("message_count")
+        self.member_count: int = data.get("member_count")
+        self.archived: bool = data.get("archived")
+        self.auto_archive_duration: int = data.get("auto_archive_duration")
+        self.archive_timestamp: str = data.get("archive_timestamp")
+        self.locked: bool = data.get("locked")
     
     async def join(self):
         if self.archived:
@@ -621,9 +621,9 @@ def _bytes_to_base64_data(data: bytes) -> str:
 
 class BaseChannel:
     def __init__(self, client, data: dict):
-        self.id: str = data["id"]
+        self.id: str = data.get("id")
         self.client = client
-        self.type = data["type"]
+        self.type = data.get("type")
 
 
 class BaseComponent:
@@ -641,22 +641,22 @@ class BaseComponent:
         self.settings["custom_id"] = custom_id
 class Application:
     def __init__(self, client, data: dict):
-        self.id: str = data["id"]
+        self.id: str = data.get("id")
         self.client = client
-        self.name: str = data["name"]
-        self.icon: Optional[str] = data["icon"] or None
-        self.description: str = data["description"]
-        self.rpc_origins: Optional[list] = data["rpc_origins"] or None
-        self.bot_public: bool = data["bot_public"]
-        self.bot_require_code_grant: bool = data["bot_require_code_grant"]
-        self.terms_of_service_url: Optional[str] = data["terms_of_service"] or None
-        self.privacy_policy_url: Optional[str] = data["privacy_policy"] or None
-        self.owner: PartialUser = PartialUser(data["user"])
-        self.summary: str = data["summary"]
-        self.verify_key: str = data["verify_key"]
-        self.team: Optional[Team] = Team(data["team"]) or None
-        self.cover_image: Optional[str] = data["cover_image"] or None
-        self.flags: int = data["flags"]
+        self.name: str = data.get("name")
+        self.icon: Optional[str] = data.get("icon") or None
+        self.description: str = data.get("description")
+        self.rpc_origins: Optional[list] = data.get("rpc_origins") or None
+        self.bot_public: bool = data.get("bot_public")
+        self.bot_require_code_grant: bool = data.get("bot_require_code_grant")
+        self.terms_of_service_url: Optional[str] = data.get("terms_of_service") or None
+        self.privacy_policy_url: Optional[str] = data.get("privacy_policy") or None
+        self.owner: PartialUser = PartialUser(data.get("user"))
+        self.summary: str = data.get("summary")
+        self.verify_key: str = data.get("verify_key")
+        self.team: Optional[Team] = Team(data.get("team")) or None
+        self.cover_image: Optional[str] = data.get("cover_image") or None
+        self.flags: int = data.get("flags")
 
     async def fetch(self):
         response: ClientResponse = await self.client.http.get("oauth2/applications/@me")
