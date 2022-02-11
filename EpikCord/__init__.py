@@ -1661,58 +1661,58 @@ class MessageInteraction:
 class PartialUser:
     def __init__(self, data: dict):
         self.data: dict = data
-        self.id: str = data["id"]
-        self.username: str = data["username"]
-        self.discriminator: str = data["discriminator"]
-        self.avatar: Optional[str] = data["avatar"]
+        self.id: str = data.get("id")
+        self.username: str = data.get("username")
+        self.discriminator: str = data.get("discriminator")
+        self.avatar: Optional[str] = data.get("avatar")
 
 class PartialGuild:
     def __init__(self, data):
         self.data: dict = data
-        self.id: str = data["id"]
-        self.name: str = data["name"]
-        self.permissions: int = int(data["permissions"])
-        self.features: List[str] = data["features"]
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+        self.permissions: int = int(data.get("permissions"))
+        self.features: List[str] = data.get("features")
 
 
 class RoleTag:
     def __init__(self, data: dict):
-        self.bot_id: Optional[str] = data["bot_id"] or None
-        self.integration_id: Optional[str] = data["integration_id"] or None
-        self.premium_subscriber: Optional[bool] = data["premium_subscriber"] or None
+        self.bot_id: Optional[str] = data.get("bot_id") or None
+        self.integration_id: Optional[str] = data.get("integration_id") or None
+        self.premium_subscriber: Optional[bool] = data.get("premium_subscriber") or None
 class Role:
     def __init__(self, client, data: dict):
         self.data = data
         self.client = client
-        self.id: str = data["id"]
-        self.name: str = data["name"]
-        self.color: int = data["color"]
-        self.hoist: bool = data["hoist"]
-        self.icon: Optional[str] = data["icon"] or None
-        self.unicode_emoji: Optional[str] = data["unicode_emoji"] or None
-        self.position: int = data["position"]
-        self.permissions: str = data["permissions"] # Permissions soon
-        self.managed: bool = data["managed"]
-        self.mentionable: bool = data["mentionable"]
-        self.tags: RoleTag = RoleTag(self.data["tags"])
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+        self.color: int = data.get("color")
+        self.hoist: bool = data.get("hoist")
+        self.icon: Optional[str] = data.get("icon") or None
+        self.unicode_emoji: Optional[str] = data.get("unicode_emoji") or None
+        self.position: int = data.get("position")
+        self.permissions: str = data.get("permissions") # TODO: Permissions
+        self.managed: bool = data.get("managed")
+        self.mentionable: bool = data.get("mentionable")
+        self.tags: RoleTag = RoleTag(self.data.get("tags"))
 
 class SlashCommand(ApplicationCommand):
     def __init__(self, data: dict):
         super().__init__(data)
-        self.options: Optional[List[Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]]] = data["options"] or None # Return the type hinted class later this will take too long and is very tedious, I'll probably get Copilot to do it for me lmaofrom .stickers import *
+        self.options: Optional[List[Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]]] = data.get("options") or None # Return the type hinted class later this will take too long and is very tedious, I'll probably get Copilot to do it for me lmaofrom .stickers import *
 class TeamMember:
     def __init__(self, data: dict):
         self.data = data
-        self.membership_state: int = data["membership_state"]
-        self.team_id: str = data["team_id"]
-        self.user: PartialUser = PartialUser(data["user"])
+        self.membership_state: int = data.get("membership_state")
+        self.team_id: str = data.get("team_id")
+        self.user: PartialUser = PartialUser(data.get("user"))
 
 class Team:
     def __init__(self,data: dict):
         self.data = data
-        self.icon: str = data["icon"]
-        self.id: str = data["id"]
-        self.members: List[TeamMember] = data["members"]
+        self.icon: str = data.get("icon")
+        self.id: str = data.get("id")
+        self.members: List[TeamMember] = data.get("members")
 
 class ClientUser():
     
