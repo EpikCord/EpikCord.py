@@ -665,38 +665,38 @@ class Application:
 
 class ApplicationCommand:
     def __init__(self, data: dict):
-        self.id: str = data["id"]
-        self.type: int = data["type"]
-        self.application_id: str = data["application_id"]
-        self.guild_id: Optional[str] = data["guild_id"] or None
-        self.name: str = data["name"]
-        self.description: str = data["description"]
-        self.default_permissions: bool = data["default_permissions"]
-        self.version: str = data["version"]
+        self.id: str = data.get("id")
+        self.type: int = data.get("type")
+        self.application_id: str = data.get("application_id")
+        self.guild_id: Optional[str] = data.get("guild_id") or None
+        self.name: str = data.get("name")
+        self.description: str = data.get("description")
+        self.default_permissions: bool = data.get("default_permissions")
+        self.version: str = data.get("version")
 
 class Attachment:
     def __init__(self, data: dict):
-        self.id: str = data["id"]
-        self.file_name: str = data["filename"]
-        self.description: Optional[str] = data["description"] or None
-        self.content_type: Optional[str] = data["content_type"] or None
-        self.size: int = data["size"]
-        self.proxy_url: str = data["proxy_url"]
-        self.width: Optional[int] = data["width"] or None
-        self.height: Optional[int] = data["height"] or None
-        self.ephemeral: Optional[bool] = data["ephemeral"] or None
+        self.id: str = data.get("id")
+        self.file_name: str = data.get("filename")
+        self.description: Optional[str] = data.get("description") or None
+        self.content_type: Optional[str] = data.get("content_type") or None
+        self.size: int = data.get("size")
+        self.proxy_url: str = data.get("proxy_url")
+        self.width: Optional[int] = data.get("width") or None
+        self.height: Optional[int] = data.get("height") or None
+        self.ephemeral: Optional[bool] = data.get("ephemeral") or None
 
 class GuildChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
         if data["type"] == 0:
             return TextBasedChannel(client, data)
-        self.guild_id: str = data["guild_id"]
-        self.position: int = data["position"]
-        self.nsfw: bool = data["nsfw"]
-        self.permission_overwrites: List[dict] = data["permission_overwrites"]
-        self.parent_id: str = data["parent_id"]
-        self.name: str = data["name"]
+        self.guild_id: str = data.get("guild_id")
+        self.position: int = data.get("position")
+        self.nsfw: bool = data.get("nsfw")
+        self.permission_overwrites: List[dict] = data.get("permission_overwrites")
+        self.parent_id: str = data.get("parent_id")
+        self.name: str = data.get("name")
         
     async def delete(self, *, reason: Optional[str] = None) -> None:
         if reason:
@@ -754,10 +754,10 @@ class GuildChannel(BaseChannel):
 class GuildTextChannel(GuildChannel, Messageable):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.topic: str = data["topic"]
-        self.rate_limit_per_user: int = data["rate_limit_per_user"]
-        self.last_message_id: str = data["last_message_id"]
-        self.default_auto_archive_duration: int = data["default_auto_archive_duration"]
+        self.topic: str = data.get("topic")
+        self.rate_limit_per_user: int = data.get("rate_limit_per_user")
+        self.last_message_id: str = data.get("last_message_id")
+        self.default_auto_archive_duration: int = data.get("default_auto_archive_duration")
     
     async def create_webhook(self,*, name: str, avatar: Optional[str] = None, reason: Optional[str] = None):
         headers = client.http.headers.clone()
@@ -822,7 +822,7 @@ class GuildTextChannel(GuildChannel, Messageable):
 class GuildNewsChannel(GuildTextChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.default_auto_archive_duration: int = data["default_auto_archive_duration"]
+        self.default_auto_archive_duration: int = data.get("default_auto_archive_duration")
 
     async def follow(self, webhook_channel_id: str):
         response = await self.client.http.post(f"/channels/{self.id}/followers", data={"webhook_channel_id": webhook_channel_id})
