@@ -123,6 +123,7 @@ class Message:
         self.referenced_message: Optional[Message] = Message(data.get("referenced_message")) if data.get("referenced_message") else None
         self.interaction: Optional[MessageInteraction] = MessageInteraction(client, data.get("interaction")) if data.get("interaction") else None
         self.thread: Optional[Thread] = Thread(data.get("thread")) if data.get("thread") else None
+
         if data.get("components"):
             components: List[Any] = []
             for component in data.get("components"):
@@ -134,6 +135,7 @@ class Message:
                     components.append(MessageSelectMenu(component))
                 elif components.get("type") == 4:
                     components.append(MessageTextInputComponent(component))
+
         self.components: Optional[List[Union[MessageTextInputComponent, MessageSelectMenu, MessageButton]]] = components
         self.stickers: Optional[List[StickerItem]] = [StickerItem(sticker) for sticker in data.get("stickers")] or None
 
@@ -896,32 +898,32 @@ class HTTPClient(ClientSession):
     async def get(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1:]
-        return await self.session.get(f"{self.base_uri}{url}", *args, **kwargs)
+        super().get(f"{self.base_uri}/{url}", *args, **kwargs)
 
     async def post(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1]
-        return await self.session.post(f"{self.base_uri}{url}", *args, **kwargs)
+        super().post(f"{self.base_uri}/{url}", *args, **kwargs)
 
     async def patch(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1:]
-        return await self.session.patch(f"{self.base_uri}{url}", *args, **kwargs)
+        super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
 
     async def delete(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1:]
-        return await self.session.delete(f"{self.base_uri}{url}", *args, **kwargs)
+        super().delete(f"{self.base_uri}/{url}", *args, **kwargs)
 
     async def put(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1:]
-        return await self.session.put(f"{self.base_uri}{url}", *args, **kwargs)
+        super().put(f"{self.base_uri}/{url}", *args, **kwargs)
 
     async def head(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1:]
-        return await self.session.head(f"{self.base_uri}{url}", *args, **kwargs)
+        super().head(f"{self.base_uri}/{url}", *args, **kwargs)
 
 class Section:
     def __init__(self):
@@ -961,9 +963,31 @@ class Client(WebsocketClient):
         self.user: ClientUser = None
         self.application: Application = None
 
-    def command(self, *, name: str, description: str, guild_ids: List[str], options: Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]):
+    def command(self, *, 
+        name: str,
+        description: str,
+        guild_ids: Optional[List[str]],
+        options: Optional[
+            Union[
+                Subcommand,
+                SubCommandGroup, 
+                StringOption, 
+                IntegerOption, 
+                BooleanOption, 
+                UserOption, 
+                ChannelOption, 
+                RoleOption, 
+                MentionableOption, 
+                NumberOption]]
+        ):
         def register_slash_command(func):
-            self.commands[func.__name__] = {"callback": func, "name": name, "description": description, "guild_ids": guild_ids, "options": options}
+            self.commands[func.__name__] = SlashCommand({
+                "callback": func, 
+                "name": name, 
+                "description": description, 
+                "guild_ids": guild_ids, 
+                "options": options
+                })
         return register_slash_command
 
     def add_section(self, section: Section):
@@ -979,6 +1003,7 @@ class Client(WebsocketClient):
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
 #         super().__init__(data)
+
 class Colour:
     #some of this code is sourced from discord.py, rest assured all the colors are different from discord.py
     __slots__ = ('value',)
@@ -1307,15 +1332,21 @@ class Embed: # Always wanted to make this class :D
 
 class Emoji:
     def __init__(self, client, data: dict):
+        self.client = client
         self.id: Optional[str] = data.get("id")
         self.name: Optional[str] = data.get("name")
         self.roles: List[Role] = [Role(role) for role in data.get("roles")]
         self.user: Optional[User] = User(data.get("user")) if "user" in data else None
         self.requires_colons: bool = data.get("require_colons")
+        self.guild_id: str = data.get("guild_id")
         self.managed: bool = data.get("managed")
         self.animated: bool = data.get("animated")
         self.available: bool = data.get("available")
+
 class DiscordAPIError(Exception): # 
+    ...
+
+class InvalidData(Exception):
     ...
 
 class InvalidIntents(Exception):
@@ -1700,6 +1731,10 @@ class SlashCommand(ApplicationCommand):
     def __init__(self, data: dict):
         super().__init__(data)
         self.options: Optional[List[Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]]] = data.get("options") or None # Return the type hinted class later this will take too long and is very tedious, I'll probably get Copilot to do it for me lmaofrom .stickers import *
+        def figure_out_option_type():
+            for option in self.options:
+                if option.get("type") == 1:
+                    return SubCommand(option)
 class TeamMember:
     def __init__(self, data: dict):
         self.data = data
