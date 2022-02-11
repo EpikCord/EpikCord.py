@@ -1490,19 +1490,19 @@ class Webhook:
     
 class BaseInteraction:
     def __init__(self, client, data: dict):
-        self.id: str = data["id"]
+        self.id: str = data.get("id")
         self.client = client
-        self.application_id: int = data["application_id"]
-        self.type: int = data["type"]
-        self.data: Optional[dict] = data["data"] or None
-        self.guild_id: Optional[str] = data["guild_id"] or None
-        self.channel_id: Optional[str] = data["channel_id"] or None
-        self.member: Optional[GuildMember] = GuildMember(data["member"]) or None
-        self.user: Optional[User] = User(data["user"]) or None
-        self.token: str = data["token"]
-        self.version: int = data["version"]
-        self.locale: Optional[str] = data["locale"] or None
-        self.guild_locale: Optional[str] = data["guild_locale"] or None
+        self.application_id: int = data.get("application_id")
+        self.type: int = data.get("type")
+        self.data: Optional[dict] = data.get("data") or None
+        self.guild_id: Optional[str] = data.get("guild_id") or None
+        self.channel_id: Optional[str] = data.get("channel_id") or None
+        self.member: Optional[GuildMember] = GuildMember(data.get("member")) or None
+        self.user: Optional[User] = User(data.get("user")) or None
+        self.token: str = data.get("token")
+        self.version: int = data.get("version")
+        self.locale: Optional[str] = data.get("locale") or None
+        self.guild_locale: Optional[str] = data.get("guild_locale") or None
         
     def is_ping(self):
         return self.type == 1
@@ -1550,18 +1550,18 @@ class BaseInteraction:
 
 class Invite:
     def __init__(self, data: dict):
-        self.code: str = data["code"]
-        self.guild: Optional[PartialGuild] = PartialGuild(data["guild"]) or None
-        self.channel: GuildChannel = GuildChannel(data["channel"]) 
-        self.inviter: Optional[User] = User(data["inviter"]) or None
-        self.target_type: int = data["target_type"]
-        self.target_user: Optional[User] = User(data["target_user"]) or None
-        self.target_application: Optional[Application] = Application(data["target_application"]) or None
-        self.approximate_presence_count: Optional[int] = data["approximate_presence_count"] or None
-        self.approximate_member_count: Optional[int] = data["approximate_member_count"] or None
-        self.expires_at: Optional[str] = data["expires_at"] or None
-        self.stage_instance: Optional[GuildStageChannel] = GuildStageChannel(data["stage_instance"]) or None
-        self.guild_scheduled_event: Optional[GuildScheduledEvent] = GuildScheduledEvent(data["guild_scheduled_event"]) or None
+        self.code: str = data.get("code")
+        self.guild: Optional[PartialGuild] = PartialGuild(data.get("guild")) or None
+        self.channel: GuildChannel = GuildChannel(data.get("channel")) 
+        self.inviter: Optional[User] = User(data.get("inviter")) or None
+        self.target_type: int = data.get("target_type")
+        self.target_user: Optional[User] = User(data.get("target_user")) or None
+        self.target_application: Optional[Application] = Application(data.get("target_application")) or None
+        self.approximate_presence_count: Optional[int] = data.get("approximate_presence_count") or None
+        self.approximate_member_count: Optional[int] = data.get("approximate_member_count") or None
+        self.expires_at: Optional[str] = data.get("expires_at") or None
+        self.stage_instance: Optional[GuildStageChannel] = GuildStageChannel(data.get("stage_instance")) or None
+        self.guild_scheduled_event: Optional[GuildScheduledEvent] = GuildScheduledEvent(data.get("guild_scheduled_event")) or None
     # Dabmaster is gonna work on this
 
 class GuildMember:
@@ -1569,33 +1569,33 @@ class GuildMember:
         self.data = data
         self.client = client
         # self.user: Optional[User] = User(data["user"]) or None
-        self.nick: Optional[str] = data["nick"] or None
-        self.avatar: Optional[str] = data["avatar"] or None
-        self.roles: List[Role] = [role.Role(role) for role in data["roles"]]
-        self.joined_at:str = data["joined_at"]
-        self.premium_since: Optional[str] = data["premium_since"] or None
-        self.deaf: bool = data["deaf"]
-        self.mute: bool = data["mute"]
-        self.pending: Optional[bool] = data["pending"] or None
-        self.permissions: Optional[str] = data["permissions"] or None
-        self.communication_disabled_until: Optional[str] = data["communication_disabled_until"] or None
+        self.nick: Optional[str] = data.get("nick") or None
+        self.avatar: Optional[str] = data.get("avatar") or None
+        self.roles: List[Role] = [role.Role(role) for role in data.get("roles")]
+        self.joined_at:str = data.get("joined_at")
+        self.premium_since: Optional[str] = data.get("premium_since")or None
+        self.deaf: bool = data.get("deaf")
+        self.mute: bool = data.get("mute")
+        self.pending: Optional[bool] = data.get("pending") or None
+        self.permissions: Optional[str] = data.get("permissions") or None
+        self.communication_disabled_until: Optional[str] = data.get("communication_disabled_until") or None
 
 class MentionedChannel:
     def __init__(self, data: dict):
-        self.id: str = data["id"]
-        self.guild_id: str = data["guild_id"]
-        self.type: int = data["type"]
-        self.name: str = data["name"]
+        self.id: str = data.get("id")
+        self.guild_id: str = data.get("guild_id")
+        self.type: int = data.get("type")
+        self.name: str = data.get("name")
         
 class MentionedUser(User):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.member = GuildMember(data["member"])
+        self.member = GuildMember(data.get("member"))
 
 class MessageActivity:
     def __init__(self, data: dict):
-        self.type: int = data["type"]
-        self.party_id: Optional[str] = data["party_id"]
+        self.type: int = data.get("type")
+        self.party_id: Optional[str] = data.get("party_id")
 
 class AllowedMention:
     def __init__(self, allowed_mentions: List[str], replied_user: bool, roles: List[str], users: List[str]):
@@ -1608,11 +1608,11 @@ class AllowedMention:
     
 class MessageInteraction:
     def __init__(self, client, data: dict):
-        self.id: str = data["id"]
-        self.type: int = data["type"]
-        self.name: str = data["name"]
-        self.user: User = User(client, data["user"])
-        self.member: GuildMember = GuildMember(client, data["member"])
+        self.id: str = data.get("id")
+        self.type: int = data.get("type")
+        self.name: str = data.get("name")
+        self.user: User = User(client, data.get("user"))
+        self.member: GuildMember = GuildMember(client, data.get("member"))
 
     def is_ping(self):
         return self.type == 1
