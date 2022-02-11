@@ -1,4 +1,6 @@
 import threading
+
+from attr import attrib, attributes
 from .managers import *
 from threading import Event
 from aiohttp import *
@@ -1958,3 +1960,32 @@ class Intents:
     def direct_message_typing(self):
         self.intents += 1 << 14
         return self
+
+    @property
+    def all(self):
+        for attr in dir(self):
+            if attr != "intents":
+                getattr(self, attr)
+        return self
+
+    @property
+    def none(self):
+        self.intents = 0
+
+    def remove_intent(self, intent: str) -> int:
+        try:
+            attr = getattr(self, intent)
+        except AttributeError:
+            raise InvalidIntents(f"Intent {intent} is not a valid intent." )        
+        self.intents -= attr
+        return self.intents
+
+    def add_intent(self, intent: str) -> int:
+        try:
+            attr = getattr(self, intent)
+        except AttributeError:
+            raise InvalidIntents(f"Intent {intent} is not a valid intent." )        
+        self.intents += attr
+        return self.intents
+
+    # TODO: Add some presets such as "Moderation", "Logging" ect.
