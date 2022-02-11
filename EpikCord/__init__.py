@@ -1444,22 +1444,22 @@ class Guild:
 
 class GuildScheduledEvent:
     def __init__(self, client: Client, data: dict):
-        self.id: str = data["id"]
+        self.id: str = data.get("id")
         self.client = client
-        self.guild_id: str = data["guild_id"]
-        self.channel_id: Optional[str] = data["channel_id"] or None
-        self.creator_id: Optional[str] = data["creator_id"] or None
-        self.name: str = data["name"]
-        self.description: Optional[str] = data["description"] or None
-        self.scheduled_start_time: str = data["scheduled_start_time"]
-        self.scheduled_end_time: Optional[str] = data["scheduled_end_time"] or None
-        self.privacy_level: int = data["privacy_level"]
-        self.status: str = "SCHEDULED" if data["status"] == 1 else "ACTIVE" if data["status"] == 2 else "COMPLETED" if data["status"] == 3 else "CANCELLED"
-        self.entity_type: str = "STAGE_INSTANCE" if data["status"] == 1 else "VOICE" if data["status"] == 2 else "EXTERNAL"
-        self.entity_id: str = data["entity_id"]
-        self.entity_metadata: dict = data["entity_metadata"]
-        self.creator: Optional[User] = User(data["creator"]) or None
-        self.user_count: Optional[int] = data["user_count"] or None
+        self.guild_id: str = data.get("guild_id")
+        self.channel_id: Optional[str] = data.get("channel_id") or None
+        self.creator_id: Optional[str] = data.get("creator_id") or None
+        self.name: str = data.get("name")
+        self.description: Optional[str] = data.get("description") or None
+        self.scheduled_start_time: str = data.get("scheduled_start_time")
+        self.scheduled_end_time: Optional[str] = data.get("scheduled_end_time") or None
+        self.privacy_level: int = data.get("privacy_level")
+        self.status: str = "SCHEDULED" if data.get("status") == 1 else "ACTIVE" if data.get("status") == 2 else "COMPLETED" if data.get("status") == 3 else "CANCELLED"
+        self.entity_type: str = "STAGE_INSTANCE" if data.get("entity_type") == 1 else "VOICE" if data.get("entity_type") == 2 else "EXTERNAL"
+        self.entity_id: str = data.get("entity_id")
+        self.entity_metadata: dict = data.get("entity_metadata")
+        self.creator: Optional[User] = User(data.get("creator")) or None
+        self.user_count: Optional[int] = data.get("user_count") or None
 
 class WebhookUser:
     def __init__(self, data: dict):
@@ -1476,17 +1476,17 @@ class Webhook:
         self.client = client
         self.data = data
         if data:
-            self.id: str = data["id"] 
-            self.type: str = "Incoming" if data["type"] == 1 else "Channel Follower" if data["type"] == 2 else "Application"
-            self.guild_id: Optional[str] = data["guild_id"] or None
-            self.channel_id: Optional[str] = data["channel_id"] or None
-            self.user: Optional[User] = User(client, data["user"])
-            self.name: Optional[str] = data["name"] or None
-            self.avatar: Optional[str] = data["avatar"] or None
-            self.token: Optional[str] = data["token"] or None
-            self.application_id: Optional[str] = data["application_id"] or None
-            self.source_guild: Optional[PartialGuild] = PartialGuild(data["source_guild"])
-            self.url: Optional[str] = data["url"]
+            self.id: str = data.get("id") 
+            self.type: str = "Incoming" if data.get("type") == 1 else "Channel Follower" if data.get("type") == 2 else "Application"
+            self.guild_id: Optional[str] = data.get("guild_id") or None
+            self.channel_id: Optional[str] = data.get("channel_id") or None
+            self.user: Optional[User] = User(client, data.get("user"))
+            self.name: Optional[str] = data.get("name") or None
+            self.avatar: Optional[str] = data.get("avatar") or None
+            self.token: Optional[str] = data.get("token") or None
+            self.application_id: Optional[str] = data.get("application_id") or None
+            self.source_guild: Optional[PartialGuild] = PartialGuild(data.get("source_guild"))
+            self.url: Optional[str] = data.get("url")
     
 class BaseInteraction:
     def __init__(self, client, data: dict):
