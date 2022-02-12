@@ -2014,4 +2014,4 @@ class Intents:
         self.value += attr
         return self.value
 
-    # TODO: Add some presets such as "Moderation", "Logging" ect.
+    # TODO: Add some presets such as "Moderation", "Logging" etc.
