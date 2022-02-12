@@ -286,10 +286,10 @@ class EventHandler:
 
     async def handle_event(self, event_name: str, data: dict):
         event_name = event_name.lower()
-        # try:
-        await getattr(self, event_name)(data)
-        # except AttributeError:
-        #     logger.warning(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
+        try:
+            await getattr(self, event_name)(data)
+        except AttributeError:
+            logger.warning(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
 
     async def guild_create(self, data):
         pass
@@ -307,6 +307,7 @@ class EventHandler:
         def heartbeater():
             loop = asyncio.new_event_loop()
             loop.run_until_complete(self.heartbeat(False))
+            loop.run_forever()
 
         threading._start_new_thread(heartbeater, ())
         try:
@@ -339,13 +340,11 @@ class WebsocketClient(EventHandler):
             self.intents = intents
         elif isinstance(intents, Intents):
             self.intents = intents.value
-        else:
-            self.intents = intents
-        self.loop = asyncio.new_event_loop()
+
         self.session = ClientSession()
         self.commands = {}
-        self._closed = True # Well nah we're starting closed
-        self.hearbeats = []
+        self._closed = False # Well nah we're starting closed
+        self.heartbeats = []
         self.average_latency = 0
 
         self.interval = None # How frequently to heartbeat
@@ -360,7 +359,7 @@ class WebsocketClient(EventHandler):
             while True:
                 await asyncio.sleep(self.interval / 1000)
                 await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
-                logger.debug("Sent a heartbeat!")
+                print("Sent a heartbeat!")
     
     async def handle_close(self):
         if self.ws.close_code == 4014:
@@ -371,6 +370,9 @@ class WebsocketClient(EventHandler):
             raise Ratelimited429("You've been rate limited. Try again in a few minutes.")
         elif self.ws.close_code == 4013:
             raise InvalidIntents("The intents you provided are invalid.")
+        else:
+            print(self.ws.close_code)
+
     async def send_json(self, json: dict):
         try:
             await self.ws.send_json(json)
@@ -451,7 +453,7 @@ class WebsocketClient(EventHandler):
         try:
             loop.run_forever()
         except KeyboardInterrupt:
-            ...
+            pass
         finally:
             future.remove_done_callback(stop_loop_on_completion)
             _cleanup_loop(loop)
@@ -1337,8 +1339,29 @@ class Embed: # Always wanted to make this class :D
     def fields(self):
         return self.fields #needs improvement
 
-class Emoji:
+class RoleTag:
+    def __init__(self, data: dict):
+        self.bot_id: Optional[str] = data.get("bot_id")
+        self.integration_id: Optional[str] = data.get("integration_id")
+        self.premium_subscriber: Optional[bool] = data.get("premium_subscriber")
+class Role:
     def __init__(self, client, data: dict):
+        self.data = data
+        self.client = client
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+        self.color: int = data.get("color")
+        self.hoist: bool = data.get("hoist")
+        self.icon: Optional[str] = data.get("icon")
+        self.unicode_emoji: Optional[str] = data.get("unicode_emoji")
+        self.position: int = data.get("position")
+        self.permissions: str = data.get("permissions") # TODO: Permissions
+        self.managed: bool = data.get("managed")
+        self.mentionable: bool = data.get("mentionable")
+        self.tags: RoleTag = RoleTag(self.data.get("tags"))
+
+class Emoji:
+    def __init__(self, client, data: dict, guild_id: str):
         self.client = client
         self.id: Optional[str] = data.get("id")
         self.name: Optional[str] = data.get("name")
@@ -1347,8 +1370,32 @@ class Emoji:
         self.requires_colons: bool = data.get("require_colons")
         self.guild_id: str = data.get("guild_id")
         self.managed: bool = data.get("managed")
+        self.guild_id: str = guild_id
         self.animated: bool = data.get("animated")
         self.available: bool = data.get("available")
+
+    async def edit(self,*, name: Optional[str] = None, roles: Optional[List[Role]] = None, reason: Optional[str] = None):
+        payload = {}
+        
+        if reason:
+            payload["X-Audit-Log-Reason"] = reason
+
+        if name:
+            payload["name"] = name
+        
+        if roles:
+            payload["roles"] = [role.id for role in roles]
+
+        emoji = await self.client.http.patch(f"/guilds/{self.guild_id}/emojis/{self.id}", json=payload)
+        return Emoji(self.client, emoji, self.guild_id)
+
+    async def delete(self,*, reason: Optional[str] = None):
+        payload = {}
+        
+        if reason:
+            payload["X-Audit-Log-Reason"] = reason
+
+        await self.client.http.delete(f"/guilds/{self.guild_id}/emojis/{self.id}", json=payload)
 
 class DiscordAPIError(Exception): # 
     ...
@@ -1712,27 +1759,6 @@ class PartialGuild:
         self.features: List[str] = data.get("features")
 
 
-class RoleTag:
-    def __init__(self, data: dict):
-        self.bot_id: Optional[str] = data.get("bot_id")
-        self.integration_id: Optional[str] = data.get("integration_id")
-        self.premium_subscriber: Optional[bool] = data.get("premium_subscriber")
-class Role:
-    def __init__(self, client, data: dict):
-        self.data = data
-        self.client = client
-        self.id: str = data.get("id")
-        self.name: str = data.get("name")
-        self.color: int = data.get("color")
-        self.hoist: bool = data.get("hoist")
-        self.icon: Optional[str] = data.get("icon")
-        self.unicode_emoji: Optional[str] = data.get("unicode_emoji")
-        self.position: int = data.get("position")
-        self.permissions: str = data.get("permissions") # TODO: Permissions
-        self.managed: bool = data.get("managed")
-        self.mentionable: bool = data.get("mentionable")
-        self.tags: RoleTag = RoleTag(self.data.get("tags"))
-
 class SlashCommand(ApplicationCommand):
     def __init__(self, data: dict):
         super().__init__(data)
@@ -1883,109 +1909,109 @@ def utcnow() -> datetime.datetime:
     return datetime.datetime.now(datetime.timezone.utc)
 
 class Intents:
-    def __init__(self,*, intents: Optional[int]):
-        self.intents = intents
+    def __init__(self,*, intents: Optional[int] = None):
+        self.value = intents or 0
     
     @property
     def guilds(self):
-        self.intents += 1 << 0
+        self.value += 1 << 0
         return self
 
     @property
     def guild_members(self):
-        self.intents += 1 << 1
+        self.value += 1 << 1
         return self
 
     @property
     def guild_bans(self):
-        self.intents += 1 << 2
+        self.value += 1 << 2
         return self
     
     @property
     def guild_emojis_and_stickers(self):
-        self.intents += 1 << 3
+        self.value += 1 << 3
         return self
     
     @property
     def guild_integrations(self):
-        self.intents += 1 << 4
+        self.value += 1 << 4
         return self
     
     @property
     def guild_webhooks(self):
-        self.intents += 1 << 5
+        self.value += 1 << 5
         return self
     
     @property
     def guild_invites(self):
-        self.intents += 1 << 6
+        self.value += 1 << 6
         return self
     
     @property
     def guild_voice_states(self):
-        self.intents += 1 << 7
+        self.value += 1 << 7
         return self
     
     @property
     def guild_presences(self):
-        self.intents += 1 << 8
+        self.value += 1 << 8
         return self
     
     @property
     def guild_messages(self):
-        self.intents += 1 << 9
+        self.value += 1 << 9
         return self
     
     @property
     def guild_message_reactions(self):
-        self.intents += 1 << 10
+        self.value += 1 << 10
         return self
     
     @property
     def guild_message_typing(self):
-        self.intents += 1 << 11
+        self.value += 1 << 11
         return self
     
     @property
     def direct_messages(self):
-        self.intents += 1 << 12
+        self.value += 1 << 12
         return self
     
     @property
     def direct_message_reactions(self):
-        self.intents += 1 << 13
+        self.value += 1 << 13
         return self
     
     @property
     def direct_message_typing(self):
-        self.intents += 1 << 14
+        self.value += 1 << 14
         return self
 
     @property
     def all(self):
         for attr in dir(self):
-            if attr != "intents":
+            if attr not in ["value", "all", "none", "remove_value", "add_intent" ]:
                 getattr(self, attr)
         return self
 
     @property
     def none(self):
-        self.intents = 0
+        self.value = 0
 
     def remove_intent(self, intent: str) -> int:
         try:
-            attr = getattr(self, intent)
+            attr = getattr(self, intent.lower())
         except AttributeError:
-            raise InvalidIntents(f"Intent {intent} is not a valid intent." )        
-        self.intents -= attr
-        return self.intents
+            raise InvalidIntents(f"Intent {intent.lower()} is not a valid intent." )        
+        self.value -= attr.value
+        return self.value
 
     def add_intent(self, intent: str) -> int:
         try:
             attr = getattr(self, intent)
         except AttributeError:
             raise InvalidIntents(f"Intent {intent} is not a valid intent." )        
-        self.intents += attr
-        return self.intents
+        self.value += attr
+        return self.value
 
     # TODO: Add some presets such as "Moderation", "Logging" ect.
