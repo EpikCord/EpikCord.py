@@ -1,8 +1,5 @@
 import threading
-
-from attr import attrib, attributes
 from .managers import *
-from threading import Event
 from aiohttp import *
 import asyncio 
 from base64 import b64encode
@@ -103,9 +100,9 @@ class Message:
         self.channel_id: str = data.get("channel_id")
         self.guild_id: Optional[str] = data.get("guild_id") 
         self.webhook_id: Optional[str] = data.get("webhook_id")
-        self.author: Optional[Union[User, WebhookUser]] = WebhookUser(data.get("author")) if self.webhook_id else User(client, data.get("author"))
+        self.author: Optional[Union[User, WebhookUser]] = User(client, data.get("author")) if not self.webhook_id else WebhookUser(data.get("author")) if self.webhook_id else None
         if data.get("member"):
-            self.member: GuildMember = GuildMember(data.get("member"))
+            self.member: GuildMember = GuildMember(client, data.get("member"))
         self.content: Optional[str] = data.get("content") # I forgot Message Intents are gonna stop this.
         self.timestamp: str = data.get("timestamp")
         self.edited_timestamp: Optional[str] = data.get("edited_timestamp")
@@ -113,21 +110,21 @@ class Message:
         self.mention_everyone: bool = data.get("mention_everyone")
         self.mentions: Optional[List[MentionedUser]] = [MentionedUser(mention) for mention in data.get("mentions")]
         self.mention_roles: Optional[List[int]] = data.get("mention_roles")
-        self.mention_channels: Optional[List[MentionedChannel]] = [MentionedChannel(channel) for channel in data.get("mention_channels")]
-        self.embeds: Optional[List[Embed]] = [Embed(embed) for embed in data.get("embeds")]
-        self.reactions: Optional[List[Reaction]] = [Reaction(reaction) for reaction in data.get("reactions")]
+        self.mention_channels: Optional[List[MentionedChannel]] = [MentionedChannel(channel) for channel in data.get("mention_channels", [])]
+        self.embeds: Optional[List[Embed]] = [Embed(**embed) for embed in data.get("embeds", [])]
+        self.reactions: Optional[List[Reaction]] = [Reaction(reaction) for reaction in data.get("reactions", [])]
         self.nonce: Optional[Union[int, str]] = data.get("nonce")
         self.pinned: bool = data.get("pinned")
         self.type: int = data.get("type")
-        self.activity: MessageActivity = MessageActivity(data.get("activity"))
-        self.application: Application = Application(data.get("application")) # Despite there being a PartialApplication, Discord don't specify what attributes it has
+        self.activity: Optional[MessageActivity] = MessageActivity(data.get("activity")) if data.get("activity") else None
+        self.application: Application = Application(data.get("application")) if data.get("application") else None# Despite there being a PartialApplication, Discord don't specify what attributes it has
         self.flags: int = data.get("flags")
         self.referenced_message: Optional[Message] = Message(data.get("referenced_message")) if data.get("referenced_message") else None
         self.interaction: Optional[MessageInteraction] = MessageInteraction(client, data.get("interaction")) if data.get("interaction") else None
         self.thread: Optional[Thread] = Thread(data.get("thread")) if data.get("thread") else None
 
+        components: List[Any] = []
         if data.get("components"):
-            components: List[Any] = []
             for component in data.get("components"):
                 if component.get("type") == 1:
                     components.append(MessageActionRow(component))
@@ -139,7 +136,7 @@ class Message:
                     components.append(MessageTextInputComponent(component))
 
         self.components: Optional[List[Union[MessageTextInputComponent, MessageSelectMenu, MessageButton]]] = components
-        self.stickers: Optional[List[StickerItem]] = [StickerItem(sticker) for sticker in data.get("stickers")] or None
+        self.stickers: Optional[List[StickerItem]] = [StickerItem(sticker) for sticker in data.get("stickers", [])] or None
 
     async def add_reaction(self, emoji: str):
         emoji = quote(emoji)
@@ -215,7 +212,7 @@ class Message:
         
 class Messageable:
     def __init__(self, client, channel_id: str):
-        self.channel_id: str = channel_id
+        self.id: str = channel_id
         self.client = client
         
     async def fetch_messages(self,*, around: Optional[str] = None, before: Optional[str] = None, after: Optional[str] = None, limit: Optional[int] = None) -> List[Message]:
@@ -229,8 +226,9 @@ class Messageable:
         return Message(data)
 
     async def send(self, message_data: dict) -> Message:
-        response = await self.client.http.post(f"channels/{self.id}/messages", form=message_data)
-        return Message(await response.json())
+        response = await self.client.http.post(f"channels/{self.id}/messages", json=message_data)
+        data = await response.json()
+        return Message(self.client, data)
 
 class User(Messageable):
     def __init__(self, client, data: dict):
@@ -286,10 +284,10 @@ class EventHandler:
 
     async def handle_event(self, event_name: str, data: dict):
         event_name = event_name.lower()
-        try:
-            await getattr(self, event_name)(data)
-        except AttributeError:
-            logger.warning(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
+        # try:
+        await getattr(self, event_name)(data)
+        # except AttributeError:
+        #     logger.warning(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
 
     async def guild_create(self, data):
         pass
@@ -302,8 +300,9 @@ class EventHandler:
 
     async def ready(self, data: dict):
         self.user: ClientUser = ClientUser(self.session, data.get("user"))
-        self.application: Application = await self.session.get("https://discord.com/api/v9/oauth2/applications/@me", headers={"Authorization": f"Bot {self.token}"})
-
+        application_response = await self.session.get("https://discord.com/api/v9/oauth2/applications/@me", headers={"Authorization": f"Bot {self.token}"})
+        application_data = await application_response.json()
+        self.application: ClientApplication = ClientApplication(self.session, application_data)
         def heartbeater():
             loop = asyncio.new_event_loop()
             loop.run_until_complete(self.heartbeat(False))
@@ -334,7 +333,6 @@ class WebsocketClient(EventHandler):
         self.HEARTBEAT_ACK = 11
 
         self.token = token
-        self.heartbeat_event = Event
 
         if isinstance(intents, int):
             self.intents = intents
@@ -651,9 +649,8 @@ class BaseComponent:
 
         self.settings["custom_id"] = custom_id
 class Application:
-    def __init__(self, client, data: dict):
+    def __init__(self, data: dict):
         self.id: str = data.get("id")
-        self.client = client
         self.name: str = data.get("name")
         self.icon: Optional[str] = data.get("icon")
         self.description: str = data.get("description")
@@ -662,17 +659,22 @@ class Application:
         self.bot_require_code_grant: bool = data.get("bot_require_code_grant")
         self.terms_of_service_url: Optional[str] = data.get("terms_of_service")
         self.privacy_policy_url: Optional[str] = data.get("privacy_policy")
-        self.owner: PartialUser = PartialUser(data.get("user"))
+        self.owner: Optional[PartialUser] = PartialUser(data.get("user")) if data.get("user") else None
         self.summary: str = data.get("summary")
         self.verify_key: str = data.get("verify_key")
         self.team: Optional[Team] = Team(data.get("team"))
         self.cover_image: Optional[str] = data.get("cover_image")
         self.flags: int = data.get("flags")
 
+class ClientApplication(Application):
+    def __init__(self, client, data: dict):
+        super().__init__(data)
+        self.client = client
+
     async def fetch(self):
         response: ClientResponse = await self.client.http.get("oauth2/applications/@me")
         data: dict = await response.json()
-        self.application = Application(data)
+        return Application(data)
 
 class ApplicationCommand:
     def __init__(self, data: dict):
@@ -907,32 +909,32 @@ class HTTPClient(ClientSession):
     async def get(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1:]
-        super().get(f"{self.base_uri}/{url}", *args, **kwargs)
+        await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
 
     async def post(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1]
-        super().post(f"{self.base_uri}/{url}", *args, **kwargs)
+        await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
 
     async def patch(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1:]
-        super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
+        await super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
 
     async def delete(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1:]
-        super().delete(f"{self.base_uri}/{url}", *args, **kwargs)
+        await super().delete(f"{self.base_uri}/{url}", *args, **kwargs)
 
     async def put(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1:]
-        super().put(f"{self.base_uri}/{url}", *args, **kwargs)
+        await super().put(f"{self.base_uri}/{url}", *args, **kwargs)
 
     async def head(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1:]
-        super().head(f"{self.base_uri}/{url}", *args, **kwargs)
+        await super().head(f"{self.base_uri}/{url}", *args, **kwargs)
 
 class Section:
     def __init__(self):
@@ -1014,7 +1016,7 @@ class Client(WebsocketClient):
 #         super().__init__(data)
 
 class Colour:
-    #some of this code is sourced from discord.py, rest assured all the colors are different from discord.py
+    # Some of this code is sourced from discord.py, rest assured all the colors are different from discord.py
     __slots__ = ('value',)
 
     def __init__(self, value: int):
@@ -1293,15 +1295,14 @@ class MessageActionRow:
         self.settings["components"].append(components)
         return self
 
-class EmbedAuthor:
-    def __init__(self, data: dict):
-        self.name: str = data.get("name")
-        self.url: Optional[str] = data.get("url")
-        self.icon_url: Optional[str] = data.get("icon_url")
-        self.proxy_icon_url: Optional[str] = data.get("proxy_icon_url")
-
 class Embed: # Always wanted to make this class :D
-    def __init__(self,*, title: Optional[str], description: Optional[str], color:Optional[Colour], colour:Optional[Colour], url:Optional[str]):
+    def __init__(self,*,
+        title: Optional[str] = None,
+        description: Optional[str] = None,
+        color: Optional[Colour] = None,
+        colour: Optional[Colour] = None,
+        url: Optional[str] = None
+    ):
         
         self.title: Optional[str] = title
         self.type: Optional[str] = type
@@ -1314,30 +1315,137 @@ class Embed: # Always wanted to make this class :D
         self.thumbnail: Optional[str] = None
         self.valid_styles: Optional[str] = None
         self.provider: Optional[str] = None
-        self.author: Optional[EmbedAuthor] = None
+        self.author: Optional[dict] = None
         self.fields: Optional[List[str]] = None
         
     def add_field(self,*, name: str, value: str, inline: bool = False):
         self.fields.append({"name": name, "value": value, "inline": inline})
         
-    def set_thumbnail(self, url: str):
-        self.thumbnail = url
-    
-    def set_image(self, url:str):
-        self.image = url
-    
-    def set_footer(self, footertxt:str):
-        self.footer = footertxt
+    def set_thumbnail(self,*, url: Optional[str] = None, proxy_url: Optional[str] = None, height: Optional[int] = None, width: Optional[int] = None):
+        config = {
+            "url": url
+        }
+        if proxy_url:
+            config["proxy_url"] = proxy_url
+        if height:
+            config["height"] = height
+        if width:
+            config["width"] = width
+        
+        self.thumbnail = config
 
-    def set_author(self, author:EmbedAuthor):
-        self.author = author
+    def set_video(self,*, url: Optional[str] = None, proxy_url: Optional[str] = None, height: Optional[int] = None, width: Optional[int] = None):
+        config = {
+            "url": url
+        }
+        if proxy_url:
+            config["proxy_url"] = proxy_url
+        if height:
+            config["height"] = height
+        if width:
+            config["width"] = width
+        
+        self.video = config
 
-    def set_timestamp(self, timestamp):
-        pass #someone do this??
+
+    def set_image(self,*, url: Optional[str] = None, proxy_url: Optional[str] = None, height: Optional[int] = None, width: Optional[int] = None):
+        config = {
+            "url": url
+        }
+        if proxy_url:
+            config["proxy_url"] = proxy_url
+        if height:
+            config["height"] = height
+        if width:
+            config["width"] = width
+        
+        self.image = config
+
+    def set_provider(self, *, name: Optional[str] = None, url: Optional[str] = None):
+        config = {}
+        if url:
+            config["url"] = url
+        if name:
+            config["name"] = name
+        self.provider = config
+
+
+    def set_footer(self, *, text: Optional[str], icon_url: Optional[str] = None, proxy_icon_url: Optional[str] = None):
+        payload = {}
+        if text:
+            payload["text"] = text
+        if icon_url:
+            payload["icon_url"] = icon_url
+        if proxy_icon_url:
+            payload["proxy_icon_url"] = proxy_icon_url
+        self.footer = payload
+
+    def set_author(self, name: Optional[str] = None, url: Optional[str] = None, icon_url: Optional[str] = None, proxy_icon_url: Optional[str] = None):
+        payload = {}
+        if name:
+            payload["name"] = name
+        if url:
+            payload["url"] = url
+        if icon_url:
+            payload["icon_url"] = icon_url
+        if proxy_icon_url:
+            payload["proxy_icon_url"] = proxy_icon_url
+
+        self.author = payload
+
+    def set_fields(self, *, fields: List[dict]):
+        self.fields = fields
+
+    def set_color(self, *, colour: Colour):
+        self.color = colour.value
+
+    def set_timestamp(self, *, timestamp: datetime.datetime):
+        self.timestamp = timestamp.isoformat()
+
+    def set_title(self, title: Optional[str] = None):
+        self.title = title
+    
+    def set_description(self, description: Optional[str] = None):
+        self.description = description
+
+    def set_url(self, url: Optional[str] = None):
+        self.url = url
+
+    def to_dict(self):
+        final_product = {}
+
+        if self.title:
+            final_product["title"] = self.title
+        if self.description:
+            final_product["description"] = self.description
+        if self.url:
+            final_product["url"] = self.url
+        if self.timestamp:
+            final_product["timestamp"] = self.timestamp
+        if self.color:
+            final_product["color"] = self.color
+        if self.footer:
+            final_product["footer"] = self.footer
+        if self.image:
+            final_product["image"] = self.image
+        if self.thumbnail:
+            final_product["thumbnail"] = self.thumbnail
+        if self.video:
+            final_product["video"] = self.video
+        if self.provider:
+            final_product["provider"] = self.provider
+        if self.author:
+            final_product["author"] = self.author
+        if self.fields:
+            final_product["fields"] = self.fields
+
+        return final_product
+
+
 
     @property
     def fields(self):
-        return self.fields #needs improvement
+        return self.fields
 
 class RoleTag:
     def __init__(self, data: dict):
@@ -1655,7 +1763,7 @@ class GuildMember:
         # self.user: Optional[User] = User(data["user"]) or None
         self.nick: Optional[str] = data.get("nick")
         self.avatar: Optional[str] = data.get("avatar")
-        self.roles: List[Role] = [role.Role(role) for role in data.get("roles")]
+        self.role_ids: Optional[List[str]] = [role for role in data.get("roles", [])]
         self.joined_at:str = data.get("joined_at")
         self.premium_since: Optional[str] = data.get("premium_since")
         self.deaf: bool = data.get("deaf")
