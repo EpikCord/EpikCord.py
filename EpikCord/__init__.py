@@ -108,7 +108,7 @@ class Message:
         self.edited_timestamp: Optional[str] = data.get("edited_timestamp")
         self.tts: bool = data.get("tts")
         self.mention_everyone: bool = data.get("mention_everyone")
-        self.mentions: Optional[List[MentionedUser]] = [MentionedUser(mention) for mention in data.get("mentions")]
+        self.mentions: Optional[List[MentionedUser]] = [MentionedUser(client, mention) for mention in data.get("mentions")]
         self.mention_roles: Optional[List[int]] = data.get("mention_roles")
         self.mention_channels: Optional[List[MentionedChannel]] = [MentionedChannel(channel) for channel in data.get("mention_channels", [])]
         self.embeds: Optional[List[Embed]] = [Embed(**embed) for embed in data.get("embeds", [])]
@@ -994,7 +994,9 @@ class Client(WebsocketClient):
 
         self.http = HTTPClient(
             headers = {
-                "Authorization": f"Bot {token}"}
+                "Authorization": f"Bot {token}",
+                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})"
+                }
             )
         
         self.user: ClientUser = None
@@ -1015,7 +1017,9 @@ class Client(WebsocketClient):
                 ChannelOption, 
                 RoleOption, 
                 MentionableOption, 
-                NumberOption]]
+                NumberOption,
+                AttachmentOption
+                ]]
         ):
         def register_slash_command(func):
             self.commands[func.__name__] = SlashCommand({
@@ -1171,7 +1175,7 @@ class Colour:
 Color = Colour
 
 class MessageSelectMenuOption:
-    def __init__(self, label: str, value: str, description: Optional[str], emoji: Optional[PartialEmoji], default: Optional[bool]):
+    def __init__(self, label: str, value: str, description: Optional[str]  = None, emoji: Optional[PartialEmoji] = None, default: Optional[bool] = None):
         self.settings = {
             "label": label,
             "value": value,
@@ -1199,10 +1203,10 @@ class MessageSelectMenu(BaseComponent):
     def add_options(self, options: List[MessageSelectMenuOption]):
         for option in options:
             
-            if len(self.settings["options"] > 25):
+            if len(self.settings["options"]) > 25:
                 raise TooManySelectMenuOptions("You can only have 25 options in a select menu.")
             
-            self.settings["options"].append(option.data)
+            self.settings["options"].append(option.to_dict())
         return self
         
     def set_placeholder(self, placeholder: str):
@@ -1256,7 +1260,7 @@ class MessageTextInputComponent(BaseComponent):
 
 
 class MessageButton(BaseComponent):
-    def __init__(self,*, style: Optional[Union[int, str]] = 1, label: Optional[str], emoji: Optional[Union[PartialEmoji, dict]], url: Optional[str]):
+    def __init__(self,*, style: Optional[Union[int, str]] = 1, label: Optional[str] = None, emoji: Optional[Union[PartialEmoji, dict]] = None, url: Optional[str] = None):
         self.settings = {
             "type": 2,
             "style": style or 1,
@@ -1326,10 +1330,10 @@ class MessageButton(BaseComponent):
         
 
 class MessageActionRow:
-    def __init__(self, components: Optional[List[Union[MessageButton, MessageSelectMenu]]]):
+    def __init__(self, components: Optional[List[Union[MessageButton, MessageSelectMenu]]] = None):
         self.settings = {
             "type": 1,
-            "components": components
+            "components": components or []
         }
 
     def to_dict(self):
@@ -1346,7 +1350,7 @@ class MessageActionRow:
             
             elif type(component) == MessageSelectMenu:
                 raise TooManyComponents("You can only have 1 select menu per row. No buttons along that select menu.")
-        self.settings["components"].append(components)
+            self.settings["components"].append(component.to_json())
         return self
 
 class Embed: # Always wanted to make this class :D
@@ -1354,24 +1358,32 @@ class Embed: # Always wanted to make this class :D
         title: Optional[str] = None,
         description: Optional[str] = None,
         color: Optional[Colour] = None,
+        video: Optional[dict] = None,
+        timestamp: Optional[datetime.datetime] = None,
         colour: Optional[Colour] = None,
-        url: Optional[str] = None
+        url: Optional[str] = None,
+        type: Optional[int] = None,
+        footer: Optional[dict] = None,
+        image: Optional[dict] = None,
+        thumbnail: Optional[dict] = None,
+        provider: Optional[dict] = None,
+        author: Optional[dict] = None,
+        fields: Optional[List[dict]] = None,
     ):
-        
+        self.type: int = type
         self.title: Optional[str] = title
         self.type: Optional[str] = type
         self.description: Optional[str] = description
         self.url: Optional[str] = url
-        self.video: Optional[dict] = None
-        self.timestamp: Optional[str] = None
+        self.video: Optional[dict] = video
+        self.timestamp: Optional[str] = timestamp
         self.color: Optional[Colour] = color or colour
-        self.footer: Optional[str] = None
-        self.image: Optional[str] = None
-        self.thumbnail: Optional[str] = None
-        self.valid_styles: Optional[str] = None
-        self.provider: Optional[str] = None
-        self.author: Optional[dict] = None
-        self.fields: Optional[List[str]] = None
+        self.footer: Optional[str] = footer
+        self.image: Optional[str] = image
+        self.thumbnail: Optional[str] = thumbnail
+        self.provider: Optional[str] = provider
+        self.author: Optional[dict] = author
+        self.fields: Optional[List[str]] = fields
         
     def add_field(self,*, name: str, value: str, inline: bool = False):
         self.fields.append({"name": name, "value": value, "inline": inline})
@@ -1831,7 +1843,7 @@ class MentionedChannel:
 class MentionedUser(User):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.member = GuildMember(data.get("member"))
+        self.member = GuildMember(client, data.get("member"))
 
 class MessageActivity:
     def __init__(self, data: dict):
