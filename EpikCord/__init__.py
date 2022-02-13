@@ -1116,12 +1116,12 @@ class Colour:
         return cls(0xffffff)
     
     @classmethod
-    def lightmode:
+    def lightmode(cls: Type[CT]) -> CT:
         """Returns the color of the background when the color theme in Discord is set to light mode. An alias of `white`"""
         return cls(0xffffff)
     
     @classmethod
-    def darkmode:
+    def darkmode(cls: Type[CT]) -> CT:
         """Returns the color of the background when the color theme in Discord is set to dark mode"""
         return cls(0x363940)
     
