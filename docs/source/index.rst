@@ -10,15 +10,13 @@ Welcome to EpikCord.py's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-EpikCord.py is an Pythonic API wrapper for discord. It can be used to make discord bots.
+EpikCord.py is a Pythonic API wrapper for Discord. The main target is to make it very easy to create discord bots.
 
-Some of the features of EpikCord.py are: 
+Some of the features of EpikCord.py are:
 
-- An modern async ready Pythonic API.
+- Modern async Pythonic API.
 
-- Awesome rate limit handling that prevents 429s.
-
-- Fast ,memory efficient and easy to use library
+- Fast, memory efficient and easy to use.
 
 Getting Started
 ==================
