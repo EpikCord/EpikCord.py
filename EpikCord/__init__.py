@@ -225,8 +225,34 @@ class Messageable:
         data = await response.json()
         return Message(data)
 
-    async def send(self, message_data: dict) -> Message:
-        response = await self.client.http.post(f"channels/{self.id}/messages", json=message_data)
+    async def send(self, content: Optional[str] = None,*, embeds: Optional[List[dict]] = None, components = None, tts: Optional[bool] = False, allowed_mentions = None, sticker_ids: Optional[List[str]] = None, attachments = None, suppress_embeds: bool = False) -> Message:
+        payload = {}
+
+        if content:
+            payload["content"] = content
+        
+        if embeds:
+            payload["embeds"] = [embed.to_dict() for embed in embeds]
+        
+        if components:
+            payload["components"] = [component.to_dict() for component in components]
+        
+        if tts:
+            payload["tts"] = tts
+        
+        if allowed_mentions:
+            payload["allowed_mentions"] = allowed_mentions.to_dict()
+
+        if sticker_ids:
+            payload["sticker_ids"] = sticker_ids
+        
+        if attachments:
+            payload["attachments"] = [attachment.to_dict() for attachment in attachments]
+        
+        if suppress_embeds:
+            payload["suppress_embeds"] = 1 << 2
+
+        response = await self.client.http.post(f"channels/{self.id}/messages", json = payload)
         data = await response.json()
         return Message(self.client, data)
 
@@ -1308,6 +1334,7 @@ class Embed: # Always wanted to make this class :D
         self.type: Optional[str] = type
         self.description: Optional[str] = description
         self.url: Optional[str] = url
+        self.video: Optional[dict] = None
         self.timestamp: Optional[str] = None
         self.color: Optional[Colour] = color or colour
         self.footer: Optional[str] = None
@@ -1414,38 +1441,32 @@ class Embed: # Always wanted to make this class :D
     def to_dict(self):
         final_product = {}
 
-        if self.title:
+        if getattr(self, "title"):
             final_product["title"] = self.title
-        if self.description:
+        if getattr(self, "description"):
             final_product["description"] = self.description
-        if self.url:
+        if getattr(self, "url"):
             final_product["url"] = self.url
-        if self.timestamp:
+        if getattr(self, "timestamp"):
             final_product["timestamp"] = self.timestamp
-        if self.color:
+        if getattr(self, "color"):
             final_product["color"] = self.color
-        if self.footer:
+        if getattr(self, "footer"):
             final_product["footer"] = self.footer
-        if self.image:
+        if getattr(self, "image"):
             final_product["image"] = self.image
-        if self.thumbnail:
+        if getattr(self, "thumbnail"):
             final_product["thumbnail"] = self.thumbnail
-        if self.video:
+        if getattr(self, "video"):
             final_product["video"] = self.video
-        if self.provider:
+        if getattr(self, "provider"):
             final_product["provider"] = self.provider
-        if self.author:
+        if getattr(self, "author"):
             final_product["author"] = self.author
-        if self.fields:
+        if getattr(self, "fields"):
             final_product["fields"] = self.fields
 
         return final_product
-
-
-
-    @property
-    def fields(self):
-        return self.fields
 
 class RoleTag:
     def __init__(self, data: dict):
