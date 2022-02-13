@@ -1088,7 +1088,7 @@ class Colour:
         return self._get_byte(0)
 
     def to_rgb(self) -> Tuple[int, int, int]:
-        """returns an rgb color as a tuple"""
+        """Returns an rgb color as a tuple"""
         return (self.r, self.g,self.b)
 
     @classmethod
@@ -1134,12 +1134,40 @@ class Colour:
     @classmethod
     def black(cls: Type[CT]) -> CT:
         """Returns a color of black"""
-        return cls(0x00000)
+        return cls(0x000000)
 
-    default=black
     @classmethod
     def white(cls: Type[CT]) -> CT:
+        """Returns a color of white"""
         return cls(0xffffff)
+    
+    @classmethod
+    def lightmode(cls: Type[CT]) -> CT:
+        """Returns the color of the background when the color theme in Discord is set to light mode. An alias of `white`"""
+        return cls(0xffffff)
+    
+    @classmethod
+    def darkmode(cls: Type[CT]) -> CT:
+        """Returns the color of the background when the color theme in Discord is set to dark mode"""
+        return cls(0x363940)
+    
+    @classmethod
+    def amoled(cls: Type[CT]) -> CT:
+        """Returns the color of the background when the color theme in Discord is set to amoled mode. An alias of `black`"""
+        return cls(0x000000)
+    
+    @classmethod
+    def blurple_old(cls: Type[CT]) -> CT:
+        """Returns the old Discord Blurple color"""
+        return cls(0x7289da)
+    
+    @classmethod
+    def blurple_new(cls: Type[CT]) -> CT:
+        """Returns the new Discord Blurple color"""
+        return cls(0x5865f2)
+        
+    default=black
+    
 Color = Colour
 
 class MessageSelectMenuOption:
