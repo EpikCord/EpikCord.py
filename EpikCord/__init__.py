@@ -12,6 +12,7 @@ from urllib.parse import quote
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
 logger = getLogger(__name__)
+__version__ = '0.4.3'
 
 
 """
@@ -100,7 +101,13 @@ class Message:
         self.channel_id: str = data.get("channel_id")
         self.guild_id: Optional[str] = data.get("guild_id") 
         self.webhook_id: Optional[str] = data.get("webhook_id")
-        self.author: Optional[Union[User, WebhookUser]] = User(client, data.get("author")) if not self.webhook_id else WebhookUser(data.get("author")) if self.webhook_id else None
+        if data.get("author"):
+            if self.webhook_id is not None:
+                self.author: Optional[Union[WebhookUser, User]] = WebhookUser(data.get("author"))
+            else:
+                self.author: Optional[Union[WebhookUser, User]] = User(client, data.get("author"))
+        else:
+            self.author: Optional[Union[WebhookUser, User]] = None
         if data.get("member"):
             self.member: GuildMember = GuildMember(client, data.get("member"))
         self.content: Optional[str] = data.get("content") # I forgot Message Intents are gonna stop this.
@@ -108,7 +115,7 @@ class Message:
         self.edited_timestamp: Optional[str] = data.get("edited_timestamp")
         self.tts: bool = data.get("tts")
         self.mention_everyone: bool = data.get("mention_everyone")
-        self.mentions: Optional[List[MentionedUser]] = [MentionedUser(client, mention) for mention in data.get("mentions")]
+        self.mentions: Optional[List[MentionedUser]] = [MentionedUser(client, mention) for mention in data.get("mentions", [])]
         self.mention_roles: Optional[List[int]] = data.get("mention_roles")
         self.mention_channels: Optional[List[MentionedChannel]] = [MentionedChannel(channel) for channel in data.get("mention_channels", [])]
         self.embeds: Optional[List[Embed]] = [Embed(**embed) for embed in data.get("embeds", [])]
@@ -258,6 +265,7 @@ class Messageable:
 
 class User(Messageable):
     def __init__(self, client, data: dict):
+        super().__init__(client, data["id"])
         self.data = data
         self.client = client
         self.id: str = data.get("id")
@@ -662,8 +670,8 @@ class BaseChannel:
 
 
 class BaseComponent:
-    def __init__(self):
-        self.settings = {}
+    def __init__(self, *, custom_id: str):
+        self.custom_id: str = custom_id
 
     def set_custom_id(self, custom_id: str):
         
@@ -674,6 +682,7 @@ class BaseComponent:
             raise CustomIdIsTooBig("Custom Id must be 100 characters or less.")
 
         self.settings["custom_id"] = custom_id
+
 class Application:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
@@ -935,32 +944,32 @@ class HTTPClient(ClientSession):
     async def get(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1:]
-        await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
+        return await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
 
     async def post(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1]
-        await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
+        return await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
 
     async def patch(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1:]
-        await super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
+        return await super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
 
     async def delete(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1:]
-        await super().delete(f"{self.base_uri}/{url}", *args, **kwargs)
+        return await super().delete(f"{self.base_uri}/{url}", *args, **kwargs)
 
     async def put(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1:]
-        await super().put(f"{self.base_uri}/{url}", *args, **kwargs)
+        return await super().put(f"{self.base_uri}/{url}", *args, **kwargs)
 
     async def head(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1:]
-        await super().head(f"{self.base_uri}/{url}", *args, **kwargs)
+        return await super().head(f"{self.base_uri}/{url}", *args, **kwargs)
 
 class Section:
     def __init__(self):
@@ -1188,27 +1197,34 @@ class MessageSelectMenuOption:
         return self.settings
 
 class MessageSelectMenu(BaseComponent):
-    def __init__(self):
-        self.settings = {
-            "options": [], 
-            "type": 3,
-            "min_values": 1,
-            "max_values": 1,
-            "disabled": False
-        }
-    
+    def __init__(self, *, min_values: Optional[int] = 1, max_values: Optional[int] = 1, disabled: Optional[bool] = False, custom_id: str):
+        super().__init__(custom_id=custom_id)
+        self.options: List[Union[MessageSelectMenuOption, dict]] = []
+        self.type: str = 3
+        self.min_values = min_values
+        self.max_values = max_values
+        self.disabled: bool = disabled
+
     def to_dict(self):
-        return self.settings
+        settings = {
+            "type": self.type,
+            "options": self.options,
+            "min_values": self.min_values,
+            "max_values": self.max_values,
+            "disabled": self.disabled
+        }
+        return settings
 
     def add_options(self, options: List[MessageSelectMenuOption]):
         for option in options:
             
-            if len(self.settings["options"]) > 25:
+            if len(self.options) > 25:
                 raise TooManySelectMenuOptions("You can only have 25 options in a select menu.")
             
-            self.settings["options"].append(option.to_dict())
+            self.options.append(option.to_dict())
         return self
-        
+
+
     def set_placeholder(self, placeholder: str):
         if not isinstance(placeholder, str):
             raise InvalidArgumentType("Placeholder must be a string.")
@@ -1229,10 +1245,14 @@ class MessageSelectMenu(BaseComponent):
             raise InvalidArgumentType("Max must be an integer.")
         
         self.options["max_values"] = max  
-        return self  
+        return self
+
+    def set_disabled(self, disabled: bool):
+        self.disabled = disabled
 
 class MessageTextInputComponent(BaseComponent):
-    def __init__(self, *, custom_id: str, style: Union[int, str], label: str, min_length: Optional[int], max_length: Optional[int], required: Optional[bool], value: Optional[str], placeholder: Optional[str]):
+    def __init__(self, *, custom_id: str, style: Union[int, str] = 1, label: str, min_length: Optional[int] = 10, max_length: Optional[int] = 4000, required: Optional[bool] = True, value: Optional[str] = None, placeholder: Optional[str] = None):
+        super().__init__(custom_id = custom_id)
         VALID_STYLES = {
             "Short": 1,
             "Paragraph": 2
@@ -1247,35 +1267,82 @@ class MessageTextInputComponent(BaseComponent):
             if style not in VALID_STYLES.values():
                 raise InvalidComponentStyle("Style must be either 1 or 2.")
 
-        self.settings = {
-            "custom_id": custom_id,
-            "style": style,
-            "label": label,
-            "min_length": min_length or None,
-            "max_length": max_length or None,
-            "required": required or None,
-            "value": value or None,
-            "placeholder": placeholder or None
-        }
-
-
-class MessageButton(BaseComponent):
-    def __init__(self,*, style: Optional[Union[int, str]] = 1, label: Optional[str] = None, emoji: Optional[Union[PartialEmoji, dict]] = None, url: Optional[str] = None):
-        self.settings = {
-            "type": 2,
-            "style": style or 1,
-            "label": label or "Click me!",
-            "emoji": None,
-            "disabled": False,
-        }
-        if url:
-            self.settings["url"] = url
-            self.settings["style"] = 5
-        if emoji:
-            self.settings["emoji"] = emoji
+        self.style: int = style
+        self.label: str = label
+        self.min_length: int = min_length
+        self.max_length: int = max_length
+        self.required: bool = required
+        self.value: str = value
+        self.placeholder: Optional[str] = placeholder
 
     def to_dict(self):
-        return self.settings
+        settings: dict = {
+            "type": self.type,
+            "label": self.label,
+            "min_length": self.min_length,
+            "max_length": self.max_length,
+            "required": self.required,
+            "style": self.style,
+        }
+
+        if getattr(self, "value", None):
+            settings["value"] = self.value
+        
+        if getattr(self, "placeholder", None):
+            settings["placeholder"] = self.placeholder
+            
+
+class MessageButton(BaseComponent):
+    def __init__(self,*, style: Optional[Union[int, str]] = 1, label: Optional[str] = None, emoji: Optional[Union[PartialEmoji, dict]] = None, url: Optional[str] = None, custom_id: str, disabled: bool = False):
+        super().__init__(custom_id = custom_id)
+        self.type: int = 2
+        self.disabled = disabled
+
+        valid_styles = {
+            "PRIMARY": 1,
+            "SECONDARY": 2,
+            "SUCCESS": 3,
+            "DANGER": 4,
+            "LINK": 5
+        }
+
+        if isinstance(style, str):
+            if style.upper() not in valid_styles:
+                raise InvalidComponentStyle("Invalid button style. Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS.")
+            self.style: int = valid_styles[style.upper()]
+            
+        elif isinstance(style, int):
+            if style not in valid_styles.values():
+                raise InvalidComponentStyle("Invalid button style. Style must be in range 1 to 5 inclusive.")
+            self.style: int = style
+
+        if url:
+            self.url: Optional[str] = url
+            self.style: int = 5
+        if emoji:
+            self.emoji: Optional[Union[PartialEmoji, dict]] = emoji
+        if label:
+            self.label: Optional[str] = label
+
+    def to_dict(self):
+        settings = {
+            "type": self.type,
+            "custom_id": self.custom_id,
+            "disabled": self.disabled,
+            "style": self.style,
+        }
+
+        if getattr(self, "label", None):
+            settings["label"] = self.label
+        
+        if getattr(self, "url", None):
+            settings["url"] = self.url
+        
+        if getattr(self, "emoji", None):
+            settings["emoji"] = self.emoji
+        
+        return settings
+
 
     def set_label(self, label: str):
 
@@ -1327,7 +1394,8 @@ class MessageButton(BaseComponent):
         self.settings["style"] = 5
         return self
 
-        
+class MissingCustomId(Exception):
+    ... 
 
 class MessageActionRow:
     def __init__(self, components: Optional[List[Union[MessageButton, MessageSelectMenu]]] = None):
@@ -1341,16 +1409,19 @@ class MessageActionRow:
         
     def add_components(self, components: List[Union[MessageButton, MessageSelectMenu]]):
         buttons = 0
-        for component in self.settings["components"]:
+        for component in components:
+            if not component.custom_id:
+                raise MissingCustomId(f"You need to supply a custom id for the component {component}")
+
             if type(component) == MessageButton:
                 buttons += 1
             
             elif buttons > 5:
                 raise TooManyComponents("You can only have 5 buttons per row.")
             
-            elif type(component) == MessageSelectMenu:
+            elif type(component) == MessageSelectMenu and buttons > 0:
                 raise TooManyComponents("You can only have 1 select menu per row. No buttons along that select menu.")
-            self.settings["components"].append(component.to_json())
+            self.settings["components"].append(component.to_dict())
         return self
 
 class Embed: # Always wanted to make this class :D
