@@ -1108,7 +1108,7 @@ class Colour:
     @classmethod
     def black(cls: Type[CT]) -> CT:
         """Returns a color of black"""
-        return cls(0x00000)
+        return cls(0x000000)
 
     @classmethod
     def white(cls: Type[CT]) -> CT:
@@ -1124,6 +1124,11 @@ class Colour:
     def darkmode(cls: Type[CT]) -> CT:
         """Returns the color of the background when the color theme in Discord is set to dark mode"""
         return cls(0x363940)
+    
+    @classmethod
+    def amoled(cls: Type[CT]) -> CT:
+        """Returns the color of the background when the color theme in Discord is set to amoled mode. An alias of `black`"""
+        return cls(0x000000)
     
     @classmethod
     def blurple_old(cls: Type[CT]) -> CT:
