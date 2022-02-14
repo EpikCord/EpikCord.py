@@ -2259,27 +2259,27 @@ class SlashCommand(ApplicationCommand):
         super().__init__(data)
         self.options: Optional[List[Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]]] = data.get(
             "options")  # Return the type hinted class later this will take too long and is very tedious, I'll probably get Copilot to do it for me lmao
-
         for option in self.options:
-            if option.get("type") == 1:
+            option_type = option.get("type")
+            if option_type == 1:
                 return Subcommand(option)
-            elif option.get("type") == 2:
+            elif option_type == 2:
                 return SubCommandGroup(option)
-            elif option.get("type") == 3:
+            elif option_type == 3:
                 return StringOption(option)
-            elif option.get("type") == 4:
+            elif option_type == 4:
                 return IntegerOption(option)
-            elif option.get("type") == 5:
+            elif option_type == 5:
                 return BooleanOption(option)
-            elif option.get("type") == 6:
+            elif option_type == 6:
                 return UserOption(option)
-            elif option.get("type") == 7:
+            elif option_type == 7:
                 return ChannelOption(option)
-            elif option.get("type") == 8:
+            elif option_type == 8:
                 return RoleOption(option)
-            elif option.get("type") == 9:
+            elif option_type == 9:
                 return MentionableOption(option)
-            elif option.get("type") == 10:
+            elif option_type == 10:
                 return NumberOption(option)
 
     def to_dict(self):
