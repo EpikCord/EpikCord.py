@@ -2764,3 +2764,20 @@ class VoiceState:
         self.self_video: bool = data.get("self_video")
         self.suppress: bool = data.get("suppress")
         self.request_to_speak_timestamp: datetime.datetime = datetime.datetime.fromisoformat(data.get("request_to_speak_timestamp"))
+
+class Paginator:
+    def __init__(self, *, pages: List[Embed]):
+        self.current_index: int = 0
+        self.pages = pages
+    def back(self):
+        return self.pages[self.current_index - 1]
+    def forward(self):
+        return self.pages[self.current_index + 1]
+    def current(self):
+        return self.pages[self.current_index]
+    def add_page(self, page: Embed):
+        self.pages.append(page)
+    def remove_page(self, page: Embed):
+        self.pages = filter(lambda embed: embed != page, self.pages)
+    def current(self) -> Embed:
+        return self.pages[self.current_index] 
