@@ -618,79 +618,85 @@ class VoiceWebsocketClient:
         self.ws = None
 
 class BaseSlashCommandOption:
-    def __init__(self, *, name: str, description: str, required: bool = False):
-        self.settings = {
-            "name": name,
-            "description": description,
-            "required": required
-        }
-        # People shouldn't use this class, this is just a base class for other options
+    def __init__(self, *, name: str, description: str, required: Optional[bool] = False):
+        self.name: str = name
+        self.description: str = description
+        self.required: bool = required
+        self.type: int = None # Needs to be set by the subclass
+        # People shouldn't use this class, this is just a base class for other options, but they can use this for other options we are yet to account for.
 
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "description": self.description,
+            "required": self.required,
+            "type": self.type
+        }
 
 class Subcommand(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 1
+        self.type = 1
 
 
 class SubCommandGroup(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
+    def __init__(self, *, name: str, description: str = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 2
+        self.type = 2
 
 
 class StringOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 3
+        self.type = 3
 
 
 class IntegerOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 4
+        self.type = 4
 
 
 class BooleanOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 5
+        self.type = 5
 
 
 class UserOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 6
+        self.type = 6
 
 
 class ChannelOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 7
+        self.type = 7
 
 
 class RoleOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 8
+        self.type = 8
 
 
 class MentionableOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 9
+        self.type = 9
 
 
 class NumberOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 10
+        self.type = 10
 
 
 class AttachmentOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 11
+        self.type = 11
 
 
 class SlashCommandOptionChoice:
@@ -700,6 +706,7 @@ class SlashCommandOptionChoice:
             "value": value
         }
 
+AnyOption = Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]
 
 class Overwrite:
     def __init__(self, data: dict):
@@ -2080,7 +2087,6 @@ class BaseInteraction:
         self.id: str = data.get("id")
         self.client = client
         self.application_id: int = data.get("application_id")
-        self.type: int = data.get("type")
         self.data: Optional[dict] = data.get("data")
         self.guild_id: Optional[str] = data.get("guild_id")
         self.channel_id: Optional[str] = data.get("channel_id")
@@ -2090,9 +2096,6 @@ class BaseInteraction:
         self.version: int = data.get("version")
         self.locale: Optional[str] = data.get("locale")
         self.guild_locale: Optional[str] = data.get("guild_locale")
-
-    def is_ping(self):
-        return self.type == 1
 
     def is_application_command(self):
         return self.type == 2
@@ -2135,6 +2138,47 @@ class BaseInteraction:
         response = await self.client.http.delete(f"/webhooks/{self.application_id}/{self.token}/messages/{message_id}")
         return await response.json()
 
+class MessageComponentInteraction(BaseInteraction):
+    def __init__(self, client, data: dict):
+        super().__init__(client, data)
+        self.custom_id: str = self.data.get("custom_id")
+        self.component_type: Optional[int] = self.data.get("component_type")
+        self.values: Optional[dict] = [MessageSelectMenuOption(option) for option in self.data.get("values", [])]
+
+class ApplicationCommandOption:
+    def __init__(self, data: dict):
+        self.name: str = data.get("name")
+        self.type: int = data.get("type")
+        self.value: Optional[Union[str, int, float]] = data.get("value")
+        self.focused: Optional[bool] = data.get("focused")
+
+class ApplicationCommandSubcommandOption(ApplicationCommandOption):
+    def __init__(self, data: dict):
+        super().__init__(data)
+        self.options: List[ApplicationCommandOption] = [ApplicationCommandOption(option) for option in data.get("options", [])]
+
+class ApplicationCommandInteraction(BaseInteraction):
+    def __init__(self, client, data: dict):
+        super().__init__(client, data)
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+        self.type: int = data.get("type")
+        # TODO: resolved attribute.
+        options = []
+        for option in data.get("options", []):
+            if not option.get("options"):
+                options.append(ApplicationCommandOption(option))
+            else:
+                options.append(ApplicationCommandSubcommandOption(option))
+        self.options: Optional[List[Union[ApplicationCommandOption, ApplicationCommandSubcommandOption]]] = options
+
+class UserCommandInteraction(ApplicationCommandInteraction):
+    def __init__(self, client, data: dict):
+        super().__init__(client, data)
+        self.target_id: str = data.get("target_id")
+
+class MessageCommandInteraction(UserCommandInteraction):
+    ... # Literally the same thing.
 
 class Invite:
     def __init__(self, data: dict):
@@ -2220,7 +2264,6 @@ class MessageInteraction:
         self.member: Optional[GuildMember] = GuildMember(client, data.get("member")) if data.get("member") else None
         self.user: User = User(client, data.get("user"))
 
-
 class PartialUser:
     def __init__(self, data: dict):
         self.data: dict = data
@@ -2242,7 +2285,7 @@ class PartialGuild:
 class SlashCommand(ApplicationCommand):
     def __init__(self, data: dict):
         super().__init__(data)
-        self.options: Optional[List[Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]]] = data.get(
+        self.options: Optional[List[AnyOption]] = data.get(
             "options")  # Return the type hinted class later this will take too long and is very tedious, I'll probably get Copilot to do it for me lmao
         for option in self.options:
             option_type = option.get("type")
