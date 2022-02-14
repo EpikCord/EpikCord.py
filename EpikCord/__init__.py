@@ -1,3 +1,4 @@
+from lib2to3.pgen2.token import OP
 import threading
 from .managers import *
 from aiohttp import *
@@ -229,7 +230,6 @@ class Messageable:
     
     async def fetch_message(self,*, message_id: str) -> Message:
         response = await self.client.http.get(f"channels/{self.id}/messages/{message_id}")
-        print(response)
         data = await response.json()
         return Message(data)
 
@@ -260,8 +260,9 @@ class Messageable:
         if suppress_embeds:
             payload["suppress_embeds"] = 1 << 2
 
-        print(payload)
         response = await self.client.http.post(f"channels/{self.id}/messages", json = payload)
+        print(response.status)
+        print(payload)
         data = await response.json()
         return Message(self.client, data)
 
@@ -316,7 +317,6 @@ class EventHandler:
                 self.sequence = event["s"]
             logger.debug(f"Received event {event['t']}")
         await self.handle_close()
-
 
     async def handle_event(self, event_name: str, data: dict):
         event_name = event_name.lower()
@@ -1187,16 +1187,35 @@ Color = Colour
 
 class MessageSelectMenuOption:
     def __init__(self, label: str, value: str, description: Optional[str]  = None, emoji: Optional[PartialEmoji] = None, default: Optional[bool] = None):
-        self.settings = {
-            "label": label,
-            "value": value,
-            "description": description or None,
-            "emoji": emoji or None,
-            "default": default or None            
-        }
+        self.label: str = label
+        self.value: str = value
+        self.description: Optional[str] = description
+        self.emoji: Optional[PartialEmoji] = emoji
+        self.default: Optional[bool] = default
     
     def to_dict(self):
-        return self.settings
+        settings = {
+            "label": self.label,
+            "value": self.value
+        }
+        
+        if self.description:
+            settings["description"] = self.description
+        
+        if self.emoji:
+            if isinstance(self.emoji, PartialEmoji):
+                settings["emoji"] = self.emoji.to_dict()
+
+            elif isinstance(self.emoji, dict):
+                settings["emoji"] = self.emoji
+        
+        if self.default:
+            settings["default"] = self.default
+        
+        return settings
+
+        
+
 
 class MessageSelectMenu(BaseComponent):
     def __init__(self, *, min_values: Optional[int] = 1, max_values: Optional[int] = 1, disabled: Optional[bool] = False, custom_id: str):
@@ -1213,7 +1232,8 @@ class MessageSelectMenu(BaseComponent):
             "options": self.options,
             "min_values": self.min_values,
             "max_values": self.max_values,
-            "disabled": self.disabled
+            "disabled": self.disabled,
+            "custom_id": self.custom_id
         }
         return settings
 
