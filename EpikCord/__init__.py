@@ -12,7 +12,7 @@ from urllib.parse import quote
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
 logger = getLogger(__name__)
-__version__ = '0.5.0'
+__version__ = '0.4.9'
 
 
 """
