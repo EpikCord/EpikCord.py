@@ -229,6 +229,7 @@ class Messageable:
     
     async def fetch_message(self,*, message_id: str) -> Message:
         response = await self.client.http.get(f"channels/{self.id}/messages/{message_id}")
+        print(response)
         data = await response.json()
         return Message(data)
 
@@ -259,6 +260,7 @@ class Messageable:
         if suppress_embeds:
             payload["suppress_embeds"] = 1 << 2
 
+        print(payload)
         response = await self.client.http.post(f"channels/{self.id}/messages", json = payload)
         data = await response.json()
         return Message(self.client, data)
@@ -697,7 +699,7 @@ class Application:
         self.owner: Optional[PartialUser] = PartialUser(data.get("user")) if data.get("user") else None
         self.summary: str = data.get("summary")
         self.verify_key: str = data.get("verify_key")
-        self.team: Optional[Team] = Team(data.get("team"))
+        self.team: Optional[Team] = Team(data.get("team")) if data.get("get") else None
         self.cover_image: Optional[str] = data.get("cover_image")
         self.flags: int = data.get("flags")
 
@@ -1403,9 +1405,14 @@ class MessageActionRow:
             "type": 1,
             "components": components or []
         }
+        self.type: int = 1
+        self.components: List[Union[MessageTextInputComponent, MessageButton, MessageSelectMenu]] = components or []
 
     def to_dict(self):
-        return self.settings
+        return {
+            "type": self.type,
+            "components": [component for component in self.components]
+        }
         
     def add_components(self, components: List[Union[MessageButton, MessageSelectMenu]]):
         buttons = 0
@@ -1421,7 +1428,7 @@ class MessageActionRow:
             
             elif type(component) == MessageSelectMenu and buttons > 0:
                 raise TooManyComponents("You can only have 1 select menu per row. No buttons along that select menu.")
-            self.settings["components"].append(component.to_dict())
+            self.components.append(component.to_dict())
         return self
 
 class Embed: # Always wanted to make this class :D
