@@ -6,6 +6,9 @@ packagePartsReq = {
 #Read The Readme
 with open("README.md") as f:
     long_description = f.read()
+
+with open("requirements.txt") as req:
+  requirements = req.read().splitlines()
 setup(
   name = 'EpikCord.py', 
   packages = ['EpikCord'], 
@@ -19,10 +22,7 @@ setup(
   url = 'https://github.com/EpikHost/EpikCord.py',   
   #download_url = 'https://github.com/EpikHost/EpikCord.py/archive/v_01.tar.gz',
   keywords = ['EpikCord.py', 'Discord', 'API', "Bot", "EpikCord"],   
-  install_requires=[
-          'aiohttp',
-          "websocket-client"
-      ],
+  install_requires=requirements,
   extras_require=packagePartsReq,
   python_requires='>=3.8',    
 
