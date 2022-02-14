@@ -2260,29 +2260,27 @@ class SlashCommand(ApplicationCommand):
         self.options: Optional[List[Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]]] = data.get(
             "options")  # Return the type hinted class later this will take too long and is very tedious, I'll probably get Copilot to do it for me lmao
 
-        def figure_out_option_type():
-            for option in self.options:
-                if option.get("type") == 1:
-                    return Subcommand(option)
-                elif option.get("type") == 2:
-                    return SubCommandGroup(option)
-                elif option.get("type") == 3:
-                    return StringOption(option)
-                elif option.get("type") == 4:
-                    return IntegerOption(option)
-                elif option.get("type") == 5:
-                    return BooleanOption(option)
-                elif option.get("type") == 6:
-                    return UserOption(option)
-                elif option.get("type") == 7:
-                    return ChannelOption(option)
-                elif option.get("type") == 8:
-                    return RoleOption(option)
-                elif option.get("type") == 9:
-                    return MentionableOption(option)
-                elif option.get("type") == 10:
-                    return NumberOption(option)
-        figure_out_option_type()
+        for option in self.options:
+            if option.get("type") == 1:
+                return Subcommand(option)
+            elif option.get("type") == 2:
+                return SubCommandGroup(option)
+            elif option.get("type") == 3:
+                return StringOption(option)
+            elif option.get("type") == 4:
+                return IntegerOption(option)
+            elif option.get("type") == 5:
+                return BooleanOption(option)
+            elif option.get("type") == 6:
+                return UserOption(option)
+            elif option.get("type") == 7:
+                return ChannelOption(option)
+            elif option.get("type") == 8:
+                return RoleOption(option)
+            elif option.get("type") == 9:
+                return MentionableOption(option)
+            elif option.get("type") == 10:
+                return NumberOption(option)
 
     def to_dict(self):
         json_options = []
@@ -2736,3 +2734,20 @@ class Permission:
     def moderator_members(self):
         self.value += 1 << 40
         return self
+
+class VoiceState:
+    def __init__(self, client, data: dict):
+        self.data: dict = data
+        self.guild_id: Optional[str] = data.get("guild_id")
+        self.channel_id: str = data.get("channel_id")
+        self.user_id: str = data.get("user_id")
+        self.member: Optional[GuildMember] = GuildMember(client, data.get("member")) if data.get("member") else None
+        self.session_id: str = data.get("session_id")
+        self.deaf: bool = data.get("deaf")
+        self.mute: bool = data.get("mute")
+        self.self_deaf: bool = data.get("self_deaf")
+        self.self_mute: bool = data.get("self_mute")
+        self.self_stream: Optional[bool] = data.get("self_stream")
+        self.self_video: bool = data.get("self_video")
+        self.suppress: bool = data.get("suppress")
+        self.request_to_speak_timestamp: datetime.datetime = datetime.datetime.fromisoformat(data.get("request_to_speak_timestamp"))
