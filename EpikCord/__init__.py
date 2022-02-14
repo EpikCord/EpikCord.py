@@ -370,8 +370,60 @@ class EventHandler:
         # except AttributeError:
         #     logger.warning(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
 
-    async def guild_create(self, data):
-        pass
+    async def channel_create(self, data: dict):
+
+        channel_data: dict = data.get("d")
+        channel_type: str = channel_data.get("type")
+        event_func = None
+        try:
+            event_func = self.events["channel_create"]
+        except KeyError:
+            ...
+        
+        if channel_type in (0, 1, 5, 6, 10, 11, 12):
+            
+            if event_func:
+                await event_func(TextBasedChannel(self.http, channel_data))
+
+        elif channel_type == 2:
+            if event_func:
+                await event_func(VoiceChannel(self.http, channel_data))
+        
+        elif channel_type == 13:
+            if event_func:
+                await event_func(GuildStageChannel(self.http, channeL_data))
+
+        # if channel_type in (0, 5, 6):
+        #     try:
+        #         event_func = self.events["channel_create"]
+        #     except KeyError:
+        #         ...
+        #     if event_func:
+        #         await event_func(TextBasedChannel(self, channel_data))
+
+        # elif channel_type == 1:
+        #     try:
+        #         event_func = self.events["dm_channel_create"]
+        #         await event_func(DMChannel(self, channel_data))
+        #     except KeyError:
+        #         pass
+        
+        # elif channel_type == 2:
+        #     try:
+        #         event_func = self.events["channel_create"]
+        #     except KeyError:
+        #         pass    
+        #     await event_func(VoiceChannel(self, channel_data))
+        
+        # elif channel_type == 13:
+        #     try:
+        #         event_func = self.events["channel_create"]
+        #     except KeyError:
+        #         pass
+        #     await event_func(GuildStageChannel(self, channel_data))
+        
+        # elif channel_type in (10, 11, 12)
+
 
     async def message_create(self, data: dict):
         await self.events["message_create"](Message(self, data))
