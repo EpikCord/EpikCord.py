@@ -8,8 +8,8 @@ with open("README.md") as f:
     long_description = f.read()
 setup(
   name = 'EpikCord.py', 
-  packages = ['EpikCord', 'EpikCord.managers'], 
-  version = '0.4.3',      
+  packages = ['EpikCord', "EpikCord.managers"], 
+  version = '0.4.9',      
   license='MIT',        
   description = 'A Modern API wrapper for Discord, Intended for replacement of the now discontinued Discord.py library',
   long_description = long_description,
