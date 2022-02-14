@@ -391,7 +391,7 @@ class EventHandler:
         
         elif channel_type == 13:
             if event_func:
-                await event_func(GuildStageChannel(self.http, channeL_data))
+                await event_func(GuildStageChannel(self.http, channel_data))
 
         # if channel_type in (0, 5, 6):
         #     try:
