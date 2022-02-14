@@ -597,7 +597,6 @@ class WebsocketClient(EventHandler):
 class VoiceWebsocketClient:
     def __init__(self):
         self.ws = None
-        self.
 
 class BaseSlashCommandOption:
     def __init__(self, *, name: str, description: str, required: bool = False):
