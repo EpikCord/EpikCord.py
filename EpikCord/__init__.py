@@ -1,3 +1,4 @@
+from cmath import exp
 import threading
 from .managers import *
 from aiohttp import *
@@ -593,6 +594,10 @@ class WebsocketClient(EventHandler):
             future.remove_done_callback(stop_loop_on_completion)
             _cleanup_loop(loop)
 
+class VoiceWebsocketClient:
+    def __init__(self):
+        self.ws = None
+        self.
 
 class BaseSlashCommandOption:
     def __init__(self, *, name: str, description: str, required: bool = False):
@@ -1133,6 +1138,8 @@ class Section:
             }
         return register_slash_command
 
+class MissingDescription(Exception):
+    ...
 
 class Client(WebsocketClient):
 
@@ -1173,6 +1180,8 @@ class Client(WebsocketClient):
             ]]
     ):
         def register_slash_command(func):
+            if not description:
+                raise MissingDescription(f"You must supply a description for the command {name}.")
             self.commands[func.__name__] = SlashCommand({
                 "callback": func,
                 "name": name,
@@ -2190,6 +2199,7 @@ class MessageInteraction:
         self.name: str = data.get("name")
         self.user: User = User(client, data.get("user"))
         self.member: GuildMember = GuildMember(client, data.get("member"))
+        self.user: User
 
     def is_ping(self):
         return self.type == 1
@@ -2353,8 +2363,7 @@ class Webhook:  # Not used for making webhooks.
     def __init__(self, client, data: dict):
         self.id: str = data.get("id")
         self.client = client
-        self.type: int = "Incoming" if data.get(
-            "type") == 1 else "Channel Follower" if data.get("type") == 2 else "Application"
+        self.type: int = "Incoming" if data.get("type") == 1 else "Channel Follower" if data.get("type") == 2 else "Application"
         self.guild_id: Optional[str] = data.get("guild_id")
         self.channel_id: Optional[str] = data.get("channel_id")
         self.user: Optional[WebhookUser] = WebhookUser(data.get("user"))
@@ -2362,11 +2371,11 @@ class Webhook:  # Not used for making webhooks.
         self.avatar: Optional[str] = data.get("avatar")
         self.token: str = data.get("token")
         self.application_id: Optional[str] = data.get("application_id")
-        self.source_guild: Optional[PartialGuild] = PartialGuild(
-            data.get("source_guild"))
-        self.source_channel: Optional[SourceChannel] = SourceChannel(
-            data.get("source_channel"))
+        self.source_guild: Optional[PartialGuild] = PartialGuild(data.get("source_guild"))
+        self.source_channel: Optional[SourceChannel] = SourceChannel(data.get("source_channel"))
         self.url: Optional[str] = data.get("url")
+
+    
 
 
 def compute_timedelta(dt: datetime.datetime):
@@ -2527,6 +2536,11 @@ class Intents:
             raise InvalidIntents(f"Intent {intent} is not a valid intent.")
         self.value += attr
         return self.value
+
+    @property
+    def message_content(self):
+        self.value += 1 << 15
+        return self
 
     # TODO: Add some presets such as "Moderation", "Logging" etc.
 
