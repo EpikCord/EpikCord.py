@@ -429,6 +429,25 @@ class EventHandler:
     async def message_create(self, data: dict):
         await self.events["message_create"](Message(self, data))
 
+    async def guild_create(self, data):
+
+        # if not data.get("available"): # If it's not available
+        #     self.guilds.cache(UnavailableGuild(self, data["d"]))
+        #     return 
+        #     # Don't call the event for an unavailable guild, users expect this to be when they join a guild, not when they get a pre-existing
+        #     # guild that is unavailable.
+        # else:
+        #     self.guilds.cache(Guild(self, data["d"]))
+
+        # try:
+        #     event_func = self.events["guild_create"]
+        # except KeyError:
+        #     return
+
+        # await event_func(Guild(self, data["d"]))
+        ...
+
+
     def event(self, func):
         self.events[func.__name__.lower().replace("on_", "")] = func
 
@@ -1146,6 +1165,7 @@ class Client(WebsocketClient):
         super().__init__(token, intents)
 
         self.commands: List[ApplicationCommand] = []
+        self.guilds: GuildManager = GuildManager()
 
         self.options: dict = options
 
@@ -2197,52 +2217,8 @@ class MessageInteraction:
         self.type: int = data.get("type")
         self.name: str = data.get("name")
         self.user: User = User(client, data.get("user"))
-        self.member: GuildMember = GuildMember(client, data.get("member"))
-        self.user: User
-
-    def is_ping(self):
-        return self.type == 1
-
-    def is_application_command(self):
-        return self.type == 2
-
-    def is_message_component(self):
-        return self.type == 3
-
-    def is_autocomplete(self):
-        return self.type == 4
-
-    async def reply(self, message_data: dict):
-        response = await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", data=message_data)
-        return await response.json()
-
-    async def fetch_reply(self):
-        response = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/{self.token}/messages/@original")
-        return await response.json()
-
-    async def edit_reply(self, message_data: dict):
-        response = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/@original", data=message_data)
-        return await response.json()
-
-    async def delete_reply(self):
-        response = await self.client.http.delete(f"/webhooks/{self.application_id}/{self.token}/messages/@original")
-        return await response.json()
-
-    async def followup(self, message_data: dict):
-        response = await self.client.http.post(f"/webhooks/{self.application_id}/{self.token}", data=message_data)
-        return await response.json()
-
-    async def fetch_followup_message(self, message_id: str):
-        response = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/messages/{message_id}")
-        return await response.json()
-
-    async def edit_followup(self, message_id: str, message_data):
-        response = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/{message_id}", data=message_data)
-        return await response.json()
-
-    async def delete_followup(self, message_id: str):
-        response = await self.client.http.delete(f"/webhooks/{self.application_id}/{self.token}/messages/{message_id}")
-        return await response.json()
+        self.member: Optional[GuildMember] = GuildMember(client, data.get("member")) if data.get("member") else None
+        self.user: User = User(client, data.get("user"))
 
 
 class PartialUser:
