@@ -380,16 +380,16 @@ class EventHandler:
             event_func = self.events["channel_create"]
         except KeyError:
             ...
-        
-        if channel_type in (0, 1, 5, 6, 10, 11, 12):
-            
+
+        if channel_type in {0, 1, 5, 6, 10, 11, 12}:
+
             if event_func:
                 await event_func(TextBasedChannel(self.http, channel_data))
 
         elif channel_type == 2:
             if event_func:
                 await event_func(VoiceChannel(self.http, channel_data))
-        
+
         elif channel_type == 13:
             if event_func:
                 await event_func(GuildStageChannel(self.http, channel_data))
@@ -559,13 +559,11 @@ class WebsocketClient(EventHandler):
         #         # if an error happens during disconnects, disregard it.
         #         pass
 
-        if self.ws is not None:
-            if not self.ws.closed:
-                await self.ws.close(code=1000)
+        if self.ws is not None and not self.ws.closed:
+            await self.ws.close(code=1000)
 
-        if self.http is not None:
-            if not self.http.closed:
-                await self.http.close()
+        if self.http is not None and not self.http.closed:
+            await self.http.close()
 
         self._closed = True
 
@@ -775,7 +773,7 @@ class Thread:
 def _get_mime_type_for_image(data: bytes):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
         return 'image/png'
-    elif data[0:3] == b'\xff\xd8\xff' or data[6:10] in (b'JFIF', b'Exif'):
+    elif data[:3] == b'\xff\xd8\xff' or data[6:10] in (b'JFIF', b'Exif'):
         return 'image/jpeg'
     elif data.startswith((b'\x47\x49\x46\x38\x37\x61', b'\x47\x49\x46\x38\x39\x61')):
         return 'image/gif'
@@ -887,8 +885,8 @@ class GuildChannel(BaseChannel):
     async def delete(self, *, reason: Optional[str] = None) -> None:
         if reason:
             headers = self.client.http.headers.copy()
-            if reason:
-                headers["reason"] = reason
+        if reason:
+            headers["reason"] = reason
 
         response = await self.client.http.delete(f"/channels/{self.id}", headers=headers)
         return await response.json()
@@ -898,14 +896,16 @@ class GuildChannel(BaseChannel):
         return await response.json()
 
     async def create_invite(self, *, max_age: Optional[int], max_uses: Optional[int], temporary: Optional[bool], unique: Optional[bool], target_type: Optional[int], target_user_id: Optional[str], target_application_id: Optional[str]):
-        data = {}
-        data["max_age"] = max_age or None
-        data["max_uses"] = max_uses or None
-        data["temporary"] = temporary or None
-        data["unique"] = unique or None
-        data["target_type"] = target_type or None
-        data["target_user_id"] = target_user_id or None
-        data["target_application_id"] = target_application_id or None
+        data = {
+            'max_age': max_age or None,
+            'max_uses': max_uses or None,
+            'temporary': temporary or None,
+            'unique': unique or None,
+            'target_type': target_type or None,
+            'target_user_id': target_user_id or None,
+            'target_application_id': target_application_id or None,
+        }
+
         await self.client.http.post(f"/channels/{self.id}/invites", json=data)
 
     async def delete_overwrite(self, overwrites: Overwrite) -> None:
@@ -1074,7 +1074,7 @@ class TextBasedChannel(BaseChannel):
         elif self.type == 10:
             return GuildNewsThread(client, data)
 
-        elif self.type == 11 or self.type == 12:
+        elif self.type in [11, 12]:
             return Thread(client, data)
 
         elif self.type == 13:
@@ -1378,7 +1378,7 @@ class MessageSelectMenu(BaseComponent):
         self.disabled: bool = disabled
 
     def to_dict(self):
-        settings = {
+        return {
             "type": self.type,
             "options": self.options,
             "min_values": self.min_values,
@@ -1386,7 +1386,6 @@ class MessageSelectMenu(BaseComponent):
             "disabled": self.disabled,
             "custom_id": self.custom_id
         }
-        return settings
 
     def add_options(self, options: List[MessageSelectMenuOption]):
         for option in options:
@@ -1589,10 +1588,7 @@ class MessageActionRow:
                                     MessageButton, MessageSelectMenu]] = components or []
 
     def to_dict(self):
-        return {
-            "type": self.type,
-            "components": [component for component in self.components]
-        }
+        return {"type": self.type, "components": list(self.components)}
 
     def add_components(self, components: List[Union[MessageButton, MessageSelectMenu]]):
         buttons = 0
@@ -2149,8 +2145,7 @@ class GuildMember:
         # self.user: Optional[User] = User(data["user"]) or None
         self.nick: Optional[str] = data.get("nick")
         self.avatar: Optional[str] = data.get("avatar")
-        self.role_ids: Optional[List[str]] = [
-            role for role in data.get("roles", [])]
+        self.role_ids: Optional[List[str]] = list(data.get("roles", []))
         self.joined_at: str = data.get("joined_at")
         self.premium_since: Optional[str] = data.get("premium_since")
         self.deaf: bool = data.get("deaf")
@@ -2407,8 +2402,7 @@ def escape_markdown(text: str, *, as_needed: bool = False, ignore_links: bool = 
 
         def replacement(match):
             groupdict = match.groupdict()
-            is_url = groupdict.get('url')
-            if is_url:
+            if is_url := groupdict.get('url'):
                 return is_url
             return '\\' + groupdict['markdown']
 
