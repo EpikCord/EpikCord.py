@@ -1161,7 +1161,7 @@ class Client(WebsocketClient):
 
     def command(self, *,
                 name: str,
-                description: str,
+                description: str = None,
                 guild_ids: Optional[List[str]],
                 options: Optional[
             Union[
@@ -1179,8 +1179,8 @@ class Client(WebsocketClient):
             ]]
     ):
         def register_slash_command(func):
-            if not description:
-                raise MissingDescription(f"You must supply a description for the command {name}.")
+            if not name:
+                raise MissingName(f"You must supply a name for the command.")
             self.commands[func.__name__] = SlashCommand({
                 "callback": func,
                 "name": name,
