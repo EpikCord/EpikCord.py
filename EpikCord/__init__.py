@@ -303,8 +303,6 @@ class Messageable:
             payload["suppress_embeds"] = 1 << 2
 
         response = await self.client.http.post(f"channels/{self.id}/messages", json=payload)
-        print(response.status)
-        print(payload)
         data = await response.json()
         return Message(self.client, data)
 
@@ -337,6 +335,14 @@ class EventHandler:
 
     def __init__(self):
         self.events = {}
+        self.PING: int = 1
+        self.PONG: int = 1
+        self.CHANNEL_MESSAGE_WITH_SOURCE: int = 4
+        self.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE: int = 5
+        self.DEFERRED_UPDATE_MESSAGE: int = 6
+        self.UPDATE_MESSAGE: int = 7
+        self.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT: int = 8
+        self.MODAL: int = 9
 
     async def handle_events(self):
         async for event in self.ws:
@@ -363,6 +369,12 @@ class EventHandler:
                 self.sequence = event["s"]
             logger.debug(f"Received event {event['t']}")
         await self.handle_close()
+
+    async def interaction_create(self, data):
+
+        if data.get("type") == self.PING:
+            await self.client.http.post(f"/interactions/{data.get('id')}/{data.get('token')}/callback", json = {"type": self.PONG})
+
 
     async def handle_event(self, event_name: str, data: dict):
         event_name = event_name.lower()
@@ -469,6 +481,8 @@ class EventHandler:
         except KeyError:
             return
 
+class ClosedWebSocketConnection(Exception):
+    ...
 
 class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
@@ -512,7 +526,7 @@ class WebsocketClient(EventHandler):
             while True:
                 await asyncio.sleep(self.interval / 1000)
                 await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
-                print("Sent a heartbeat!")
+                logger.debug("Sent a heartbeat!")
 
     async def handle_close(self):
         if self.ws.close_code == 4014:
@@ -526,7 +540,7 @@ class WebsocketClient(EventHandler):
         elif self.ws.close_code == 4013:
             raise InvalidIntents("The intents you provided are invalid.")
         else:
-            print(self.ws.close_code)
+            raise ClosedWebSocketConnection(f"Connection has been closed with code {self.ws.close_code}")
 
     async def send_json(self, json: dict):
         try:
@@ -2352,7 +2366,7 @@ class ClientUser():
         self.avatar: str = data.get("avatar")
         if not self.bot:  # if they're a user account
             # Yeah I'm keeping this as a print
-            print("Warning: Self botting is against Discord ToS. You can get banned.")
+            logger.warning("Warning: Self botting is against Discord ToS. You can get banned.")
 
     async def fetch(self):
         response = await self.client.http.get("users/@me")
