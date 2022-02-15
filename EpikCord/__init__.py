@@ -17,6 +17,7 @@ __version__ = '0.4.9'
 
 
 """
+:license:
 Some parts of the code is done by discord.py and their amazing team of contributors
 The MIT License (MIT)
 Copyright © 2015-2021 Rapptz
@@ -691,9 +692,15 @@ class Overwrite:
         self.allow: str = data.get("allow")
         self.deny: str = data.get("deny")
 
-
 class StickerItem:
+    def __init__(self, data : dict):
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+        self.format_type: int = data.get("format_type")
+
+class Sticker(StickerItem):
     def __init__(self, data: dict):
+        super().__init__(data=data)
         self.id: str = data.get("id")
         self.name: str = data.get("name")
         self.description: str = data.get("description")
@@ -702,6 +709,7 @@ class StickerItem:
         self.format_type: int = data.get("format_type")
         self.pack_id: int = data.get("pack_id")
         self.sort_value: int = data.get("sort_value")
+
 
 
 class ThreadMember:
@@ -1469,7 +1477,7 @@ class MessageTextInputComponent(BaseComponent):
 
 
 class MessageButton(BaseComponent):
-    def __init__(self, *, style: Optional[Union[int, str]] = 1, label: Optional[str] = None, emoji: Optional[Union[PartialEmoji, dict]] = None, url: Optional[str] = None, custom_id: str, disabled: bool = False):
+    def __init__(self, *, label: Optional[str] = None, emoji: Optional[Union[PartialEmoji, dict]] = None, url: Optional[str] = None, custom_id: str, disabled: bool = False):
         super().__init__(custom_id=custom_id)
         self.type: int = 2
         self.disabled = disabled
@@ -1482,17 +1490,7 @@ class MessageButton(BaseComponent):
             "LINK": 5
         }
 
-        if isinstance(style, str):
-            if style.upper() not in valid_styles:
-                raise InvalidComponentStyle(
-                    "Invalid button style. Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS.")
-            self.style: int = valid_styles[style.upper()]
 
-        elif isinstance(style, int):
-            if style not in valid_styles.values():
-                raise InvalidComponentStyle(
-                    "Invalid button style. Style must be in range 1 to 5 inclusive.")
-            self.style: int = style
 
         if url:
             self.url: Optional[str] = url
@@ -1501,6 +1499,31 @@ class MessageButton(BaseComponent):
             self.emoji: Optional[Union[PartialEmoji, dict]] = emoji
         if label:
             self.label: Optional[str] = label
+
+    @property
+    def PRIMARY(self):
+        self.style = 1
+        return self
+    
+    @property
+    def SECONDARY(self):
+        self.style = 2
+        return self
+    
+    @property
+    def SUCCESS(self):
+        self.style = 3
+        return self
+    GREEN = SUCCESS
+    @property
+    def DANGER(self):
+        self.style = 4
+        return self
+    RED = DANGER
+    @property
+    def LINK(self):
+        self.style = 5
+        return self 
 
     def to_dict(self):
         settings = {
