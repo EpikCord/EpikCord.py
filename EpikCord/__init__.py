@@ -9,6 +9,9 @@ import re
 from logging import getLogger
 from typing import *
 from urllib.parse import quote
+import io
+import os
+from typing import Union
 
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
@@ -17,6 +20,7 @@ __version__ = '0.4.9'
 
 
 """
+:license:
 Some parts of the code is done by discord.py and their amazing team of contributors
 The MIT License (MIT)
 Copyright © 2015-2021 Rapptz
@@ -25,7 +29,7 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
 
 _MARKDOWN_ESCAPE_SUBREGEX = '|'.join(
@@ -257,6 +261,47 @@ class Message:
         response = await self.client.http.post(f"channels/{self.channel_id}/messages/{self.id}/crosspost")
         return await response.json()
 
+class File:
+    """
+    Represents a file. Sourced from Discord.py
+    """
+    def __init__(
+        self,
+        fp: Union[str, bytes, os.PathLike, io.BufferedIOBase],
+        filename: Optional[str] = None,
+        *,
+        spoiler: bool = False,
+    ):
+        if isinstance(fp, io.IOBase):
+            if not (fp.seekable() and fp.readable()):
+                raise ValueError(f'File buffer {fp!r} must be seekable and readable')
+            self.fp = fp
+            self._original_pos = fp.tell()
+        else:
+                self.fp = open(fp, 'rb')
+                self._original_pos = 0
+        self._closer = self.fp.close
+        self.fp.close = lambda: None
+        
+        if filename is None:
+            if isinstance(fp, str):
+                _, self.filename = os.path.split(fp)
+            else:
+                self.filename = getattr(fp, 'name', None)
+        else:
+            self.filename = filename
+        if spoiler and self.filename is not None and not self.filename.startswith('SPOILER_'):
+            self.filename = 'SPOILER_' + self.filename
+
+            self.spoiler = spoiler or (self.filename is not None and self.filename.startswith('SPOILER_'))
+
+        def reset(self, *, seek: Union[int, bool] = True) -> None:
+            if seek:
+                self.fp.seek(self._original_pos)
+
+        def close(self) -> None:
+            self.fp.close = self._closer
+            self._closer()
 
 class Messageable:
     def __init__(self, client, channel_id: str):
@@ -273,7 +318,7 @@ class Messageable:
         data = await response.json()
         return Message(data)
 
-    async def send(self, content: Optional[str] = None, *, embeds: Optional[List[dict]] = None, components=None, tts: Optional[bool] = False, allowed_mentions=None, sticker_ids: Optional[List[str]] = None, attachments=None, suppress_embeds: bool = False) -> Message:
+    async def send(self, content: Optional[str] = None, *, embeds: Optional[List[dict]] = None, components=None, tts: Optional[bool] = False, allowed_mentions=None, sticker_ids: Optional[List[str]] = None, attachments: List[File]=None, suppress_embeds: bool = False) -> Message:
         payload = {}
 
         if content:
@@ -303,8 +348,6 @@ class Messageable:
             payload["suppress_embeds"] = 1 << 2
 
         response = await self.client.http.post(f"channels/{self.id}/messages", json=payload)
-        print(response.status)
-        print(payload)
         data = await response.json()
         return Message(self.client, data)
 
@@ -337,6 +380,14 @@ class EventHandler:
 
     def __init__(self):
         self.events = {}
+        self.PING: int = 1
+        self.PONG: int = 1
+        self.CHANNEL_MESSAGE_WITH_SOURCE: int = 4
+        self.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE: int = 5
+        self.DEFERRED_UPDATE_MESSAGE: int = 6
+        self.UPDATE_MESSAGE: int = 7
+        self.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT: int = 8
+        self.MODAL: int = 9
 
     async def handle_events(self):
         async for event in self.ws:
@@ -363,6 +414,12 @@ class EventHandler:
                 self.sequence = event["s"]
             logger.debug(f"Received event {event['t']}")
         await self.handle_close()
+
+    async def interaction_create(self, data):
+
+        if data.get("type") == self.PING:
+            await self.client.http.post(f"/interactions/{data.get('id')}/{data.get('token')}/callback", json = {"type": self.PONG})
+
 
     async def handle_event(self, event_name: str, data: dict):
         event_name = event_name.lower()
@@ -425,9 +482,28 @@ class EventHandler:
         
         # elif channel_type in (10, 11, 12)
 
-
+    
     async def message_create(self, data: dict):
         await self.events["message_create"](Message(self, data))
+
+    async def guild_create(self, data):
+
+        # if not data.get("available"): # If it's not available
+        #     self.guilds.cache(UnavailableGuild(self, data["d"]))
+        #     return 
+        #     # Don't call the event for an unavailable guild, users expect this to be when they join a guild, not when they get a pre-existing
+        #     # guild that is unavailable.
+        # else:
+        #     self.guilds.cache(Guild(self, data["d"]))
+
+        # try:
+        #     event_func = self.events["guild_create"]
+        # except KeyError:
+        #     return
+
+        # await event_func(Guild(self, data["d"]))
+        ...
+
 
     def event(self, func):
         self.events[func.__name__.lower().replace("on_", "")] = func
@@ -450,6 +526,8 @@ class EventHandler:
         except KeyError:
             return
 
+class ClosedWebSocketConnection(Exception):
+    ...
 
 class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
@@ -493,7 +571,7 @@ class WebsocketClient(EventHandler):
             while True:
                 await asyncio.sleep(self.interval / 1000)
                 await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
-                print("Sent a heartbeat!")
+                logger.debug("Sent a heartbeat!")
 
     async def handle_close(self):
         if self.ws.close_code == 4014:
@@ -507,7 +585,7 @@ class WebsocketClient(EventHandler):
         elif self.ws.close_code == 4013:
             raise InvalidIntents("The intents you provided are invalid.")
         else:
-            print(self.ws.close_code)
+            raise ClosedWebSocketConnection(f"Connection has been closed with code {self.ws.close_code}")
 
     async def send_json(self, json: dict):
         try:
@@ -597,79 +675,85 @@ class VoiceWebsocketClient:
         self.ws = None
 
 class BaseSlashCommandOption:
-    def __init__(self, *, name: str, description: str, required: bool = False):
-        self.settings = {
-            "name": name,
-            "description": description,
-            "required": required
-        }
-        # People shouldn't use this class, this is just a base class for other options
+    def __init__(self, *, name: str, description: str, required: Optional[bool] = False):
+        self.name: str = name
+        self.description: str = description
+        self.required: bool = required
+        self.type: int = None # Needs to be set by the subclass
+        # People shouldn't use this class, this is just a base class for other options, but they can use this for other options we are yet to account for.
 
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "description": self.description,
+            "required": self.required,
+            "type": self.type
+        }
 
 class Subcommand(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 1
+        self.type = 1
 
 
 class SubCommandGroup(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
+    def __init__(self, *, name: str, description: str = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 2
+        self.type = 2
 
 
 class StringOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 3
+        self.type = 3
 
 
 class IntegerOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 4
+        self.type = 4
 
 
 class BooleanOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 5
+        self.type = 5
 
 
 class UserOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 6
+        self.type = 6
 
 
 class ChannelOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 7
+        self.type = 7
 
 
 class RoleOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 8
+        self.type = 8
 
 
 class MentionableOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 9
+        self.type = 9
 
 
 class NumberOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 10
+        self.type = 10
 
 
 class AttachmentOption(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
         super().__init__(name=name, description=description, required=required)
-        self.settings["type"] = 11
+        self.type = 11
 
 
 class SlashCommandOptionChoice:
@@ -679,6 +763,7 @@ class SlashCommandOptionChoice:
             "value": value
         }
 
+AnyOption = Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]
 
 class Overwrite:
     def __init__(self, data: dict):
@@ -687,9 +772,15 @@ class Overwrite:
         self.allow: str = data.get("allow")
         self.deny: str = data.get("deny")
 
-
 class StickerItem:
+    def __init__(self, data : dict):
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+        self.format_type: int = data.get("format_type")
+
+class Sticker(StickerItem):
     def __init__(self, data: dict):
+        super().__init__(data=data)
         self.id: str = data.get("id")
         self.name: str = data.get("name")
         self.description: str = data.get("description")
@@ -698,6 +789,7 @@ class StickerItem:
         self.format_type: int = data.get("format_type")
         self.pack_id: int = data.get("pack_id")
         self.sort_value: int = data.get("sort_value")
+
 
 
 class ThreadMember:
@@ -1052,7 +1144,6 @@ class GuildStageChannel(BaseChannel):
         self.privacy_level: int = data.get("privacy_level")
         self.discoverable_disabled: bool = data.get("discoverable_disabled")
 
-
 class TextBasedChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(data)
@@ -1146,6 +1237,7 @@ class Client(WebsocketClient):
         super().__init__(token, intents)
 
         self.commands: List[ApplicationCommand] = []
+        self.guilds: GuildManager = GuildManager()
 
         self.options: dict = options
 
@@ -1470,7 +1562,6 @@ class MessageButton(BaseComponent):
         super().__init__(custom_id=custom_id)
         self.type: int = 2
         self.disabled = disabled
-
         valid_styles = {
             "PRIMARY": 1,
             "SECONDARY": 2,
@@ -1498,6 +1589,31 @@ class MessageButton(BaseComponent):
             self.emoji: Optional[Union[PartialEmoji, dict]] = emoji
         if label:
             self.label: Optional[str] = label
+
+    @property
+    def PRIMARY(self):
+        self.style = 1
+        return self
+    
+    @property
+    def SECONDARY(self):
+        self.style = 2
+        return self
+    
+    @property
+    def SUCCESS(self):
+        self.style = 3
+        return self
+    GREEN = SUCCESS
+    @property
+    def DANGER(self):
+        self.style = 4
+        return self
+    RED = DANGER
+    @property
+    def LINK(self):
+        self.style = 5
+        return self 
 
     def to_dict(self):
         settings = {
@@ -2056,7 +2172,6 @@ class BaseInteraction:
         self.id: str = data.get("id")
         self.client = client
         self.application_id: int = data.get("application_id")
-        self.type: int = data.get("type")
         self.data: Optional[dict] = data.get("data")
         self.guild_id: Optional[str] = data.get("guild_id")
         self.channel_id: Optional[str] = data.get("channel_id")
@@ -2066,9 +2181,6 @@ class BaseInteraction:
         self.version: int = data.get("version")
         self.locale: Optional[str] = data.get("locale")
         self.guild_locale: Optional[str] = data.get("guild_locale")
-
-    def is_ping(self):
-        return self.type == 1
 
     def is_application_command(self):
         return self.type == 2
@@ -2111,6 +2223,47 @@ class BaseInteraction:
         response = await self.client.http.delete(f"/webhooks/{self.application_id}/{self.token}/messages/{message_id}")
         return await response.json()
 
+class MessageComponentInteraction(BaseInteraction):
+    def __init__(self, client, data: dict):
+        super().__init__(client, data)
+        self.custom_id: str = self.data.get("custom_id")
+        self.component_type: Optional[int] = self.data.get("component_type")
+        self.values: Optional[dict] = [MessageSelectMenuOption(option) for option in self.data.get("values", [])]
+
+class ApplicationCommandOption:
+    def __init__(self, data: dict):
+        self.name: str = data.get("name")
+        self.type: int = data.get("type")
+        self.value: Optional[Union[str, int, float]] = data.get("value")
+        self.focused: Optional[bool] = data.get("focused")
+
+class ApplicationCommandSubcommandOption(ApplicationCommandOption):
+    def __init__(self, data: dict):
+        super().__init__(data)
+        self.options: List[ApplicationCommandOption] = [ApplicationCommandOption(option) for option in data.get("options", [])]
+
+class ApplicationCommandInteraction(BaseInteraction):
+    def __init__(self, client, data: dict):
+        super().__init__(client, data)
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+        self.type: int = data.get("type")
+        # TODO: resolved attribute.
+        options = []
+        for option in data.get("options", []):
+            if not option.get("options"):
+                options.append(ApplicationCommandOption(option))
+            else:
+                options.append(ApplicationCommandSubcommandOption(option))
+        self.options: Optional[List[Union[ApplicationCommandOption, ApplicationCommandSubcommandOption]]] = options
+
+class UserCommandInteraction(ApplicationCommandInteraction):
+    def __init__(self, client, data: dict):
+        super().__init__(client, data)
+        self.target_id: str = data.get("target_id")
+
+class MessageCommandInteraction(UserCommandInteraction):
+    ... # Literally the same thing.
 
 class Invite:
     def __init__(self, data: dict):
@@ -2192,53 +2345,8 @@ class MessageInteraction:
         self.type: int = data.get("type")
         self.name: str = data.get("name")
         self.user: User = User(client, data.get("user"))
-        self.member: GuildMember = GuildMember(client, data.get("member"))
-        self.user: User
-
-    def is_ping(self):
-        return self.type == 1
-
-    def is_application_command(self):
-        return self.type == 2
-
-    def is_message_component(self):
-        return self.type == 3
-
-    def is_autocomplete(self):
-        return self.type == 4
-
-    async def reply(self, message_data: dict):
-        response = await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", data=message_data)
-        return await response.json()
-
-    async def fetch_reply(self):
-        response = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/{self.token}/messages/@original")
-        return await response.json()
-
-    async def edit_reply(self, message_data: dict):
-        response = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/@original", data=message_data)
-        return await response.json()
-
-    async def delete_reply(self):
-        response = await self.client.http.delete(f"/webhooks/{self.application_id}/{self.token}/messages/@original")
-        return await response.json()
-
-    async def followup(self, message_data: dict):
-        response = await self.client.http.post(f"/webhooks/{self.application_id}/{self.token}", data=message_data)
-        return await response.json()
-
-    async def fetch_followup_message(self, message_id: str):
-        response = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/messages/{message_id}")
-        return await response.json()
-
-    async def edit_followup(self, message_id: str, message_data):
-        response = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/{message_id}", data=message_data)
-        return await response.json()
-
-    async def delete_followup(self, message_id: str):
-        response = await self.client.http.delete(f"/webhooks/{self.application_id}/{self.token}/messages/{message_id}")
-        return await response.json()
-
+        self.member: Optional[GuildMember] = GuildMember(client, data.get("member")) if data.get("member") else None
+        self.user: User = User(client, data.get("user"))
 
 class PartialUser:
     def __init__(self, data: dict):
@@ -2261,7 +2369,7 @@ class PartialGuild:
 class SlashCommand(ApplicationCommand):
     def __init__(self, data: dict):
         super().__init__(data)
-        self.options: Optional[List[Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]]] = data.get(
+        self.options: Optional[List[AnyOption]] = data.get(
             "options")  # Return the type hinted class later this will take too long and is very tedious, I'll probably get Copilot to do it for me lmao
         for option in self.options:
             option_type = option.get("type")
@@ -2328,7 +2436,7 @@ class ClientUser():
         self.avatar: str = data.get("avatar")
         if not self.bot:  # if they're a user account
             # Yeah I'm keeping this as a print
-            print("Warning: Self botting is against Discord ToS. You can get banned.")
+            logger.warning("Warning: Self botting is against Discord ToS. You can get banned.")
 
     async def fetch(self):
         response = await self.client.http.get("users/@me")
@@ -2758,3 +2866,20 @@ class VoiceState:
         self.self_video: bool = data.get("self_video")
         self.suppress: bool = data.get("suppress")
         self.request_to_speak_timestamp: datetime.datetime = datetime.datetime.fromisoformat(data.get("request_to_speak_timestamp"))
+
+class Paginator:
+    def __init__(self, *, pages: List[Embed]):
+        self.current_index: int = 0
+        self.pages = pages
+    def back(self):
+        return self.pages[self.current_index - 1]
+    def forward(self):
+        return self.pages[self.current_index + 1]
+    def current(self):
+        return self.pages[self.current_index]
+    def add_page(self, page: Embed):
+        self.pages.append(page)
+    def remove_page(self, page: Embed):
+        self.pages = filter(lambda embed: embed != page, self.pages)
+    def current(self) -> Embed:
+        return self.pages[self.current_index]
