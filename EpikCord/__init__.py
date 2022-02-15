@@ -9,6 +9,9 @@ import re
 from logging import getLogger
 from typing import *
 from urllib.parse import quote
+import io
+import os
+from typing import Union
 
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
@@ -274,7 +277,7 @@ class Messageable:
         data = await response.json()
         return Message(data)
 
-    async def send(self, content: Optional[str] = None, *, embeds: Optional[List[dict]] = None, components=None, tts: Optional[bool] = False, allowed_mentions=None, sticker_ids: Optional[List[str]] = None, attachments=None, suppress_embeds: bool = False) -> Message:
+    async def send(self, content: Optional[str] = None, *, embeds: Optional[List[dict]] = None, components=None, tts: Optional[bool] = False, allowed_mentions=None, sticker_ids: Optional[List[str]] = None, attachments:List[Files]=None, suppress_embeds: bool = False) -> Message:
         payload = {}
 
         if content:
@@ -1063,6 +1066,49 @@ class GuildStageChannel(BaseChannel):
         self.discoverable_disabled: bool = data.get("discoverable_disabled")
 
 
+
+
+class File:
+    """
+    The doc strings
+    """
+    def __init__(
+        self,
+        fp: Union[str, bytes, os.PathLike, io.BufferedIOBase],
+        filename: Optional[str] = None,
+        *,
+        spoiler: bool = False,
+    ):
+    if isinstance(fp, io.IOBase):
+        if not (fp.seekable() and fp.readable()):
+            raise ValueError(f'File buffer {fp!r} must be seekable and readable')
+        self.fp = fp
+        self._original_pos = fp.tell()
+    else:
+            self.fp = open(fp, 'rb')
+            self._original_pos = 0
+    self._closer = self.fp.close
+    self.fp.close = lambda: None
+    
+    if filename is None:
+        if isinstance(fp, str):
+            _, self.filename = os.path.split(fp)
+        else:
+            self.filename = getattr(fp, 'name', None)
+        else:
+            self.filename = filename
+    if spoiler and self.filename is not None and not self.filename.startswith('SPOILER_'):
+        self.filename = 'SPOILER_' + self.filename
+
+        self.spoiler = spoiler or (self.filename is not None and self.filename.startswith('SPOILER_'))
+
+    def reset(self, *, seek: Union[int, bool] = True) -> None:
+        if seek:
+            self.fp.seek(self._original_pos)
+
+    def close(self) -> None:
+        self.fp.close = self._closer
+        self._closer()
 class TextBasedChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(data)
@@ -1482,13 +1528,7 @@ class MessageButton(BaseComponent):
         self.type: int = 2
         self.disabled = disabled
 
-        valid_styles = {
-            "PRIMARY": 1,
-            "SECONDARY": 2,
-            "SUCCESS": 3,
-            "DANGER": 4,
-            "LINK": 5
-        }
+
 
 
 
