@@ -277,7 +277,7 @@ class Messageable:
         data = await response.json()
         return Message(data)
 
-    async def send(self, content: Optional[str] = None, *, embeds: Optional[List[dict]] = None, components=None, tts: Optional[bool] = False, allowed_mentions=None, sticker_ids: Optional[List[str]] = None, attachments:List[Files]=None, suppress_embeds: bool = False) -> Message:
+    async def send(self, content: Optional[str] = None, *, embeds: Optional[List[dict]] = None, components=None, tts: Optional[bool] = False, allowed_mentions=None, sticker_ids: Optional[List[str]] = None, attachments:List[File]=None, suppress_embeds: bool = False) -> Message:
         payload = {}
 
         if content:
