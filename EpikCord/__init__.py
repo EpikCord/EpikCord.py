@@ -434,7 +434,7 @@ class EventHandler:
 
     async def ready(self, data: dict):
         self.user: ClientUser = ClientUser(self.session, data.get("user"))
-        application_response = await self.session.get("https://discord.com/api/v9/oauth2/applications/@me", headers={"Authorization": f"Bot {self.token}"})
+        application_response = await self.session.get("https://discord.com/api/v10/oauth2/applications/@me", headers={"Authorization": f"Bot {self.token}"})
         application_data = await application_response.json()
         self.application: ClientApplication = ClientApplication(
             self.session, application_data)
@@ -1084,7 +1084,7 @@ class TextBasedChannel(BaseChannel):
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.base_uri: str = "https://discord.com/api/v9"
+        self.base_uri: str = "https://discord.com/api/v10"
 
     async def get(self, url, *args, **kwargs):
         if url.startswith("/"):
