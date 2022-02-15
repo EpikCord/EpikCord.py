@@ -425,9 +425,11 @@ class EventHandler:
         
         # elif channel_type in (10, 11, 12)
 
-
+    
     async def message_create(self, data: dict):
         await self.events["message_create"](Message(self, data))
+
+    
 
     def event(self, func):
         self.events[func.__name__.lower().replace("on_", "")] = func
