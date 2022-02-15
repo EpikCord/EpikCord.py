@@ -1137,7 +1137,7 @@ class Section:
             }
         return register_slash_command
 
-class MissingDescription(Exception):
+class MissingName(Exception):
     ...
 
 class Client(WebsocketClient):
