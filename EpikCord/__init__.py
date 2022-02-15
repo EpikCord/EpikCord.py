@@ -9,6 +9,9 @@ import re
 from logging import getLogger
 from typing import *
 from urllib.parse import quote
+import io
+import os
+from typing import Union
 
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
@@ -17,6 +20,7 @@ __version__ = '0.4.9'
 
 
 """
+:license:
 Some parts of the code is done by discord.py and their amazing team of contributors
 The MIT License (MIT)
 Copyright © 2015-2021 Rapptz
@@ -25,7 +29,7 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
 
 _MARKDOWN_ESCAPE_SUBREGEX = '|'.join(
@@ -273,7 +277,7 @@ class Messageable:
         data = await response.json()
         return Message(data)
 
-    async def send(self, content: Optional[str] = None, *, embeds: Optional[List[dict]] = None, components=None, tts: Optional[bool] = False, allowed_mentions=None, sticker_ids: Optional[List[str]] = None, attachments=None, suppress_embeds: bool = False) -> Message:
+    async def send(self, content: Optional[str] = None, *, embeds: Optional[List[dict]] = None, components=None, tts: Optional[bool] = False, allowed_mentions=None, sticker_ids: Optional[List[str]] = None, attachments:List[File]=None, suppress_embeds: bool = False) -> Message:
         payload = {}
 
         if content:
@@ -425,9 +429,11 @@ class EventHandler:
         
         # elif channel_type in (10, 11, 12)
 
-
+    
     async def message_create(self, data: dict):
         await self.events["message_create"](Message(self, data))
+
+    
 
     def event(self, func):
         self.events[func.__name__.lower().replace("on_", "")] = func
@@ -689,9 +695,15 @@ class Overwrite:
         self.allow: str = data.get("allow")
         self.deny: str = data.get("deny")
 
-
 class StickerItem:
+    def __init__(self, data : dict):
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+        self.format_type: int = data.get("format_type")
+
+class Sticker(StickerItem):
     def __init__(self, data: dict):
+        super().__init__(data=data)
         self.id: str = data.get("id")
         self.name: str = data.get("name")
         self.description: str = data.get("description")
@@ -700,6 +712,7 @@ class StickerItem:
         self.format_type: int = data.get("format_type")
         self.pack_id: int = data.get("pack_id")
         self.sort_value: int = data.get("sort_value")
+
 
 
 class ThreadMember:
@@ -1053,6 +1066,49 @@ class GuildStageChannel(BaseChannel):
         self.discoverable_disabled: bool = data.get("discoverable_disabled")
 
 
+
+
+class File:
+    """
+    The doc strings
+    """
+    def __init__(
+        self,
+        fp: Union[str, bytes, os.PathLike, io.BufferedIOBase],
+        filename: Optional[str] = None,
+        *,
+        spoiler: bool = False,
+    ):
+    if isinstance(fp, io.IOBase):
+        if not (fp.seekable() and fp.readable()):
+            raise ValueError(f'File buffer {fp!r} must be seekable and readable')
+        self.fp = fp
+        self._original_pos = fp.tell()
+    else:
+            self.fp = open(fp, 'rb')
+            self._original_pos = 0
+    self._closer = self.fp.close
+    self.fp.close = lambda: None
+    
+    if filename is None:
+        if isinstance(fp, str):
+            _, self.filename = os.path.split(fp)
+        else:
+            self.filename = getattr(fp, 'name', None)
+        else:
+            self.filename = filename
+    if spoiler and self.filename is not None and not self.filename.startswith('SPOILER_'):
+        self.filename = 'SPOILER_' + self.filename
+
+        self.spoiler = spoiler or (self.filename is not None and self.filename.startswith('SPOILER_'))
+
+    def reset(self, *, seek: Union[int, bool] = True) -> None:
+        if seek:
+            self.fp.seek(self._original_pos)
+
+    def close(self) -> None:
+        self.fp.close = self._closer
+        self._closer()
 class TextBasedChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(data)
@@ -1472,14 +1528,6 @@ class MessageButton(BaseComponent):
         self.type: int = 2
         self.disabled = disabled
 
-        valid_styles = {
-            "PRIMARY": 1,
-            "SECONDARY": 2,
-            "SUCCESS": 3,
-            "DANGER": 4,
-            "LINK": 5
-        }
-
         if isinstance(style, str):
             if style.upper() not in valid_styles:
                 raise InvalidComponentStyle(
@@ -1499,6 +1547,31 @@ class MessageButton(BaseComponent):
             self.emoji: Optional[Union[PartialEmoji, dict]] = emoji
         if label:
             self.label: Optional[str] = label
+
+    @property
+    def PRIMARY(self):
+        self.style = 1
+        return self
+    
+    @property
+    def SECONDARY(self):
+        self.style = 2
+        return self
+    
+    @property
+    def SUCCESS(self):
+        self.style = 3
+        return self
+    GREEN = SUCCESS
+    @property
+    def DANGER(self):
+        self.style = 4
+        return self
+    RED = DANGER
+    @property
+    def LINK(self):
+        self.style = 5
+        return self 
 
     def to_dict(self):
         settings = {
