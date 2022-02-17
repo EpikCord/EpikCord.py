@@ -358,6 +358,18 @@ class User(Messageable):
         self.premium_type: int = data.get("premium_type")
         self.public_flags: int = data.get("public_flags")
 
+class Interaction:
+    def __init__(self, client, data: dict):
+        interaction_type = data.get("type")
+        if interaction_type == 2:
+            return ApplicationCommandInteraction(client, data)
+        elif interaction_type == 3:
+            return MessageComponentInteraction(client, data)
+        elif interaction_type == 4:
+            return AutoCompleteInteraction(client, data)
+        elif interaction_type == 5:
+            return ModalSubmitInteraction(client, data)
+        
 
 class EventHandler:
     # Class that'll contain all methods that'll be called when an event is triggered.
@@ -411,17 +423,25 @@ class EventHandler:
 
         if data.get("type") == self.PING:
             await self.client.http.post(f"/interactions/{data.get('id')}/{data.get('token')}/callback", json = {"type": self.PONG})
+        
+        event_func = None
 
+        try:
+            event_func = self.events["interaction_create"]
+        except KeyError:
+            return
+        
+        await event_func(Interaction(self.client, data))
 
 
     async def handle_event(self, event_name: str, data: dict):
         event_name = event_name.lower()
         try:
             await getattr(self, event_name)(data)
-        # except AttributeError:
-            # logger.warning(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
+        except AttributeError:
+            logger.warning(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
         except Exception as e:
-            raise e # the program please...
+            print(e) # Don't close the program please...
 
     async def channel_create(self, data: dict):
         
@@ -2268,12 +2288,18 @@ class ModalSubmitInteraction(BaseInteraction):
                 self.components.append(MessageSelectMenu(component))
             elif component.get("type") == 4:
                 self.components.append(MessageTextInput(component))
+
 class ApplicationCommandOption:
     def __init__(self, data: dict):
         self.command_name: str = data.get("name")
         self.command_type: int = data.get("type")
         self.value: Optional[Union[str, int, float]] = data.get("value")
         self.focused: Optional[bool] = data.get("focused")
+
+class AutoCompleteInteraction(BaseInteraction):
+    def __init__(self, client, data: dict):
+        super().__init__(client, data)
+        self.options: List[ApplicationCommandOption] = [ApplicationCommandOption(option) for option in data.get("options", [])]
 
 class ApplicationCommandSubcommandOption(ApplicationCommandOption):
     def __init__(self, data: dict):
