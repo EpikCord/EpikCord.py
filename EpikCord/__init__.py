@@ -399,7 +399,7 @@ class EventHandler:
             elif event["op"] == self.EVENT:
                 await self.handle_event(event["t"], event["d"])
                 if event["t"] in self.wait_for_events:
-                    if self.wait_for_events[event["t"]]: # If the function succeeds, we remove it from the wait_for_events dict and return the results
+                    if self.wait_for_events[event["t"]](): # If the function succeeds, we remove it from the wait_for_events dict and return the results
                         del self.wait_for_events[event["t"]]
 
 
@@ -420,28 +420,27 @@ class EventHandler:
         self.wait_for_events[event_name] = check
 
     async def interaction_create(self, data):
-
         if data.get("type") == self.PING:
             await self.client.http.post(f"/interactions/{data.get('id')}/{data.get('token')}/callback", json = {"type": self.PONG})
         
         event_func = None
 
-        try:
-            event_func = self.events["interaction_create"]
-        except KeyError:
-            return
+        event_func = self.events["interaction_create"]
+        
         
         await event_func(Interaction(self.client, data))
 
 
     async def handle_event(self, event_name: str, data: dict):
         event_name = event_name.lower()
+
+        event_func = None
         try:
-            await getattr(self, event_name)(data)
+            event_func = getattr(self, event_name)
         except AttributeError:
             logger.warning(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
-        except Exception as e:
-            print(e) # Don't close the program please...
+            return
+        await event_func(data)
 
     async def channel_create(self, data: dict):
         
@@ -2239,7 +2238,11 @@ class BaseInteraction:
         return self.type == 5
 
     async def reply(self, message_data: dict):
-        response = await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", data=message_data)
+        payload = {
+            "type": 4,
+            "data": message_data
+        }
+        response = await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", data=payload)
         return await response.json()
 
     async def fetch_reply(self):
