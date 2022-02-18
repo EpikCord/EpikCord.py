@@ -13,6 +13,7 @@ jobs:
       - run: python -m build
       - run: git config user.name ${{env.name}}
       - run: git config user.email ${{env.email}}
+      - run: git delete EpikCord.py.egg-info
       - run: git add .
       - run: git commit -m "pybuild - build"
       - run: git push
