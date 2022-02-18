@@ -599,18 +599,23 @@ class WebsocketClient(EventHandler):
                 await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
                 logger.info("Sent a heartbeat!")
 
-    async def handle_close(self):
+    async def handle_close(self):(
         if self.ws.close_code == 4014:
+            logger.critical("Close Code 4014: You cannot use privelleged intents with this token, go to the developer portal and allow the privelleged intents needed")
             raise DisallowedIntents(
-                "You cannot use privellaged intents with this token, go to the developer portal and allow the privellaged intents needed.")
+                "You cannot use privelleged intents with this token, go to the developer portal and allow the privellaged intents needed.")
         elif self.ws.close_code == 4004:
+            logger.critical("Close Code 4004:The token you provided was invalid")
             raise InvalidToken("The token you provided is invalid.")
         elif self.ws.close_code == 4008:
+            logger.critical("Close Code 4008: You've been rate limited. Try again in a few minutes")
             raise Ratelimited429(
                 "You've been rate limited. Try again in a few minutes.")
         elif self.ws.close_code == 4013:
+            logger.critical("Close Code 4013: The intents you provided are invalid")
             raise InvalidIntents("The intents you provided are invalid.")
         else:
+            logger.critical(f"Connection has been closed with code {self.ws.close_code}")
             raise ClosedWebSocketConnection(f"Connection has been closed with code {self.ws.close_code}")
 
     async def send_json(self, json: dict):
