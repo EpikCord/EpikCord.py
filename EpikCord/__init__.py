@@ -52,14 +52,14 @@ def _cancel_tasks(loop) -> None:
 
     for task in tasks:
         task.cancel()
-    logger.debug(f"Cancelled {len(tasks)} tasks")
+    logger.info(f"Cancelled {len(tasks)} tasks")
     loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
 
 
 def _cleanup_loop(loop) -> None:
     try:
         _cancel_tasks(loop)
-        logger.debug("Shutting down async generators.")
+        logger.info("Shutting down async generators.")
         loop.run_until_complete(loop.shutdown_asyncgens())
     finally:
         loop.close()
@@ -170,13 +170,13 @@ class Message:
 
     async def add_reaction(self, emoji: str):
         emoji = quote(emoji)
-        logger.debug(f"Added a reaction to message ({self.id}).")
+        logger.info(f"Added a reaction to message ({self.id}).")
         response = await self.client.http.put(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/@me")
         return await response.json()
 
     async def remove_reaction(self, emoji: str, user=None):
         emoji = quote(emoji)
-        logger.debug(
+        logger.info(
             f"Removed reaction {emoji} from message ({self.id}) for user {user.username}.")
         if not user:
             response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/@me")
@@ -185,30 +185,30 @@ class Message:
         return await response.json()
 
     async def fetch_reactions(self, *, after, limit) -> List[Reaction]:
-        logger.debug(f"Fetching reactions from message ({self.id}).")
+        logger.info(f"Fetching reactions from message ({self.id}).")
         response = await self.client.http.get(f"channels/{self.channel_id}/messages/{self.id}/reactions?after={after}&limit={limit}")
         return await response.json()
 
     async def delete_all_reactions(self):
-        logger.debug(f"Deleting all reactions from message ({self.id}).")
+        logger.info(f"Deleting all reactions from message ({self.id}).")
         response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions")
         return await response.json()
 
     async def delete_reaction_for_emoji(self, emoji: str):
-        logger.debug(
+        logger.info(
             f"Deleting a reaction from message ({self.id}) for emoji {emoji}.")
         emoji = quote(emoji)
         response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}")
         return await response.json()
 
     async def edit(self, message_data: dict):
-        logger.debug(
+        logger.info(
             f"Editing message {self.id} with message_data {message_data}.")
         response = await self.client.http.patch(f"channels/{self.channel_id}/messages/{self.id}", data=message_data)
         return await response.json()
 
     async def delete(self):
-        logger.debug(f"Deleting message {self.id}.")
+        logger.info(f"Deleting message {self.id}.")
         response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}")
         return await response.json()
 
@@ -216,9 +216,9 @@ class Message:
         headers = self.client.http.headers.copy()
         if reason:
             headers["X-Audit-Log-Reason"] = reason
-            logger.debug(f"Pinning message {self.id} with reason {reason}.")
+            logger.info(f"Pinning message {self.id} with reason {reason}.")
         else:
-            logger.debug(f"Pinning message {self.id}.")
+            logger.info(f"Pinning message {self.id}.")
         response = await self.client.http.put(f"channels/{self.channel_id}/pins/{self.id}", headers=headers)
         return await response.json()
 
@@ -226,14 +226,14 @@ class Message:
         headers = self.client.http.headers.copy()
         if reason:
             headers["X-Audit-Log-Reason"] = reason
-            logger.debug(f"Unpinning message {self.id} with reason {reason}.")
+            logger.info(f"Unpinning message {self.id} with reason {reason}.")
         else:
-            logger.debug(f"Unpinning message {self.id}.")
+            logger.info(f"Unpinning message {self.id}.")
         response = await self.client.http.delete(f"channels/{self.channel_id}/pins/{self.id}", headers=headers)
         return await response.json()
 
     async def start_thread(self, name: str, auto_archive_duration: Optional[int], rate_limit_per_user: Optional[int]):
-        logger.debug(
+        logger.info(
             f"Starting thread for message {self.id} with name {name}, auto archive duration {auto_archive_duration or None}, ratelimit per user {rate_limit_per_user or None}.")
         response = await self.client.http.post(f"channels/{self.channel_id}/messages/{self.id}/threads", data={"name": name, "auto_archive_duration": auto_archive_duration, "rate_limit_per_user": rate_limit_per_user})
         # Cache it
@@ -241,7 +241,7 @@ class Message:
         return Thread(await response.json())
 
     async def crosspost(self):
-        logger.debug(f"Crossposting message {self.id}.")
+        logger.info(f"Crossposting message {self.id}.")
         response = await self.client.http.post(f"channels/{self.channel_id}/messages/{self.id}/crosspost")
         return await response.json()
 
@@ -330,9 +330,10 @@ class Messageable:
 
         if suppress_embeds:
             payload["suppress_embeds"] = 1 << 2
-
+        logger.info(f"Message sent with payload {payload}")
         response = await self.client.http.post(f"channels/{self.id}/messages", json=payload)
         data = await response.json()
+        
         return Message(self.client, data)
 
 
@@ -399,7 +400,7 @@ class EventHandler:
                 except AttributeError:
                     self.heartbeats = [event["d"]]
                 self.sequence = event["s"]
-            logger.debug(f"Received event {event['t']}")
+            logger.info(f"Received event {event['t']}")
         await self.handle_close()
 
     async def wait_for(self, event_name: str, *, check: Optional[Any]):
@@ -536,7 +537,7 @@ class EventHandler:
         self.user: ClientUser = ClientUser(self, data.get("user"))
         application_response = await self.http.get("/oauth2/applications/@me")
         application_data = await application_response.json()
-        logger.info(f"Bot is starting up, Bot ready event has been fired. Details:{application_data}")
+        logger.info(f"Bot ready event has been fired. Details:{application_data}")
         self.application: ClientApplication = ClientApplication(
             self.http, application_data
             )
@@ -596,7 +597,7 @@ class WebsocketClient(EventHandler):
             while True:
                 await asyncio.sleep(self.interval / 1000)
                 await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
-                logger.debug("Sent a heartbeat!")
+                logger.info("Sent a heartbeat!")
 
     async def handle_close(self):
         if self.ws.close_code == 4014:
@@ -616,7 +617,7 @@ class WebsocketClient(EventHandler):
         try:
             await self.ws.send_json(json)
         except:
-            logger.debug(f"Exited with code: {self.ws.close_code}")
+            logger.info(f"Exited with code: {self.ws.close_code}")
 
     async def connect(self):
         self.ws = await self.http.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json")
@@ -831,6 +832,7 @@ class ThreadMember:
 class Thread:
     def __init__(self, client, data: dict):
         super().__init__(client, data)
+        self.data:dict = data
         self.owner_id: str = data.get("owner_id")
         self.message_count: int = data.get("message_count")
         self.member_count: int = data.get("member_count")
@@ -841,33 +843,45 @@ class Thread:
 
     async def join(self):
         if self.archived:
+            logger.error(f"This thread has been archived so it is no longer joinable. Thread data:{self.data}")
             raise ThreadArchived(
                 "This thread has been archived so it is no longer joinable")
         response = await self.client.http.put(f"/channels/{self.id}/thread-members/@me")
-        return await response.json()
+        resp_json = await response.json()
+        logger.info(f"Your bot has joined a thread, Discord response:{resp_json}")
+        return resp_json
 
     async def add_member(self, member_id: str):
         if self.archived:
+            logger.error(f"This thread has been archived so it is no longer joinable. Thread data:{self.data}")
             raise ThreadArchived(
                 "This thread has been archived so it is no longer joinable")
 
         response = await self.client.http.put(f"/channels/{self.id}/thread-members/{member_id}")
-        return await response.json()
+        resp_json = await response.json()
+        logger.info(f"Your bot has added a member to the thread, Discord response:{resp_json}")
+        return resp_json()
 
     async def leave(self):
         if self.archived:
+            logger.error(f"This thread has been archived so it is no longer leaveble. Thread data:{self.data}")
             raise ThreadArchived(
                 "This thread has been archived so it is no longer leaveable")
         response = await self.client.http.delete(f"/channels/{self.id}/thread-members/@me")
-        return await response.json()
+        resp_json= await response.json()
+        logger.info(f"Your bot has left a thread, Discord response: {resp_json}")
+        return resp_json
 
     async def remove_member(self, member_id: str):
         if self.archived:
+            logger.error(f"This thread has been archived so it is no longer leaveable. Thread data:{self.data}")
             raise ThreadArchived(
                 "This thread has been archived so it is no longer leaveable")
 
         response = await self.client.http.delete(f"/channels/{self.id}/thread-members/{member_id}")
-        return await response.json()
+        resp_json = await response.json()
+        logger.info(f"Your bot has removed a person from the thread, Discord response: {resp_json}")
+        return resp_json
 
     async def fetch_member(self, member_id: str) -> ThreadMember:
         response = await self.client.http.get(f"/channels/{self.id}/thread-members/{member_id}")
