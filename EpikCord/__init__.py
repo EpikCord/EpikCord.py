@@ -406,7 +406,7 @@ class EventHandler:
         self.wait_for_events[event_name] = check
 
     async def interaction_create(self, data):
-        print(data)
+        logger.info("interaction create event was fired, Details{data}")
         if data.get("type") == self.PING:
             await self.client.http.post(f"/interactions/{data.get('id')}/{data.get('token')}/callback", json = {"type": self.PONG})
         
@@ -443,7 +443,7 @@ class EventHandler:
 
     async def channel_create(self, data: dict):
         
-        print("Channel Create has been called")
+        logger.info(f"Channel create event has been fired, Details:{data}")
         channel_data: dict = data.get("d")
         channel_type: str = channel_data.get("type")
         event_func = None
@@ -499,10 +499,11 @@ class EventHandler:
     
     async def message_create(self, data: dict):
         if self.events.get("message_create"):
+            logger.info(msg=f"Message event fired, details:{data}")
             message = Message(self, data)
             message.channel = Messageable(self, data.get("channel_id"))
             await self.events["message_create"](message)
-
+            
     async def guild_create(self, data):
         if not data.get("available"): # If it's not available
             self.guilds.add_to_cache(data.get("id"), UnavailableGuild(data))
@@ -531,9 +532,11 @@ class EventHandler:
         ...
 
     async def ready(self, data: dict):
+        
         self.user: ClientUser = ClientUser(self, data.get("user"))
         application_response = await self.http.get("/oauth2/applications/@me")
         application_data = await application_response.json()
+        logger.info(f"Bot is starting up, Bot ready event has been fired. Details:{application_data}")
         self.application: ClientApplication = ClientApplication(
             self.http, application_data
             )
