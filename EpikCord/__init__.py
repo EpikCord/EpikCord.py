@@ -357,20 +357,6 @@ class User(Messageable):
         self.flags: int = data.get("flags")
         self.premium_type: int = data.get("premium_type")
         self.public_flags: int = data.get("public_flags")
-
-class Interaction:
-    def __init__(self, client, data: dict):
-        interaction_type = data.get("type")
-        if interaction_type == 2:
-            return ApplicationCommandInteraction(client, data)
-        elif interaction_type == 3:
-            return MessageComponentInteraction(client, data)
-        elif interaction_type == 4:
-            return AutoCompleteInteraction(client, data)
-        elif interaction_type == 5:
-            return ModalSubmitInteraction(client, data)
-        
-
 class EventHandler:
     # Class that'll contain all methods that'll be called when an event is triggered.
 
@@ -420,15 +406,28 @@ class EventHandler:
         self.wait_for_events[event_name] = check
 
     async def interaction_create(self, data):
+        print(data)
         if data.get("type") == self.PING:
             await self.client.http.post(f"/interactions/{data.get('id')}/{data.get('token')}/callback", json = {"type": self.PONG})
         
         event_func = None
 
         event_func = self.events["interaction_create"]
-        
-        
-        await event_func(Interaction(self.client, data))
+
+        interaction_type = data.get("type")
+
+
+        def figure_out_interaction_class():
+            if interaction_type == 2:
+                return ApplicationCommandInteraction(self, data)
+            elif interaction_type == 3:
+                return MessageComponentInteraction(self, data)
+            elif interaction_type == 4:
+                return AutoCompleteInteraction(self, data)
+            elif interaction_type == 5:
+                return ModalSubmitInteraction(self, data)
+
+        await event_func(figure_out_interaction_class())
 
 
     async def handle_event(self, event_name: str, data: dict):
@@ -521,7 +520,12 @@ class EventHandler:
 
 
     def event(self, func):
-        self.events[func.__name__.lower().replace("on_", "")] = func
+        func_name = func.__name__.lower()
+
+        if func_name.startswith("on_"):
+            func_name = func_name[3:]
+        
+        self.events[func_name] = func
 
     async def guild_member_update(self, data):
         ...
@@ -1222,7 +1226,7 @@ class HTTPClient(ClientSession):
 
     async def post(self, url, *args, **kwargs):
         if url.startswith("/"):
-            url = url[1]
+            url = url[1:]
         return await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
 
     async def patch(self, url, *args, **kwargs):
@@ -2218,8 +2222,8 @@ class BaseInteraction:
         self.data: Optional[dict] = data.get("data")
         self.guild_id: Optional[str] = data.get("guild_id")
         self.channel_id: Optional[str] = data.get("channel_id")
-        self.member: Optional[GuildMember] = GuildMember(data.get("member"))
-        self.user: Optional[User] = User(data.get("user"))
+        self.member: Optional[GuildMember] = GuildMember(client, data.get("member")) if data.get("member") else None
+        self.user: Optional[User] = User(client, data.get("user")) if data.get("user") else None
         self.token: str = data.get("token")
         self.version: int = data.get("version")
         self.locale: Optional[str] = data.get("locale")
@@ -2237,12 +2241,30 @@ class BaseInteraction:
     def is_modal_submit(self):
         return self.type == 5
 
-    async def reply(self, message_data: dict):
+    async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, flags: Optional[int] = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, atachments: Optional[List[Attachment]] = None):
+
+        message_data = {
+            "tts": tts
+        }
+
+        if content:
+            message_data["content"] = content
+        if embeds:
+            message_data["embeds"] = [embed.to_dict() for embed in embeds]
+        if allowed_mentions:
+            message_data["allowed_mentions"] = allowed_mentions.to_dict()
+        if flags:
+            message_data["flags"] = flags
+        if components:
+            message_data["components"] = [component.to_dict() for component in components]
+        if atachments:
+            message_data["attachments"] = [attachment.to_dict() for attachment in atachments]
+
         payload = {
             "type": 4,
             "data": message_data
         }
-        response = await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", data=payload)
+        response = await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json = payload)
         return await response.json()
 
     async def fetch_reply(self):
@@ -2466,6 +2488,8 @@ class SlashCommand(ApplicationCommand):
 
     def to_dict(self):
         json_options = []
+        for option in self.options:
+            json_options.append(option.to_dict())
         return {
             "name": self.name,
             "type": self.type,
@@ -2488,7 +2512,6 @@ class Team:
         self.icon: str = data.get("icon")
         self.id: str = data.get("id")
         self.members: List[TeamMember] = data.get("members")
-
 
 class ClientUser():
 
@@ -2524,12 +2547,10 @@ class ClientUser():
         # Reinitialize the class with the new data, the full data.
         self.__init__(data)
 
-
 class SourceChannel:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
         self.name: str = data.get("name")
-
 
 class Webhook:  # Not used for making webhooks.
     def __init__(self, client, data: dict):
@@ -2546,9 +2567,6 @@ class Webhook:  # Not used for making webhooks.
         self.source_guild: Optional[PartialGuild] = PartialGuild(data.get("source_guild"))
         self.source_channel: Optional[SourceChannel] = SourceChannel(data.get("source_channel"))
         self.url: Optional[str] = data.get("url")
-
-    
-
 
 def compute_timedelta(dt: datetime.datetime):
     if dt.tzinfo is None:
