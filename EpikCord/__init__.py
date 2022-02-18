@@ -895,7 +895,7 @@ class Thread:
             raise NotFound404(
                 "The member you are trying to fetch does not exist")
         resp_json = await response.json()
-        logger.info(f"Succesfully got the member {member_id}, Discord Response:{resp_json}")
+        logger.info(f"Successfully got the member {member_id}, Discord Response:{resp_json}")
         return ThreadMember(resp_json)
 
     async def list_members(self) -> List[ThreadMember]:
@@ -912,7 +912,7 @@ class Thread:
 
         response = await self.client.http.post(f"channels/{self.id}/messages/bulk-delete", data={"messages": message_ids}, headers=headers)
         resp_json= await response.json()
-        logger.info(f"Succesfully bulk-deleted messages. Discord Response:{resp_json}")
+        logger.info(f"Successfully bulk-deleted messages. Discord Response:{resp_json}")
         return resp_json
 
 
