@@ -2244,7 +2244,7 @@ class BaseInteraction:
     def is_modal_submit(self):
         return self.type == 5
 
-    async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, flags: Optional[int] = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, atachments: Optional[List[Attachment]] = None):
+    async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, flags: Optional[int] = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None):
 
         message_data = {
             "tts": tts
@@ -2260,8 +2260,8 @@ class BaseInteraction:
             message_data["flags"] = flags
         if components:
             message_data["components"] = [component.to_dict() for component in components]
-        if atachments:
-            message_data["attachments"] = [attachment.to_dict() for attachment in atachments]
+        if attachments:
+            message_data["attachments"] = [attachment.to_dict() for attachment in attachments]
 
         payload = {
             "type": 4,
