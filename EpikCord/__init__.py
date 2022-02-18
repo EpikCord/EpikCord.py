@@ -891,13 +891,18 @@ class Thread:
     async def fetch_member(self, member_id: str) -> ThreadMember:
         response = await self.client.http.get(f"/channels/{self.id}/thread-members/{member_id}")
         if response.status == 404:
+            logger.error(f"The member you are trying to get does not exist, Thread data:{self.data}")
             raise NotFound404(
                 "The member you are trying to fetch does not exist")
-        return ThreadMember(await response.json())
+        resp_json = await response.json()
+        logger.info(f"Succesfully got the member {member_id}, Discord Response:{resp_json}")
+        return ThreadMember(resp_json)
 
     async def list_members(self) -> List[ThreadMember]:
         response = await self.client.http.get(f"/channels/{self.id}/thread-members")
-        return [ThreadMember(member) for member in await response.json()]
+        resp_json= await response.json()
+        logger.info(f"Successfully got all members of thread, Discord Response:{resp_json}")
+        return [ThreadMember(member) for member in resp_json]
 
     async def bulk_delete(self, message_ids: List[str], reason: Optional[str]) -> None:
 
@@ -906,7 +911,9 @@ class Thread:
             headers["X-Audit-Log-Reason"] = reason
 
         response = await self.client.http.post(f"channels/{self.id}/messages/bulk-delete", data={"messages": message_ids}, headers=headers)
-        return await response.json()
+        resp_json= await response.json()
+        logger.info(f"Succesfully bulk-deleted messages. Discord Response:{resp_json}")
+        return resp_json
 
 
 def _get_mime_type_for_image(data: bytes):
