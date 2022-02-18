@@ -406,7 +406,6 @@ class EventHandler:
         self.wait_for_events[event_name] = check
 
     async def interaction_create(self, data):
-        print(data)
         if data.get("type") == self.PING:
             await self.client.http.post(f"/interactions/{data.get('id')}/{data.get('token')}/callback", json = {"type": self.PONG})
         
@@ -783,9 +782,13 @@ class AttachmentOption(BaseSlashCommandOption):
 
 class SlashCommandOptionChoice:
     def __init__(self, * name: str, value: Union[float, int, str]):
-        self.settings = {
-            "name": name,
-            "value": value
+        self.name: str = name
+        self.value: Union[float, int, str] = value
+    
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "value": self.value
         }
 
 AnyOption = Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]
@@ -1273,15 +1276,17 @@ class Section:
 class MissingDescription(Exception):
     ...
 
+class MissingClientSetting(Exception):
+    ...
+
+
 class Client(WebsocketClient):
 
-    def __init__(self, token: str, intents: int = 0, **options):
+    def __init__(self, token: str, intents: int = 0):
         super().__init__(token, intents)
 
-        self.commands: List[ApplicationCommand] = []
+        self.commands: List[dict] = [] # TODO: Need to change this to a Class Later
         self.guilds: GuildManager = GuildManager()
-
-        self.options: dict = options
 
         self.http = HTTPClient(
             headers={
@@ -1299,24 +1304,24 @@ class Client(WebsocketClient):
                 description: str,
                 guild_ids: Optional[List[str]],
                 options: Optional[
-            Union[
-                Subcommand,
-                SubCommandGroup,
-                StringOption,
-                IntegerOption,
-                BooleanOption,
-                UserOption,
-                ChannelOption,
-                RoleOption,
-                MentionableOption,
-                NumberOption,
-                AttachmentOption
-            ]]
+                    Union[
+                        Subcommand,
+                        SubCommandGroup,
+                        StringOption,
+                        IntegerOption,
+                        BooleanOption,
+                        UserOption,
+                        ChannelOption,
+                        RoleOption,
+                        MentionableOption,
+                        NumberOption,
+                        AttachmentOption
+                    ]]
     ):
         def register_slash_command(func):
             if not description:
                 raise MissingDescription(f"You must supply a description for the command {name}.")
-            self.commands[func.__name__] = SlashCommand({
+            self.commands[func.__name__] = ({
                 "callback": func,
                 "name": name,
                 "description": description,
@@ -1327,8 +1332,7 @@ class Client(WebsocketClient):
 
     def add_section(self, section: Section):
         if not isinstance(section, Section):
-            raise InvalidArgumentType(
-                "You must pass in a class that inherits from the Section class.")
+            raise InvalidArgumentType("You must pass in a class that inherits from the Section class.")
 
         for name, command_object in section.commands:
             self.commands[name] = command_object
@@ -2267,6 +2271,8 @@ class BaseInteraction:
         response = await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json = payload)
         return await response.json()
 
+    async def defer_response
+
     async def fetch_reply(self):
         response = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/{self.token}/messages/@original")
         return await response.json()
@@ -2325,6 +2331,16 @@ class AutoCompleteInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
         self.options: List[ApplicationCommandOption] = [ApplicationCommandOption(option) for option in data.get("options", [])]
+
+    async def reply(self, choices: List[SlashCommandOptionChoice]):
+        payload = {
+            "type": 9,
+            "data": []
+        }
+
+        for choice in choices:
+            payload["data"]["choices"].append(choice.to_dict())
+
 
 class ApplicationCommandSubcommandOption(ApplicationCommandOption):
     def __init__(self, data: dict):
