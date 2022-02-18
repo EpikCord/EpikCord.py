@@ -1289,7 +1289,8 @@ class Client(WebsocketClient):
         self.guilds: GuildManager = GuildManager()
 
         self.http = HTTPClient(
-            headers={
+            raise_for_status = True,
+            headers = {
                 "Authorization": f"Bot {token}",
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})"
             }
@@ -2245,7 +2246,7 @@ class BaseInteraction:
     def is_modal_submit(self):
         return self.type == 5
 
-    async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, flags: Optional[int] = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, atachments: Optional[List[Attachment]] = None):
+    async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, flags: Optional[int] = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, atachments: Optional[List[Attachment]] = None) -> None:
 
         message_data = {
             "tts": tts
@@ -2268,16 +2269,23 @@ class BaseInteraction:
             "type": 4,
             "data": message_data
         }
+
+        await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json = payload)
+
+
+    async def defer(self):
+        payload = {
+            "type": 5
+        }
         response = await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json = payload)
         return await response.json()
 
-    async def defer_response
-
     async def fetch_reply(self):
-        response = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/{self.token}/messages/@original")
+        response = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/messages/@original")
         return await response.json()
 
-    async def edit_reply(self, message_data: dict):
+    async def edit_reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, flags: Optional[int] = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, atachments: Optional[List[Attachment]] = None):
+
         response = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/@original", data=message_data)
         return await response.json()
 
@@ -2332,15 +2340,18 @@ class AutoCompleteInteraction(BaseInteraction):
         super().__init__(client, data)
         self.options: List[ApplicationCommandOption] = [ApplicationCommandOption(option) for option in data.get("options", [])]
 
-    async def reply(self, choices: List[SlashCommandOptionChoice]):
+    async def reply(self, choices: List[SlashCommandOptionChoice]) -> None:
         payload = {
             "type": 9,
             "data": []
         }
 
         for choice in choices:
+            if not isinstance(choice, SlashCommandOptionChoice):
+                raise TypeError(f"{choice} must be of type SlashCommandOptionChoice")
             payload["data"]["choices"].append(choice.to_dict())
 
+        await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json = payload)
 
 class ApplicationCommandSubcommandOption(ApplicationCommandOption):
     def __init__(self, data: dict):
@@ -2976,6 +2987,7 @@ class Paginator:
     def __init__(self, *, pages: List[Embed]):
         self.current_index: int = 0
         self.pages = pages
+
     def back(self):
         return self.pages[self.current_index - 1]
     def forward(self):
