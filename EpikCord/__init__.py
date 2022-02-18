@@ -599,7 +599,7 @@ class WebsocketClient(EventHandler):
                 await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
                 logger.info("Sent a heartbeat!")
 
-    async def handle_close(self):(
+    async def handle_close(self):
         if self.ws.close_code == 4014:
             logger.critical("Close Code 4014: You cannot use privelleged intents with this token, go to the developer portal and allow the privelleged intents needed")
             raise DisallowedIntents(
