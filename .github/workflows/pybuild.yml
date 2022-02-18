@@ -12,7 +12,7 @@ jobs:
       - run: git config user.name ${{env.name}}
       - run: git config user.email ${{env.email}}
       - run: pip install build
-      - run: python -m build --wheel -o .
+      - run: python -m build --wheel
 
       - run: git add .
       - run: git commit -m "pybuild - build"
