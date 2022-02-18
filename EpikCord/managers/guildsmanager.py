@@ -9,5 +9,6 @@ from ..__init__ import Guild, UnavailableGuild
 
 class GuildManager(CacheManager):
     def __init__(self, guilds: Optional[List[Union[Guild, UnavailableGuild]]] = []):
+        super().__init__()
         for guild in guilds:
             self.cache[guild.id] = guild
