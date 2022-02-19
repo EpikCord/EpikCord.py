@@ -2286,7 +2286,25 @@ class BaseInteraction:
 
     async def edit_reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, flags: Optional[int] = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, atachments: Optional[List[Attachment]] = None):
 
-        response = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/@original", data=message_data)
+        message_data = {
+            "tts": tts
+        }
+
+        if content:
+            message_data["content"] = content
+        if embeds:
+            message_data["embeds"] = [embed.to_dict() for embed in embeds]
+        if allowed_mentions:
+            message_data["allowed_mentions"] = allowed_mentions.to_dict()
+        if flags:
+            message_data["flags"] = flags
+        if components:
+            message_data["components"] = [component.to_dict() for component in components]
+        if atachments:
+            message_data["attachments"] = [attachment.to_dict() for attachment in atachments]
+
+
+        response = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/@original", json = payload)
         return await response.json()
 
     async def delete_reply(self):
@@ -2990,13 +3008,18 @@ class Paginator:
 
     def back(self):
         return self.pages[self.current_index - 1]
+
     def forward(self):
         return self.pages[self.current_index + 1]
+
     def current(self):
         return self.pages[self.current_index]
+
     def add_page(self, page: Embed):
         self.pages.append(page)
+
     def remove_page(self, page: Embed):
         self.pages = filter(lambda embed: embed != page, self.pages)
+
     def current(self) -> Embed:
         return self.pages[self.current_index] 
