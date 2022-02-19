@@ -408,6 +408,7 @@ class EventHandler:
 
     async def interaction_create(self, data):
         logger.info("interaction create event was fired, Details: {data}")
+        
         if data.get("type") == self.PING:
             await self.client.http.post(f"/interactions/{data.get('id')}/{data.get('token')}/callback", json = {"type": self.PONG})
         
