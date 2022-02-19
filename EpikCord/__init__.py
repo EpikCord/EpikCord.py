@@ -15,7 +15,7 @@ from typing import Union
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
 logger = getLogger(__name__)
-__version__ = '0.4.9'
+__version__ = '0.4.10'
 
 
 """
