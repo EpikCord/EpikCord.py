@@ -1,5 +1,5 @@
 # Sourced from Discord.py
-version: 0.4.4
+version: 1
 formats: []
 
 build:
@@ -11,7 +11,7 @@ sphinx:
   builder: html
 
 python:
-  version: 3.8
+  version: "3.8"
   install:
     - method: pip
       path: .

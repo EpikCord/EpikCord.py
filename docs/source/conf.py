@@ -22,7 +22,7 @@ copyright = '2022, EpikHost'
 author = 'EpikHost'
 
 # The full version, including alpha/beta/rc tags
-release = 'Alpha 0.4.4'
+release = 'Alpha 0.4.10'
 
 
 # -- General configuration ---------------------------------------------------

@@ -11,9 +11,6 @@ class CacheManager:
     def get_from_cache(self, key):
         return self.cache.get(key, None)
 
-    def cache(self):
-        return self.cache
-
     def is_in_cache(self, key):
         return key in self.cache
     

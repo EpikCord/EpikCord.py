@@ -1,12 +1,14 @@
 from typing import (
     List,
-    Union
+    Union,
+    Optional
 )
 from .cachemanager import CacheManager
 from ..__init__ import Guild, UnavailableGuild
 
 
 class GuildManager(CacheManager):
-    def __init__(self, guilds: List[Union[Guild, UnavailableGuild]]):
+    def __init__(self, guilds: Optional[List[Union[Guild, UnavailableGuild]]] = []):
+        super().__init__()
         for guild in guilds:
             self.cache[guild.id] = guild
