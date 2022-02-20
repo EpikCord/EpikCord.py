@@ -1023,6 +1023,10 @@ class ClientApplication(Application):
     async def delete_global_application_command(self, command_id: str):
         await self.client.http.delete(f"/applications/{self.id}/commands/{command_id}")
 
+    async def bulk_overwrite_global_application_commands(self, commands: List[ApplicationCommand]):
+        payload = [command.to_dict() for command in commands]
+        await self.client.http.put(f"/applications/{self.id}/commands/bulk-update", json =  payload)
+
 
 class Attachment:
     def __init__(self, data: dict):
