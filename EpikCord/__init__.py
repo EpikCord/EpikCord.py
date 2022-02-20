@@ -1219,7 +1219,6 @@ class RatelimitHandler:
     A class to handle ratelimits from Discord.
     """
     def __init__(self):
-        self.lock: asyncio.Lock = asyncio.Lock()
         self.ratelimit_buckets: dict = {}
         self.ratelimited: bool = False
 
@@ -1227,14 +1226,16 @@ class RatelimitHandler:
         """
         Read the headers from a request and then digest it.
         """
-        self.ratelimit_buckets[headers["X-Ratelimit-Bucket"]] = {
-            "limit": int(headers["X-Ratelimit-Limit"]),
-            "remaining": int(headers["X-Ratelimit-Remaining"]),
-            "reset": int(headers["X-Ratelimit-Reset"])
-        }
+        if "X-Ratelimit-Bucket" in headers:
 
-        if headers.get("retry_after"):
-            await self.handle_ratelimit(headers)
+            self.ratelimit_buckets[headers["X-Ratelimit-Bucket"]] = {
+                "limit": headers["X-Ratelimit-Limit"],
+                "remaining": headers["X-Ratelimit-Remaining"],
+                "reset": headers["X-Ratelimit-Reset"]
+            }
+
+            if headers.get("retry_after"):
+                await self.handle_ratelimit(headers)
 
     async def handle_ratelimit(self, headers: dict):
         """
@@ -1242,9 +1243,8 @@ class RatelimitHandler:
         """
   
         self.ratelimited = True
-        async with self.lock:
-            await asyncio.sleep(headers["retry_after"])
-        return
+        await asyncio.sleep(headers["retry_after"])
+        self.ratelimited = False
 
     def is_ratelimited(self) -> bool:
         """
@@ -1259,6 +1259,9 @@ class HTTPClient(ClientSession):
         self.ratelimit_handler = RatelimitHandler()
 
     async def get(self, url, *args, **kwargs):
+
+        if self.ratelimit_handler.is_ratelimited():
+            return
 
         if url.startswith("/"):
             url = url[1:]
@@ -1276,7 +1279,7 @@ class HTTPClient(ClientSession):
 
         res = await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
         headers = res.headers
-        self.ratelimit_handler.process_headers(headers)
+        await self.ratelimit_handler.process_headers(headers)
         return res
 
     async def patch(self, url, *args, **kwargs):
@@ -1286,7 +1289,7 @@ class HTTPClient(ClientSession):
 
         res = await super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
         headers = res.headers
-        self.ratelimit_handler.process_headers(headers)
+        await self.ratelimit_handler.process_headers(headers)
         return res
 
     async def delete(self, url, *args, **kwargs):
@@ -1296,7 +1299,7 @@ class HTTPClient(ClientSession):
 
         res = await super().delete(f"{self.base_uri}/{url}", *args, **kwargs)
         headers = res.headers
-        self.ratelimit_handler.process_headers(headers)
+        await self.ratelimit_handler.process_headers(headers)
         return res
 
     async def put(self, url, *args, **kwargs):
@@ -1306,7 +1309,7 @@ class HTTPClient(ClientSession):
 
         res = await super().put(f"{self.base_uri}/{url}", *args, **kwargs)
         headers = res.headers
-        self.ratelimit_handler.process_headers(headers)
+        await self.ratelimit_handler.process_headers(headers)
         return res
 
     async def head(self, url, *args, **kwargs):
@@ -1316,7 +1319,7 @@ class HTTPClient(ClientSession):
 
         res =  await super().head(f"{self.base_uri}/{url}", *args, **kwargs)
         headers = res.headers
-        self.ratelimit_handler.process_headers(headers)
+        await self.ratelimit_handler.process_headers(headers)
         return res
 
 class Section:
