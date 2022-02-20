@@ -40,8 +40,6 @@ body:
       description: >
         Let's make sure you've properly done due dilligence when reporting this issue!
       options:
-        - label: This bug was found on the latest version of EpikCord
-          required: true
         - label: Full details of the requested feature have been provided/shown
           required: true
   - type: textarea

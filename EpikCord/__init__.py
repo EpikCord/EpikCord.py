@@ -52,14 +52,14 @@ def _cancel_tasks(loop) -> None:
 
     for task in tasks:
         task.cancel()
-    logger.debug(f"Cancelled {len(tasks)} tasks")
+    logger.info(f"Cancelled {len(tasks)} tasks")
     loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
 
 
 def _cleanup_loop(loop) -> None:
     try:
         _cancel_tasks(loop)
-        logger.debug("Shutting down async generators.")
+        logger.info("Shutting down async generators.")
         loop.run_until_complete(loop.shutdown_asyncgens())
     finally:
         loop.close()
@@ -170,13 +170,13 @@ class Message:
 
     async def add_reaction(self, emoji: str):
         emoji = quote(emoji)
-        logger.debug(f"Added a reaction to message ({self.id}).")
+        logger.info(f"Added a reaction to message ({self.id}).")
         response = await self.client.http.put(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/@me")
         return await response.json()
 
     async def remove_reaction(self, emoji: str, user=None):
         emoji = quote(emoji)
-        logger.debug(
+        logger.info(
             f"Removed reaction {emoji} from message ({self.id}) for user {user.username}.")
         if not user:
             response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/@me")
@@ -185,30 +185,30 @@ class Message:
         return await response.json()
 
     async def fetch_reactions(self, *, after, limit) -> List[Reaction]:
-        logger.debug(f"Fetching reactions from message ({self.id}).")
+        logger.info(f"Fetching reactions from message ({self.id}).")
         response = await self.client.http.get(f"channels/{self.channel_id}/messages/{self.id}/reactions?after={after}&limit={limit}")
         return await response.json()
 
     async def delete_all_reactions(self):
-        logger.debug(f"Deleting all reactions from message ({self.id}).")
+        logger.info(f"Deleting all reactions from message ({self.id}).")
         response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions")
         return await response.json()
 
     async def delete_reaction_for_emoji(self, emoji: str):
-        logger.debug(
+        logger.info(
             f"Deleting a reaction from message ({self.id}) for emoji {emoji}.")
         emoji = quote(emoji)
         response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}")
         return await response.json()
 
     async def edit(self, message_data: dict):
-        logger.debug(
+        logger.info(
             f"Editing message {self.id} with message_data {message_data}.")
         response = await self.client.http.patch(f"channels/{self.channel_id}/messages/{self.id}", data=message_data)
         return await response.json()
 
     async def delete(self):
-        logger.debug(f"Deleting message {self.id}.")
+        logger.info(f"Deleting message {self.id}.")
         response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}")
         return await response.json()
 
@@ -216,9 +216,9 @@ class Message:
         headers = self.client.http.headers.copy()
         if reason:
             headers["X-Audit-Log-Reason"] = reason
-            logger.debug(f"Pinning message {self.id} with reason {reason}.")
+            logger.info(f"Pinning message {self.id} with reason {reason}.")
         else:
-            logger.debug(f"Pinning message {self.id}.")
+            logger.info(f"Pinning message {self.id}.")
         response = await self.client.http.put(f"channels/{self.channel_id}/pins/{self.id}", headers=headers)
         return await response.json()
 
@@ -226,14 +226,14 @@ class Message:
         headers = self.client.http.headers.copy()
         if reason:
             headers["X-Audit-Log-Reason"] = reason
-            logger.debug(f"Unpinning message {self.id} with reason {reason}.")
+            logger.info(f"Unpinning message {self.id} with reason {reason}.")
         else:
-            logger.debug(f"Unpinning message {self.id}.")
+            logger.info(f"Unpinning message {self.id}.")
         response = await self.client.http.delete(f"channels/{self.channel_id}/pins/{self.id}", headers=headers)
         return await response.json()
 
     async def start_thread(self, name: str, auto_archive_duration: Optional[int], rate_limit_per_user: Optional[int]):
-        logger.debug(
+        logger.info(
             f"Starting thread for message {self.id} with name {name}, auto archive duration {auto_archive_duration or None}, ratelimit per user {rate_limit_per_user or None}.")
         response = await self.client.http.post(f"channels/{self.channel_id}/messages/{self.id}/threads", data={"name": name, "auto_archive_duration": auto_archive_duration, "rate_limit_per_user": rate_limit_per_user})
         # Cache it
@@ -241,7 +241,7 @@ class Message:
         return Thread(await response.json())
 
     async def crosspost(self):
-        logger.debug(f"Crossposting message {self.id}.")
+        logger.info(f"Crossposting message {self.id}.")
         response = await self.client.http.post(f"channels/{self.channel_id}/messages/{self.id}/crosspost")
         return await response.json()
 
@@ -330,9 +330,10 @@ class Messageable:
 
         if suppress_embeds:
             payload["suppress_embeds"] = 1 << 2
-
+        logger.info(f"Message sent with payload {payload}")
         response = await self.client.http.post(f"channels/{self.id}/messages", json=payload)
         data = await response.json()
+        
         return Message(self.client, data)
 
 
@@ -399,13 +400,15 @@ class EventHandler:
                 except AttributeError:
                     self.heartbeats = [event["d"]]
                 self.sequence = event["s"]
-            logger.debug(f"Received event {event['t']}")
+            logger.info(f"Received event {event['t']}")
         await self.handle_close()
 
     async def wait_for(self, event_name: str, *, check: Optional[Any]):
         self.wait_for_events[event_name] = check
 
     async def interaction_create(self, data):
+        logger.info("interaction create event was fired, Details: {data}")
+        
         if data.get("type") == self.PING:
             await self.client.http.post(f"/interactions/{data.get('id')}/{data.get('token')}/callback", json = {"type": self.PONG})
         
@@ -442,7 +445,7 @@ class EventHandler:
 
     async def channel_create(self, data: dict):
         
-        print("Channel Create has been called")
+        logger.info(f"Channel create event has been fired, Details: {data}")
         channel_data: dict = data.get("d")
         channel_type: str = channel_data.get("type")
         event_func = None
@@ -498,10 +501,11 @@ class EventHandler:
     
     async def message_create(self, data: dict):
         if self.events.get("message_create"):
+            logger.info(msg=f"Message event fired, details: {data}")
             message = Message(self, data)
             message.channel = Messageable(self, data.get("channel_id"))
             await self.events["message_create"](message)
-
+            
     async def guild_create(self, data):
         if not data.get("available"): # If it's not available
             self.guilds.add_to_cache(data.get("id"), UnavailableGuild(data))
@@ -530,9 +534,11 @@ class EventHandler:
         ...
 
     async def ready(self, data: dict):
+        
         self.user: ClientUser = ClientUser(self, data.get("user"))
         application_response = await self.http.get("/oauth2/applications/@me")
         application_data = await application_response.json()
+        logger.info(f"Bot ready event has been fired. Details: {application_data}")
         self.application: ClientApplication = ClientApplication(
             self.http, application_data
             )
@@ -592,27 +598,32 @@ class WebsocketClient(EventHandler):
             while True:
                 await asyncio.sleep(self.interval / 1000)
                 await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
-                logger.debug("Sent a heartbeat!")
+                logger.info("Sent a heartbeat!")
 
     async def handle_close(self):
         if self.ws.close_code == 4014:
+            logger.critical("Close Code 4014: You cannot use privelleged intents with this token, go to the developer portal and allow the privelleged intents needed")
             raise DisallowedIntents(
-                "You cannot use privellaged intents with this token, go to the developer portal and allow the privellaged intents needed.")
+                "You cannot use privelleged intents with this token, go to the developer portal and allow the privellaged intents needed.")
         elif self.ws.close_code == 4004:
+            logger.critical("Close Code 4004:The token you provided was invalid")
             raise InvalidToken("The token you provided is invalid.")
         elif self.ws.close_code == 4008:
+            logger.critical("Close Code 4008: You've been rate limited. Try again in a few minutes")
             raise Ratelimited429(
                 "You've been rate limited. Try again in a few minutes.")
         elif self.ws.close_code == 4013:
+            logger.critical("Close Code 4013: The intents you provided are invalid")
             raise InvalidIntents("The intents you provided are invalid.")
         else:
+            logger.critical(f"Connection has been closed with code {self.ws.close_code}")
             raise ClosedWebSocketConnection(f"Connection has been closed with code {self.ws.close_code}")
 
     async def send_json(self, json: dict):
         try:
             await self.ws.send_json(json)
         except:
-            logger.debug(f"Exited with code: {self.ws.close_code}")
+            logger.info(f"Exited with code: {self.ws.close_code}")
 
     async def connect(self):
         self.ws = await self.http.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json")
@@ -831,6 +842,7 @@ class ThreadMember:
 class Thread:
     def __init__(self, client, data: dict):
         super().__init__(client, data)
+        self.data:dict = data
         self.owner_id: str = data.get("owner_id")
         self.message_count: int = data.get("message_count")
         self.member_count: int = data.get("member_count")
@@ -841,44 +853,61 @@ class Thread:
 
     async def join(self):
         if self.archived:
+            logger.error(f"This thread has been archived so it is no longer joinable. Thread data:{self.data}")
             raise ThreadArchived(
                 "This thread has been archived so it is no longer joinable")
         response = await self.client.http.put(f"/channels/{self.id}/thread-members/@me")
-        return await response.json()
+        resp_json = await response.json()
+        logger.info(f"Your bot has joined a thread, Discord response:{resp_json}")
+        return resp_json
 
     async def add_member(self, member_id: str):
         if self.archived:
+            logger.error(f"This thread has been archived so it is no longer joinable. Thread data:{self.data}")
             raise ThreadArchived(
                 "This thread has been archived so it is no longer joinable")
 
         response = await self.client.http.put(f"/channels/{self.id}/thread-members/{member_id}")
-        return await response.json()
+        resp_json = await response.json()
+        logger.info(f"Your bot has added a member to the thread, Discord response:{resp_json}")
+        return resp_json()
 
     async def leave(self):
         if self.archived:
+            logger.error(f"This thread has been archived so it is no longer leaveble. Thread data:{self.data}")
             raise ThreadArchived(
                 "This thread has been archived so it is no longer leaveable")
         response = await self.client.http.delete(f"/channels/{self.id}/thread-members/@me")
-        return await response.json()
+        resp_json= await response.json()
+        logger.info(f"Your bot has left a thread, Discord response: {resp_json}")
+        return resp_json
 
     async def remove_member(self, member_id: str):
         if self.archived:
+            logger.error(f"This thread has been archived so it is no longer leaveable. Thread data:{self.data}")
             raise ThreadArchived(
                 "This thread has been archived so it is no longer leaveable")
 
         response = await self.client.http.delete(f"/channels/{self.id}/thread-members/{member_id}")
-        return await response.json()
+        resp_json = await response.json()
+        logger.info(f"Your bot has removed a person from the thread, Discord response: {resp_json}")
+        return resp_json
 
     async def fetch_member(self, member_id: str) -> ThreadMember:
         response = await self.client.http.get(f"/channels/{self.id}/thread-members/{member_id}")
         if response.status == 404:
+            logger.error(f"The member you are trying to get does not exist, Thread data:{self.data}")
             raise NotFound404(
                 "The member you are trying to fetch does not exist")
-        return ThreadMember(await response.json())
+        resp_json = await response.json()
+        logger.info(f"Successfully got the member {member_id}, Discord Response:{resp_json}")
+        return ThreadMember(resp_json)
 
     async def list_members(self) -> List[ThreadMember]:
         response = await self.client.http.get(f"/channels/{self.id}/thread-members")
-        return [ThreadMember(member) for member in await response.json()]
+        resp_json= await response.json()
+        logger.info(f"Successfully got all members of thread, Discord Response:{resp_json}")
+        return [ThreadMember(member) for member in resp_json]
 
     async def bulk_delete(self, message_ids: List[str], reason: Optional[str]) -> None:
 
@@ -887,7 +916,9 @@ class Thread:
             headers["X-Audit-Log-Reason"] = reason
 
         response = await self.client.http.post(f"channels/{self.id}/messages/bulk-delete", data={"messages": message_ids}, headers=headers)
-        return await response.json()
+        resp_json= await response.json()
+        logger.info(f"Successfully bulk-deleted messages. Discord Response:{resp_json}")
+        return resp_json
 
 
 def _get_mime_type_for_image(data: bytes):
@@ -2246,7 +2277,7 @@ class BaseInteraction:
     def is_modal_submit(self):
         return self.type == 5
 
-    async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, flags: Optional[int] = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, atachments: Optional[List[Attachment]] = None) -> None:
+    async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, flags: Optional[int] = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None):
 
         message_data = {
             "tts": tts
@@ -2262,8 +2293,8 @@ class BaseInteraction:
             message_data["flags"] = flags
         if components:
             message_data["components"] = [component.to_dict() for component in components]
-        if atachments:
-            message_data["attachments"] = [attachment.to_dict() for attachment in atachments]
+        if attachments:
+            message_data["attachments"] = [attachment.to_dict() for attachment in attachments]
 
         payload = {
             "type": 4,

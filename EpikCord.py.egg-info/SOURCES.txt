@@ -1,0 +1,9 @@
+LICENSE.txt
+README.md
+pyproject.toml
+setup.cfg
+EpikCord.py.egg-info/PKG-INFO
+EpikCord.py.egg-info/SOURCES.txt
+EpikCord.py.egg-info/dependency_links.txt
+EpikCord.py.egg-info/requires.txt
+EpikCord.py.egg-info/top_level.txt

@@ -1,5 +1,5 @@
 .vscode/
-dist/
+
 __pycache__
 testing.py
 _build

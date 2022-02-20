@@ -1,0 +1,19 @@
+name: pybuild
+on : [push]
+jobs:
+  pybuild:
+    runs-on: ubuntu-latest
+    env: 
+      name: ${{secrets.username}}
+      email: ${{secrets.useremail}}
+    steps: 
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - run: git config user.name ${{env.name}}
+      - run: git config user.email ${{env.email}}
+      - run: pip install build
+      - run: python -m build --wheel
+
+      - run: git add .
+      - run: git commit -m "pybuild - build"
+      - run: git push
