@@ -973,7 +973,7 @@ class ClientApplication(Application):
         super().__init__(data)
         self.client = client
 
-    async def fetch(self):
+    async def fetch_application(self):
         response: ClientResponse = await self.client.http.get("oauth2/applications/@me")
         data: dict = await response.json()
         return Application(data)
