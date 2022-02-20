@@ -1050,6 +1050,10 @@ class ClientApplication(Application):
         response = await self.client.http.post(f"/applications/{self.id}/guilds/{guild_id}/commands", json = payload)
         return ApplicationCommand(await response.json())
 
+    async def fetch_guild_application_command(self, guild_id: str, command_id: str):
+        response = await self.client.http.get(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}")
+        return ApplicationCommand(await response.json())
+
     async def edit_global_application_command(self, guild_id: str, command_id: str, *, name: Optional[str] = None, description: Optional[str] = None, options: Optional[List[AnyOption]] = None, default_permissions: Optional[bool] = None):
         payload = {}
         if name:
