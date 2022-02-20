@@ -1027,9 +1027,11 @@ class ClientApplication(Application):
         payload = [command.to_dict() for command in commands]
         await self.client.http.put(f"/applications/{self.id}/commands/bulk-update", json =  payload)
 
-    async def fetch_global_application_commands(self, guild_id: str):
+    async def fetch_guild_application_commands(self, guild_id: str):
         response = await self.client.http.get(f"/applications/{self.id}/guilds/{guild_id}/commands")
         return [ApplicationCommand(command) for command in await response.json()]
+
+
 
 class Attachment:
     def __init__(self, data: dict):
