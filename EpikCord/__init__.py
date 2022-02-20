@@ -988,13 +988,16 @@ class ClientApplication(Application):
         payload = {
             "name": name,
             "description": description,
+            "default_permissions": default_permission
         }
 
         if command_type not in range(1, 4):
             raise InvalidApplicationCommandType("Command type must be 1, 2, or 3.")
+
         payload["type"] = command_type
+
         for option in options:
-            if not isinstance(option, (Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption)):
+            if not isinstance(option, (Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption. AttachmentOption)):
                 raise InvalidApplicationCommandOptionType(f"Options must be of type Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption, not {option.__class__}.")
 
     
