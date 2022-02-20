@@ -1065,7 +1065,15 @@ class ClientApplication(Application):
         if default_permissions:
             payload["default_permissions"] = default_permissions
         
-        await self.client.http.patch(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}", json=payload)
+        await self.client.http.patch(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}", json = payload)
+
+    async def delete_guild_application_command(self, guild_id: str, command_id: str):
+        await self.client.http.delete(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}")
+
+    async def bulk_overwrite_global_application_commands(self, commands: List[ApplicationCommand]):
+        payload = [command.to_dict() for command in commands]
+        await self.client.http.put(f"/applications/{self.id}/commands/bulk-update", json =  payload)
+
 
 class Attachment:
     def __init__(self, data: dict):
