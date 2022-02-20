@@ -1263,7 +1263,7 @@ class HTTPClient(ClientSession):
             url = url[1:]
         res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
         headers = res.headers
-        self.ratelimit_handler(headers)
+        self.ratelimit_handler.process_headers(headers)
         return res
 
     async def post(self, url, *args, **kwargs):
@@ -1271,7 +1271,7 @@ class HTTPClient(ClientSession):
             url = url[1:]
         res = await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
         headers = res.headers
-        self.ratelimit_handler(headers)
+        self.ratelimit_handler.process_headers(headers)
         return res
 
     async def patch(self, url, *args, **kwargs):
@@ -1279,7 +1279,7 @@ class HTTPClient(ClientSession):
             url = url[1:]
         res = await super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
         headers = res.headers
-        self.ratelimit_handler(headers)
+        self.ratelimit_handler.process_headers(headers)
         return res
 
     async def delete(self, url, *args, **kwargs):
@@ -1287,7 +1287,7 @@ class HTTPClient(ClientSession):
             url = url[1:]
         res = await super().delete(f"{self.base_uri}/{url}", *args, **kwargs)
         headers = res.headers
-        self.ratelimit_handler(headers)
+        self.ratelimit_handler.process_headers(headers)
         return res
 
     async def put(self, url, *args, **kwargs):
@@ -1295,7 +1295,7 @@ class HTTPClient(ClientSession):
             url = url[1:]
         res = await super().put(f"{self.base_uri}/{url}", *args, **kwargs)
         headers = res.headers
-        self.ratelimit_handler(headers)
+        self.ratelimit_handler.process_headers(headers)
         return res
 
     async def head(self, url, *args, **kwargs):
@@ -1304,7 +1304,7 @@ class HTTPClient(ClientSession):
         res =  await super().head(f"{self.base_uri}/{url}", *args, **kwargs)
 
         headers = res.headers
-        self.ratelimit_handler(headers)
+        self.ratelimit_handler.process_headers(headers)
         return res
 
 class Section:
