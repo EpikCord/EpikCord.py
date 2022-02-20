@@ -1219,10 +1219,11 @@ class RatelimitHandler:
     A class to handle ratelimits from Discord.
     """
     def __init__(self):
-        self.lock = asyncio.Lock()
-        self.ratelimit_buckets = {}
+        self.lock: asyncio.Lock = asyncio.Lock()
+        self.ratelimit_buckets: dict = {}
+        self.ratelimited: bool = False
 
-    def process_headers(self, headers: dict):
+    async def process_headers(self, headers: dict):
         """
         Read the headers from a request and then digest it.
         """
@@ -1232,25 +1233,24 @@ class RatelimitHandler:
             "reset": int(headers["X-Ratelimit-Reset"])
         }
 
+        if headers.get("retry_after"):
+            await self.handle_ratelimit(headers)
+
     async def handle_ratelimit(self, headers: dict):
         """
         Handles ratelimits from Discord.
         """
-        if not headers.get("retry_after"):
-            return
   
+        self.ratelimited = True
         async with self.lock:
             await asyncio.sleep(headers["retry_after"])
         return
 
-    async def is_ratelimited(self, headers: dict):
+    def is_ratelimited(self) -> bool:
         """
         Checks if the client is ratelimited.
         """
-        if headers["retry_after"] == 0:
-            return False
-        return True
-
+        return self.ratelimited
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
@@ -1259,50 +1259,62 @@ class HTTPClient(ClientSession):
         self.ratelimit_handler = RatelimitHandler()
 
     async def get(self, url, *args, **kwargs):
+
         if url.startswith("/"):
             url = url[1:]
+
         res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
         headers = res.headers
-        self.ratelimit_handler.process_headers(headers)
+
+        await self.ratelimit_handler.process_headers(headers)
         return res
 
     async def post(self, url, *args, **kwargs):
+
         if url.startswith("/"):
             url = url[1:]
+
         res = await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
         headers = res.headers
         self.ratelimit_handler.process_headers(headers)
         return res
 
     async def patch(self, url, *args, **kwargs):
+
         if url.startswith("/"):
             url = url[1:]
+
         res = await super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
         headers = res.headers
         self.ratelimit_handler.process_headers(headers)
         return res
 
     async def delete(self, url, *args, **kwargs):
+
         if url.startswith("/"):
             url = url[1:]
+
         res = await super().delete(f"{self.base_uri}/{url}", *args, **kwargs)
         headers = res.headers
         self.ratelimit_handler.process_headers(headers)
         return res
 
     async def put(self, url, *args, **kwargs):
+
         if url.startswith("/"):
             url = url[1:]
+
         res = await super().put(f"{self.base_uri}/{url}", *args, **kwargs)
         headers = res.headers
         self.ratelimit_handler.process_headers(headers)
         return res
 
     async def head(self, url, *args, **kwargs):
+
         if url.startswith("/"):
             url = url[1:]
-        res =  await super().head(f"{self.base_uri}/{url}", *args, **kwargs)
 
+        res =  await super().head(f"{self.base_uri}/{url}", *args, **kwargs)
         headers = res.headers
         self.ratelimit_handler.process_headers(headers)
         return res
