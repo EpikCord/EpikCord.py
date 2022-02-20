@@ -1000,6 +1000,10 @@ class ClientApplication(Application):
             if not isinstance(option, (Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption. AttachmentOption)):
                 raise InvalidApplicationCommandOptionType(f"Options must be of type Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption, not {option.__class__}.")
 
+    async def fetch_application_command(self, command_id: str):
+        response = await self.client.http.get(f"/applications/{self.id}/commands/{command_id}")
+        return ApplicationCommand(await response.json())
+
     
 class Attachment:
     def __init__(self, data: dict):
