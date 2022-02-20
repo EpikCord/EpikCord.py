@@ -541,6 +541,9 @@ class EventHandler:
             loop.run_forever()
 
         threading._start_new_thread(heartbeater, ())
+
+        await self.client.bulk_overwrite_global_application_commands
+
         try:
             await self.events["ready"]()
         except KeyError:
