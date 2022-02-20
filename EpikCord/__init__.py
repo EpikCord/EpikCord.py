@@ -2559,9 +2559,7 @@ class SlashCommand(ApplicationCommand):
                 return AttachmentOption(option)
 
     def to_dict(self):
-        json_options = []
-        for option in self.options:
-            json_options.append(option.to_dict())
+        json_options = [option.to_dict for option in self.options]
         return {
             "name": self.name,
             "type": self.type,
