@@ -1283,7 +1283,8 @@ class HTTPClient(ClientSession):
         try:
             res = await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
         except:
-            await self.ratelimit_handler.handle_ratelimit(res.headers)
+            await self.ratelimit_handler.process_headers(res.headers)
+
         return res
 
     async def patch(self, url, *args, **kwargs):
@@ -1380,7 +1381,7 @@ class Client(WebsocketClient):
         self.guilds: GuildManager = GuildManager()
 
         self.http = HTTPClient(
-            raise_for_status = True,
+            # raise_for_status = True,
             headers = {
                 "Authorization": f"Bot {token}",
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})"
