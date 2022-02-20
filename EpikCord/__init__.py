@@ -1020,6 +1020,9 @@ class ClientApplication(Application):
         
         await self.client.http.patch(f"/applications/{self.id}/commands/{command_id}", json=payload)
 
+    async def delete_global_application_command(self, command_id: str):
+        await self.client.http.delete(f"/applications/{self.id}/commands/{command_id}")
+
 
 class Attachment:
     def __init__(self, data: dict):
