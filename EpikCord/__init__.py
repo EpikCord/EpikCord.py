@@ -1000,11 +1000,27 @@ class ClientApplication(Application):
             if not isinstance(option, (Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption. AttachmentOption)):
                 raise InvalidApplicationCommandOptionType(f"Options must be of type Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption, not {option.__class__}.")
 
+        response = await self.client.http.post(f"/applications/{self.id}/commands", json = payload)
+        return ApplicationCommand(await response.json())
+
     async def fetch_application_command(self, command_id: str):
         response = await self.client.http.get(f"/applications/{self.id}/commands/{command_id}")
         return ApplicationCommand(await response.json())
 
-    
+    async def edit_global_application_command(self, command_id: str, *, name: Optional[str] = None, description: Optional[str] = None, options: Optional[List[AnyOption]] = None, default_permissions: Optional[bool] = None):
+        payload = {}
+        if name:
+            payload["name"] = name
+        if description:
+            payload["description"] = description
+        if options:
+            payload["options"] = [option.to_dict() for option in options]
+        if default_permissions:
+            payload["default_permissions"] = default_permissions
+        
+        await self.client.http.patch(f"/applications/{self.id}/commands/{command_id}", json=payload)
+
+
 class Attachment:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
