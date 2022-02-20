@@ -2316,7 +2316,16 @@ class BaseInteraction:
         return await response.json()
 
     async def edit_reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, flags: Optional[int] = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, atachments: Optional[List[Attachment]] = None):
+        message_data = {
+            "tts": tts,
+            "content": content,
+            "embeds": [embed.to_dict() for embed in embeds],
+            "allowed_mentions": allowed_mentions.to_dict(),
+            "flags": flags,
+            "components": [component.to_dict() for component in components],
+            "attachments": [attachment.to_dict() for attachment in atachments]
 
+        }
         response = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/@original", data=message_data)
         return await response.json()
 
