@@ -975,11 +975,26 @@ class GuildApplicationCommandPermission:
         self.guild_id: str = data.get("guild_id")
         self.permissions: ApplicationCommandPermission = ApplicationCommandPermission(data.get("permissions"))
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "application_id": self.application_id,
+            "guild_id": self.guild_id,
+            "permissions": self.permissions.to_dict()
+        }
+
 class ApplicationCommandPermission:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
         self.type: int = data.get("type")
         self.permission: bool = data.get("permission")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "type": self.type,
+            "permission": self.permission
+        }
 
 class ClientApplication(Application):
     def __init__(self, client, data: dict):
@@ -1091,6 +1106,9 @@ class ClientApplication(Application):
         response = await self.client.http.get(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}/permissions")
         return [GuildApplicationCommandPermission(command) for command in await response.json()]
 
+    async def edit_application_command_permissions(self, guild_id: str, command_id, *, permissions: List[ApplicationCommandPermission]):
+        payload = [permission.to_dict() for permission in permissions]
+        await self.client.http.put(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}/permissions", json = payload)
 
 class Attachment:
     def __init__(self, data: dict):
