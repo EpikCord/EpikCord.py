@@ -1031,7 +1031,37 @@ class ClientApplication(Application):
         response = await self.client.http.get(f"/applications/{self.id}/guilds/{guild_id}/commands")
         return [ApplicationCommand(command) for command in await response.json()]
 
+    async def create_guild_application_command(self, guild_id: str, *, name: str, description: str, options: Optional[List[AnyOption]], default_permission: Optional[bool] = False, command_type: Optional[int] = 1):
+        payload = {
+            "name": name,
+            "description": description,
+            "default_permissions": default_permission
+        }
 
+        if command_type not in range(1, 4):
+            raise InvalidApplicationCommandType("Command type must be 1, 2, or 3.")
+
+        payload["type"] = command_type
+
+        for option in options:
+            if not isinstance(option, (Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption. AttachmentOption)):
+                raise InvalidApplicationCommandOptionType(f"Options must be of type Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption, not {option.__class__}.")
+
+        response = await self.client.http.post(f"/applications/{self.id}/guilds/{guild_id}/commands", json = payload)
+        return ApplicationCommand(await response.json())
+
+    async def edit_global_application_command(self, guild_id: str, command_id: str, *, name: Optional[str] = None, description: Optional[str] = None, options: Optional[List[AnyOption]] = None, default_permissions: Optional[bool] = None):
+        payload = {}
+        if name:
+            payload["name"] = name
+        if description:
+            payload["description"] = description
+        if options:
+            payload["options"] = [option.to_dict() for option in options]
+        if default_permissions:
+            payload["default_permissions"] = default_permissions
+        
+        await self.client.http.patch(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}", json=payload)
 
 class Attachment:
     def __init__(self, data: dict):
