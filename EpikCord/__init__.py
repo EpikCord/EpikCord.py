@@ -977,7 +977,7 @@ class ClientApplication(Application):
         response: ClientResponse = await self.client.http.get("oauth2/applications/@me")
         data: dict = await response.json()
         return Application(data)
-    
+
     async def fetch_global_application_commands(self) -> List[ApplicationCommand]:
         response = await self.client.http.get(f"/applications/{self.id}/commands")
         payload = [ApplicationCommand(command) for command in await response.json()]
@@ -996,6 +996,8 @@ class ClientApplication(Application):
         for option in options:
             if not isinstance(option, (Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption)):
                 raise InvalidApplicationCommandOptionType(f"Options must be of type Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption, not {option.__class__}.")
+
+    
 class Attachment:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
