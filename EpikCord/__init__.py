@@ -441,8 +441,6 @@ class EventHandler:
         await event_func(data)
 
     async def channel_create(self, data: dict):
-        
-        print("Channel Create has been called")
         channel_data: dict = data.get("d")
         channel_type: str = channel_data.get("type")
         event_func = None
