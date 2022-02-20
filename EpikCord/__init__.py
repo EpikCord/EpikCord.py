@@ -968,6 +968,19 @@ class ApplicationCommand:
         self.default_permissions: bool = data.get("default_permissions")
         self.version: str = data.get("version")
 
+class GuildApplicationCommandPermission:
+    def __init__(self, data: dict):
+        self.id: str = data.get("id")
+        self.application_id: str = data.get("application_id")
+        self.guild_id: str = data.get("guild_id")
+        self.permissions: ApplicationCommandPermission = ApplicationCommandPermission(data.get("permissions"))
+
+class ApplicationCommandPermission:
+    def __init__(self, data: dict):
+        self.id: str = data.get("id")
+        self.type: int = data.get("type")
+        self.permission: bool = data.get("permission")
+
 class ClientApplication(Application):
     def __init__(self, client, data: dict):
         super().__init__(data)
@@ -1073,6 +1086,10 @@ class ClientApplication(Application):
     async def bulk_overwrite_global_application_commands(self, commands: List[ApplicationCommand]):
         payload = [command.to_dict() for command in commands]
         await self.client.http.put(f"/applications/{self.id}/commands/bulk-update", json =  payload)
+
+    async def fetch_guild_application_command_permissions(self, guild_id: str, command_id: str):
+        response = await self.client.http.get(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}/permissions")
+        return [GuildApplicationCommandPermission(command) for command in await response.json()]
 
 
 class Attachment:
