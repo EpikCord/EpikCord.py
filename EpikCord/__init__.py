@@ -1214,15 +1214,43 @@ class TextBasedChannel(BaseChannel):
         elif self.type == 13:
             return GuildStageChannel(client, data)
 
+class RatelimitHandler:
+    """
+    A class to handle ratelimits from Discord.
+    """
+    def __init__(self):
+        self.lock = asyncio.Lock()
+
+    async def handle_ratelimit(self, ratelimit_header: dict):
+        """
+        Handles ratelimits from Discord.
+        """
+        if ratelimit_header["retry_after"] == 0:
+            return
+
+        async with self.lock:
+            await asyncio.sleep(ratelimit_header["retry_after"])
+        return
+
+    async def is_ratelimited(self, ratelimit_header: dict):
+        """
+        Checks if the client is ratelimited.
+        """
+        if ratelimit_header["retry_after"] == 0:
+            return False
+        return True
+
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.base_uri: str = "https://discord.com/api/v9"
+        self.ratelimit_handler = RatelimitHandler()
 
     async def get(self, url, *args, **kwargs):
         if url.startswith("/"):
             url = url[1:]
+        
         return await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
 
     async def post(self, url, *args, **kwargs):
@@ -2422,7 +2450,6 @@ class Invite:
             data.get("stage_instance")) if data.get("stage_instance") else None
         self.guild_scheduled_event: Optional[GuildScheduledEvent] = GuildScheduledEvent(
             data.get("guild_scheduled_event"))
-    # Dabmaster is gonna work on this
 
 
 class GuildMember:
@@ -2528,6 +2555,8 @@ class SlashCommand(ApplicationCommand):
                 return MentionableOption(option)
             elif option_type == 10:
                 return NumberOption(option)
+            elif option_type == 11:
+                return AttachmentOption(option)
 
     def to_dict(self):
         json_options = []
