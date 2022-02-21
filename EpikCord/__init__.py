@@ -1536,12 +1536,7 @@ class Client(WebsocketClient):
         self.user: ClientUser = None
         self.application: Application = None
 
-    def command(self, *,
-                name: str,
-                description: str,
-                guild_ids: Optional[List[str]] = [],
-                options: Optional[AnyOption] = []
-    ):
+    def command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
         def register_slash_command(func):
             if not description:
                 raise MissingDescription(f"You must supply a description for the command {name}.")
@@ -1553,6 +1548,36 @@ class Client(WebsocketClient):
                 "guild_ids": guild_ids,
                 "options": options,
                 "type": 1
+            })
+        return register_slash_command
+
+    def user_command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
+        def register_slash_command(func):
+            if not description:
+                raise MissingDescription(f"You must supply a description for the command {name}.")
+
+            self.commands[func.__name__] = ({
+                "callback": func,
+                "name": name,
+                "description": description,
+                "guild_ids": guild_ids,
+                "options": options,
+                "type": 2
+            })
+        return register_slash_command
+
+    def message_command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
+        def register_slash_command(func):
+            if not description:
+                raise MissingDescription(f"You must supply a description for the command {name}.")
+
+            self.commands[func.__name__] = ({
+                "callback": func,
+                "name": name,
+                "description": description,
+                "guild_ids": guild_ids,
+                "options": options,
+                "type": 3
             })
         return register_slash_command
 
