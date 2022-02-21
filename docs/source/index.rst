@@ -23,6 +23,6 @@ Getting Started
 If you're new to this library, you can get started here
 
 
-* First Steps: :ref:`index`
+* First Steps: :ref:`modindex`
 * :ref:`modindex`
 * :ref:`search`
