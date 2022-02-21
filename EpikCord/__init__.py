@@ -453,15 +453,15 @@ class EventHandler:
         if channel_type in (0, 1, 5, 6, 10, 11, 12):
             
             if event_func:
-                await event_func(TextBasedChannel(self.http, channel_data))
+                await event_func(TextBasedChannel(self, channel_data))
 
         elif channel_type == 2:
             if event_func:
-                await event_func(VoiceChannel(self.http, channel_data))
+                await event_func(VoiceChannel(self, channel_data))
         
         elif channel_type == 13:
             if event_func:
-                await event_func(GuildStageChannel(self.http, channel_data))
+                await event_func(GuildStageChannel(self, channel_data))
 
         # if channel_type in (0, 5, 6):
         #     try:
@@ -536,7 +536,7 @@ class EventHandler:
         application_response = await self.http.get("/oauth2/applications/@me")
         application_data = await application_response.json()
         self.application: ClientApplication = ClientApplication(
-            self.http, application_data
+            self, application_data
             )
 
         def heartbeater():
@@ -2592,9 +2592,9 @@ class ApplicationCommandSubcommandOption(ApplicationCommandOption):
 class ApplicationCommandInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.id: str = data.get("id")
-        self.name: str = data.get("name")
-        self.type: int = data.get("type")
+        self.id: str = self.data.get("id")
+        self.name: str = self.data.get("name")
+        self.type: int = self.data.get("type")
         # TODO: resolved attribute.
         options = []
         for option in data.get("options", []):
@@ -2669,8 +2669,7 @@ class MentionedChannel:
 class MentionedUser(User):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.member = GuildMember(client, data.get("member"))
-
+        self.member = GuildMember(client, data.get("member")) if data.get("member") else None
 
 class MessageActivity:
     def __init__(self, data: dict):
