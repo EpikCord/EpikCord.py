@@ -551,19 +551,24 @@ class EventHandler:
         }
 
         for command in self.commands:
+            command_payload = {
+                "name": command["name"],
+                "description": command["description"],
+                "options": [option.to_dict() for option in command["options"]],
+                "type": command["type"]
+            }
             if command.get("guild_id"):
                 if command_sorter.get(command["guild_id"]):
-                    command_sorter[command["guild_id"]].append(command)
+                    command_sorter[command["guild_id"]].append(command_payload)
                 else:
-                    command_sorter[command["guild_id"]] = [command]
+                    command_sorter[command["guild_id"]] = [command_payload]
             else:
-                command_sorter["global"].append(command)
+                command_sorter["global"].append(command_payload)
 
         for guild_id, commands in command_sorter.items():
 
             if guild_id == "global":
                 await self.application.bulk_overwrite_global_application_commands(commands)
-            
             else:
                 await self.bulk_overwrite_guild_commands(guild_id, commands)
 
@@ -1534,31 +1539,20 @@ class Client(WebsocketClient):
     def command(self, *,
                 name: str,
                 description: str,
-                guild_ids: Optional[List[str]],
-                options: Optional[
-                    Union[
-                        Subcommand,
-                        SubCommandGroup,
-                        StringOption,
-                        IntegerOption,
-                        BooleanOption,
-                        UserOption,
-                        ChannelOption,
-                        RoleOption,
-                        MentionableOption,
-                        NumberOption,
-                        AttachmentOption
-                    ]]
+                guild_ids: Optional[List[str]] = [],
+                options: Optional[AnyOption] = []
     ):
         def register_slash_command(func):
             if not description:
                 raise MissingDescription(f"You must supply a description for the command {name}.")
+
             self.commands[func.__name__] = ({
                 "callback": func,
                 "name": name,
                 "description": description,
                 "guild_ids": guild_ids,
-                "options": options
+                "options": options,
+                "type": 1
             })
         return register_slash_command
 
