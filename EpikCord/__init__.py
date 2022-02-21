@@ -546,7 +546,7 @@ class EventHandler:
 
         threading._start_new_thread(heartbeater, ())
 
-        await self.client.bulk_overwrite_global_application_commands
+        # await self.bulk_overwrite_global_application_commands
 
         try:
             await self.events["ready"]()
@@ -1063,7 +1063,7 @@ class ClientApplication(Application):
         response = await self.client.http.get(f"/applications/{self.id}/guilds/{guild_id}/commands")
         return [ApplicationCommand(command) for command in await response.json()]
 
-    async def create_guild_application_command(self, guild_id: str, *, name: str, description: str, options: Optional[List[AnyOption]], default_permission: Optional[bool] = False, command_type: Optional[int] = 1):
+    async def create_guild_application_command(self, guild_id: str, *, name: str, description: str, options: Optional[List[AnyOption]] = [], default_permission: Optional[bool] = False, command_type: Optional[int] = 1):
         payload = {
             "name": name,
             "description": description,
