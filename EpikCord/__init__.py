@@ -560,13 +560,17 @@ class EventHandler:
             "global": []
         }
 
+
         for command in self.commands:
             command_payload = {
                 "name": command["name"],
-                "description": command["description"],
-                "options": [option.to_dict() for option in command["options"]],
                 "type": command["type"]
             }
+
+            if command["type"] == 1:
+                command_payload["description"] = command["description"]
+                command_payload["options"] = [option.to_dict() for option in command["options"]]
+
             if command.get("guild_id"):
                 if command_sorter.get(command["guild_id"]):
                     command_sorter[command["guild_id"]].append(command_payload)
@@ -1566,7 +1570,7 @@ class Client(WebsocketClient):
             if not description:
                 raise MissingDescription(f"You must supply a description for the command {name}.")
 
-            self.commands[func.__name__] = ({
+            self.commands({
                 "callback": func,
                 "name": name,
                 "description": description,
@@ -1581,7 +1585,7 @@ class Client(WebsocketClient):
             if not description:
                 raise MissingDescription(f"You must supply a description for the command {name}.")
 
-            self.commands[func.__name__] = ({
+            self.commands.append({
                 "callback": func,
                 "name": name,
                 "description": description,
