@@ -20,7 +20,7 @@ __version__ = '0.4.10'
 
 """
 :license:
-Some parts of the code is done by discord.py and their amazing team of contributors
+Some parts of the code is sourced from discord.py
 The MIT License (MIT)
 Copyright © 2015-2021 Rapptz
 Copyright © 2021-present EpikHost
@@ -441,6 +441,7 @@ class EventHandler:
         await event_func(data)
 
     async def channel_create(self, data: dict):
+        logger.info(f"channel_create event has been fired. Details:{data}")
         channel_data: dict = data.get("d")
         channel_type: str = channel_data.get("type")
         event_func = None
@@ -495,13 +496,16 @@ class EventHandler:
 
     
     async def message_create(self, data: dict):
+        """Event fired when messages are created"""
         if self.events.get("message_create"):
+            logger.info(f"message_create event has been fired, Details: {data}")
             message = Message(self, data)
             message.channel = Messageable(self, data.get("channel_id"))
             await self.events["message_create"](message)
 
     async def guild_create(self, data):
         if not data.get("available"): # If it's not available
+            logger.info(f"guild_create event has been fired, Details: {data}")
             self.guilds.add_to_cache(data.get("id"), UnavailableGuild(data))
             return 
             # Don't call the event for an unavailable guild, users expect this to be when they join a guild, not when they get a pre-existing guild that is unavailable.
