@@ -1075,7 +1075,7 @@ class ClientApplication(Application):
         await self.client.http.delete(f"/applications/{self.id}/commands/{command_id}")
 
     async def bulk_overwrite_global_application_commands(self, commands: List[ApplicationCommand]):
-        payload = [command.to_dict() for command in commands]
+        payload = [command for command in commands]
         await self.client.http.put(f"/applications/{self.id}/commands", json =  payload)
 
     async def fetch_guild_application_commands(self, guild_id: str):
@@ -1121,9 +1121,9 @@ class ClientApplication(Application):
     async def delete_guild_application_command(self, guild_id: str, command_id: str):
         await self.client.http.delete(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}")
 
-    async def bulk_overwrite_guild_application_commands(self, commands: List[ApplicationCommand]):
-        payload = [command.to_dict() for command in commands]
-        await self.client.http.put(f"/applications/{self.id}/commands", json =  payload)
+    async def bulk_overwrite_guild_application_commands(self, guild_id: str, commands: List[ApplicationCommand]):
+        payload = [command for command in commands]
+        await self.client.http.put(f"/applications/{self.id}/guilds/{guild_id}/commands", json =  payload)
 
     async def fetch_guild_application_command_permissions(self, guild_id: str, command_id: str):
         response = await self.client.http.get(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}/permissions")
