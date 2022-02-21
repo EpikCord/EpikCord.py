@@ -406,6 +406,7 @@ class EventHandler:
         self.wait_for_events[event_name] = check
 
     async def interaction_create(self, data):
+        print(data)
         if data.get("type") == self.PING:
             await self.client.http.post(f"/interactions/{data.get('id')}/{data.get('token')}/callback", json = {"type": self.PONG})
         
@@ -1401,10 +1402,9 @@ class HTTPClient(ClientSession):
 
         if url.startswith("/"):
             url = url[1:]
-        try:
-            res = await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
-        except:
-            await self.ratelimit_handler.process_headers(res.headers)
+        res = await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
+        # except:
+        #     await self.ratelimit_handler.process_headers(res.headers)
 
         return res
 
@@ -2483,7 +2483,8 @@ class BaseInteraction:
             "data": message_data
         }
 
-        await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json = payload)
+        res = await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json = payload)
+        print(res)
 
 
     async def defer(self):
@@ -2592,9 +2593,9 @@ class ApplicationCommandSubcommandOption(ApplicationCommandOption):
 class ApplicationCommandInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.id: str = self.data.get("id")
-        self.name: str = self.data.get("name")
-        self.type: int = self.data.get("type")
+        self.command_id: str = self.data.get("id")
+        self.command_name: str = self.data.get("name")
+        self.command_type: int = self.data.get("type")
         # TODO: resolved attribute.
         options = []
         for option in data.get("options", []):
