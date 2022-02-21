@@ -1,4 +1,6 @@
 import threading
+
+from click import command
 from .managers import *
 from aiohttp import *
 import asyncio
@@ -426,7 +428,15 @@ class EventHandler:
             elif interaction_type == 5:
                 return ModalSubmitInteraction(self, data)
 
-        await event_func(figure_out_interaction_class())
+        interaction = figure_out_interaction_class()
+
+        command_exists = list(filter(lambda item: item["name"] == interaction.command_name))
+
+        if bool(command_exists): # bool(Filter) returns True every time.
+            await command_exists[0]["callback"](interaction)
+
+
+        await event_func(interaction)
 
 
     async def handle_event(self, event_name: str, data: dict):
@@ -1541,7 +1551,7 @@ class Client(WebsocketClient):
             if not description:
                 raise MissingDescription(f"You must supply a description for the command {name}.")
 
-            self.commands[func.__name__] = ({
+            self.commands.append({
                 "callback": func,
                 "name": name,
                 "description": description,
