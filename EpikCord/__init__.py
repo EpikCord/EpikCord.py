@@ -562,7 +562,7 @@ class EventHandler:
         for guild_id, commands in command_sorter.items():
 
             if guild_id == "global":
-                await self.application.bulk_overwrite_commands(commands)
+                await self.application.bulk_overwrite_global_application_commands(commands)
             
             else:
                 await self.bulk_overwrite_guild_commands(guild_id, commands)
@@ -2501,8 +2501,7 @@ class BaseInteraction:
             "data": message_data
         }
 
-        res = await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json = payload)
-        print(res)
+        await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json = payload)
 
 
     async def defer(self):
