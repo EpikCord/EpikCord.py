@@ -406,7 +406,6 @@ class EventHandler:
         self.wait_for_events[event_name] = check
 
     async def interaction_create(self, data):
-        print(data)
         if data.get("type") == self.PING:
             await self.client.http.post(f"/interactions/{data.get('id')}/{data.get('token')}/callback", json = {"type": self.PONG})
         
@@ -547,7 +546,26 @@ class EventHandler:
 
         threading._start_new_thread(heartbeater, ())
 
-        # await self.bulk_overwrite_global_application_commands
+        command_sorter = {
+            "global": []
+        }
+
+        for command in self.commands:
+            if command.get("guild_id"):
+                if command_sorter.get(command["guild_id"]):
+                    command_sorter[command["guild_id"]].append(command)
+                else:
+                    command_sorter[command["guild_id"]] = [command]
+            else:
+                command_sorter["global"].append(command)
+
+        for guild_id, commands in command_sorter.items():
+
+            if guild_id == "global":
+                await self.application.bulk_overwrite_commands(commands)
+            
+            else:
+                await self.bulk_overwrite_guild_commands()
 
         try:
             await self.events["ready"]()
@@ -1102,10 +1120,6 @@ class ClientApplication(Application):
 
     async def delete_guild_application_command(self, guild_id: str, command_id: str):
         await self.client.http.delete(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}")
-
-    async def bulk_overwrite_global_application_commands(self, commands: List[ApplicationCommand]):
-        payload = [command.to_dict() for command in commands]
-        await self.client.http.put(f"/applications/{self.id}/commands/bulk-update", json =  payload)
 
     async def fetch_guild_application_command_permissions(self, guild_id: str, command_id: str):
         response = await self.client.http.get(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}/permissions")
