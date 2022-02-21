@@ -15,12 +15,12 @@ from typing import Union
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
 logger = getLogger(__name__)
-__version__ = '0.4.10'
+__version__ = '0.4.11'
 
 
 """
 :license:
-Some parts of the code is done by discord.py and their amazing team of contributors
+Some parts of the code is sourced from discord.py
 The MIT License (MIT)
 Copyright © 2015-2021 Rapptz
 Copyright © 2021-present EpikHost
@@ -441,6 +441,7 @@ class EventHandler:
         await event_func(data)
 
     async def channel_create(self, data: dict):
+        logger.info(f"channel_create event has been fired. Details:{data}")
         channel_data: dict = data.get("d")
         channel_type: str = channel_data.get("type")
         event_func = None
@@ -495,13 +496,16 @@ class EventHandler:
 
     
     async def message_create(self, data: dict):
+        """Event fired when messages are created"""
         if self.events.get("message_create"):
+            logger.info(f"message_create event has been fired, Details: {data}")
             message = Message(self, data)
             message.channel = Messageable(self, data.get("channel_id"))
             await self.events["message_create"](message)
 
     async def guild_create(self, data):
         if not data.get("available"): # If it's not available
+            logger.info(f"guild_create event has been fired, Details: {data}")
             self.guilds.add_to_cache(data.get("id"), UnavailableGuild(data))
             return 
             # Don't call the event for an unavailable guild, users expect this to be when they join a guild, not when they get a pre-existing guild that is unavailable.
@@ -2455,7 +2459,7 @@ class BaseInteraction:
     def is_modal_submit(self):
         return self.type == 5
 
-    async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, flags: Optional[int] = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, atachments: Optional[List[Attachment]] = None) -> None:
+    async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, flags: Optional[int] = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None) -> None:
 
         message_data = {
             "tts": tts
@@ -2471,8 +2475,8 @@ class BaseInteraction:
             message_data["flags"] = flags
         if components:
             message_data["components"] = [component.to_dict() for component in components]
-        if atachments:
-            message_data["attachments"] = [attachment.to_dict() for attachment in atachments]
+        if attachments:
+            message_data["attachments"] = [attachment.to_dict() for attachment in attachments]
 
         payload = {
             "type": 4,
@@ -2493,7 +2497,7 @@ class BaseInteraction:
         response = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/messages/@original")
         return await response.json()
 
-    async def edit_reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, flags: Optional[int] = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, atachments: Optional[List[Attachment]] = None):
+    async def edit_reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, flags: Optional[int] = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None):
 
         message_data = {
             "tts": tts
@@ -2509,8 +2513,8 @@ class BaseInteraction:
             message_data["flags"] = flags
         if components:
             message_data["components"] = [component.to_dict() for component in components]
-        if atachments:
-            message_data["attachments"] = [attachment.to_dict() for attachment in atachments]
+        if attachments:
+            message_data["attachments"] = [attachment.to_dict() for attachment in attachments]
 
 
         response = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/@original", json = payload)
