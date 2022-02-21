@@ -565,7 +565,7 @@ class EventHandler:
                 await self.application.bulk_overwrite_commands(commands)
             
             else:
-                await self.bulk_overwrite_guild_commands()
+                await self.bulk_overwrite_guild_commands(guild_id, commands)
 
         try:
             await self.events["ready"]()
