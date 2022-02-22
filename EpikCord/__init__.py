@@ -2345,7 +2345,7 @@ class ThreadArchived(Exception):
     ...
 
 
-class WelcomeChannel:
+class WelcomeScreenChannel:
     def __init__(self, data: dict):
         self.channel_id: str = data.get("channel_id")
         self.description: str = data.get("description")
