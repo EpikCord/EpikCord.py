@@ -2373,6 +2373,21 @@ class GuildPreview:
         self.approximate_presence_count: int = data.get("approximate_presence_count")
         self.sticekrs: List[Sticker] = [Sticker(sticker) for sticker in data.get("stickers", [])]
 
+class GuildWidgetSettings:
+    def __init__(self, data: dict):
+        self.enabled: bool = data.get("enabled")
+        self.channel_id: Optional[str] = data.get("channel_id")
+
+class GuildWidget:
+    def __init__(self, data: dict):
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+        self.instant_invite: str = data.get("instant_invite")
+        self.channels: List[GuildChannel] = [GuildChannel(channel) for channel in data.get("channels", [])]
+        self.users: List[User] = [User(user) for user in data.get("memebers", [])]
+        self.presence_count: int = data.get("presence_count")
+
+
 class GuildScheduledEvent:
     def __init__(self, client: Client, data: dict):
         self.id: str = data.get("id")
@@ -2391,6 +2406,28 @@ class GuildScheduledEvent:
         self.entity_metadata: dict = data.get("entity_metadata")
         self.creator: Optional[User] = User(data.get("creator"))
         self.user_count: Optional[int] = data.get("user_count")
+
+class IntegrationAccount:
+    def __init__(self, data: dict):
+        self.id: str = daat.get("id")
+        self.name: str = data.get("name")
+
+class Integration:
+    def __init__(self, data: dict):
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+        self.type: str = data.get("type")
+        self.enabled: bool = data.get("enabled")
+        self.syncing: Optional[bool] = data.get("syncing")
+        self.role_id: Optional[str] = data.get("role_id")
+        self.expire_behavior: str = "REMOVE_ROLE" if data.get("expire_behavior") == 1 else "REMOVE_ACCOUNT" if data.get("expire_behavior") == 2 else None
+        self.expire_grace_period: Optional[int] = data.get("expire_grace_period")
+        self.user: Optional[User] = User(data.get("user")) if data.get("user") else None
+        self.account: IntegrationAccount = IntegrationAccount(data.get("account"))
+        self.synced_at: datetime.datetime = datatiem.datetime.fromioformat(data.get("synced_at"))
+        self.subscriber_count: int = data.get("subscriber_count")
+        self.revoked: bool = data.get("revoked")
+        self.application: Optional[Application] = Application(data.get("application")) if data.get("application") else None
 
 class Guild:
     def __init__(self, client: Client, data: dict):
