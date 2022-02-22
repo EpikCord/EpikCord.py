@@ -2362,7 +2362,16 @@ class WelcomeScreen:
 
 class GuildPreview:
     def __init__(self, data: dict):
-        ...
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+        self.icon: Optional[str] = data.get("icon")
+        self.splash: Optional[str] = data.get("splash")
+        self.discovery_splash: Optional[str] = data.get("discovery_splash")
+        self.emojis: List[Emoji] = [Emoji(emoji) for emoji in data.get("emojis", [])]
+        self.features: List[str] = data.get("features")
+        self.approximate_member_count: int = data.get("approximate_member_count")
+        self.approximate_presence_count: int = data.get("approximate_presence_count")
+        self.sticekrs: List[Sticker] = [Sticker(sticker) for sticker in data.get("stickers", [])]
 
 class GuildScheduledEvent:
     def __init__(self, client: Client, data: dict):
