@@ -29,8 +29,8 @@ The third line sets the logger to only report warnings higher or similar than DE
 The fourth line sets an log handler which reports the logs to a specific filename
 
 The fifth line sets the formatter:
-* The Formatter sets the format of the logs that get written to the log file.
-* The format given above is the most recommended format
+*. The Formatter sets the format of the logs that get written to the log file.
+*. The format given above is the most recommended format
 
 The 6th line sets the handler
 
