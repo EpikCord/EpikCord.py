@@ -2358,8 +2358,11 @@ class WelcomeChannel:
 class WelcomeScreen:
     def __init__(self, data: dict):
         self.description: Optional[str] = data.get("description")
-        self.welcome_channels: List[WelcomeChannel] = [WelcomeChannel(
-            welcome_channel) for welcome_channel in data.get("welcome_channels")]
+        self.welcome_channels: List[WelcomeChannel] = [WelcomeChannel(welcome_channel) for welcome_channel in data.get("welcome_channels")]
+
+class GuildPreview:
+    def __init__(self, data: dict):
+        ...
 
 class GuildScheduledEvent:
     def __init__(self, client: Client, data: dict):

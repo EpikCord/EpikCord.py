@@ -15,5 +15,11 @@ class GuildManager(CacheManager):
             self.cache[guild.id] = guild
 
     async def fetch(self, guild_id: str, *, skip_cache: Optional[bool] = False, with_counts: Optional[bool] = False):
-        if skip_cache:
-            res = await self.client.http.get(f"/guilds/{guild_id}")
+
+        if guild_id in self.cache and not skip_cache:
+            return self.cache[guild_id]
+
+        if with_counts:
+            return Guild(self.client, await self.client.http.get(f"/guilds/{guild_id}?with_counts=true"))
+        return Guild(self.client, await self.client.http.get(f"/guilds/{guild_id}"))
+        # TODO: This might not work...
