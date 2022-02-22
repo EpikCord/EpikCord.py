@@ -1547,6 +1547,7 @@ class Client(WebsocketClient):
 
         self.user: ClientUser = None
         self.application: Application = None
+        self.sections: List[Section] = []
 
     def command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
         def register_slash_command(func):
@@ -1601,7 +1602,8 @@ class Client(WebsocketClient):
             self.commands[name] = command_object
 
         for event_name, event_func in section.events:
-            self.events[event_name.lower().replace("on_")] = event_func
+            self.events[event_name.lower()] = event_func
+        self.sections.append(section)
 
         # Successfully extracted all the valuable stuff from the section
 # class ClientGuildMember(Member):
@@ -2356,7 +2358,7 @@ class WelcomeScreenChannel:
 class WelcomeScreen:
     def __init__(self, data: dict):
         self.description: Optional[str] = data.get("description")
-        self.welcome_channels: List[WelcomeChannel] = [WelcomeChannel(welcome_channel) for welcome_channel in data.get("welcome_channels")]
+        self.welcome_channels: List[WelcomeScreenChannel] = [WelcomeScreenChannel(welcome_channel) for welcome_channel in data.get("welcome_channels")]
 
 class GuildPreview:
     def __init__(self, data: dict):
