@@ -6,6 +6,7 @@ Logging is a very useful feature for debugging. It is also a way to "log" your b
 Here is a simple example to implement logging:
 
 .. code-block:: python
+
     import logging
     logger = logging.getLogger('EpikCord')
     logger.setLevel(logging.DEBUG)
