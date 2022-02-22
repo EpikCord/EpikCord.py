@@ -1,6 +1,4 @@
 import threading
-
-from click import command
 from .managers import *
 from aiohttp import *
 import asyncio
@@ -2409,8 +2407,13 @@ class GuildScheduledEvent:
 
 class IntegrationAccount:
     def __init__(self, data: dict):
-        self.id: str = daat.get("id")
+        self.id: str = data.get("id")
         self.name: str = data.get("name")
+
+class GuildBan:
+    def __init__(self, data: dict):
+        self.reason: Optional[str] = data.get("reason")
+        self.user: User = User(data.get("user"))
 
 class Integration:
     def __init__(self, data: dict):
@@ -2424,7 +2427,7 @@ class Integration:
         self.expire_grace_period: Optional[int] = data.get("expire_grace_period")
         self.user: Optional[User] = User(data.get("user")) if data.get("user") else None
         self.account: IntegrationAccount = IntegrationAccount(data.get("account"))
-        self.synced_at: datetime.datetime = datatiem.datetime.fromioformat(data.get("synced_at"))
+        self.synced_at: datetime.datetime = datetime.datetime.fromioformat(data.get("synced_at"))
         self.subscriber_count: int = data.get("subscriber_count")
         self.revoked: bool = data.get("revoked")
         self.application: Optional[Application] = Application(data.get("application")) if data.get("application") else None
