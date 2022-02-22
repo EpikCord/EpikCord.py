@@ -2226,9 +2226,8 @@ class Emoji:
         self.client = client
         self.id: Optional[str] = data.get("id")
         self.name: Optional[str] = data.get("name")
-        self.roles: List[Role] = [Role(role) for role in data.get("roles")]
-        self.user: Optional[User] = User(
-            data.get("user")) if "user" in data else None
+        self.roles: List[Role] = [Role(role) for role in data.get("roles", [])]
+        self.user: Optional[User] = User(data.get("user")) if "user" in data else None
         self.requires_colons: bool = data.get("require_colons")
         self.guild_id: str = data.get("guild_id")
         self.managed: bool = data.get("managed")
