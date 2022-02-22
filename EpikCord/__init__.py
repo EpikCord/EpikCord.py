@@ -2434,6 +2434,46 @@ class Integration:
         self.revoked: bool = data.get("revoked")
         self.application: Optional[Application] = Application(data.get("application")) if data.get("application") else None
 
+def _figure_out_channel_type(client, channel):
+    channel_type = channel["type"]
+    if channel_type == 0:
+        return GuildTextChannel(client, channel)
+    elif channel_type == 1:
+        return DMChannel(client, channel)
+    elif channel_type == 2:
+        return VoiceChannel(client, channel)
+    elif channel_type == 4:
+        return ChannelCategory(client, channel)
+    elif channel_type == 5:
+        return GuildNewsChannel(client, channel)
+    elif channel_type == 6:
+        return GuildStoreChannel(client, channel)
+    elif channel_type == 10:
+        return GuildNewsThread(client, channel)
+    elif  channel_type in (11, 12):
+        return Thread(client, channel)
+    elif channel_type == 13:
+        return GuildStageChannel(client, channel)
+class SystemChannelFlags:
+    def __init__(self, *, value: Optional[int] = None):
+        self.value: int = value
+
+    @property
+    def suppress_join_notifications(self):
+        self.value += 1 << 0
+    
+    @property
+    def suppress_premium_subscriptions(self):
+        self.value += 1 << 1
+    
+    @property
+    def suppress_guild_reminder_notifications(self):
+        self.value += 1 << 2
+
+    @property
+    def supporess_join_notification_replies(self):
+        self.value += 1 << 3
+
 class Guild:
     def __init__(self, client: Client, data: dict):
         self.client = client
@@ -2486,7 +2526,162 @@ class Guild:
         self.stickers: Optional[StickerItem] = StickerItem(data.get("stickers")) if data.get("stickers") else None
         self.guild_schedulded_events: List[GuildScheduldedEvent] = [GuildScheduldedEvent(event) for event in data.get("guild_schedulded_events", [])]
 
+    async def edit(self, *, name: Optional[str] = None, verification_level: Optional[int] = None, default_message_notifications: Optional[int] = None, explicit_content_filter: Optional[int] = None, afk_channel_id: Optional[str] = None, afk_timeout: Optional[int] = None, owner_id: Optional[str] = None, system_channel_id: Optional[str] = None, system_channel_flags: Optional[SystemChannelFlags] = None, rules_channel_id: Optional[str] = None, preferred_locale: Optional[str] = None, features: Optional[List[str]] = None, description: Optional[str] = None, premium_progress_bar_enabled: Optional[bool] = None, reason: Optional[str] = None) -> Guild:
+        """Edits the guild.
 
+        Parameters
+        ----------
+        name: Optional[str]
+            The name of the guild.
+        verification_level: Optional[int]
+            The verification level of the guild.
+        default_message_notifications: Optional[int]
+            The default message notifications of the guild.
+        explicit_content_filter: Optional[int]
+            The explicit content filter of the guild.
+        afk_channel_id: Optional[str]
+            The afk channel id of the guild.
+        afk_timeout: Optional[int]
+            The afk timeout of the guild.
+        owner_id: Optional[str]
+            The owner id of the guild.
+        system_channel_id: Optional[str]
+            The system channel id of the guild.
+        system_channel_flags: Optional[SystemChannelFlags]
+            The system channel flags of the guild.
+        rules_channel_id: Optional[str]
+            The rules channel id of the guild.
+        preferred_locale: Optional[str]
+            The preferred locale of the guild.
+        features: Optional[List[str]]
+            The features of the guild.
+        description: Optional[str]
+            The description of the guild.
+        premium_progress_bar_enabled: Optional[bool]
+            Whether the guild has the premium progress bar enabled.
+        """
+        data = {}
+        if name is not None:
+            data["name"] = name
+        if verification_level is not None:
+            data["verification_level"] = verification_level
+        if default_message_notifications is not None:
+            data["default_message_notifications"] = default_message_notifications
+        if explicit_content_filter is not None:
+            data["explicit_content_filter"] = explicit_content_filter
+        if afk_channel_id is not None:
+            data["afk_channel_id"] = afk_channel_id
+        if afk_timeout is not None:
+            data["afk_timeout"] = afk_timeout
+        if owner_id is not None:
+            data["owner_id"] = owner_id
+        if system_channel_id is not None:
+            data["system_channel_id"] = system_channel_id.value
+        if system_channel_flags is not None:
+            data["system_channel_flags"] = system_channel_flags
+        if rules_channel_id is not None:
+            data["rules_channel_id"] = rules_channel_id
+        if preferred_locale is not None:
+            data["preferred_locale"] = preferred_locale
+        if features is not None:
+            data["features"] = features
+        if description is not None:
+            data["description"] = description
+        if premium_progress_bar_enabled is not None:
+            data["premium_progress_bar_enabled"] = premium_progress_bar_enabled
+        
+        headers = self.client.http.headers.copy()
+        if reason:
+            headers["X-Audit-Log-Reason"] = reason
+        return Guild(await self.client.http.patch(f"/guilds/{self.id}", json=data, headers=headers))
+    
+    async def fetch_guild_preview(self) -> GuildPreview:
+        """Fetches the guild preview.
+
+        Returns
+        -------
+        GuildPreview
+            The guild preview.
+        """
+        if getattr(self, "preview"):
+            return self.preview
+
+        preview = GuildPreview(await self.client.http.get(f"/guilds/{self.id}/preview"))
+        return preview
+    
+    async def delete(self):
+        await self.client.http.delete(f"/guilds/{self.id}")
+    
+    async def fetch_channels(self) -> List[GuildChannel]:
+        """Fetches the guild channels.
+
+        Returns
+        -------
+        List[GuildChannel]
+            The guild channels.
+        """
+        channels = await self.client.http.get(f"/guilds/{self.id}/channels")
+        return_channels = []
+        for channel in channels:
+            return_channels.append(_figure_out_channel_type(channel))
+        
+        return return_channels
+    
+    async def create_channel(self, *, name: str, reason: Optional[str] = None, type: Optional[int] = None, topic: Optional[str] = None, bitrate: Optional[int] = None, user_limit: Optional[int] = None, rate_limit_per_user: Optional[int] = None, position: Optional[int] = None, permission_overwrites: List[Optional[Overwrite]] = None, parent_id: Optional[str] = None, nsfw: Optional[bool] = None):
+        """Creates a channel.
+
+        Parameters
+        ----------
+        name: str
+            The name of the channel.
+        reason: Optional[str]
+            The reason for creating the channel.
+        type: Optional[int]
+            The type of the channel.
+        topic: Optional[str]
+            The topic of the channel.
+        bitrate: Optional[int]
+            The bitrate of the channel.
+        user_limit: Optional[int]
+            The user limit of the channel.
+        rate_limit_per_user: Optional[int]
+            The rate limit per user of the channel.
+        position: Optional[int]
+            The position of the channel.
+        permission_overwrites: List[Optional[Overwrite]]
+            The permission overwrites of the channel.
+        parent_id: Optional[str]
+            The parent id of the channel.
+        nsfw: Optional[bool]
+            Whether the channel is nsfw.
+        """
+        data = {}
+        if name is not None:
+            data["name"] = name
+        if type is not None:
+            data["type"] = type
+        if topic is not None:
+            data["topic"] = topic
+        if bitrate is not None:
+            data["bitrate"] = bitrate
+        if user_limit is not None:
+            data["user_limit"] = user_limit
+        if rate_limit_per_user is not None:
+            data["rate_limit_per_user"] = rate_limit_per_user
+        if position is not None:
+            data["position"] = position
+        if permission_overwrites is not None:
+            data["permission_overwrites"] = permission_overwrites
+        if parent_id is not None:
+            data["parent_id"] = parent_id
+        if nsfw is not None:
+            data["nsfw"] = nsfw
+        
+        headers = self.client.http.headers.copy()
+        if reason:
+            headers["X-Audit-Log-Reason"] = reason
+
+        return _figure_out_channel_type(await self.client.http.post(f"/guilds/{self.id}/channels", json=data, headers=headers))
 
 class WebhookUser:
     def __init__(self, data: dict):
