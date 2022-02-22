@@ -9,6 +9,7 @@ Welcome to EpikCord.py's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+   logging
 
 EpikCord.py is a Pythonic API wrapper for Discord. The main target is to make it very easy to create discord bots.
 
@@ -23,6 +24,6 @@ Getting Started
 If you're new to this library, you can get started here
 
 
-* First Steps: :ref:`modindex`
+* First Steps: :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
