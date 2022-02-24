@@ -71,7 +71,7 @@ class Status:
 
 
 class Activity:
-    """This is a class represantation of an discord activity
+    """This is a class representation of an discord activity
     :param: name"""
     def __init__(self, *, name: str, type: int, url: Optional[str] = None):
         self.name = name
