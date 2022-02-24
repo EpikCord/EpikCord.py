@@ -71,6 +71,8 @@ class Status:
 
 
 class Activity:
+    """This is a class represantation of an discord activity
+    :param: name"""
     def __init__(self, *, name: str, type: int, url: Optional[str] = None):
         self.name = name
         self.type = type
@@ -2384,7 +2386,7 @@ class GuildWidget:
         self.name: str = data.get("name")
         self.instant_invite: str = data.get("instant_invite")
         self.channels: List[GuildChannel] = [GuildChannel(channel) for channel in data.get("channels", [])]
-        self.users: List[User] = [User(user) for user in data.get("memebers", [])]
+        self.users: List[User] = [User(user) for user in data.get("members", [])]
         self.presence_count: int = data.get("presence_count")
 
 
