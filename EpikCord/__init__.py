@@ -71,14 +71,24 @@ class Status:
 
 
 class Activity:
-    """This is a class representation of an discord activity
-    :param: name"""
+    """_summary_
+    Represents an Discord Activity object.
+    :param name: The name of the activity.
+    :param type: The type of the activity.
+    :param url: The url of the activity (if its a stream).
+    
+    """
     def __init__(self, *, name: str, type: int, url: Optional[str] = None):
         self.name = name
         self.type = type
         self.url = url
 
     def to_dict(self):
+        """Returns activity class as dict
+
+        Returns:
+            dict: returns :class:`dict` of :class:`activity`
+        """
         return {
             "name": self.name,
             "type": self.type,
@@ -87,6 +97,7 @@ class Activity:
 
 
 class UnavailableGuild:
+
     def __init__(self, data):
         self.data = data
         self.id: str = data.get("id")
@@ -120,6 +131,18 @@ class Reaction:
 
 
 class Message:
+    """Represents a Discord message.
+    
+    Attributes
+    ----------
+    id : str
+        The message ID.
+    channel_id : str
+        The channel ID the message was sent in.
+    author : :class:`User`
+        The author of the message 
+    guild_id: str
+        The Guild ID the message was sent in"""
     def __init__(self, client, data: dict):
         self.client = client
         self.id: str = data.get("id")
@@ -2486,7 +2509,7 @@ class Guild:
         self.nsfw_level: int = data.get("nsfw_level")
         self.stage_instances: List[GuildStageChannel] = [GuildStageChannel(channel) for channel in data.get("stage_instances")]
         self.stickers: Optional[StickerItem] = StickerItem(data.get("stickers")) if data.get("stickers") else None
-        self.guild_schedulded_events: List[GuildScheduldedEvent] = [GuildScheduldedEvent(event) for event in data.get("guild_schedulded_events", [])]
+        self.guild_schedulded_events: List[GuildScheduledEvent] = [GuildScheduledEvent(event) for event in data.get("guild_schedulded_events", [])]
 
 
 
