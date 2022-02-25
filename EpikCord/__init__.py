@@ -3511,7 +3511,7 @@ class Paginator:
         self.pages.append(page)
 
     def remove_page(self, page: Embed):
-        self.pages = filter(lambda embed: embed != page, self.pages)
+        self.pages = len(filter(lambda embed: embed != page, self.pages))
 
     def current(self) -> Embed:
         return self.pages[self.current_index] 
