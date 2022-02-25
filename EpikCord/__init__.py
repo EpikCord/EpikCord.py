@@ -608,7 +608,7 @@ class EventHandler:
             if guild_id == "global":
                 await self.application.bulk_overwrite_global_application_commands(commands)
             else:
-                await self.bulk_overwrite_guild_commands(guild_id, commands)
+                await self.bulk_overwrite_guild_application_commands(guild_id, commands)
 
         try:
             await self.events["ready"]()
@@ -2890,6 +2890,34 @@ class ApplicationCommandSubcommandOption(ApplicationCommandOption):
         super().__init__(data)
         self.options: List[ApplicationCommandOption] = [ApplicationCommandOption(option) for option in data.get("options", [])]
 
+class ApplicationCommandOptionResolver:
+    def __init__(self, options: List[AnyOption]):
+
+        options = []
+        for option in options:
+            if not option.get("options"):
+                options.append(ApplicationCommandOption(option))
+            else:
+                options.append(ApplicationCommandSubcommandOption(option))
+        self.options: Optional[List[AnyOption]] = options
+
+    def get_string_option(self, name: str) -> Optional[str]:
+        return list(filter(lambda option: option.name == name, self.options))[0].value if len(filter(lambda option: option.name == name, self.options)) else None
+    
+    def get_subcommand_option(self, name: str) -> Optional[ApplicationCommandSubcommandOption]:
+        return list(filter(lambda option: option.name == name, self.options))[0] if len(filter(lambda option: option.name == name, self.options)) else None
+
+    def get_subcommand_group_option(self, name: str) -> Optional[ApplicationCommandSubcommandOption]:
+        return list(filter(lambda option: option.name == name, self.options))[0] if len(filter(lambda option: option.name == name, self.options)) else None
+
+    def get_int_option(self, name: str) -> Optional[int]:
+        return list(filter(lambda option: option.name == name, self.options))[0].value if len(filter(lambda option: option.name == name, self.options)) else None
+    
+    def get_bool_option(self, name: str) -> Optional[bool]:
+        return list(filter(lambda option: option.name == name, self.options))[0].value if len(filter(lambda option: option.name == name, self.options)) else None
+
+    
+
 class ApplicationCommandInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
@@ -2897,14 +2925,7 @@ class ApplicationCommandInteraction(BaseInteraction):
         self.command_name: str = self.data.get("name")
         self.command_type: int = self.data.get("type")
         # TODO: resolved attribute.
-        options = []
-        for option in data.get("options", []):
-            if not option.get("options"):
-                options.append(ApplicationCommandOption(option))
-            else:
-                options.append(ApplicationCommandSubcommandOption(option))
-        self.options: Optional[List[Union[ApplicationCommandOption, ApplicationCommandSubcommandOption]]] = options
-
+        self.options = ApplicationCommandOptionResolver(self.data.get("options"))
 class UserCommandInteraction(ApplicationCommandInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
