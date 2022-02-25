@@ -1,5 +1,5 @@
 :orphan:
-.. versionadded : 0.4.5
+.. versionadded : 0.4.5:
 .. _logging_setup:
 
 
