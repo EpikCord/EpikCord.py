@@ -450,6 +450,7 @@ class EventHandler:
                 return AutoCompleteInteraction(self, data)
             elif interaction_type == 5:
                 return ModalSubmitInteraction(self, data)
+            
 
         interaction = figure_out_interaction_class()
 
@@ -1547,8 +1548,6 @@ class Section:
             }
         return register_slash_command
 
-class MissingDescription(Exception):
-    ...
 
 class MissingClientSetting(Exception):
     ...
@@ -1577,8 +1576,6 @@ class Client(WebsocketClient):
 
     def command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
         def register_slash_command(func):
-            if not description:
-                raise MissingDescription(f"You must supply a description for the command {name}.")
 
             self.commands.append({
                 "callback": func,
@@ -1590,32 +1587,25 @@ class Client(WebsocketClient):
             })
         return register_slash_command
 
-    def user_command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
+    def user_command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = []):
         def register_slash_command(func):
-            if not description:
-                raise MissingDescription(f"You must supply a description for the command {name}.")
-
-            self.commands({
+            self.commands.append({
                 "callback": func,
                 "name": name,
                 "description": description,
                 "guild_ids": guild_ids,
-                "options": options,
                 "type": 2
             })
         return register_slash_command
 
-    def message_command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
+    def message_command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = []):
         def register_slash_command(func):
-            if not description:
-                raise MissingDescription(f"You must supply a description for the command {name}.")
 
             self.commands.append({
                 "callback": func,
                 "name": name,
                 "description": description,
                 "guild_ids": guild_ids,
-                "options": options,
                 "type": 3
             })
         return register_slash_command
@@ -2552,7 +2542,7 @@ class Guild:
         self.stickers: Optional[StickerItem] = StickerItem(data.get("stickers")) if data.get("stickers") else None
         self.guild_schedulded_events: List[GuildScheduledEvent] = [GuildScheduledEvent(event) for event in data.get("guild_schedulded_events", [])]
 
-    async def edit(self, *, name: Optional[str] = None, verification_level: Optional[int] = None, default_message_notifications: Optional[int] = None, explicit_content_filter: Optional[int] = None, afk_channel_id: Optional[str] = None, afk_timeout: Optional[int] = None, owner_id: Optional[str] = None, system_channel_id: Optional[str] = None, system_channel_flags: Optional[SystemChannelFlags] = None, rules_channel_id: Optional[str] = None, preferred_locale: Optional[str] = None, features: Optional[List[str]] = None, description: Optional[str] = None, premium_progress_bar_enabled: Optional[bool] = None, reason: Optional[str] = None) -> Guild:
+    async def edit(self, *, name: Optional[str] = None, verification_level: Optional[int] = None, default_message_notifications: Optional[int] = None, explicit_content_filter: Optional[int] = None, afk_channel_id: Optional[str] = None, afk_timeout: Optional[int] = None, owner_id: Optional[str] = None, system_channel_id: Optional[str] = None, system_channel_flags: Optional[SystemChannelFlags] = None, rules_channel_id: Optional[str] = None, preferred_locale: Optional[str] = None, features: Optional[List[str]] = None, description: Optional[str] = None, premium_progress_bar_enabled: Optional[bool] = None, reason: Optional[str] = None):
         """Edits the guild.
 
         Parameters
@@ -2585,6 +2575,10 @@ class Guild:
             The description of the guild.
         premium_progress_bar_enabled: Optional[bool]
             Whether the guild has the premium progress bar enabled.
+        
+        Returns
+        -------
+        :class:`EpikCord.Guild`
         """
         data = {}
         if name is not None:
