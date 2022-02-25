@@ -1182,6 +1182,7 @@ class Attachment:
         self.description: Optional[str] = data.get("description")
         self.content_type: Optional[str] = data.get("content_type")
         self.size: int = data.get("size")
+        self.url: str = data.get("url")
         self.proxy_url: str = data.get("proxy_url")
         self.width: Optional[int] = data.get("width")
         self.height: Optional[int] = data.get("height")
