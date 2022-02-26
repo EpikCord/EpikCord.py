@@ -2890,25 +2890,38 @@ class ApplicationCommandSubcommandOption(ApplicationCommandOption):
         super().__init__(data)
         self.options: List[ApplicationCommandOption] = [ApplicationCommandOption(option) for option in data.get("options", [])]
 
+class ReceivedSlashCommandOption:
+    def __init__(self, option: dict):
+        self.name: str = option.get("name")
+        self.value: Optional[Union[str, int, float]] = option.get("value")
+
 class ApplicationCommandOptionResolver:
     def __init__(self, options: List[AnyOption]):
 
         options = []
         for option in options:
             if not option.get("options"):
-                options.append(ApplicationCommandOption(option))
+                options.append(ReceivedSlashCommandOption(option))
             else:
                 options.append(ApplicationCommandSubcommandOption(option))
         self.options: Optional[List[AnyOption]] = options
 
     def get_string_option(self, name: str) -> Optional[str]:
-        return list(filter(lambda option: option.name == name, self.options))[0].value if len(filter(lambda option: option.name == name, self.options)) else None
-    
-    def get_subcommand_option(self, name: str) -> Optional[ApplicationCommandSubcommandOption]:
-        return list(filter(lambda option: option.name == name, self.options))[0] if len(filter(lambda option: option.name == name, self.options)) else None
+        filter_object = filter(lambda option: option.name == name, self.options)
+        option = list(filter_object)
+        if bool(option):
+            return str(option[0].value)
 
-    def get_subcommand_group_option(self, name: str) -> Optional[ApplicationCommandSubcommandOption]:
-        return list(filter(lambda option: option.name == name, self.options))[0] if len(filter(lambda option: option.name == name, self.options)) else None
+
+    # def get_subcommand_option(self, name: str) -> Optional[ApplicationCommandSubcommandOption]:
+    #     filter_object = filter(lambda option: option.name == name, self.options)
+    #     option = list(filter_object)
+    #     if bool(option):
+    #         return 
+
+    # def get_subcommand_group_option(self, name: str) -> Optional[ApplicationCommandSubcommandOption]:
+    #     return list(filter(lambda option: option.name == name, self.options))[0] if len(filter(lambda option: option.name == name, self.options)) else None
+
 
     def get_int_option(self, name: str) -> Optional[int]:
         return list(filter(lambda option: option.name == name, self.options))[0].value if len(filter(lambda option: option.name == name, self.options)) else None
@@ -2926,6 +2939,7 @@ class ApplicationCommandInteraction(BaseInteraction):
         self.command_type: int = self.data.get("type")
         # TODO: resolved attribute.
         self.options = ApplicationCommandOptionResolver(self.data.get("options"))
+
 class UserCommandInteraction(ApplicationCommandInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
@@ -2933,8 +2947,6 @@ class UserCommandInteraction(ApplicationCommandInteraction):
 
 class MessageCommandInteraction(UserCommandInteraction):
     ... # Literally the same thing.
-
-
 
 class Invite:
     def __init__(self, data: dict):
