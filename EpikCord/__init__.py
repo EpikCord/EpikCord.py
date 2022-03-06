@@ -474,7 +474,6 @@ class EventHandler:
         await event_func(data)
 
     async def channel_create(self, data: dict):
-        logger.info(f"channel_create event has been fired. Details:{data}")
         channel_type: str = data.get("type")
         event_func = None
         try:
@@ -485,15 +484,15 @@ class EventHandler:
         if channel_type in (0, 1, 5, 6, 10, 11, 12):
             
             if event_func:
-                await event_func(TextBasedChannel(self, channel_data))
+                await event_func(TextBasedChannel(self, data))
 
         elif channel_type == 2:
             if event_func:
-                await event_func(VoiceChannel(self, channel_data))
+                await event_func(VoiceChannel(self, data))
         
         elif channel_type == 13:
             if event_func:
-                await event_func(GuildStageChannel(self, channel_data))
+                await event_func(GuildStageChannel(self, data))
 
         # if channel_type in (0, 5, 6):
         #     try:

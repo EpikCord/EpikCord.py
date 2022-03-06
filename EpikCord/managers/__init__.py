@@ -11,5 +11,4 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 from .cachemanager import *
 from .guildsmanager import *
-from .interaction_option_resolver import *
 from .rolemanager import *
