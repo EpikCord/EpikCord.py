@@ -475,8 +475,7 @@ class EventHandler:
 
     async def channel_create(self, data: dict):
         logger.info(f"channel_create event has been fired. Details:{data}")
-        channel_data: dict = data.get("d")
-        channel_type: str = channel_data.get("type")
+        channel_type: str = data.get("type")
         event_func = None
         try:
             event_func = self.events["channel_create"]
@@ -2928,7 +2927,14 @@ class ApplicationCommandOptionResolver:
     def get_bool_option(self, name: str) -> Optional[bool]:
         return list(filter(lambda option: option.name == name, self.options))[0].value if len(filter(lambda option: option.name == name, self.options)) else None
 
-    
+class ResolvedDataHandler:
+    def __init__(self, client, resolved_data: dict):
+        self.data: dict = resolved_data # In case we miss anything and people can just do it themselves
+        self.users: dict = [User(client, user) for user in self.data.get("users", [])]
+
+        self.members: dict = [GuildMember()]
+        self.roles: dict = self.data["roles"]
+        self.channels: dict = self.data["channels"]
 
 class ApplicationCommandInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
@@ -2936,7 +2942,7 @@ class ApplicationCommandInteraction(BaseInteraction):
         self.command_id: str = self.data.get("id")
         self.command_name: str = self.data.get("name")
         self.command_type: int = self.data.get("type")
-        # TODO: resolved attribute.
+        self.resolved: ResolvedDataHandler(client, data.get("resolved", {}))
         self.options = ApplicationCommandOptionResolver(self.data.get("options"))
 
 class UserCommandInteraction(ApplicationCommandInteraction):
