@@ -10,7 +10,6 @@ from typing import *
 from urllib.parse import quote
 import io
 import os
-from typing import Union
 
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
@@ -2060,20 +2059,20 @@ class MessageActionRow:
 
 class Embed:  # Always wanted to make this class :D
     def __init__(self, *,
-                 title: Optional[str] = None,
-                 description: Optional[str] = None,
-                 color: Optional[Colour] = None,
-                 video: Optional[dict] = None,
-                 timestamp: Optional[datetime.datetime] = None,
-                 colour: Optional[Colour] = None,
-                 url: Optional[str] = None,
-                 type: Optional[int] = None,
-                 footer: Optional[dict] = None,
-                 image: Optional[dict] = None,
-                 thumbnail: Optional[dict] = None,
-                 provider: Optional[dict] = None,
-                 author: Optional[dict] = None,
-                 fields: Optional[List[dict]] = None,
+        title: Optional[str] = None,
+        description: Optional[str] = None,
+        color: Optional[Colour] = None,
+        video: Optional[dict] = None,
+        timestamp: Optional[datetime.datetime] = None,
+        colour: Optional[Colour] = None,
+        url: Optional[str] = None,
+        type: Optional[int] = None,
+        footer: Optional[dict] = None,
+        image: Optional[dict] = None,
+        thumbnail: Optional[dict] = None,
+        provider: Optional[dict] = None,
+        author: Optional[dict] = None,
+        fields: Optional[List[dict]] = None,
                  ):
         self.type: int = type
         self.title: Optional[str] = title
