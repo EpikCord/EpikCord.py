@@ -1,4 +1,17 @@
-<p align="center"><img src=./assets/EpikCord.png alt=EpikCord Logo align=center></p>
+<p align="center"><img src=./assets/EpikCord.png alt=EpikCord Logo align=center>
+</p>
+
+[![Documentation Status](https://readthedocs.org/projects/epikcordpy/badge/?version=latest&style=for-the-badge)](https://epikcordpy.readthedocs.io/en/latest/?badge=latest)
+![Python Minimum Version](https://img.shields.io/badge/python-3.8|3.9|3.10-red?style=for-the-badge)
+![PyPI page](https://img.shields.io/badge/PYPI-0.4.11-blue?style=for-the-badge)
+<a href="https://discord.gg/4R473R73kQ" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.shields.io/discord/937364424208039957?color=9cf&logo=discord&label=discord&style=for-the-badge" alt="Discord server">
+</a>
+<img src="https://img.shields.io/badge/Maintained-YES-brightgreen?style=for-the-badge">
+
+
+
+
 # EpikCord.py
 
 This is an API Wrapper for Discord's API for Python!
