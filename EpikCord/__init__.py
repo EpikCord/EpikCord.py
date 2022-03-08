@@ -526,6 +526,8 @@ class EventHandler:
         # elif channel_type in (10, 11, 12)
 
     
+    
+
     async def message_create(self, data: dict):
         """Event fired when messages are created"""
         if self.events.get("message_create"):
