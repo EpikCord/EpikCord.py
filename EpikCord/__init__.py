@@ -1370,32 +1370,36 @@ class GuildStageChannel(BaseChannel):
         self.privacy_level: int = data.get("privacy_level")
         self.discoverable_disabled: bool = data.get("discoverable_disabled")
 
-class TextBasedChannel(BaseChannel):
+class TextBasedChannel:
     def __init__(self, client, data: dict):
-        super().__init__(data)
+        self.client = client
+        self.data: dict = data
+
+    def to_type(self):
         if self.type == 0:
-            return GuildTextChannel(client, data)
+            return GuildTextChannel(self.client, self.data)
 
         elif self.type == 1:
-            return DMChannel(data)
+            return DMChannel(self.client, self.data)
 
         elif self.type == 4:
-            return ChannelCategory(client, data)
+            return ChannelCategory(self.client, self.data)
 
         elif self.type == 5:
-            return GuildNewsChannel(client, data)
+            return GuildNewsChannel(self.client, self.data)
 
         elif self.type == 6:
-            return GuildStoreChannel(client, data)
+            return GuildStoreChannel(self.client, self.data)
 
         elif self.type == 10:
-            return GuildNewsThread(client, data)
+            return GuildNewsThread(self.client, self.data)
 
         elif self.type == 11 or self.type == 12:
-            return Thread(client, data)
+            return Thread(self.client, self.data)
 
         elif self.type == 13:
-            return GuildStageChannel(client, data)
+            return GuildStageChannel(self.client, self.data)
+
 
 class RatelimitHandler:
     """
