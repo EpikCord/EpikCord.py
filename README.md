@@ -1,5 +1,6 @@
-<img src=./assets/EpikCord.png alt=EpikCord Logo align=center>
-Welcome to EpikCord.py!
+<p align="center"><img src=./assets/EpikCord.png alt=EpikCord Logo align=center></p>
+# EpikCord.py
+
 This is an API Wrapper for Discord's API for Python!
 We've decided not to fork discord.py and start completely from scratch for a new, better structuring system!
 
