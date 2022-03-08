@@ -4,3 +4,4 @@ __pycache__
 testing.py
 _build
 bin
+config.json

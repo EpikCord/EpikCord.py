@@ -10,7 +10,6 @@ from typing import *
 from urllib.parse import quote
 import io
 import os
-from typing import Union
 
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
@@ -450,6 +449,7 @@ class EventHandler:
                 return AutoCompleteInteraction(self, data)
             elif interaction_type == 5:
                 return ModalSubmitInteraction(self, data)
+            
 
         interaction = figure_out_interaction_class()
 
@@ -475,8 +475,7 @@ class EventHandler:
 
     async def channel_create(self, data: dict):
         logger.info(f"channel_create event has been fired. Details:{data}")
-        channel_data: dict = data.get("d")
-        channel_type: str = channel_data.get("type")
+        channel_type: str = data.get("type")
         event_func = None
         try:
             event_func = self.events["channel_create"]
@@ -607,7 +606,7 @@ class EventHandler:
             if guild_id == "global":
                 await self.application.bulk_overwrite_global_application_commands(commands)
             else:
-                await self.bulk_overwrite_guild_commands(guild_id, commands)
+                await self.bulk_overwrite_guild_application_commands(guild_id, commands)
 
         try:
             await self.events["ready"]()
@@ -1182,6 +1181,7 @@ class Attachment:
         self.description: Optional[str] = data.get("description")
         self.content_type: Optional[str] = data.get("content_type")
         self.size: int = data.get("size")
+        self.url: str = data.get("url")
         self.proxy_url: str = data.get("proxy_url")
         self.width: Optional[int] = data.get("width")
         self.height: Optional[int] = data.get("height")
@@ -1546,8 +1546,6 @@ class Section:
             }
         return register_slash_command
 
-class MissingDescription(Exception):
-    ...
 
 class MissingClientSetting(Exception):
     ...
@@ -1576,8 +1574,6 @@ class Client(WebsocketClient):
 
     def command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
         def register_slash_command(func):
-            if not description:
-                raise MissingDescription(f"You must supply a description for the command {name}.")
 
             self.commands.append({
                 "callback": func,
@@ -1589,32 +1585,25 @@ class Client(WebsocketClient):
             })
         return register_slash_command
 
-    def user_command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
+    def user_command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = []):
         def register_slash_command(func):
-            if not description:
-                raise MissingDescription(f"You must supply a description for the command {name}.")
-
-            self.commands({
+            self.commands.append({
                 "callback": func,
                 "name": name,
                 "description": description,
                 "guild_ids": guild_ids,
-                "options": options,
                 "type": 2
             })
         return register_slash_command
 
-    def message_command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
+    def message_command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = []):
         def register_slash_command(func):
-            if not description:
-                raise MissingDescription(f"You must supply a description for the command {name}.")
 
             self.commands.append({
                 "callback": func,
                 "name": name,
                 "description": description,
                 "guild_ids": guild_ids,
-                "options": options,
                 "type": 3
             })
         return register_slash_command
@@ -2069,20 +2058,20 @@ class MessageActionRow:
 
 class Embed:  # Always wanted to make this class :D
     def __init__(self, *,
-                 title: Optional[str] = None,
-                 description: Optional[str] = None,
-                 color: Optional[Colour] = None,
-                 video: Optional[dict] = None,
-                 timestamp: Optional[datetime.datetime] = None,
-                 colour: Optional[Colour] = None,
-                 url: Optional[str] = None,
-                 type: Optional[int] = None,
-                 footer: Optional[dict] = None,
-                 image: Optional[dict] = None,
-                 thumbnail: Optional[dict] = None,
-                 provider: Optional[dict] = None,
-                 author: Optional[dict] = None,
-                 fields: Optional[List[dict]] = None,
+        title: Optional[str] = None,
+        description: Optional[str] = None,
+        color: Optional[Colour] = None,
+        video: Optional[dict] = None,
+        timestamp: Optional[datetime.datetime] = None,
+        colour: Optional[Colour] = None,
+        url: Optional[str] = None,
+        type: Optional[int] = None,
+        footer: Optional[dict] = None,
+        image: Optional[dict] = None,
+        thumbnail: Optional[dict] = None,
+        provider: Optional[dict] = None,
+        author: Optional[dict] = None,
+        fields: Optional[List[dict]] = None,
                  ):
         self.type: int = type
         self.title: Optional[str] = title
@@ -2459,6 +2448,46 @@ class Integration:
         self.revoked: bool = data.get("revoked")
         self.application: Optional[Application] = Application(data.get("application")) if data.get("application") else None
 
+def _figure_out_channel_type(client, channel):
+    channel_type = channel["type"]
+    if channel_type == 0:
+        return GuildTextChannel(client, channel)
+    elif channel_type == 1:
+        return DMChannel(client, channel)
+    elif channel_type == 2:
+        return VoiceChannel(client, channel)
+    elif channel_type == 4:
+        return ChannelCategory(client, channel)
+    elif channel_type == 5:
+        return GuildNewsChannel(client, channel)
+    elif channel_type == 6:
+        return GuildStoreChannel(client, channel)
+    elif channel_type == 10:
+        return GuildNewsThread(client, channel)
+    elif  channel_type in (11, 12):
+        return Thread(client, channel)
+    elif channel_type == 13:
+        return GuildStageChannel(client, channel)
+class SystemChannelFlags:
+    def __init__(self, *, value: Optional[int] = None):
+        self.value: int = value
+
+    @property
+    def suppress_join_notifications(self):
+        self.value += 1 << 0
+    
+    @property
+    def suppress_premium_subscriptions(self):
+        self.value += 1 << 1
+    
+    @property
+    def suppress_guild_reminder_notifications(self):
+        self.value += 1 << 2
+
+    @property
+    def supporess_join_notification_replies(self):
+        self.value += 1 << 3
+
 class Guild:
     def __init__(self, client: Client, data: dict):
         self.client = client
@@ -2511,7 +2540,166 @@ class Guild:
         self.stickers: Optional[StickerItem] = StickerItem(data.get("stickers")) if data.get("stickers") else None
         self.guild_schedulded_events: List[GuildScheduledEvent] = [GuildScheduledEvent(event) for event in data.get("guild_schedulded_events", [])]
 
+    async def edit(self, *, name: Optional[str] = None, verification_level: Optional[int] = None, default_message_notifications: Optional[int] = None, explicit_content_filter: Optional[int] = None, afk_channel_id: Optional[str] = None, afk_timeout: Optional[int] = None, owner_id: Optional[str] = None, system_channel_id: Optional[str] = None, system_channel_flags: Optional[SystemChannelFlags] = None, rules_channel_id: Optional[str] = None, preferred_locale: Optional[str] = None, features: Optional[List[str]] = None, description: Optional[str] = None, premium_progress_bar_enabled: Optional[bool] = None, reason: Optional[str] = None):
+        """Edits the guild.
 
+        Parameters
+        ----------
+        name: Optional[str]
+            The name of the guild.
+        verification_level: Optional[int]
+            The verification level of the guild.
+        default_message_notifications: Optional[int]
+            The default message notifications of the guild.
+        explicit_content_filter: Optional[int]
+            The explicit content filter of the guild.
+        afk_channel_id: Optional[str]
+            The afk channel id of the guild.
+        afk_timeout: Optional[int]
+            The afk timeout of the guild.
+        owner_id: Optional[str]
+            The owner id of the guild.
+        system_channel_id: Optional[str]
+            The system channel id of the guild.
+        system_channel_flags: Optional[SystemChannelFlags]
+            The system channel flags of the guild.
+        rules_channel_id: Optional[str]
+            The rules channel id of the guild.
+        preferred_locale: Optional[str]
+            The preferred locale of the guild.
+        features: Optional[List[str]]
+            The features of the guild.
+        description: Optional[str]
+            The description of the guild.
+        premium_progress_bar_enabled: Optional[bool]
+            Whether the guild has the premium progress bar enabled.
+        
+        Returns
+        -------
+        :class:`EpikCord.Guild`
+        """
+        data = {}
+        if name is not None:
+            data["name"] = name
+        if verification_level is not None:
+            data["verification_level"] = verification_level
+        if default_message_notifications is not None:
+            data["default_message_notifications"] = default_message_notifications
+        if explicit_content_filter is not None:
+            data["explicit_content_filter"] = explicit_content_filter
+        if afk_channel_id is not None:
+            data["afk_channel_id"] = afk_channel_id
+        if afk_timeout is not None:
+            data["afk_timeout"] = afk_timeout
+        if owner_id is not None:
+            data["owner_id"] = owner_id
+        if system_channel_id is not None:
+            data["system_channel_id"] = system_channel_id.value
+        if system_channel_flags is not None:
+            data["system_channel_flags"] = system_channel_flags
+        if rules_channel_id is not None:
+            data["rules_channel_id"] = rules_channel_id
+        if preferred_locale is not None:
+            data["preferred_locale"] = preferred_locale
+        if features is not None:
+            data["features"] = features
+        if description is not None:
+            data["description"] = description
+        if premium_progress_bar_enabled is not None:
+            data["premium_progress_bar_enabled"] = premium_progress_bar_enabled
+        
+        headers = self.client.http.headers.copy()
+        if reason:
+            headers["X-Audit-Log-Reason"] = reason
+        return Guild(await self.client.http.patch(f"/guilds/{self.id}", json=data, headers=headers))
+    
+    async def fetch_guild_preview(self) -> GuildPreview:
+        """Fetches the guild preview.
+
+        Returns
+        -------
+        GuildPreview
+            The guild preview.
+        """
+        if getattr(self, "preview"):
+            return self.preview
+
+        preview = GuildPreview(await self.client.http.get(f"/guilds/{self.id}/preview"))
+        return preview
+    
+    async def delete(self):
+        await self.client.http.delete(f"/guilds/{self.id}")
+    
+    async def fetch_channels(self) -> List[GuildChannel]:
+        """Fetches the guild channels.
+
+        Returns
+        -------
+        List[GuildChannel]
+            The guild channels.
+        """
+        channels = await self.client.http.get(f"/guilds/{self.id}/channels")
+        return_channels = []
+        for channel in channels:
+            return_channels.append(_figure_out_channel_type(channel))
+        
+        return return_channels
+    
+    async def create_channel(self, *, name: str, reason: Optional[str] = None, type: Optional[int] = None, topic: Optional[str] = None, bitrate: Optional[int] = None, user_limit: Optional[int] = None, rate_limit_per_user: Optional[int] = None, position: Optional[int] = None, permission_overwrites: List[Optional[Overwrite]] = None, parent_id: Optional[str] = None, nsfw: Optional[bool] = None):
+        """Creates a channel.
+
+        Parameters
+        ----------
+        name: str
+            The name of the channel.
+        reason: Optional[str]
+            The reason for creating the channel.
+        type: Optional[int]
+            The type of the channel.
+        topic: Optional[str]
+            The topic of the channel.
+        bitrate: Optional[int]
+            The bitrate of the channel.
+        user_limit: Optional[int]
+            The user limit of the channel.
+        rate_limit_per_user: Optional[int]
+            The rate limit per user of the channel.
+        position: Optional[int]
+            The position of the channel.
+        permission_overwrites: List[Optional[Overwrite]]
+            The permission overwrites of the channel.
+        parent_id: Optional[str]
+            The parent id of the channel.
+        nsfw: Optional[bool]
+            Whether the channel is nsfw.
+        """
+        data = {}
+        if name is not None:
+            data["name"] = name
+        if type is not None:
+            data["type"] = type
+        if topic is not None:
+            data["topic"] = topic
+        if bitrate is not None:
+            data["bitrate"] = bitrate
+        if user_limit is not None:
+            data["user_limit"] = user_limit
+        if rate_limit_per_user is not None:
+            data["rate_limit_per_user"] = rate_limit_per_user
+        if position is not None:
+            data["position"] = position
+        if permission_overwrites is not None:
+            data["permission_overwrites"] = permission_overwrites
+        if parent_id is not None:
+            data["parent_id"] = parent_id
+        if nsfw is not None:
+            data["nsfw"] = nsfw
+        
+        headers = self.client.http.headers.copy()
+        if reason:
+            headers["X-Audit-Log-Reason"] = reason
+
+        return _figure_out_channel_type(await self.client.http.post(f"/guilds/{self.id}/channels", json=data, headers=headers))
 
 class WebhookUser:
     def __init__(self, data: dict):
@@ -2700,20 +2888,62 @@ class ApplicationCommandSubcommandOption(ApplicationCommandOption):
         super().__init__(data)
         self.options: List[ApplicationCommandOption] = [ApplicationCommandOption(option) for option in data.get("options", [])]
 
+class ReceivedSlashCommandOption:
+    def __init__(self, option: dict):
+        self.name: str = option.get("name")
+        self.value: Optional[Union[str, int, float]] = option.get("value")
+
+class ApplicationCommandOptionResolver:
+    def __init__(self, options: List[AnyOption]):
+
+        options = []
+        for option in options:
+            if not option.get("options"):
+                options.append(ReceivedSlashCommandOption(option))
+            else:
+                options.append(ApplicationCommandSubcommandOption(option))
+        self.options: Optional[List[AnyOption]] = options
+
+    def get_string_option(self, name: str) -> Optional[str]:
+        filter_object = filter(lambda option: option.name == name, self.options)
+        option = list(filter_object)
+        if bool(option):
+            return str(option[0].value)
+
+
+    # def get_subcommand_option(self, name: str) -> Optional[ApplicationCommandSubcommandOption]:
+    #     filter_object = filter(lambda option: option.name == name, self.options)
+    #     option = list(filter_object)
+    #     if bool(option):
+    #         return 
+
+    # def get_subcommand_group_option(self, name: str) -> Optional[ApplicationCommandSubcommandOption]:
+    #     return list(filter(lambda option: option.name == name, self.options))[0] if len(filter(lambda option: option.name == name, self.options)) else None
+
+
+    def get_int_option(self, name: str) -> Optional[int]:
+        return list(filter(lambda option: option.name == name, self.options))[0].value if len(filter(lambda option: option.name == name, self.options)) else None
+    
+    def get_bool_option(self, name: str) -> Optional[bool]:
+        return list(filter(lambda option: option.name == name, self.options))[0].value if len(filter(lambda option: option.name == name, self.options)) else None
+
+class ResolvedDataHandler:
+    def __init__(self, client, resolved_data: dict):
+        self.data: dict = resolved_data # In case we miss anything and people can just do it themselves
+        self.users: dict = [User(client, user) for user in self.data.get("users", [])]
+
+        self.members: dict = [GuildMember()]
+        self.roles: dict = self.data["roles"]
+        self.channels: dict = self.data["channels"]
+
 class ApplicationCommandInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
         self.command_id: str = self.data.get("id")
         self.command_name: str = self.data.get("name")
         self.command_type: int = self.data.get("type")
-        # TODO: resolved attribute.
-        options = []
-        for option in data.get("options", []):
-            if not option.get("options"):
-                options.append(ApplicationCommandOption(option))
-            else:
-                options.append(ApplicationCommandSubcommandOption(option))
-        self.options: Optional[List[Union[ApplicationCommandOption, ApplicationCommandSubcommandOption]]] = options
+        self.resolved: ResolvedDataHandler(client, data.get("resolved", {}))
+        self.options = ApplicationCommandOptionResolver(self.data.get("options"))
 
 class UserCommandInteraction(ApplicationCommandInteraction):
     def __init__(self, client, data: dict):
@@ -2722,8 +2952,6 @@ class UserCommandInteraction(ApplicationCommandInteraction):
 
 class MessageCommandInteraction(UserCommandInteraction):
     ... # Literally the same thing.
-
-
 
 class Invite:
     def __init__(self, data: dict):
@@ -3341,7 +3569,7 @@ class Paginator:
         self.pages.append(page)
 
     def remove_page(self, page: Embed):
-        self.pages = filter(lambda embed: embed != page, self.pages)
+        self.pages = len(filter(lambda embed: embed != page, self.pages))
 
     def current(self) -> Embed:
         return self.pages[self.current_index] 
