@@ -1553,12 +1553,12 @@ class MissingClientSetting(Exception):
 
 class Client(WebsocketClient):
 
-    def __init__(self, token: str, intents: int = 0):
+    def __init__(self, token: str, intents: int = 0,*,owner_ids:Optional[List[int]]):
         super().__init__(token, intents)
 
         self.commands: List[dict] = [] # TODO: Need to change this to a Class Later
         self.guilds: GuildManager = GuildManager(self)
-
+        self.owner_ids = owner_ids or None
         self.http = HTTPClient(
             # raise_for_status = True,
             headers = {
@@ -1571,6 +1571,12 @@ class Client(WebsocketClient):
         self.user: ClientUser = None
         self.application: Application = None
         self.sections: List[Section] = []
+
+    def is_owner(self) -> List:
+        owner_ids = self.owner_ids if self.owner_ids is not None else []
+        #idea from discord.py
+        #TODO: #96 implement commands.checks
+        return owner_ids
 
     def command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
         def register_slash_command(func):
