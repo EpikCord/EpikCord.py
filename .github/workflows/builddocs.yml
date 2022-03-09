@@ -31,7 +31,7 @@ jobs:
           pip install -U -r requirements.txt
       - name: Build distributions
         run: |
-          python ./setup.cfg sdist bdist_wheel
+          python ./setup_legacy.py sdist bdist_wheel
       # - name: Upload artifacts
       #   uses: actions/upload-artifact@v2
       #   with:
