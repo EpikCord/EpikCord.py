@@ -4,7 +4,7 @@ name: build
 on:
   push:
   pull_request:
-    types: [opened, syncronize]
+    types: [opened, synchronize]
   
 jobs:
   dist-and-docs:
