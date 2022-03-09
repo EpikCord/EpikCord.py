@@ -40,7 +40,7 @@ jobs:
 
       - name: Install package
         run: |
-          pip install -e .[docs,speed,voice]
+          pip install -e .[docs,voice]
       - name: Build docs
         shell: bash
         run: |

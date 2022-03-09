@@ -1,6 +1,9 @@
 from distutils.core import setup
 packagePartsReq = {
-  "voice": ["PyNaCl"] #one part is enough for now
+  "voice": ["PyNaCl"],
+  "docs": ['sphinx==4.4.0',
+        'sphinxcontrib_trio==1.1.2',
+        'sphinxcontrib-websupport'] #one part is enough for now
 }
 
 with open("requirements.txt") as req:
