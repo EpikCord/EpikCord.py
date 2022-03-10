@@ -47,5 +47,5 @@ jobs:
           cd docs
           EXIT_STATUS=0
           # Build English docs
-          sphinx-build -b html -D language=en -a -n -T -W --keep-going . _build_en || EXIT_STATUS=$?
+          sphinx-build -b html -D language=en -a -n -T -W --keep-going . build || EXIT_STATUS=$?
           
