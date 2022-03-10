@@ -51,7 +51,7 @@ class ShellHandler:
                         #set up listener 
                         
 
-    def Communicate(self, communication):
+    async def Communicate(self, communication):
         outs, errs = await self.proc.communicate(communication)
         try:
             outs = str(outs)
