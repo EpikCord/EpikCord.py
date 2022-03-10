@@ -1,4 +1,9 @@
-from .channel import GuildChannel, WelcomeScreen, GuildStageChannel, _figure_out_channel_type
+import imp
+
+
+import datetime
+from .application import Application
+from .channel import GuildChannel, WelcomeScreen, GuildStageChannel, _figure_out_channel_type, Overwrite
 from .client import Client
 from .emoji import Emoji 
 from .guild import GuildPreview
@@ -6,16 +11,9 @@ from .role import Role
 from .sticker import StickerItem, Sticker
 from .thread import Thread
 from .member import GuildMember, User
-from .ext.flags import SystemChannelFlags
+from .ext import SystemChannelFlags
 from typing import Optional, List
 
-
-class Overwrite:
-    def __init__(self, data: dict):
-        self.id: str = data.get("id")
-        self.type: int = data.get("type")
-        self.allow: str = data.get("allow")
-        self.deny: str = data.get("deny")
 
 class Guild:
     def __init__(self, client: Client, data: dict):
@@ -298,3 +296,25 @@ class PartialGuild:
         self.name: str = data.get("name")
         self.permissions: int = int(data.get("permissions"))
         self.features: List[str] = data.get("features")
+
+class IntegrationAccount:
+    def __init__(self, data: dict):
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+
+class Integration:
+    def __init__(self, data: dict):
+        self.id: str = data.get("id")
+        self.name: str = data.get("name")
+        self.type: str = data.get("type")
+        self.enabled: bool = data.get("enabled")
+        self.syncing: Optional[bool] = data.get("syncing")
+        self.role_id: Optional[str] = data.get("role_id")
+        self.expire_behavior: str = "REMOVE_ROLE" if data.get("expire_behavior") == 1 else "REMOVE_ACCOUNT" if data.get("expire_behavior") == 2 else None
+        self.expire_grace_period: Optional[int] = data.get("expire_grace_period")
+        self.user: Optional[User] = User(data.get("user")) if data.get("user") else None
+        self.account: IntegrationAccount = IntegrationAccount(data.get("account"))
+        self.synced_at: datetime.datetime = datetime.datetime.fromioformat(data.get("synced_at"))
+        self.subscriber_count: int = data.get("subscriber_count")
+        self.revoked: bool = data.get("revoked")
+        self.application: Optional[Application] = Application(data.get("application")) if data.get("application") else None
