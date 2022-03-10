@@ -1,6 +1,8 @@
 from .embed import Embed
+from .file import Attachment
 from .member import GuildMember, User
-from .ext.components import MessageButton, MessageSelectMenu, MessageTextInput
+from .slash import SlashCommandOptionChoice, AnyOption
+from .ext import MessageButton, MessageSelectMenu, MessageTextInput, MessageSelectMenuOption
 from typing import Optional, List, Union
 
 class BaseInteraction:
@@ -89,7 +91,7 @@ class BaseInteraction:
             message_data["attachments"] = [attachment.to_dict() for attachment in attachments]
 
 
-        response = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/@original", json = payload)
+        response = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/@original", json = message_data)
         return await response.json()
 
     async def delete_reply(self):
