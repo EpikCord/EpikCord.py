@@ -1,11 +1,24 @@
 from .application import Application
 from .errors import InvalidArgumentType
 from .http import WebsocketClient, HTTPClient
-from .slash import AnyOption
+from .slash import (
+    AnyOption, 
+    Subcommand, 
+    SubCommandGroup, 
+    StringOption, 
+    BooleanOption, 
+    IntegerOption, 
+    UserOption, 
+    ChannelOption, 
+    RoleOption, 
+    MentionableOption, 
+    NumberOption
+)
 from .member import ClientUser
+from .utils import Utils
 from .managers.guilds_manager import GuildManager
 from EpikCord import __version__
-from typing import Optional, List
+from typing import Optional, List, Union
 
 
 class Status:
@@ -48,6 +61,26 @@ class Activity:
         }
 
 
+class Section:
+    def __init__(self):
+        self.commands = {}
+        self.events = {}
+
+    def event(self, event_name: str):
+        def register_event(func):
+            self.events[event_name] = func
+        return register_event
+
+    def slash_command(self, *, name: str, description: Optional[str], options: List[Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]]):
+        def register_slash_command(func):
+            self.commands[name] = {
+                "callback": func,
+                "name": name,
+                "description": description,
+                "options": options
+            }
+        return register_slash_command
+
 
 class Client(WebsocketClient):
     def __init__(self, token: str, intents: int = 0):
@@ -68,6 +101,7 @@ class Client(WebsocketClient):
         self.user: ClientUser = None
         self.application: Application = None
         self.sections: List[Section] = []
+        self.utils = Utils(self)
 
     def command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
         def register_slash_command(func):
