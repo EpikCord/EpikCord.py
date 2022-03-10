@@ -1,5 +1,4 @@
-from ..__init__ import Guild
-from typing import List
+from ..guild import Guild
 
 class RoleManager:
     def __init__(self, guild: Guild):
