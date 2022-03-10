@@ -1,4 +1,3 @@
-import imp
 from .channel import SourceChannel
 from .guild import PartialGuild
 from .member import User
