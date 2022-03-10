@@ -3,7 +3,7 @@ from typing import (
     Union,
     Optional
 )
-from .cachemanager import CacheManager
+from .cache_manager import CacheManager
 from ..__init__ import Guild, UnavailableGuild
 
 
