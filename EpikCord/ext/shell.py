@@ -47,12 +47,12 @@ class ShellHandler:
                 for owner in owners:
                     if resp.member.id == owner:
                         self.sequence.append(resp.content)
-                        self.proc = subprocess.Popen(self.sequence)
+                        self.proc = await asyncio.create_subprocess_exec(self.sequence)
                         #set up listener 
                         
 
     def Communicate(self, communication):
-        outs, errs = self.proc.communicate(communication)
+        outs, errs = await self.proc.communicate(communication)
         try:
             outs = str(outs)
             errs = str(errs)
