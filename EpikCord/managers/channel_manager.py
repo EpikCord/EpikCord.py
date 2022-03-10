@@ -1,9 +1,21 @@
 from typing import (
     Union,
-    List
+    List, 
+    Optional
 )
 from .cache_manager import CacheManager
-from ..__init__ import TextBasedChannel, GuildChannel, GuildTextChannel, GuildNewsChannel, VoiceChannel, DMChannel, ChannelCategory, GuildStoreChannel, GuildNewsThread, GuildStageChannel
+from ..channel import (
+    TextBasedChannel, 
+    GuildChannel, 
+    GuildTextChannel, 
+    GuildNewsChannel, 
+    VoiceChannel, 
+    DMChannel, 
+    ChannelCategory, 
+    GuildStoreChannel,
+    GuildNewsThread, 
+    GuildStageChannel
+)
 
 AnyChannel = Union[TextBasedChannel, GuildChannel, GuildTextChannel, GuildNewsChannel, VoiceChannel, DMChannel, ChannelCategory, GuildStoreChannel, GuildNewsThread, GuildStageChannel]
 
@@ -18,8 +30,6 @@ class ChannelManager(CacheManager):
                     return channel
 
         channel = await self.client.http.get(f"channels/{channel_id}")
-
-        
 
         self.channels.append(channel)
         return channel
