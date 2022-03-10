@@ -4,7 +4,7 @@ from typing import (
     Optional
 )
 from .cache_manager import CacheManager
-from ..__init__ import Guild, UnavailableGuild
+from ..guild import Guild, UnavailableGuild
 
 
 class GuildManager(CacheManager):
