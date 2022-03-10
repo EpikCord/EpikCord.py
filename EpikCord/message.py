@@ -8,7 +8,7 @@ from .sticker import StickerItem
 from .thread import Thread
 from .member import GuildMember, User, MentionedUser
 from .webhook import WebhookUser
-from .ext.components import MessageActionRow, MessageButton, MessageSelectMenu, MessageTextInput
+from .ext import MessageActionRow, MessageButton, MessageSelectMenu, MessageTextInput
 from EpikCord import logger
 from typing import Optional, Union, List, Any
 from urllib.parse import quote
