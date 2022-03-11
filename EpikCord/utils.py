@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import re
+from .channel import *
 from .errors import InvalidArgumentType
 from base64 import b64encode
 from typing import Union, Optional, TypeVar
@@ -106,3 +107,25 @@ class Utils:
 
     def __init__(self, client):
         self.client = client
+    
+    
+def _figure_out_channel_type(client, channel):
+    channel_type = channel["type"]
+    if channel_type == 0:
+        return GuildTextChannel(client, channel)
+    elif channel_type == 1:
+        return DMChannel(client, channel)
+    elif channel_type == 2:
+        return VoiceChannel(client, channel)
+    elif channel_type == 4:
+        return ChannelCategory(client, channel)
+    elif channel_type == 5:
+        return GuildNewsChannel(client, channel)
+    elif channel_type == 6:
+        return GuildStoreChannel(client, channel)
+    elif channel_type == 10:
+        return GuildNewsThread(client, channel)
+    elif  channel_type in (11, 12):
+        return Thread(client, channel)
+    elif channel_type == 13:
+        return GuildStageChannel(client, channel)
