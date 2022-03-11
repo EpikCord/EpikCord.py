@@ -8,7 +8,7 @@ from .role import Role
 from .sticker import StickerItem, Sticker
 from .thread import Thread
 from .member import GuildMember, User
-from .ext import SystemChannelFlags
+from .commands import SystemChannelFlags
 from typing import Optional, List
 
 
