@@ -13,7 +13,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPL
 
 from logging import getLogger
 from .managers import *
-from .ext import *
+from .commands import *
 
 from .application import *
 from .channel import *
