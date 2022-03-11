@@ -211,6 +211,58 @@ class GuildStageChannel(BaseChannel):
         self.privacy_level: int = data.get("privacy_level")
         self.discoverable_disabled: bool = data.get("discoverable_disabled")
 
+def _figure_out_channel_type(client, channel):
+    channel_type = channel["type"]
+    if channel_type == 0:
+        return GuildTextChannel(client, channel)
+    elif channel_type == 1:
+        return DMChannel(client, channel)
+    elif channel_type == 2:
+        return VoiceChannel(client, channel)
+    elif channel_type == 4:
+        return ChannelCategory(client, channel)
+    elif channel_type == 5:
+        return GuildNewsChannel(client, channel)
+    elif channel_type == 6:
+        return GuildStoreChannel(client, channel)
+    elif channel_type == 10:
+        return GuildNewsThread(client, channel)
+    elif  channel_type in (11, 12):
+        return Thread(client, channel)
+    elif channel_type == 13:
+        return GuildStageChannel(client, channel)
+
+class TextBasedChannel:
+    def __init__(self, client, data: dict):
+        self.client = client
+        self.data: dict = data
+
+    def to_type(self):
+        if self.type == 0:
+            return GuildTextChannel(self.client, self.data)
+
+        elif self.type == 1:
+            return DMChannel(self.client, self.data)
+
+        elif self.type == 4:
+            return ChannelCategory(self.client, self.data)
+
+        elif self.type == 5:
+            return GuildNewsChannel(self.client, self.data)
+
+        elif self.type == 6:
+            return GuildStoreChannel(self.client, self.data)
+
+        elif self.type == 10:
+            return GuildNewsThread(self.client, self.data)
+
+        elif self.type == 11 or self.type == 12:
+            return Thread(self.client, self.data)
+
+        elif self.type == 13:
+            return GuildStageChannel(self.client, self.data)
+
+
 class SourceChannel:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
