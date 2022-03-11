@@ -90,8 +90,13 @@ class BaseInteraction:
         if attachments:
             message_data["attachments"] = [attachment.to_dict() for attachment in attachments]
 
+        payload = {
+            'type' : 2,
+            'data' : message_data
+        }
 
-        response = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/@original", json = message_data)
+
+        response = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/@original", json = payload)
         return await response.json()
 
     async def delete_reply(self):
