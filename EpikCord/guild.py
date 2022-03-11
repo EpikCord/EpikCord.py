@@ -1,6 +1,6 @@
 import datetime
 from .application import Application
-from .channel import GuildChannel, WelcomeScreen, GuildStageChannel, _figure_out_channel_type, Overwrite
+from .channel import GuildChannel, WelcomeScreen, GuildStageChannel, Overwrite
 from .client import Client
 from .emoji import Emoji 
 from .guild import GuildPreview
@@ -165,7 +165,7 @@ class Guild:
         channels = await self.client.http.get(f"/guilds/{self.id}/channels")
         return_channels = []
         for channel in channels:
-            return_channels.append(_figure_out_channel_type(channel))
+            return_channels.append(self.client.utils._figure_out_channel_type(channel))
         
         return return_channels
     
