@@ -29,20 +29,6 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
-
-_MARKDOWN_ESCAPE_SUBREGEX = '|'.join(
-    r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(c) for c in ('*', '`', '_', '~', '|'))
-
-_MARKDOWN_ESCAPE_COMMON = r'^>(?:>>)?\s|\[.+\]\(.+\)'
-
-_MARKDOWN_ESCAPE_REGEX = re.compile(
-    fr'(?P<markdown>{_MARKDOWN_ESCAPE_SUBREGEX}|{_MARKDOWN_ESCAPE_COMMON})', re.MULTILINE)
-
-_URL_REGEX = r'(?P<url><[^: >]+:\/[^ >]+>|(?:https?|steam):\/\/[^\s<]+[^<.,:;\"\'\]\s])'
-
-_MARKDOWN_STOCK_REGEX = fr'(?P<markdown>[_\\~|\*`]|{_MARKDOWN_ESCAPE_COMMON})'
-
-
 def _cancel_tasks(loop) -> None:
     tasks = {t for t in asyncio.all_tasks(loop=loop) if not t.done()}
 
@@ -1561,7 +1547,7 @@ class Client(WebsocketClient):
     def __init__(self, token: str, intents: int = 0):
         super().__init__(token, intents)
 
-        self.commands: List[dict] = [] # TODO: Need to change this to a Class Later
+        self.commands: List[Command] = [] # TODO: Need to change this to a Class Later
         self.guilds: GuildManager = GuildManager(self)
 
         self.http = HTTPClient(
@@ -3541,6 +3527,18 @@ class Utils:
 
     def __init__(self, client):
         self.client = client
+        self. _MARKDOWN_ESCAPE_SUBREGEX = '|'.join(
+            r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(c) for c in ('*', '`', '_', '~', '|'))
+
+        self._MARKDOWN_ESCAPE_COMMON = r'^>(?:>>)?\s|\[.+\]\(.+\)'
+
+        self._MARKDOWN_ESCAPE_REGEX = re.compile(
+            fr'(?P<markdown>{self._MARKDOWN_ESCAPE_SUBREGEX}|{self._MARKDOWN_ESCAPE_COMMON})', re.MULTILINE)
+
+        self._URL_REGEX = r'(?P<url><[^: >]+:\/[^ >]+>|(?:https?|steam):\/\/[^\s<]+[^<.,:;\"\'\]\s])'
+
+        self._MARKDOWN_STOCK_REGEX = fr'(?P<markdown>[_\\~|\*`]|{self._MARKDOWN_ESCAPE_COMMON})'
+
 
     def channel_from_type(self, channel_data: dict):
         channel_type = channel_data.get("type")
@@ -3584,9 +3582,9 @@ class Utils:
             groupdict = match.groupdict()
             return groupdict.get('url', '')
 
-        regex = _MARKDOWN_STOCK_REGEX
+        regex = self._MARKDOWN_STOCK_REGEX
         if ignore_links:
-            regex = f'(?:{_URL_REGEX}|{regex})'
+            regex = f'(?:{self._URL_REGEX}|{regex})'
         return re.sub(regex, replacement, text, 0, re.MULTILINE)
 
 
@@ -3600,13 +3598,13 @@ class Utils:
                     return is_url
                 return '\\' + groupdict['markdown']
 
-            regex = _MARKDOWN_STOCK_REGEX
+            regex = self._MARKDOWN_STOCK_REGEX
             if ignore_links:
-                regex = f'(?:{_URL_REGEX}|{regex})'
+                regex = f'(?:{self._URL_REGEX}|{regex})'
             return re.sub(regex, replacement, text, 0, re.MULTILINE)
         else:
             text = re.sub(r'\\', r'\\\\', text)
-            return _MARKDOWN_ESCAPE_REGEX.sub(r'\\\1', text)
+            return self._MARKDOWN_ESCAPE_REGEX.sub(r'\\\1', text)
 
 
     def escape_mentions(text: str) -> str:
