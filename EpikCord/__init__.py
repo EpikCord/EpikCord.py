@@ -29,6 +29,26 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
+"""
+{
+                "callback": func,
+                "name": name,
+                "description": description,
+                "guild_ids": guild_ids,
+                "options": options,
+                "type": 1
+            }
+"""
+
+class Command:
+    def __init__(self, client, *, name: str, description: str, callback: callable, guild_ids: Optional[List[str]], options: Optional[AnyOption], type: int):
+        self.name: str = name
+        self.description: str = description
+        self.callback: callable = callback
+        self.guild_ids: Optional[List[str]] = guild_ids
+        self.options: Optional[List[AnyOption]] = options
+        self.client = client
+
 class Status:
     def __init__(self, status: str):
         setattr(self, "status", status)
@@ -1546,7 +1566,7 @@ class Client(WebsocketClient):
     def command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
         def register_slash_command(func):
 
-            self.commands.append({
+            self.commands.append(self.http, **{
                 "callback": func,
                 "name": name,
                 "description": description,
