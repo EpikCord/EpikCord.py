@@ -834,6 +834,22 @@ class SlashCommandOptionChoice:
 AnyOption = Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]
 
 class ClientUserCommand:
+    """
+    A class to represent a User Command that the Client owns.
+
+    Attributes:
+    -----------
+        * name The name set for the User Command
+        * description: str The description set for the User Command
+        * callback: callable The function to call for the User Command (Passed in by the library)
+
+    Parameters:
+    -----------
+    All parameters follow the documentation of the Attributes accordingly
+        * name
+        * description
+        * callback
+    """
     def __init__(self, *, name: str, description: str, callback: callable): # TODO: Check if you can make GuildUserCommands etc
         self.name: str = name
         self.description: str = description
@@ -1552,7 +1568,7 @@ class Client(WebsocketClient):
     def __init__(self, token: str, intents: int = 0):
         super().__init__(token, intents)
 
-        self.commands: List[Command] = [] # TODO: Need to change this to a Class Later
+        self.commands: List[Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]] = [] # TODO: Need to change this to a Class Later
         self.guilds: GuildManager = GuildManager(self)
 
         self.http = HTTPClient(
