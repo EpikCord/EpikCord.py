@@ -40,9 +40,16 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPL
             }
 """
 
+class InvalidStatus(Exception):
+    ...
+
 class Status:
     def __init__(self, status: str):
-        setattr(self, "status", status)
+        
+        if status not in ["online", "dnd", "idle", "invisible", "offline"]:
+            raise InvalidStatus("That is an invalid status.")
+
+        setattr(self, "status", status if status != "offline" else "invisible")
 
 
 class Activity:
@@ -623,6 +630,25 @@ class WebsocketClient(EventHandler):
         self.interval = None  # How frequently to heartbeat
         self.session_id = None
         self.sequence = None
+
+    async def change_presence(self, *, since: Optional[int] = None, activities: Optional[List[Activity]], status: Optional[Status], afk: Optional[bool]):
+        payload = {
+            "op": 3
+        }
+
+        disposable = {}
+        if since:
+            disposable["since"] = since
+        if afk:
+            disposable["afk"] = afk
+        if activities:
+            disposable["activities"] = [activity.to_dict() for activity in activities]
+        if status:
+            disposable["status"] = status.status
+        
+        payload["d"] = disposable
+
+        await self.send_json(payload)
 
     async def heartbeat(self, forced: Optional[bool] = None):
         if forced:
