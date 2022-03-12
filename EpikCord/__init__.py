@@ -29,27 +29,6 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
-def _cancel_tasks(loop) -> None:
-    tasks = {t for t in asyncio.all_tasks(loop=loop) if not t.done()}
-
-    if not tasks:
-        return
-
-    for task in tasks:
-        task.cancel()
-    logger.debug(f"Cancelled {len(tasks)} tasks")
-    loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
-
-
-def _cleanup_loop(loop) -> None:
-    try:
-        _cancel_tasks(loop)
-        logger.debug("Shutting down async generators.")
-        loop.run_until_complete(loop.shutdown_asyncgens())
-    finally:
-        loop.close()
-
-
 class Status:
     def __init__(self, status: str):
         setattr(self, "status", status)
@@ -741,7 +720,7 @@ class WebsocketClient(EventHandler):
             pass
         finally:
             future.remove_done_callback(stop_loop_on_completion)
-            _cleanup_loop(loop)
+            self.utils.cleanup_loop(loop)
 
 class VoiceWebsocketClient:
     def __init__(self):
@@ -3607,9 +3586,29 @@ class Utils:
             return self._MARKDOWN_ESCAPE_REGEX.sub(r'\\\1', text)
 
 
-    def escape_mentions(text: str) -> str:
+    def escape_mentions(self, text: str) -> str:
         return re.sub(r'@(everyone|here|[!&]?[0-9]{17,20})', '@\u200b\\1', text)
 
 
-    def utcnow() -> datetime.datetime:
+    def utcnow(self) -> datetime.datetime:
         return datetime.datetime.now(datetime.timezone.utc)
+
+    def cancel_tasks(self, loop) -> None:
+        tasks = {t for t in asyncio.all_tasks(loop=loop) if not t.done()}
+
+        if not tasks:
+            return
+
+        for task in tasks:
+            task.cancel()
+        logger.debug(f"Cancelled {len(tasks)} tasks")
+        loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
+
+
+    def cleanup_loop(self, loop) -> None:
+        try:
+            self.cancel_tasks(loop)
+            logger.debug("Shutting down async generators.")
+            loop.run_until_complete(loop.shutdown_asyncgens())
+        finally:
+            loop.close()
