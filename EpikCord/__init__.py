@@ -1588,8 +1588,6 @@ class Client(WebsocketClient):
                 "callback": func,
                 "name": name,
                 "description": description,
-                "guild_ids": guild_ids,
-                "type": 2
             }))
         return register_slash_command
 
@@ -1600,8 +1598,6 @@ class Client(WebsocketClient):
                 "callback": func,
                 "name": name,
                 "description": description,
-                "guild_ids": guild_ids,
-                "type": 3
             }))
         return register_slash_command
 
