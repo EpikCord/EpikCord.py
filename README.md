@@ -4,10 +4,7 @@ This is an API Wrapper for Discord's API for Python!
 We've decided not to fork discord.py and start completely from scratch for a new, better structuring system!
 
 ## Why EpikCord.py?
-Because Discord.py has been discontinued and is no longer maintained, we've decided to make our own Python API Wrapper for the Discord API.
-The reason for this is because we want an easier method for you, the developer, to use the API, with great ease.
-
-
+There are many other libraries for the Discord API written in Python, there is no reason for you to choose us over other great libraries!
 
 ## I want to contribute!
 We love contributions that help us, so feel free to! You won't be rewarded for this, but it helps us and we'd be very pleased with any contribution.
