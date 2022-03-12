@@ -1563,7 +1563,6 @@ class Client(WebsocketClient):
 
         self.commands: List[dict] = [] # TODO: Need to change this to a Class Later
         self.guilds: GuildManager = GuildManager(self)
-        self.utils = Utils(self)
 
         self.http = HTTPClient(
             # raise_for_status = True,
@@ -1573,6 +1572,7 @@ class Client(WebsocketClient):
             }
         )
 
+        self.utils = Utils(self.http)
 
         self.user: ClientUser = None
         self.application: Application = None
