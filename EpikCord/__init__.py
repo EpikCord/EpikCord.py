@@ -3168,58 +3168,6 @@ class Webhook:  # Not used for making webhooks.
         self.source_channel: Optional[SourceChannel] = SourceChannel(data.get("source_channel"))
         self.url: Optional[str] = data.get("url")
 
-def compute_timedelta(dt: datetime.datetime):
-    if dt.tzinfo is None:
-        dt = dt.astimezone()
-    now = datetime.datetime.now(datetime.timezone.utc)
-    return max((dt - now).total_seconds(), 0)
-
-
-async def sleep_until(when: Union[datetime.datetime, int, float], result: Optional[T] = None) -> Optional[T]:
-    if when == datetime.datetime:
-        delta = compute_timedelta(when)
-
-    return await asyncio.sleep(delta if when == datetime.datetime else when, result)
-
-
-def remove_markdown(text: str, *, ignore_links: bool = True) -> str:
-    def replacement(match):
-        groupdict = match.groupdict()
-        return groupdict.get('url', '')
-
-    regex = _MARKDOWN_STOCK_REGEX
-    if ignore_links:
-        regex = f'(?:{_URL_REGEX}|{regex})'
-    return re.sub(regex, replacement, text, 0, re.MULTILINE)
-
-
-def escape_markdown(text: str, *, as_needed: bool = False, ignore_links: bool = True) -> str:
-    if not as_needed:
-
-        def replacement(match):
-            groupdict = match.groupdict()
-            is_url = groupdict.get('url')
-            if is_url:
-                return is_url
-            return '\\' + groupdict['markdown']
-
-        regex = _MARKDOWN_STOCK_REGEX
-        if ignore_links:
-            regex = f'(?:{_URL_REGEX}|{regex})'
-        return re.sub(regex, replacement, text, 0, re.MULTILINE)
-    else:
-        text = re.sub(r'\\', r'\\\\', text)
-        return _MARKDOWN_ESCAPE_REGEX.sub(r'\\\1', text)
-
-
-def escape_mentions(text: str) -> str:
-    return re.sub(r'@(everyone|here|[!&]?[0-9]{17,20})', '@\u200b\\1', text)
-
-
-def utcnow() -> datetime.datetime:
-    return datetime.datetime.now(datetime.timezone.utc)
-
-
 class Intents:
     def __init__(self, *, intents: Optional[int] = None):
         self.value = intents or 0
@@ -3615,3 +3563,54 @@ class Utils:
             return PrivateThread(self.client, channel_data)
         elif channel_type == 13:
             return GuildStageChannel(self.client, channel_data)
+
+    def compute_timedelta(self, dt: datetime.datetime):
+        if dt.tzinfo is None:
+            dt = dt.astimezone()
+        now = datetime.datetime.now(datetime.timezone.utc)
+        return max((dt - now).total_seconds(), 0)
+
+
+    async def sleep_until(self, when: Union[datetime.datetime, int, float], result: Optional[T] = None) -> Optional[T]:
+        if when == datetime.datetime:
+            delta = self.compute_timedelta(when)
+
+        return await asyncio.sleep(delta if when == datetime.datetime else when, result)
+
+
+    def remove_markdown(self, text: str, *, ignore_links: bool = True) -> str:
+        def replacement(match):
+            groupdict = match.groupdict()
+            return groupdict.get('url', '')
+
+        regex = _MARKDOWN_STOCK_REGEX
+        if ignore_links:
+            regex = f'(?:{_URL_REGEX}|{regex})'
+        return re.sub(regex, replacement, text, 0, re.MULTILINE)
+
+
+    def escape_markdown(self, text: str, *, as_needed: bool = False, ignore_links: bool = True) -> str:
+        if not as_needed:
+
+            def replacement(match):
+                groupdict = match.groupdict()
+                is_url = groupdict.get('url')
+                if is_url:
+                    return is_url
+                return '\\' + groupdict['markdown']
+
+            regex = _MARKDOWN_STOCK_REGEX
+            if ignore_links:
+                regex = f'(?:{_URL_REGEX}|{regex})'
+            return re.sub(regex, replacement, text, 0, re.MULTILINE)
+        else:
+            text = re.sub(r'\\', r'\\\\', text)
+            return _MARKDOWN_ESCAPE_REGEX.sub(r'\\\1', text)
+
+
+    def escape_mentions(text: str) -> str:
+        return re.sub(r'@(everyone|here|[!&]?[0-9]{17,20})', '@\u200b\\1', text)
+
+
+    def utcnow() -> datetime.datetime:
+        return datetime.datetime.now(datetime.timezone.utc)
