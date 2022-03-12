@@ -953,6 +953,8 @@ class Thread:
         response = await self.client.http.post(f"channels/{self.id}/messages/bulk-delete", data={"messages": message_ids}, headers=headers)
         return await response.json()
 
+class PrivateThread(Thread):
+    ...
 
 def _get_mime_type_for_image(data: bytes):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
@@ -3590,3 +3592,26 @@ class Utils:
 
     def __init__(self, client):
         self.client = client
+
+    def channel_from_type(self, channel_data: dict):
+        channel_type = channel_data.get("type")
+        if channel_type == 0:
+            return GuildTextChannel(self.client, channel_data)
+        elif channel_type == 1:
+            return DMChannel(self.client, channel_data)
+        elif channel_type == 2:
+            return VoiceChannel(self.client, channel_data)
+        elif channel_type == 4:
+            return ChannelCategory(self.client, channel_data)
+        elif channel_type == 5:
+            return GuildNewsChannel(self.client, channel_data)
+        elif channel_type == 6:
+            return GuildStoreChannel(self.client, channel_data)
+        elif channel_type == 10:
+            return GuildNewsThread(self.client, channel_data)
+        elif channel_type == 11:
+            return Thread(self.client, channel_data)
+        elif channel_type == 12:
+            return PrivateThread(self.client, channel_data)
+        elif channel_type == 13:
+            return GuildStageChannel(self.client, channel_data)
