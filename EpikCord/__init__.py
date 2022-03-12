@@ -40,15 +40,6 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPL
             }
 """
 
-class Command:
-    def __init__(self, client, *, name: str, description: str, callback: callable, guild_ids: Optional[List[str]], options: Optional[AnyOption], type: int):
-        self.name: str = name
-        self.description: str = description
-        self.callback: callable = callback
-        self.guild_ids: Optional[List[str]] = guild_ids
-        self.options: Optional[List[AnyOption]] = options
-        self.client = client
-
 class Status:
     def __init__(self, status: str):
         setattr(self, "status", status)
@@ -842,6 +833,21 @@ class SlashCommandOptionChoice:
 
 AnyOption = Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]
 
+class ClientUserCommand:
+    def __init__(self, *, name: str, description: str, callback: callable): # TODO: Check if you can make GuildUserCommands etc
+        self.name: str = name
+        self.description: str = description
+        self.callback: callable = callback
+
+class ClientSlashCommand(ClientUserCommand):
+    def __init__(self, *, name: str, description: str, callback: callable, guild_ids: Optional[List[str]], options: Optional[List[AnyOption]]):
+        super().__init__(name = name, description = description, callback = callback)
+        self.guild_ids: Optional[List[str]] = guild_ids
+        self.options: Optional[List[AnyOption]] = options
+
+class ClientMessageCommand(ClientUserCommand):
+    ...
+
 class Overwrite:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
@@ -1566,37 +1572,37 @@ class Client(WebsocketClient):
     def command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
         def register_slash_command(func):
 
-            self.commands.append(self.http, **{
+            self.commands.append(ClientSlashCommand(**{
                 "callback": func,
                 "name": name,
                 "description": description,
                 "guild_ids": guild_ids,
                 "options": options,
                 "type": 1
-            })
+            })) # Cheat method.
         return register_slash_command
 
     def user_command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = []):
         def register_slash_command(func):
-            self.commands.append({
+            self.commands.append(ClientUserCommand(**{
                 "callback": func,
                 "name": name,
                 "description": description,
                 "guild_ids": guild_ids,
                 "type": 2
-            })
+            }))
         return register_slash_command
 
     def message_command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = []):
         def register_slash_command(func):
 
-            self.commands.append({
+            self.commands.append(ClientMessageCommand(**{
                 "callback": func,
                 "name": name,
                 "description": description,
                 "guild_ids": guild_ids,
                 "type": 3
-            })
+            }))
         return register_slash_command
 
     def add_section(self, section: Section):
