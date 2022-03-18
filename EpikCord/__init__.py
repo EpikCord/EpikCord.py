@@ -445,8 +445,12 @@ class EventHandler:
         interaction = figure_out_interaction_class()
 
         command_exists = list(filter(lambda item: item.name == interaction.command_name, self.commands))
+        option_values = []
         if bool(command_exists): # bool(Filter) returns True every time.
-            await command_exists[0].callback(interaction)
+            if interaction.options:
+                for option in interaction.options:
+                    option_values.append(option.get("value"))
+            await command_exists[0].callback(interaction, *option_values)
 
 
         await event_func(interaction)
@@ -1591,6 +1595,7 @@ class Client(WebsocketClient):
 
         self.commands: List[Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]] = [] # TODO: Need to change this to a Class Later
         self.guilds: GuildManager = GuildManager(self)
+        self._checks
 
         self.http = HTTPClient(
             # raise_for_status = True,
@@ -2976,7 +2981,7 @@ class ApplicationCommandInteraction(BaseInteraction):
         self.command_name: str = self.interaction_data.get("name")
         self.command_type: int = self.interaction_data.get("type")
         self.resolved: ResolvedDataHandler(client, data.get("resolved", {}))
-        self._options: List[dict] | None = self.interaction_data.get("options", [])
+        self.options: List[dict] | None = self.interaction_data.get("options", [])
 
     async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
 
