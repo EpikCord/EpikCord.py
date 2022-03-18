@@ -2980,6 +2980,7 @@ class ApplicationCommandInteraction(BaseInteraction):
         self.command_name: str = self.data.get("name")
         self.command_type: int = self.data.get("type")
         self.resolved: ResolvedDataHandler(client, data.get("resolved", {}))
+        self._options: List[dict] | None = data.get("options", [])
 
     async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
 
