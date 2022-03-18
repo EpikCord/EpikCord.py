@@ -35,10 +35,10 @@ class InvalidStatus(Exception):
 class Status:
     def __init__(self, status: str):
         
-        if status not in ["online", "dnd", "idle", "invisible", "offline"]:
+        if status in {"online", "dnd", "idle", "invisible", "offline"}:
+            setattr(self, "status", status if status != "offline" else "invisible")
+        else:
             raise InvalidStatus("That is an invalid status.")
-
-        setattr(self, "status", status if status != "offline" else "invisible")
 
 
 class Activity:
@@ -68,10 +68,10 @@ class Activity:
 
 class Presence:
     def __init__(self, *, since: Optional[int] = None, activities: Optional[List[Activity]] = None, status: Optional[Status] = None, afk: Optional[bool] = None):
-        self.since: Optional[int] = since if since else None
-        self.activities: Optional[List[Activity]] = activities if activities else None
+        self.since: Optional[int] = since or None
+        self.activities: Optional[List[Activity]] = activities or None
         self.status: Status = status.status if status else None
-        self.afk: Optional[bool] = afk if afk else None
+        self.afk: Optional[bool] = afk or None
 
     def to_dict(self):
         payload = {}
@@ -193,10 +193,16 @@ class Message:
         emoji = quote(emoji)
         logger.debug(
             f"Removed reaction {emoji} from message ({self.id}) for user {user.username}.")
-        if not user:
-            response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/@me")
-        else:
-            response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/{user.id}")
+        response = (
+            await self.client.http.delete(
+                f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/{user.id}"
+            )
+            if user
+            else await self.client.http.delete(
+                f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/@me"
+            )
+        )
+
         return await response.json()
 
     async def fetch_reactions(self, *, after, limit) -> List[Reaction]:
@@ -399,9 +405,11 @@ class EventHandler:
 
             elif event["op"] == self.EVENT:
                 await self.handle_event(event["t"], event["d"])
-                if event["t"] in self.wait_for_events:
-                    if self.wait_for_events[event["t"]](): # If the function succeeds, we remove it from the wait_for_events dict and return the results
-                        del self.wait_for_events[event["t"]]
+                if (
+                    event["t"] in self.wait_for_events
+                    and self.wait_for_events[event["t"]]()
+                ):
+                    del self.wait_for_events[event["t"]]
 
 
             elif event["op"] == self.HEARTBEAT:
@@ -474,16 +482,16 @@ class EventHandler:
             event_func = self.events["channel_create"]
         except KeyError:
             ...
-        
-        if channel_type in (0, 1, 5, 6, 10, 11, 12):
-            
+
+        if channel_type in {0, 1, 5, 6, 10, 11, 12}:
+
             if event_func:
                 await event_func(TextBasedChannel(self, data).to_type())
 
         elif channel_type == 2:
             if event_func:
                 await event_func(VoiceChannel(self, data))
-        
+
         elif channel_type == 13:
             if event_func:
                 await event_func(GuildStageChannel(self, data))
@@ -724,13 +732,11 @@ class WebsocketClient(EventHandler):
         #         # if an error happens during disconnects, disregard it.
         #         pass
 
-        if self.ws is not None:
-            if not self.ws.closed:
-                await self.ws.close(code=1000)
+        if self.ws is not None and not self.ws.closed:
+            await self.ws.close(code=1000)
 
-        if self.http is not None:
-            if not self.http.closed:
-                await self.http.close()
+        if self.http is not None and not self.http.closed:
+            await self.http.close()
 
         self._closed = True
 
@@ -990,7 +996,7 @@ class PrivateThread(Thread):
 def _get_mime_type_for_image(data: bytes):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
         return 'image/png'
-    elif data[0:3] == b'\xff\xd8\xff' or data[6:10] in (b'JFIF', b'Exif'):
+    elif data[:3] == b'\xff\xd8\xff' or data[6:10] in (b'JFIF', b'Exif'):
         return 'image/jpeg'
     elif data.startswith((b'\x47\x49\x46\x38\x37\x61', b'\x47\x49\x46\x38\x39\x61')):
         return 'image/gif'
@@ -1195,7 +1201,7 @@ class ClientApplication(Application):
         await self.client.http.delete(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}")
 
     async def bulk_overwrite_guild_application_commands(self, guild_id: str, commands: List[ApplicationCommand]):
-        payload = [command for command in commands]
+        payload = list(commands)
         await self.client.http.put(f"/applications/{self.id}/guilds/{guild_id}/commands", json =  payload)
 
     async def fetch_guild_application_command_permissions(self, guild_id: str, command_id: str):
@@ -1236,8 +1242,8 @@ class GuildChannel(BaseChannel):
     async def delete(self, *, reason: Optional[str] = None) -> None:
         if reason:
             headers = self.client.http.headers.copy()
-            if reason:
-                headers["reason"] = reason
+        if reason:
+            headers["reason"] = reason
 
         response = await self.client.http.delete(f"/channels/{self.id}", headers=headers)
         return await response.json()
@@ -1247,14 +1253,16 @@ class GuildChannel(BaseChannel):
         return await response.json()
 
     async def create_invite(self, *, max_age: Optional[int], max_uses: Optional[int], temporary: Optional[bool], unique: Optional[bool], target_type: Optional[int], target_user_id: Optional[str], target_application_id: Optional[str]):
-        data = {}
-        data["max_age"] = max_age or None
-        data["max_uses"] = max_uses or None
-        data["temporary"] = temporary or None
-        data["unique"] = unique or None
-        data["target_type"] = target_type or None
-        data["target_user_id"] = target_user_id or None
-        data["target_application_id"] = target_application_id or None
+        data = {
+            "max_age": max_age or None,
+            "max_uses": max_uses or None,
+            "temporary": temporary or None,
+            "unique": unique or None,
+            "target_type": target_type or None,
+            "target_user_id": target_user_id or None,
+            "target_application_id": target_application_id or None,
+        }
+
         await self.client.http.post(f"/channels/{self.id}/invites", json=data)
 
     async def delete_overwrite(self, overwrites: Overwrite) -> None:
@@ -1425,7 +1433,7 @@ class TextBasedChannel:
         elif self.type == 10:
             return GuildNewsThread(self.client, self.data)
 
-        elif self.type == 11 or self.type == 12:
+        elif self.type in [11, 12]:
             return Thread(self.client, self.data)
 
         elif self.type == 13:
@@ -1828,7 +1836,7 @@ class MessageSelectMenu(BaseComponent):
         self.disabled: bool = disabled
 
     def to_dict(self):
-        settings = {
+        return {
             "type": self.type,
             "options": self.options,
             "min_values": self.min_values,
@@ -1836,7 +1844,6 @@ class MessageSelectMenu(BaseComponent):
             "disabled": self.disabled,
             "custom_id": self.custom_id
         }
-        return settings
 
     def add_options(self, options: List[MessageSelectMenuOption]):
         for option in options:
@@ -2062,10 +2069,7 @@ class MessageActionRow:
         self.components: List[Union[MessageTextInput, MessageButton, MessageSelectMenu]] = components or []
 
     def to_dict(self):
-        return {
-            "type": self.type,
-            "components": [component for component in self.components]
-        }
+        return {"type": self.type, "components": list(self.components)}
 
     def add_components(self, components: List[Union[MessageButton, MessageSelectMenu]]):
         buttons = 0
@@ -2655,8 +2659,7 @@ class Guild:
         if getattr(self, "preview"):
             return self.preview
 
-        preview = GuildPreview(await self.client.http.get(f"/guilds/{self.id}/preview"))
-        return preview
+        return GuildPreview(await self.client.http.get(f"/guilds/{self.id}/preview"))
     
     async def delete(self):
         await self.client.http.delete(f"/guilds/{self.id}")
@@ -2670,11 +2673,7 @@ class Guild:
             The guild channels.
         """
         channels = await self.client.http.get(f"/guilds/{self.id}/channels")
-        return_channels = []
-        for channel in channels:
-            return_channels.append(_figure_out_channel_type(channel))
-        
-        return return_channels
+        return [_figure_out_channel_type(channel) for channel in channels]
     
     async def create_channel(self, *, name: str, reason: Optional[str] = None, type: Optional[int] = None, topic: Optional[str] = None, bitrate: Optional[int] = None, user_limit: Optional[int] = None, rate_limit_per_user: Optional[int] = None, position: Optional[int] = None, permission_overwrites: List[Optional[Overwrite]] = None, parent_id: Optional[str] = None, nsfw: Optional[bool] = None):
         """Creates a channel.
@@ -2793,10 +2792,9 @@ class BaseInteraction:
         return self.type == 5
     
     async def fetch_original_response(self, *, skip_cache: Optional[bool] = False):
-        if not skip_cache:
-            if self.original_response:
-                return self.original_response
-        message_data = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/messages/@orignal")
+        if not skip_cache and self.original_response:
+            return self.original_response
+        message_data = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/messages/@original")
         self.original_response: Message = Message(self.client, message_data)
         return self.original_response
     
@@ -3059,8 +3057,7 @@ class GuildMember:
         # self.user: Optional[User] = User(data["user"]) or None
         self.nick: Optional[str] = data.get("nick")
         self.avatar: Optional[str] = data.get("avatar")
-        self.role_ids: Optional[List[str]] = [
-            role for role in data.get("roles", [])]
+        self.role_ids: Optional[List[str]] = list(data.get("roles", []))
         self.joined_at: str = data.get("joined_at")
         self.premium_since: Optional[str] = data.get("premium_since")
         self.deaf: bool = data.get("deaf")
@@ -3674,8 +3671,7 @@ class Utils:
 
             def replacement(match):
                 groupdict = match.groupdict()
-                is_url = groupdict.get('url')
-                if is_url:
+                if is_url := groupdict.get('url'):
                     return is_url
                 return '\\' + groupdict['markdown']
 
