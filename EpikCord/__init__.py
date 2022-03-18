@@ -2790,7 +2790,7 @@ class BaseInteraction:
     async def fetch_original_response(self, *, skip_cache: Optional[bool] = False):
         if not skip_cache and self.original_response:
             return self.original_response
-        message_data = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/messages/@orignal")
+        message_data = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/messages/@original")
         self.original_response: Message = Message(self.client, message_data)
         return self.original_response
     
