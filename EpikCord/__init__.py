@@ -637,7 +637,7 @@ class WebsocketClient(EventHandler):
 
         self.token = token
         if not token:
-            raise TypError("Missing token.")
+            raise TypeError("Missing token.")
 
         if isinstance(intents, int):
             self.intents = intents
