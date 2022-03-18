@@ -1,3 +1,5 @@
+<img alt="DiscordGo logo" src="docs/EpikCord_Logo.png" width="200">
+
 # EpikCord.py
 Welcome to EpikCord.py!
 This is an API Wrapper for Discord's API for Python!

@@ -66,6 +66,25 @@ class Activity:
             "url": self.url
         }
 
+class Presence:
+    def __init__(self, *, since: Optional[int] = None, activities: Optional[List[Activity]] = None, status: Optional[Status] = None, afk: Optional[bool] = None):
+        self.since: Optional[int] = since if since else None
+        self.activities: Optional[List[Activity]] = activities if activities else None
+        self.status: Status = status.status if status else None
+        self.afk: Optional[bool] = afk if afk else None
+
+    def to_dict(self):
+        payload = {}
+        if self.since:
+            payload["since"] = self.since
+        if self.activities:
+            payload["activities"] = [activity.to_dict() for activity in self.activities]
+        if self.afk:
+            payload["afk"] = self.afk
+        if self.status:
+            payload["status"] = self.status
+        
+        return payload
 
 class UnavailableGuild:
 
@@ -577,7 +596,7 @@ class EventHandler:
             if guild_id == "global":
                 await self.application.bulk_overwrite_global_application_commands(commands)
             else:
-                await self.bulk_overwrite_guild_application_commands(guild_id, commands)
+                await self.application.bulk_overwrite_guild_application_commands(guild_id, commands)
 
         try:
             await self.events["ready"]()
@@ -620,23 +639,11 @@ class WebsocketClient(EventHandler):
         self.session_id = None
         self.sequence = None
 
-    async def change_presence(self, *, since: Optional[int] = None, activities: Optional[List[Activity]], status: Optional[Status], afk: Optional[bool]):
+    async def change_presence(self, *, presence: Optional[Presence]):
         payload = {
-            "op": 3
+            "op": 3,
+            "d": presence.to_dict()
         }
-
-        disposable = {}
-        if since:
-            disposable["since"] = since
-        if afk:
-            disposable["afk"] = afk
-        if activities:
-            disposable["activities"] = [activity.to_dict() for activity in activities]
-        if status:
-            disposable["status"] = status.status
-        
-        payload["d"] = disposable
-
         await self.send_json(payload)
 
     async def heartbeat(self, forced: Optional[bool] = None):
@@ -892,9 +899,8 @@ class StickerItem:
         self.name: str = data.get("name")
         self.format_type: int = data.get("format_type")
 
-class Sticker(StickerItem):
+class Sticker():
     def __init__(self, data: dict):
-        super().__init__(data=data)
         self.id: str = data.get("id")
         self.name: str = data.get("name")
         self.description: str = data.get("description")
@@ -1139,7 +1145,7 @@ class ClientApplication(Application):
         await self.client.http.delete(f"/applications/{self.id}/commands/{command_id}")
 
     async def bulk_overwrite_global_application_commands(self, commands: List[ApplicationCommand]):
-        payload = [command for command in commands]
+        payload = list(commands)
         await self.client.http.put(f"/applications/{self.id}/commands", json =  payload)
 
     async def fetch_guild_application_commands(self, guild_id: str):
@@ -1427,15 +1433,16 @@ class RatelimitHandler:
     """
     A class to handle ratelimits from Discord.
     """
-    def __init__(self):
+    def __init__(self, *, avoid_ratelimits: Optional[bool] = True):
         self.ratelimit_buckets: dict = {}
         self.ratelimited: bool = False
+        self.avoid_ratelimits: bool = avoid_ratelimits
 
     async def process_headers(self, headers: dict):
         """
         Read the headers from a request and then digest it.
         """
-        if "X-Ratelimit-Bucket" in headers:
+        if headers.get("X-Ratelimit-Bucket"):
 
             self.ratelimit_buckets[headers["X-Ratelimit-Bucket"]] = {
                 "limit": headers["X-Ratelimit-Limit"],
@@ -1443,17 +1450,17 @@ class RatelimitHandler:
                 "reset": headers["X-Ratelimit-Reset"]
             }
 
-            if headers.get("retry_after"):
-                await self.handle_ratelimit(headers)
+        if headers["X-Ratelimit-Remaining"] == 1 and self.avoid_ratelimits:
+            logger.critical("You have been nearly been ratelimited. We're now pausing requests.")
+            self.ratelimited = True
+            await asyncio.sleep(headers["X-Ratelimit-Reset-After"])
+            self.ratelimited = False
 
-    async def handle_ratelimit(self, headers: dict):
-        """
-        Handles ratelimits from Discord.
-        """
-  
-        self.ratelimited = True
-        await asyncio.sleep(headers["retry_after"])
-        self.ratelimited = False
+        if headers.get("X-Ratelimit-Global") or headers.get("X-Ratelimit-Scope"):
+            logger.critical("You have been ratelimited. You've reached a 429. We're now pausing requests.")
+            self.ratelimited = True
+            await asyncio.sleep(headers["retry_after"])
+            self.ratelimited = False
 
     def is_ratelimited(self) -> bool:
         """
@@ -1465,7 +1472,7 @@ class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.base_uri: str = "https://discord.com/api/v9"
-        self.ratelimit_handler = RatelimitHandler()
+        self.ratelimit_handler = RatelimitHandler(avoid_ratelimits = kwargs.get("avoid_ratelimits", False))
 
     async def get(self, url, *args, **kwargs):
 
@@ -2769,6 +2776,8 @@ class BaseInteraction:
         self.version: int = data.get("version")
         self.locale: Optional[str] = data.get("locale")
         self.guild_locale: Optional[str] = data.get("guild_locale")
+        self.original_response: Optional[Message] = None # Can't be set on construction.
+        self.followup_response: Optional[Message] = None # Can't be set on construction.
 
     def is_application_command(self):
         return self.type == 2
@@ -2781,12 +2790,26 @@ class BaseInteraction:
     
     def is_modal_submit(self):
         return self.type == 5
-
-    async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, flags: Optional[int] = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None) -> None:
+    
+    async def fetch_original_response(self, *, skip_cache: Optional[bool] = False):
+        if not skip_cache:
+            if self.original_response:
+                return self.original_response
+        message_data = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/messages/@orignal")
+        self.original_response: Message = Message(self.client, message_data)
+        return self.original_response
+    
+    async def edit_original_response(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
 
         message_data = {
-            "tts": tts
+            "tts": tts,
+            "flags": 0
         }
+
+        if suppress_embeds:
+            message_data["flags"] += 1 << 2
+        if ephemeral:
+            message_data["flags"] += 1 << 6
 
         if content:
             message_data["content"] = content
@@ -2794,37 +2817,29 @@ class BaseInteraction:
             message_data["embeds"] = [embed.to_dict() for embed in embeds]
         if allowed_mentions:
             message_data["allowed_mentions"] = allowed_mentions.to_dict()
-        if flags:
-            message_data["flags"] = flags
         if components:
             message_data["components"] = [component.to_dict() for component in components]
         if attachments:
             message_data["attachments"] = [attachment.to_dict() for attachment in attachments]
 
-        payload = {
-            "type": 4,
-            "data": message_data
-        }
+        new_message_data = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/@original", json = message_data)
+        self.original_response: Message = Message(self.client, new_message_data)
+        return self.original_response
+    
+    async def delete_original_response(self):
+        await self.client.http.delete(f"/webhooks/{self.application_id}/{self.token}/messages/@original")
 
-        await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json = payload)
-
-
-    async def defer(self):
-        payload = {
-            "type": 5
-        }
-        response = await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json = payload)
-        return await response.json()
-
-    async def fetch_reply(self):
-        response = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/messages/@original")
-        return await response.json()
-
-    async def edit_reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, flags: Optional[int] = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None):
+    async def create_followup(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
 
         message_data = {
-            "tts": tts
+            "tts": tts,
+            "flags": 0
         }
+
+        if suppress_embeds:
+            message_data["flags"] += 1 << 2
+        if ephemeral:
+            message_data["flags"] += 1 << 6
 
         if content:
             message_data["content"] = content
@@ -2832,36 +2847,73 @@ class BaseInteraction:
             message_data["embeds"] = [embed.to_dict() for embed in embeds]
         if allowed_mentions:
             message_data["allowed_mentions"] = allowed_mentions.to_dict()
-        if flags:
-            message_data["flags"] = flags
         if components:
             message_data["components"] = [component.to_dict() for component in components]
         if attachments:
             message_data["attachments"] = [attachment.to_dict() for attachment in attachments]
 
+        new_message_data = await self.client.http.post(f"/webhooks/{self.application_id}/{self.token}/", json = message_data)
+        self.followup_response: Message = Message(self.client, new_message_data)
+        return self.followup_response
 
-        response = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/@original", json = payload)
-        return await response.json()
 
-    async def delete_reply(self):
-        response = await self.client.http.delete(f"/webhooks/{self.application_id}/{self.token}/messages/@original")
-        return await response.json()
+    async def edit_original_response(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
 
-    async def followup(self, message_data: dict):
-        response = await self.client.http.post(f"/webhooks/{self.application_id}/{self.token}", data=message_data)
-        return await response.json()
+        message_data = {
+            "tts": tts,
+            "flags": 0
+        }
 
-    async def fetch_followup_message(self, message_id: str):
-        response = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/messages/{message_id}")
-        return await response.json()
+        if suppress_embeds:
+            message_data["flags"] += 1 << 2
+        if ephemeral:
+            message_data["flags"] += 1 << 6
 
-    async def edit_followup(self, message_id: str, message_data):
-        response = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/{message_id}", data=message_data)
-        return await response.json()
+        if content:
+            message_data["content"] = content
+        if embeds:
+            message_data["embeds"] = [embed.to_dict() for embed in embeds]
+        if allowed_mentions:
+            message_data["allowed_mentions"] = allowed_mentions.to_dict()
+        if components:
+            message_data["components"] = [component.to_dict() for component in components]
+        if attachments:
+            message_data["attachments"] = [attachment.to_dict() for attachment in attachments]
 
-    async def delete_followup(self, message_id: str):
-        response = await self.client.http.delete(f"/webhooks/{self.application_id}/{self.token}/messages/{message_id}")
-        return await response.json()
+        new_message_data = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/@original", json = message_data)
+        self.original_response: Message = Message(self.client, new_message_data)
+        return self.original_response
+    
+    async def delete_original_response(self):
+        await self.client.http.delete(f"/webhooks/{self.application_id}/{self.token}/messages/@original")
+
+    async def edit_followup(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
+
+        message_data = {
+            "tts": tts,
+            "flags": 0
+        }
+
+        if suppress_embeds:
+            message_data["flags"] += 1 << 2
+        if ephemeral:
+            message_data["flags"] += 1 << 6
+
+        if content:
+            message_data["content"] = content
+        if embeds:
+            message_data["embeds"] = [embed.to_dict() for embed in embeds]
+        if allowed_mentions:
+            message_data["allowed_mentions"] = allowed_mentions.to_dict()
+        if components:
+            message_data["components"] = [component.to_dict() for component in components]
+        if attachments:
+            message_data["attachments"] = [attachment.to_dict() for attachment in attachments]
+
+        await self.client.http.patch(f"/webhook/{self.application_id}/{self.token}/", json = message_data)
+
+    async def delete_followup(self):
+        return await self.client.http.delete(f"/webhook/{self.application_id}/{self.token}/")
 
 class MessageComponentInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
@@ -2912,45 +2964,6 @@ class ApplicationCommandSubcommandOption(ApplicationCommandOption):
         super().__init__(data)
         self.options: List[ApplicationCommandOption] = [ApplicationCommandOption(option) for option in data.get("options", [])]
 
-class ReceivedSlashCommandOption:
-    def __init__(self, option: dict):
-        self.name: str = option.get("name")
-        self.value: Optional[Union[str, int, float]] = option.get("value")
-
-class ApplicationCommandOptionResolver:
-    def __init__(self, options: List[AnyOption]):
-
-        options = []
-        for option in options:
-            if not option.get("options"):
-                options.append(ReceivedSlashCommandOption(option))
-            else:
-                options.append(ApplicationCommandSubcommandOption(option))
-        self.options: Optional[List[AnyOption]] = options
-
-    def get_string_option(self, name: str) -> Optional[str]:
-        filter_object = filter(lambda option: option.name == name, self.options)
-        option = list(filter_object)
-        if bool(option):
-            return str(option[0].value)
-
-
-    # def get_subcommand_option(self, name: str) -> Optional[ApplicationCommandSubcommandOption]:
-    #     filter_object = filter(lambda option: option.name == name, self.options)
-    #     option = list(filter_object)
-    #     if bool(option):
-    #         return 
-
-    # def get_subcommand_group_option(self, name: str) -> Optional[ApplicationCommandSubcommandOption]:
-    #     return list(filter(lambda option: option.name == name, self.options))[0] if len(filter(lambda option: option.name == name, self.options)) else None
-
-
-    def get_int_option(self, name: str) -> Optional[int]:
-        return list(filter(lambda option: option.name == name, self.options))[0].value if len(filter(lambda option: option.name == name, self.options)) else None
-    
-    def get_bool_option(self, name: str) -> Optional[bool]:
-        return list(filter(lambda option: option.name == name, self.options))[0].value if len(filter(lambda option: option.name == name, self.options)) else None
-
 class ResolvedDataHandler:
     def __init__(self, client, resolved_data: dict):
         self.data: dict = resolved_data # In case we miss anything and people can just do it themselves
@@ -2967,8 +2980,43 @@ class ApplicationCommandInteraction(BaseInteraction):
         self.command_name: str = self.data.get("name")
         self.command_type: int = self.data.get("type")
         self.resolved: ResolvedDataHandler(client, data.get("resolved", {}))
-        self.options = ApplicationCommandOptionResolver(self.data.get("options"))
 
+    async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
+
+        message_data = {
+            "tts": tts,
+            "flags": 0
+        }
+
+        if suppress_embeds:
+            message_data["flags"] += 1 << 2
+        if ephemeral:
+            message_data["flags"] += 1 << 6
+
+        if content:
+            message_data["content"] = content
+        if embeds:
+            message_data["embeds"] = [embed.to_dict() for embed in embeds]
+        if allowed_mentions:
+            message_data["allowed_mentions"] = allowed_mentions.to_dict()
+        if components:
+            message_data["components"] = [component.to_dict() for component in components]
+        if attachments:
+            message_data["attachments"] = [attachment.to_dict() for attachment in attachments]
+
+        payload = {
+            "type": 4,
+            "data": message_data
+        }
+        await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json = payload)
+    
+    async def defer(self, *, show_loading_state: Optional[bool] = True):
+        if show_loading_state:
+            return await self.client.http.post(f"/interaction/{self.id}/{self.token}/callback", json = {"type": 5})
+        else:
+            return await self.client.http.post(f"/interaction/{self.id}/{self.token}/callback", json = {"type": 6})
+    
+    
 class UserCommandInteraction(ApplicationCommandInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
