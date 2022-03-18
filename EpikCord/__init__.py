@@ -445,7 +445,6 @@ class EventHandler:
         interaction = figure_out_interaction_class()
 
         command_exists = list(filter(lambda item: item.name == interaction.command_name, self.commands))
-
         if bool(command_exists): # bool(Filter) returns True every time.
             await command_exists[0].callback(interaction)
 
@@ -1619,7 +1618,7 @@ class Client(WebsocketClient):
             })) # Cheat method.
         return register_slash_command
 
-    def user_command(self, *, name: str):
+    def user_command(self, name: str):
         def register_slash_command(func):
             self.commands.append(ClientUserCommand(**{
                 "callback": func,
@@ -1629,7 +1628,6 @@ class Client(WebsocketClient):
 
     def message_command(self, name: str):
         def register_slash_command(func):
-
             self.commands.append(ClientMessageCommand(**{
                 "callback": func,
                 "name": name,
@@ -2764,7 +2762,8 @@ class BaseInteraction:
         self.client = client
         self.type: int = data.get("type")
         self.application_id: int = data.get("application_id")
-        self.data: Optional[dict] = data.get("data")
+        self.data: dict = data
+        self.interaction_data: Optional[dict] = data.get("data")
         self.guild_id: Optional[str] = data.get("guild_id")
         self.channel_id: Optional[str] = data.get("channel_id")
         self.member: Optional[GuildMember] = GuildMember(client, data.get("member")) if data.get("member") else None
@@ -2973,11 +2972,11 @@ class ResolvedDataHandler:
 class ApplicationCommandInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.command_id: str = self.data.get("id")
-        self.command_name: str = self.data.get("name")
-        self.command_type: int = self.data.get("type")
+        self.command_id: str = self.interaction_data.get("id")
+        self.command_name: str = self.interaction_data.get("name")
+        self.command_type: int = self.interaction_data.get("type")
         self.resolved: ResolvedDataHandler(client, data.get("resolved", {}))
-        self._options: List[dict] | None = data.get("options", [])
+        self._options: List[dict] | None = self.interaction_data.get("options", [])
 
     async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
 
@@ -3193,7 +3192,6 @@ class ClientUser:
         self.bot: bool = data.get("bot")
         self.avatar: str = data.get("avatar")
         if not self.bot:  # if they're a user account
-            # Yeah I'm keeping this as a print
             logger.warning("Warning: Self botting is against Discord ToS. You can get banned.")
 
     async def fetch(self):
