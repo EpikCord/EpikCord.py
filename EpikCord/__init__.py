@@ -404,7 +404,10 @@ class EventHandler:
                 await self.identify()
 
             elif event["op"] == self.EVENT:
-                await self.handle_event(event["t"], event["d"])
+                try:
+                    await self.handle_event(event["t"], event["d"])
+                except Exception as e:
+                    logger.error(f"Error handling event {event['t']}: {e}")
                 if (
                     event["t"] in self.wait_for_events
                     and self.wait_for_events[event["t"]]()
@@ -932,7 +935,7 @@ class Subcommand(BaseSlashCommandOption):
             elif option["type"] == 11:
                 converted_options.append(AttachmentOption(**option))
 
-        self.opions: Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
+        self.options: Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
 
 
 
@@ -966,12 +969,12 @@ class SubCommandGroup(BaseSlashCommandOption):
             elif option["type"] == 11:
                 converted_options.append(AttachmentOption(**option))
 
-        self.opions: Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
+        self.options: Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
 
     def to_dict(self):
         usual_dict = super().to_dict()
         payload_to_append = []
-        for option in self.opions:
+        for option in self.options:
             payload_to_append(option.to_dict())
         
         usual_dict["options"] = payload_to_append
