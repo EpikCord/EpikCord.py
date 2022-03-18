@@ -1616,7 +1616,6 @@ class Client(WebsocketClient):
                 "description": description,
                 "guild_ids": guild_ids,
                 "options": options,
-                "type": 1
             })) # Cheat method.
         return register_slash_command
 
