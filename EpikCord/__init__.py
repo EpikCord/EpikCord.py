@@ -444,7 +444,7 @@ class EventHandler:
 
         interaction = figure_out_interaction_class()
 
-        command_exists = list(filter(lambda item: item["name"] == interaction.command_name, self.commands))
+        command_exists = list(filter(lambda item: item.name == interaction.command_name, self.commands))
 
         if bool(command_exists): # bool(Filter) returns True every time.
             await command_exists[0]["callback"](interaction)
