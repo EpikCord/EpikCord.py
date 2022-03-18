@@ -575,19 +575,20 @@ class EventHandler:
 
         for command in self.commands:
             command_payload = {
-                "name": command["name"],
-                "type": command["type"]
+                "name": command.name,
+                "type": 1 if isinstance(command, ClientSlashCommand) else 2 if isinstance(command, ClientUserCommand) else 3
             }
 
-            if command["type"] == 1:
-                command_payload["description"] = command["description"]
-                command_payload["options"] = [option.to_dict() for option in command["options"]]
+            if command_payload["type"] == 1:
+                command_payload["description"] = command.description
+                command_payload["options"] = [option.to_dict() for option in getattr(command, "options", [])]
 
-            if command.get("guild_id"):
-                if command_sorter.get(command["guild_id"]):
-                    command_sorter[command["guild_id"]].append(command_payload)
-                else:
-                    command_sorter[command["guild_id"]] = [command_payload]
+            if command.guild_ids:
+                for guild_id in command.guilds_ids:
+                    try:
+                        command_sorter[guild_id].append(command_payload)
+                    except KeyError:
+                        command_sorter[guild_id] = [command_payload]
             else:
                 command_sorter["global"].append(command_payload)
 
@@ -1626,7 +1627,7 @@ class Client(WebsocketClient):
             }))
         return register_slash_command
 
-    def message_command(self, *, name: str):
+    def message_command(self, name: str):
         def register_slash_command(func):
 
             self.commands.append(ClientMessageCommand(**{
