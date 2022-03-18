@@ -1,5 +1,5 @@
 <p align="center">
-    <img alt="DiscordGo logo" src="docs/EpikCord_Logo.png" width="200">
+    <img alt="EpikCord logo" src="docs/EpikCord_Logo.png" width="200"> <!-- Yes I sourced this from DiscordGO because their design inspired me :D-->
 </p>
 
 # EpikCord.py
