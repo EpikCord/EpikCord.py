@@ -765,7 +765,7 @@ class VoiceWebsocketClient:
         # Work on later
 
 class BaseSlashCommandOption:
-    def __init__(self, *, name: str, description: str, required: Optional[bool] = False):
+    def __init__(self, *, name: str, description: str, required: Optional[bool] = True):
         self.name: str = name
         self.description: str = description
         self.required: bool = required
@@ -781,13 +781,13 @@ class BaseSlashCommandOption:
         }
 
 class Subcommand(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = False):
+    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
         super().__init__(name=name, description=description, required=required)
         self.type = 1
 
 
 class SubCommandGroup(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: str = None, required: bool = False):
+    def __init__(self, *, name: str, description: str = None, required: bool = True):
         super().__init__(name=name, description=description, required=required)
         self.type = 2
 
