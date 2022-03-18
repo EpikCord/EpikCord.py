@@ -636,6 +636,8 @@ class WebsocketClient(EventHandler):
         self.HEARTBEAT_ACK = 11
 
         self.token = token
+        if not token:
+            raise TypError("Missing token.")
 
         if isinstance(intents, int):
             self.intents = intents
@@ -685,6 +687,7 @@ class WebsocketClient(EventHandler):
     async def send_json(self, json: dict):
         try:
             await self.ws.send_json(json)
+            logger.info(f"Sent {json} to Discord.")
         except:
             logger.debug(f"Exited with code: {self.ws.close_code}")
 
