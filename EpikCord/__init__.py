@@ -1595,7 +1595,7 @@ class Client(WebsocketClient):
 
         self.commands: List[Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]] = [] # TODO: Need to change this to a Class Later
         self.guilds: GuildManager = GuildManager(self)
-        self._checks
+        self._checks: List[Callable] = []
 
         self.http = HTTPClient(
             # raise_for_status = True,
