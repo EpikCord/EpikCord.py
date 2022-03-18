@@ -862,19 +862,16 @@ class ClientUserCommand:
     Attributes:
     -----------
         * name The name set for the User Command
-        * description: str The description set for the User Command
         * callback: callable The function to call for the User Command (Passed in by the library)
 
     Parameters:
     -----------
     All parameters follow the documentation of the Attributes accordingly
         * name
-        * description
         * callback
     """
-    def __init__(self, *, name: str, description: str, callback: callable): # TODO: Check if you can make GuildUserCommands etc
+    def __init__(self, *, name: str, callback: callable): # TODO: Check if you can make GuildUserCommands etc
         self.name: str = name
-        self.description: str = description
         self.callback: callable = callback
 
 class ClientSlashCommand(ClientUserCommand):
