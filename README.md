@@ -1,4 +1,6 @@
-<img alt="DiscordGo logo" src="docs/EpikCord_Logo.png" width="200">
+<p align="center">
+    <img alt="EpikCord logo" src="docs/EpikCord_Logo.png" width="200"> <!-- Yes I sourced this from DiscordGO because their design inspired me :D-->
+</p>
 
 # EpikCord.py
 Welcome to EpikCord.py!
@@ -13,10 +15,7 @@ We love contributions that help us, so feel free to! You won't be rewarded for t
 See the [Contributing](./CONTRIBUTING.md) page for more information.
 
 ## Where are your docs?
-SoonTM
-
-## Why doesn't it work?
-We plan on launching a 1.0 version which will work, until that comes out you just have to sit and look at the code and predict what functions are gonna come out next.
+Have functions and attributes you not sure about? Check our docs [here](https://epikcord-guide.vercel.app/)
 
 ## I need help!
 If you need help, you can join our [EpikCord.py Discord Server](https://discord.gg/4R473R73kQ) and ask for help there.
@@ -56,18 +55,9 @@ Sometimes you might want to keep this library from conflicting with other librar
 > ```
 
 2. Activate the venv
-> For Linux/MacOS
-> ```sh
->  $ source YourBotEnvName/bin/activate
-> ```
-> For Windows:
-> ```
->  $ YourBotEnvName\Scripts\activate.ps1
-> ```
+If you don't know how to see it [here](https://docs.python.org/3/library/venv.html)
 
-3. Use pip as usual!
+3. Installing
 > ``` sh
 > pip install -U EpikCord.py
 > ```
-
-Congrats! Your venv is all set up!
