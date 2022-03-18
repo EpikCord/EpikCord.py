@@ -876,7 +876,9 @@ class ClientUserCommand:
 
 class ClientSlashCommand(ClientUserCommand):
     def __init__(self, *, name: str, description: str, callback: callable, guild_ids: Optional[List[str]], options: Optional[List[AnyOption]]):
-        super().__init__(name = name, description = description, callback = callback)
+        self.name: str = name
+        self.description: str = description
+        self.callback: callable = callback
         self.guild_ids: Optional[List[str]] = guild_ids
         self.options: Optional[List[AnyOption]] = options
 
