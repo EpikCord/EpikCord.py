@@ -583,7 +583,7 @@ class EventHandler:
                 command_payload["description"] = command.description
                 command_payload["options"] = [option.to_dict() for option in getattr(command, "options", [])]
 
-            if command.guild_ids:
+            if getattr(command, "guild_ids", None):
                 for guild_id in command.guild_ids:
                     try:
                         command_sorter[guild_id].append(command_payload)
