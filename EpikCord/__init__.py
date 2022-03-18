@@ -584,7 +584,7 @@ class EventHandler:
                 command_payload["options"] = [option.to_dict() for option in getattr(command, "options", [])]
 
             if command.guild_ids:
-                for guild_id in command.guilds_ids:
+                for guild_id in command.guild_ids:
                     try:
                         command_sorter[guild_id].append(command_payload)
                     except KeyError:
@@ -875,7 +875,7 @@ class ClientUserCommand:
         self.name: str = name
         self.callback: callable = callback
 
-class ClientSlashCommand(ClientUserCommand):
+class ClientSlashCommand:
     def __init__(self, *, name: str, description: str, callback: callable, guild_ids: Optional[List[str]], options: Optional[List[AnyOption]]):
         self.name: str = name
         self.description: str = description
