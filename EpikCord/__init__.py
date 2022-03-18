@@ -590,7 +590,7 @@ class EventHandler:
         for command in self.commands:
             command_payload = {
                 "name": command.name,
-                "type": 1 if isinstance(command, ClientSlashCommand) else 2 if isinstance(command, ClientUserCommand) else 3
+                "type": command.type
             }
 
             if command_payload["type"] == 1:
@@ -1002,6 +1002,10 @@ class ClientUserCommand:
     def __init__(self, *, name: str, callback: callable): # TODO: Check if you can make GuildUserCommands etc
         self.name: str = name
         self.callback: callable = callback
+    
+    @property
+    def type(self):
+        return 2
 
 class ClientSlashCommand:
     def __init__(self, *, name: str, description: str, callback: callable, guild_ids: Optional[List[str]], options: Optional[List[AnyOption]]):
@@ -1011,8 +1015,15 @@ class ClientSlashCommand:
         self.guild_ids: Optional[List[str]] = guild_ids
         self.options: Optional[List[AnyOption]] = options
 
+    @property
+    def type(self):
+        return 1
+
 class ClientMessageCommand(ClientUserCommand):
-    ...
+
+    @property
+    def type(self):
+        return 3
 
 class Overwrite:
     def __init__(self, data: dict):
