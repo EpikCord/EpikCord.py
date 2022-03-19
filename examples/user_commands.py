@@ -1,4 +1,4 @@
-from EpikCord import Client, Intents, StringOption, NumberOption
+from EpikCord import Client, Intents
 
 intents = Intents().guilds.guild_members.guild_messages.direct_messages.message_content
 
