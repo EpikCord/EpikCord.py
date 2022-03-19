@@ -383,7 +383,7 @@ class EventHandler:
 
     def __init__(self):
         self.events = {}
-        self.wait_for_events = {}
+        # self.wait_for_events = {}
         self.PING: int = 1
         self.PONG: int = 1
         self.CHANNEL_MESSAGE_WITH_SOURCE: int = 4
@@ -407,7 +407,7 @@ class EventHandler:
                 try:
                     await self.handle_event(event["t"], event["d"])
                 except Exception as e:
-                    logger.error(f"Error handling event {event['t']}: {e}")
+                    logger.exception(f"Error handling event {event['t']}: {e}")
                 if (
                     event["t"] in self.wait_for_events
                     and self.wait_for_events[event["t"]]()
@@ -428,8 +428,9 @@ class EventHandler:
             logger.debug(f"Received event {event['t']}")
         await self.handle_close()
 
-    async def wait_for(self, event_name: str, *, check: Optional[Any]):
-        self.wait_for_events[event_name] = check
+        
+
+
 
     async def interaction_create(self, data):
         if data.get("type") == self.PING:
