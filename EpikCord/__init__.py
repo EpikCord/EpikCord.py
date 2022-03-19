@@ -1750,31 +1750,31 @@ class Client(WebsocketClient):
         self.application: Application = None
         self.sections: List[Section] = []
 
-    def command(self, *, name: str, description: str, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
+    def command(self, *, name: Optional[str] = None, description: str, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
         def register_slash_command(func):
 
             self.commands.append(ClientSlashCommand(**{
                 "callback": func,
-                "name": name,
+                "name": name or func.__name__,
                 "description": description,
                 "guild_ids": guild_ids,
                 "options": options,
             })) # Cheat method.
         return register_slash_command
 
-    def user_command(self, name: str):
+    def user_command(self, name: Optional[str] = None):
         def register_slash_command(func):
             self.commands.append(ClientUserCommand(**{
                 "callback": func,
-                "name": name,
+                "name": name or func.__name__,
             }))
         return register_slash_command
 
-    def message_command(self, name: str):
+    def message_command(self, name: Optional[str] = None):
         def register_slash_command(func):
             self.commands.append(ClientMessageCommand(**{
                 "callback": func,
-                "name": name,
+                "name": name or func.__name__,
             }))
         return register_slash_command
 
