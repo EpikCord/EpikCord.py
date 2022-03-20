@@ -2989,37 +2989,6 @@ class BaseInteraction:
         self.followup_response: Message = Message(self.client, new_message_data)
         return self.followup_response
 
-
-    async def edit_original_response(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
-
-        message_data = {
-            "tts": tts,
-            "flags": 0
-        }
-
-        if suppress_embeds:
-            message_data["flags"] += 1 << 2
-        if ephemeral:
-            message_data["flags"] += 1 << 6
-
-        if content:
-            message_data["content"] = content
-        if embeds:
-            message_data["embeds"] = [embed.to_dict() for embed in embeds]
-        if allowed_mentions:
-            message_data["allowed_mentions"] = allowed_mentions.to_dict()
-        if components:
-            message_data["components"] = [component.to_dict() for component in components]
-        if attachments:
-            message_data["attachments"] = [attachment.to_dict() for attachment in attachments]
-
-        new_message_data = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/@original", json = message_data)
-        self.original_response: Message = Message(self.client, new_message_data)
-        return self.original_response
-    
-    async def delete_original_response(self):
-        await self.client.http.delete(f"/webhooks/{self.application_id}/{self.token}/messages/@original")
-
     async def edit_followup(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
 
         message_data = {
