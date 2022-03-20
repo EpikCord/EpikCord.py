@@ -1782,7 +1782,7 @@ class Client(WebsocketClient):
         return register_slash_command
 
     def add_section(self, section: Section):
-        if not isinstance(section, Section):
+        if not issubclass(section, Section):
             raise InvalidArgumentType("You must pass in a class that inherits from the Section class.")
 
         for name, command_object in section.commands:
@@ -1791,8 +1791,21 @@ class Client(WebsocketClient):
         for event_name, event_func in section.events:
             self.events[event_name.lower()] = event_func
         self.sections.append(section)
+        section.on_load()
+    
+    def unload_section(self, section: Section):
+        if not issubclass(section, Section):
+            raise InvalidArgumentType("You must pass in a class that inherits from the Section class.")
 
-        # Successfully extracted all the valuable stuff from the section
+        for name, command_object in section.commands:
+            del self.commands[name]
+
+        for event_name, event_func in section.events:
+            del self.events[event_name.lower()]
+        self.sections.remove(section)
+        section.on_unload()
+
+
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
 #         super().__init__(data)
