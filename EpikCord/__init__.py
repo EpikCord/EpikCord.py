@@ -1750,9 +1750,12 @@ class Client(WebsocketClient):
         self.application: Application = None
         self.sections: List[Section] = []
 
-    def command(self, *, name: Optional[str] = None, description: str, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
+    def command(self, *, name: Optional[str] = None, description: Optional[str] = None, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
         def register_slash_command(func):
-
+            if not description:
+                if not func.__doc__:
+                    raise TypeError(f"Missing description for command {func.__name__}.")
+                description = func.__doc__
             self.commands.append(ClientSlashCommand(**{
                 "callback": func,
                 "name": name or func.__name__,
