@@ -1805,7 +1805,6 @@ class Client(WebsocketClient):
         self.sections.remove(section)
         section.on_unload()
 
-
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
 #         super().__init__(data)
