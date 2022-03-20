@@ -1,4 +1,4 @@
-from EpikCord import Client
+from EpikCord import Client, Intents
 
 intents = Intents().guilds.guild_members.guild_messages.direct_messages.message_content # Intents().all if you want all
 
