@@ -14,7 +14,7 @@ import os
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
 logger = getLogger(__name__)
-__version__ = '0.4.11'
+__version__ = '0.4.12'
 
 
 """
