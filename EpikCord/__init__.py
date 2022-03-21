@@ -432,8 +432,7 @@ class EventHandler:
         
         event_func = None
 
-        event_func = self.events["interaction_create"]
-
+        event_func = self.events.get("interaction_create")
         interaction_type = data.get("type")
 
 
@@ -2038,6 +2037,7 @@ class MessageTextInput(BaseComponent):
                 raise InvalidComponentStyle("Style must be either 1 or 2.")
 
         self.style: int = style
+        self.type: int = 4
         self.label: str = label
         self.min_length: int = min_length
         self.max_length: int = max_length
@@ -2208,7 +2208,7 @@ class MessageActionRow:
         self.components: List[Union[MessageTextInput, MessageButton, MessageSelectMenu]] = components or []
 
     def to_dict(self):
-        return {"type": self.type, "components": list(self.components)}
+        return {"type": self.type, "components": [component.to_dict() for component in self.components]}
 
     def add_components(self, components: List[Union[MessageButton, MessageSelectMenu]]):
         buttons = 0
@@ -2903,7 +2903,7 @@ class Modal:
     def __init__(self, *, title: str, custom_id: str, components: List[MessageActionRow]):
         self.title = title
         self.custom_id = custom_id
-        self.components = [component.to_json() for component in components]
+        self.components = [component.to_dict() for component in components]
     
     def to_dict(self):
         return {
@@ -2942,16 +2942,6 @@ class BaseInteraction:
     
     def is_modal_submit(self):
         return self.type == 5
-    
-    async def send_modal(self, *, modal: Modal):
-        if not isinstance(modal, Modal):
-            raise InvalidArgumentType("The modal argument must be of type Modal.")
-        payload = {
-            "type": 9,
-            "data": modal.to_dict()
-        }
-        await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json=payload)
-
     async def fetch_original_response(self, *, skip_cache: Optional[bool] = False):
         if not skip_cache and self.original_response:
             return self.original_response
@@ -3146,6 +3136,16 @@ class ApplicationCommandInteraction(BaseInteraction):
         self.command_type: int = self.interaction_data.get("type")
         self.resolved: ResolvedDataHandler(client, data.get("resolved", {}))
         self.options: List[dict] | None = self.interaction_data.get("options", [])
+
+    
+    async def send_modal(self, modal: Modal):
+        if not isinstance(modal, Modal):
+            raise InvalidArgumentType("The modal argument must be of type Modal.")
+        payload = {
+            "type": 9,
+            "data": modal.to_dict()
+        }
+        await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json=payload)
 
     async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
 
