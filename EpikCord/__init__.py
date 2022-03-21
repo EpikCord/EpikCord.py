@@ -2905,6 +2905,19 @@ class Webhook:
                 data.get("source_guild"))
             self.url: Optional[str] = data.get("url")
 
+class Modal:
+    def __init__(self, *, title: str, custom_id: str, components: List[MessageActionRow[MessageTextInput]]):
+        self.title = title
+        self.custom_id = custom_id
+        self.components = [component.to_json() for component in components]
+    
+    def to_dict(self):
+        return {
+            "title": self.title,
+            "custom_id": self.custom_id,
+            "components": self.components
+        }
+
 class BaseInteraction:
     def __init__(self, client, data: dict):
         self.id: str = data.get("id")
@@ -2936,6 +2949,15 @@ class BaseInteraction:
     def is_modal_submit(self):
         return self.type == 5
     
+    async def send_modal(self, *, modal: Modal):
+        if not isinstance(modal, Modal):
+            raise InvalidArgumentType("The modal argument must be of type Modal.")
+        payload = {
+            "type": 9,
+            "data": modal.to_dict()
+        }
+        await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json=payload)
+
     async def fetch_original_response(self, *, skip_cache: Optional[bool] = False):
         if not skip_cache and self.original_response:
             return self.original_response
