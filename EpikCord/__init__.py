@@ -1752,13 +1752,13 @@ class Client(WebsocketClient):
 
     def command(self, *, name: Optional[str] = None, description: Optional[str] = None, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
         def register_slash_command(func):
-            description = description or func.__doc__
-            if not description:
-                    raise TypeError(f"Missing description for command {func.__name__}.")
+            if not description and not func.__doc__:
+                raise TypeError(f"Missing description for command {func.__name__}.")
+            desc = description or func.__doc__
             self.commands.append(ClientSlashCommand(**{
                 "callback": func,
                 "name": name or func.__name__,
-                "description": description,
+                "description": desc,
                 "guild_ids": guild_ids,
                 "options": options,
             })) # Cheat method.
