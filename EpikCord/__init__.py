@@ -2906,7 +2906,7 @@ class Webhook:
             self.url: Optional[str] = data.get("url")
 
 class Modal:
-    def __init__(self, *, title: str, custom_id: str, components: List[MessageActionRow[MessageTextInput]]):
+    def __init__(self, *, title: str, custom_id: str, components: List[MessageActionRow]):
         self.title = title
         self.custom_id = custom_id
         self.components = [component.to_json() for component in components]
