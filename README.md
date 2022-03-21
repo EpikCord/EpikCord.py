@@ -4,7 +4,7 @@
 
 
 ![Documentation Status](https://readthedocs.org/projects/epikcordpy/badge/?version=latest&style=for-the-badge)
-![PyPi version](https://img.shields.io/badge/pypi-0.4.11-blue?style=for-the-badge)
+
 ![Python Requirements](https://img.shields.io/badge/python-%3E%3D3.8-brightgreen?style=for-the-badge)
 [![Discord server](https://img.shields.io/discord/937364424208039957?color=9cf&logo=discord&label=discord&style=for-the-badge)](https://discord.gg/4R473R73kQ)
 ![Maintained](https://img.shields.io/badge/maintained-yes-orange?style=for-the-badge)
