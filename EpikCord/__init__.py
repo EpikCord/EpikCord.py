@@ -408,12 +408,6 @@ class EventHandler:
                     await self.handle_event(event["t"], event["d"])
                 except Exception as e:
                     logger.exception(f"Error handling event {event['t']}: {e}")
-                if (
-                    event["t"] in self.wait_for_events
-                    and self.wait_for_events[event["t"]]()
-                ):
-                    del self.wait_for_events[event["t"]]
-
 
             elif event["op"] == self.HEARTBEAT:
                 # I shouldn't wait the remaining delay according to the docs.
