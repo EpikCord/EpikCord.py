@@ -1752,10 +1752,9 @@ class Client(WebsocketClient):
 
     def command(self, *, name: Optional[str] = None, description: Optional[str] = None, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
         def register_slash_command(func):
+            description = description or func.__doc__
             if not description:
-                if not func.__doc__:
                     raise TypeError(f"Missing description for command {func.__name__}.")
-                description = func.__doc__
             self.commands.append(ClientSlashCommand(**{
                 "callback": func,
                 "name": name or func.__name__,
@@ -3035,6 +3034,42 @@ class MessageComponentInteraction(BaseInteraction):
         self.custom_id: str = self.data.get("custom_id")
         self.component_type: Optional[int] = self.data.get("component_type")
         self.values: Optional[dict] = [MessageSelectMenuOption(option) for option in self.data.get("values", [])]
+
+    async def update(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
+
+        message_data = {
+            "tts": tts,
+            "flags": 0
+        }
+
+        if suppress_embeds:
+            message_data["flags"] += 1 << 2
+        if ephemeral:
+            message_data["flags"] += 1 << 6
+
+        if content:
+            message_data["content"] = content
+        if embeds:
+            message_data["embeds"] = [embed.to_dict() for embed in embeds]
+        if allowed_mentions:
+            message_data["allowed_mentions"] = allowed_mentions.to_dict()
+        if components:
+            message_data["components"] = [component.to_dict() for component in components]
+        if attachments:
+            message_data["attachments"] = [attachment.to_dict() for attachment in attachments]
+
+        payload = {
+            "type": 7,
+            "data": message_data
+        }
+
+        await self.client.http.patch(f"/interaction/{self.id}/{self.token}/callback", json = payload)
+
+    async def defer_update(self):
+        await self.client.http.post(f"/interaction/{self.id}/{self.token}/callback", json = {
+            "type": 6
+        })
+
 
 class ModalSubmitInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
