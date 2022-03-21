@@ -1704,13 +1704,14 @@ class HTTPClient(ClientSession):
 
 
 
-class SectionNotFound(Exception):
+class SectionError(Exception):
     ...
 
 
 class Section:
     def __init__(self):
         self.commands = {}
+        self.unloaded_commands = {}
         self.events = {}
     
     __Section_name__:str
@@ -1735,15 +1736,24 @@ class Section:
         return [c for c in self.commands]
 
     def command_unload(self, name:str):
+        
         try:
-            self.commands.pop(name)
-        except KeyError:
-            raise SectionNotFound("Error: Section already unloaded or does not exist")
 
-    def command_reload(self, name:str):
-        ... #TODO: Implement reload
+            poped = self.commands.pop(name)
+            self.unloaded_commands[name] = poped
+        except:
+            raise SectionError("Error: Section already unloaded or does not exist")
 
+    def command_load(self, name:str):
+        try:
+            poped = self.unloaded_commands.pop(name)
+            self.commands[name]= poped
+        except:
+            raise SectionError("Error: Section already unloaded or does not exist")
     
+    def hot_reload(self, name:str):
+        self.command_unload(name)
+        self.command_reload(name)
 
 
 
