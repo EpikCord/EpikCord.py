@@ -2046,20 +2046,27 @@ class MessageTextInput(BaseComponent):
         self.placeholder: Optional[str] = placeholder
 
     def to_dict(self):
-        settings: dict = {
-            "type": self.type,
-            "label": self.label,
-            "min_length": self.min_length,
-            "max_length": self.max_length,
-            "required": self.required,
+        payload = {
+            "type": 4,
+            "custom_id": self.custom_id,
             "style": self.style,
+            "label": self.label,
+            "required": self.required
         }
 
-        if getattr(self, "value", None):
-            settings["value"] = self.value
-
-        if getattr(self, "placeholder", None):
-            settings["placeholder"] = self.placeholder
+        if self.min_length:
+            payload["min_length"] = self.min_length
+        
+        if self.max_length:
+            payload["max_length"] = self.max_length
+        
+        if self.value:
+            payload["value"] = self.value
+        
+        if self.placeholder:
+            payload["placeholder"] = self.placeholder
+        
+        return payload
 
 
 class MessageButton(BaseComponent):
