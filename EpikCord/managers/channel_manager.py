@@ -4,12 +4,12 @@ from typing import (
     Optional
 )
 from .cache_manager import CacheManager
-from ..__init__ import TextBasedChannel, GuildChannel, GuildTextChannel, GuildNewsChannel, VoiceChannel, DMChannel, ChannelCategory, GuildStoreChannel, GuildNewsThread, GuildStageChannel
+from ..__init__ import Client, TextBasedChannel, GuildChannel, GuildTextChannel, GuildNewsChannel, VoiceChannel, DMChannel, ChannelCategory, GuildStoreChannel, GuildNewsThread, GuildStageChannel
 
 AnyChannel = Union[TextBasedChannel, GuildChannel, GuildTextChannel, GuildNewsChannel, VoiceChannel, DMChannel, ChannelCategory, GuildStoreChannel, GuildNewsThread, GuildStageChannel]
 
 class ChannelManager(CacheManager):
-    def __init__(self, client, channels: Optional[List[AnyChannel]] = None):
+    def __init__(self, client:Client, channels: Optional[List[AnyChannel]] = None):
         self.client = client
         self.channels = channels if channels is not None else []
     
@@ -25,3 +25,10 @@ class ChannelManager(CacheManager):
 
         self.channels.append(channel)
         return channel
+
+    async def add(self,guild_id,data:dict):
+        channel_data = await self.client.http.post(f"guilds/{guild_id}/channels", data=data)
+        self.channels.append(channel_data)
+        
+    async def edit_pos(self,guild_id,data:dict):
+        channel_data = await self.client.http.patch(f"guilds/{guild_id}/channels", data=data)
