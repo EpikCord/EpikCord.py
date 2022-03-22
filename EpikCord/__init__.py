@@ -449,14 +449,14 @@ class EventHandler:
 
         interaction = figure_out_interaction_class()
 
-        command_exists = list(filter(lambda item: item.name == interaction.command_name, self.commands))
-        option_values = []
-        if bool(command_exists): # bool(Filter) returns True every time.
-            if interaction.options:
-                for option in interaction.options:
-                    option_values.append(option.get("value"))
-            await command_exists[0].callback(interaction, *option_values)
-
+        if interaction.is_application_command():
+            command_exists = list(filter(lambda item: item.name == interaction.command_name, self.commands))
+            option_values = []
+            if bool(command_exists): # bool(Filter) returns True every time.
+                if interaction.options:
+                    for option in interaction.options:
+                        option_values.append(option.get("value"))
+                await command_exists[0].callback(interaction, *option_values)
 
         await event_func(interaction)
 
@@ -3087,14 +3087,18 @@ class MessageComponentInteraction(BaseInteraction):
 class ModalSubmitInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
+        self.custom_id: str = self.interaction_data["custom_id"]
         self.components: List[Union[MessageButton, MessageSelectMenu, MessageTextInput]] = []
-        for component in data.get("components"):
+        for component in self.interaction_data.get("components"):
             if component.get("type") == 2:
                 self.components.append(MessageButton(component))
             elif component.get("type") == 3:
                 self.components.append(MessageSelectMenu(component))
             elif component.get("type") == 4:
                 self.components.append(MessageTextInput(component))
+
+    async def send_modal(self, *args, **kwargs):
+        raise NotImplementedError("ModalSubmitInteractions cannot send modals.")
 
 class ApplicationCommandOption:
     def __init__(self, data: dict):
