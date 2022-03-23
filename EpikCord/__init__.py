@@ -11,6 +11,7 @@ from urllib.parse import quote
 import io
 import os
 from .application import *
+from .channel import *
 
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
@@ -1054,69 +1055,6 @@ class ThreadMember:
         self.flags: int = data.get("flags")
 
 
-class Thread:
-    def __init__(self, client, data: dict):
-        super().__init__(client, data)
-        self.owner_id: str = data.get("owner_id")
-        self.message_count: int = data.get("message_count")
-        self.member_count: int = data.get("member_count")
-        self.archived: bool = data.get("archived")
-        self.auto_archive_duration: int = data.get("auto_archive_duration")
-        self.archive_timestamp: str = data.get("archive_timestamp")
-        self.locked: bool = data.get("locked")
-
-    async def join(self):
-        if self.archived:
-            raise ThreadArchived(
-                "This thread has been archived so it is no longer joinable")
-        response = await self.client.http.put(f"/channels/{self.id}/thread-members/@me")
-        return await response.json()
-
-    async def add_member(self, member_id: str):
-        if self.archived:
-            raise ThreadArchived(
-                "This thread has been archived so it is no longer joinable")
-
-        response = await self.client.http.put(f"/channels/{self.id}/thread-members/{member_id}")
-        return await response.json()
-
-    async def leave(self):
-        if self.archived:
-            raise ThreadArchived(
-                "This thread has been archived so it is no longer leaveable")
-        response = await self.client.http.delete(f"/channels/{self.id}/thread-members/@me")
-        return await response.json()
-
-    async def remove_member(self, member_id: str):
-        if self.archived:
-            raise ThreadArchived(
-                "This thread has been archived so it is no longer leaveable")
-
-        response = await self.client.http.delete(f"/channels/{self.id}/thread-members/{member_id}")
-        return await response.json()
-
-    async def fetch_member(self, member_id: str) -> ThreadMember:
-        response = await self.client.http.get(f"/channels/{self.id}/thread-members/{member_id}")
-        if response.status == 404:
-            raise NotFound404(
-                "The member you are trying to fetch does not exist")
-        return ThreadMember(await response.json())
-
-    async def list_members(self) -> List[ThreadMember]:
-        response = await self.client.http.get(f"/channels/{self.id}/thread-members")
-        return [ThreadMember(member) for member in await response.json()]
-
-    async def bulk_delete(self, message_ids: List[str], reason: Optional[str]) -> None:
-
-        if reason:
-            headers = self.client.http.headers.copy()
-            headers["X-Audit-Log-Reason"] = reason
-
-        response = await self.client.http.post(f"channels/{self.id}/messages/bulk-delete", data={"messages": message_ids}, headers=headers)
-        return await response.json()
-
-class PrivateThread(Thread):
-    ...
 
 def _get_mime_type_for_image(data: bytes):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
@@ -1138,11 +1076,7 @@ def _bytes_to_base64_data(data: bytes) -> str:
     return fmt.format(mime=mime, data=b64)
 
 
-class BaseChannel:
-    def __init__(self, client, data: dict):
-        self.id: str = data.get("id")
-        self.client = client
-        self.type = data.get("type")
+
 
 
 class BaseComponent:
@@ -1380,85 +1314,8 @@ class GuildChannel(BaseChannel):
     #     return GuildChannel(self.client, data)
 
 
-class GuildTextChannel(GuildChannel, Messageable):
-    def __init__(self, client, data: dict):
-        super().__init__(client, data)
-        self.topic: str = data.get("topic")
-        self.rate_limit_per_user: int = data.get("rate_limit_per_user")
-        self.last_message_id: str = data.get("last_message_id")
-        self.default_auto_archive_duration: int = data.get(
-            "default_auto_archive_duration")
-
-    async def create_webhook(self, *, name: str, avatar: Optional[str] = None, reason: Optional[str] = None):
-        headers = client.http.headers.clone()
-        if reason:
-            headers["X-Audit-Log-Reason"] = reason
-
-    async def start_thread(self, name: str, *, auto_archive_duration: Optional[int], type: Optional[int], invitable: Optional[bool], rate_limit_per_user: Optional[int], reason: Optional[str]):
-        data = {"name": name}
-        if auto_archive_duration:
-            data["auto_archive_duration"] = auto_archive_duration
-        if type:
-            data["type"] = type
-        if invitable is not None:  # Geez having a bool is gonna be a pain
-            data["invitable"] = invitable
-        if rate_limit_per_user:
-            data["rate_limit_per_user"] = rate_limit_per_user
-
-        headers = self.client.http.headers.copy()
-        headers["X-Audit-Log-Reason"] = reason
-
-        response = await self.client.http.post(f"/channels/{self.id}/threads", data=data, headers=headers)
-        self.client.guilds[self.guild_id].append(Thread(await response.json()))
-
-    async def bulk_delete(self, message_ids: List[str], reason: Optional[str]) -> None:
-
-        if reason:
-            headers = self.client.http.headers.copy()
-            headers["X-Audit-Log-Reason"] = reason
-
-        response = await self.client.http.post(f"channels/{self.id}/messages/bulk-delete", data={"messages": message_ids}, headers=headers)
-        return await response.json()
-
-    # It returns a List of Threads but I can't typehint that...
-    async def list_public_archived_threads(self, *, before: Optional[str], limit: Optional[int]) -> Dict[str, Union[List[Messageable], List[ThreadMember], bool]]:
-        response = await self.client.http.get(f"/channels/{self.id}/threads/archived/public", params={"before": before, "limit": limit})
-        return await response.json()
-
-    # It returns a List of Threads but I can't typehint that...
-    async def list_private_archived_threads(self, *, before: Optional[str], limit: Optional[int]) -> Dict[str, Union[List[Messageable], List[ThreadMember], bool]]:
-        response = await self.client.http.get(f"/channels/{self.id}/threads/archived/private", params={"before": before, "limit": limit})
-        return await response.json()
-
-    async def list_joined_private_archived_threads(self, *, before: Optional[str], limit: Optional[int]) -> Dict[str, Union[List[Messageable], List[ThreadMember], bool]]:
-        response = await self.client.http.get(f"/channels/{self.id}/threads/archived/private", params={"before": before, "limit": limit})
-        return await response.json()
-
-    # async def edit(self,*, name: Optional[str], position: Optional[str], permission_overwrites: Optional[List[dict]], reason: Optional[str], topic: Optional[str], nsfw: bool, rate_limit_per_user: Optional[int], parent_id: Optional[int], default_auto_archive_duration: Optional[int]):
-    #     data = {}
-    #     if name:
-    #         data["name"] = name
-    #     if position:
-    #         data["position"] = position
-    #     if permission_overwrites:
-    #         data["permission_overwrites"] = permission_overwrites
-
-    #     headers = self.client.http.headers
-    #     headers["X-Audit-Log-Reason"] = reason
-    #     response = await self.client.http.patch(f"channels/{self.id}", data=data, headers=headers)
-    #     data = await response.json()
-    #     return GuildTextChannel(self.client, data)
 
 
-class GuildNewsChannel(GuildTextChannel):
-    def __init__(self, client, data: dict):
-        super().__init__(client, data)
-        self.default_auto_archive_duration: int = data.get(
-            "default_auto_archive_duration")
-
-    async def follow(self, webhook_channel_id: str):
-        response = await self.client.http.post(f"/channels/{self.id}/followers", data={"webhook_channel_id": webhook_channel_id})
-        return await response.json()
 
 
 class VoiceChannel(GuildChannel):
@@ -1469,64 +1326,21 @@ class VoiceChannel(GuildChannel):
         self.rtc_region: str = data.get("rtc_region")
 
 
-class DMChannel(BaseChannel):
-    def __init__(self, client, data: dict):
-        super().__init__(client, data)
-        self.recipient: List[PartialUser] = PartialUser(data.get("recipient"))
 
 
-class ChannelCategory(GuildChannel):
-    def __init__(self, client, data: dict):
-        super().__init__(client, data)
 
 
-class GuildStoreChannel(GuildChannel):
-    def __init__(self, client, data: dict):
-        super().__init__(client, data)
 
 
-class GuildNewsThread(Thread, GuildNewsChannel):
-    def __init__(self, client, data: dict):
-        super().__init__(client, data)
 
 
-class GuildStageChannel(BaseChannel):
-    def __init__(self, client, data: dict):
-        super().__init__(client, data)
-        self.guild_id: str = data.get("guild_id")
-        self.channel_id: str = data.get("channel_id")
-        self.privacy_level: int = data.get("privacy_level")
-        self.discoverable_disabled: bool = data.get("discoverable_disabled")
 
-class TextBasedChannel:
-    def __init__(self, client, data: dict):
-        self.client = client
-        self.data: dict = data
 
-    def to_type(self):
-        if self.type == 0:
-            return GuildTextChannel(self.client, self.data)
 
-        elif self.type == 1:
-            return DMChannel(self.client, self.data)
 
-        elif self.type == 4:
-            return ChannelCategory(self.client, self.data)
 
-        elif self.type == 5:
-            return GuildNewsChannel(self.client, self.data)
 
-        elif self.type == 6:
-            return GuildStoreChannel(self.client, self.data)
 
-        elif self.type == 10:
-            return GuildNewsThread(self.client, self.data)
-
-        elif self.type in [11, 12]:
-            return Thread(self.client, self.data)
-
-        elif self.type == 13:
-            return GuildStageChannel(self.client, self.data)
 
 
 class RatelimitHandler:
