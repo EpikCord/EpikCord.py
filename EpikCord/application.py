@@ -1,5 +1,6 @@
 from typing import (Optional, Union, List,)
-from .__init__ import PartialUser, Team, BaseInteraction, ResolvedDataHandler, Modal,InvalidArgumentType,Embed,MessageButton,MessageSelectMenu,MessageTextInput,Attachment
+from .exceptions import InvalidArgumentType
+#from .__init__ import PartialUser, Team, BaseInteraction, ResolvedDataHandler, Modal,InvalidArgumentType,Embed,MessageButton,MessageSelectMenu,MessageTextInput,Attachment
 #temp import (So many!)
 # we have to make sure there is no circular imports, someone help us!
 class Application:

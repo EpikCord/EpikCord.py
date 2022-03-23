@@ -12,8 +12,11 @@ import io
 import os
 from .application import *
 from .channel import *
+from .client import *
+from .exceptions import *
+from .embed import *
+from .emojiemoji import *
 
-CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
 logger = getLogger(__name__)
 __version__ = '0.4.12'
@@ -31,8 +34,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
-class InvalidStatus(Exception):
-    ...
+
 
 class Status:
     def __init__(self, status: str):
@@ -96,23 +98,7 @@ class UnavailableGuild:
         self.available: bool = data.get("available")
 
 
-class PartialEmoji:
-    def __init__(self, data: dict):
-        self.data: dict = data
-        self.name: str = data.get("name")
-        self.id: str = data.get("id")
-        self.animated: bool = data.get("animated")
 
-    def to_dict(self):
-        payload = {
-            "id": self.id,
-            "name": self.name,
-        }
-
-        if self.animated in (True, False):
-            payload["animated"] = self.animated
-
-        return payload
 
 
 class Reaction:
@@ -614,8 +600,7 @@ class EventHandler:
         except KeyError:
             return
 
-class ClosedWebSocketConnection(Exception):
-    ...
+
 
 class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
@@ -899,8 +884,7 @@ class SlashCommandOptionChoice:
             "value": self.value
         }
 
-class InvalidOption(Exception):
-    ...
+
 
 class Subcommand(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: str = None, required: bool = True, options: list[Union[StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]] = None):
@@ -1096,11 +1080,6 @@ class BaseComponent:
 
 
 
-class InvalidApplicationCommandType(Exception):
-    ...
-
-class InvalidApplicationCommandOptionType(Exception):
-    ...
 
 
 
@@ -1495,222 +1474,17 @@ class Section:
         return register_slash_command
 
 
-class MissingClientSetting(Exception):
-    ...
 
 
-class Client(WebsocketClient):
 
-    def __init__(self, token: str, intents: int = 0):
-        super().__init__(token, intents)
 
-        self.commands: List[Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]] = [] # TODO: Need to change this to a Class Later
-        self.guilds: GuildManager = GuildManager(self)
-        self._checks: List[Callable] = []
-
-        self.http = HTTPClient(
-            # raise_for_status = True,
-            headers = {
-                "Authorization": f"Bot {token}",
-                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})"
-            }
-        )
-
-        self.utils = Utils(self.http)
-
-        self.user: ClientUser = None
-        self.application: Application = None
-        self.sections: List[Section] = []
-
-    def command(self, *, name: Optional[str] = None, description: Optional[str] = None, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
-        def register_slash_command(func):
-            if not description and not func.__doc__:
-                raise TypeError(f"Missing description for command {func.__name__}.")
-            desc = description or func.__doc__
-            self.commands.append(ClientSlashCommand(**{
-                "callback": func,
-                "name": name or func.__name__,
-                "description": desc,
-                "guild_ids": guild_ids,
-                "options": options,
-            })) # Cheat method.
-        return register_slash_command
-
-    def user_command(self, name: Optional[str] = None):
-        def register_slash_command(func):
-            self.commands.append(ClientUserCommand(**{
-                "callback": func,
-                "name": name or func.__name__,
-            }))
-        return register_slash_command
-
-    def message_command(self, name: Optional[str] = None):
-        def register_slash_command(func):
-            self.commands.append(ClientMessageCommand(**{
-                "callback": func,
-                "name": name or func.__name__,
-            }))
-        return register_slash_command
-
-    def add_section(self, section: Section):
-        if not issubclass(section, Section):
-            raise InvalidArgumentType("You must pass in a class that inherits from the Section class.")
-
-        for name, command_object in section.commands:
-            self.commands[name] = command_object
-
-        for event_name, event_func in section.events:
-            self.events[event_name.lower()] = event_func
-        self.sections.append(section)
-        section.on_load()
-    
-    def unload_section(self, section: Section):
-        if not issubclass(section, Section):
-            raise InvalidArgumentType("You must pass in a class that inherits from the Section class.")
-
-        for name, command_object in section.commands:
-            del self.commands[name]
-
-        for event_name, event_func in section.events:
-            del self.events[event_name.lower()]
-        self.sections.remove(section)
-        section.on_unload()
 
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
 #         super().__init__(data)
 
 
-class Colour:
-    # Some of this code is sourced from discord.py, rest assured all the colors are different from discord.py
-    __slots__ = ('value',)
 
-    def __init__(self, value: int):
-        if not isinstance(value, int):
-            raise TypeError(
-                f'Expected int parameter, received {value.__class__.__name__} instead.')
-
-        self.value: int = value
-
-    def _get_byte(self, byte: int) -> int:
-        return (self.value >> (8 * byte)) & 0xff
-
-    def __eq__(self, other: Any) -> bool:
-        return isinstance(other, Colour) and self.value == other.value
-
-    def __ne__(self, other: Any) -> bool:
-        return not self.__eq__(other)
-
-    def __str__(self) -> str:
-        return f'#{self.value:0>6x}'
-
-    def __int__(self) -> int:
-        return self.value
-
-    def __repr__(self) -> str:
-        return f'<Colour value={self.value}>'
-
-    def __hash__(self) -> int:
-        return hash(self.value)
-
-    @property
-    def r(self) -> int:
-        """Return the red component in rgb"""
-        return self._get_byte(2)
-
-    @property
-    def g(self) -> int:
-        """Return the green component in rgb"""
-        return self._get_byte(1)
-
-    @property
-    def b(self) -> int:
-        """Return the blue component in rgb"""
-        return self._get_byte(0)
-
-    def to_rgb(self) -> Tuple[int, int, int]:
-        """Returns an rgb color as a tuple"""
-        return (self.r, self.g, self.b)
-
-    @classmethod
-    def from_rgb(cls: Type[CT], r: int, g: int, b: int) -> CT:
-        """Constructs a :class:`Colour` from an RGB tuple."""
-        return cls((r << 16) + (g << 8) + b)
-
-    @classmethod
-    def lime_green(cls: Type[CT]) -> CT:
-        """Returns a color of lime green"""
-        return cls(0x00ff01)
-
-    @classmethod
-    def light_green(cls: Type[CT]) -> CT:
-        """Returns a color of light green"""
-        return cls(0x00ff22)
-
-    @classmethod
-    def dark_green(cls: Type[CT]) -> CT:
-        """Returns a color of dark green"""
-        return cls(0x00570a)
-
-    @classmethod
-    def light_blue(cls: Type[CT]) -> CT:
-        """Returns a color of light blue"""
-        return cls(0x00ff01)
-
-    @classmethod
-    def dark_blue(cls: Type[CT]) -> CT:
-        """Returns a color of dark blue"""
-        return cls(0x0a134b)
-
-    @classmethod
-    def light_red(cls: Type[CT]) -> CT:
-        """Returns a color of light red"""
-        return cls(0xaa5b54)
-
-    @classmethod
-    def dark_red(cls: Type[CT]) -> CT:
-        """Returns a color of dark red"""
-        return cls(0x4c0000)
-
-    @classmethod
-    def black(cls: Type[CT]) -> CT:
-        """Returns a color of black"""
-        return cls(0x000000)
-
-    @classmethod
-    def white(cls: Type[CT]) -> CT:
-        """Returns a color of white"""
-        return cls(0xffffff)
-
-    @classmethod
-    def lightmode(cls: Type[CT]) -> CT:
-        """Returns the color of the background when the color theme in Discord is set to light mode. An alias of `white`"""
-        return cls(0xffffff)
-
-    @classmethod
-    def darkmode(cls: Type[CT]) -> CT:
-        """Returns the color of the background when the color theme in Discord is set to dark mode"""
-        return cls(0x363940)
-
-    @classmethod
-    def amoled(cls: Type[CT]) -> CT:
-        """Returns the color of the background when the color theme in Discord is set to amoled mode. An alias of `black`"""
-        return cls(0x000000)
-
-    @classmethod
-    def blurple_old(cls: Type[CT]) -> CT:
-        """Returns the old Discord Blurple color"""
-        return cls(0x7289da)
-
-    @classmethod
-    def blurple_new(cls: Type[CT]) -> CT:
-        """Returns the new Discord Blurple color"""
-        return cls(0x5865f2)
-
-    default = black
-
-
-Color = Colour
 
 
 class MessageSelectMenuOption:
@@ -1973,9 +1747,6 @@ class MessageButton(BaseComponent):
         return self
 
 
-class MissingCustomId(Exception):
-    ...
-
 
 class MessageActionRow:
     def __init__(self, components: Optional[List[Union[MessageButton, MessageSelectMenu]]] = None):
@@ -2009,158 +1780,7 @@ class MessageActionRow:
         return self
 
 
-class Embed:  # Always wanted to make this class :D
-    def __init__(self, *,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-        color: Optional[Colour] = None,
-        video: Optional[dict] = None,
-        timestamp: Optional[datetime.datetime] = None,
-        colour: Optional[Colour] = None,
-        url: Optional[str] = None,
-        type: Optional[int] = None,
-        footer: Optional[dict] = None,
-        image: Optional[dict] = None,
-        thumbnail: Optional[dict] = None,
-        provider: Optional[dict] = None,
-        author: Optional[dict] = None,
-        fields: Optional[List[dict]] = None,
-                 ):
-        self.type: int = type
-        self.title: Optional[str] = title
-        self.type: Optional[str] = type
-        self.description: Optional[str] = description
-        self.url: Optional[str] = url
-        self.video: Optional[dict] = video
-        self.timestamp: Optional[str] = timestamp
-        self.color: Optional[Colour] = color or colour
-        self.footer: Optional[str] = footer
-        self.image: Optional[str] = image
-        self.thumbnail: Optional[str] = thumbnail
-        self.provider: Optional[str] = provider
-        self.author: Optional[dict] = author
-        self.fields: Optional[List[str]] = fields
 
-    def add_field(self, *, name: str, value: str, inline: bool = False):
-        self.fields.append({"name": name, "value": value, "inline": inline})
-
-    def set_thumbnail(self, *, url: Optional[str] = None, proxy_url: Optional[str] = None, height: Optional[int] = None, width: Optional[int] = None):
-        config = {
-            "url": url
-        }
-        if proxy_url:
-            config["proxy_url"] = proxy_url
-        if height:
-            config["height"] = height
-        if width:
-            config["width"] = width
-
-        self.thumbnail = config
-
-    def set_video(self, *, url: Optional[str] = None, proxy_url: Optional[str] = None, height: Optional[int] = None, width: Optional[int] = None):
-        config = {
-            "url": url
-        }
-        if proxy_url:
-            config["proxy_url"] = proxy_url
-        if height:
-            config["height"] = height
-        if width:
-            config["width"] = width
-
-        self.video = config
-
-    def set_image(self, *, url: Optional[str] = None, proxy_url: Optional[str] = None, height: Optional[int] = None, width: Optional[int] = None):
-        config = {
-            "url": url
-        }
-        if proxy_url:
-            config["proxy_url"] = proxy_url
-        if height:
-            config["height"] = height
-        if width:
-            config["width"] = width
-
-        self.image = config
-
-    def set_provider(self, *, name: Optional[str] = None, url: Optional[str] = None):
-        config = {}
-        if url:
-            config["url"] = url
-        if name:
-            config["name"] = name
-        self.provider = config
-
-    def set_footer(self, *, text: Optional[str], icon_url: Optional[str] = None, proxy_icon_url: Optional[str] = None):
-        payload = {}
-        if text:
-            payload["text"] = text
-        if icon_url:
-            payload["icon_url"] = icon_url
-        if proxy_icon_url:
-            payload["proxy_icon_url"] = proxy_icon_url
-        self.footer = payload
-
-    def set_author(self, name: Optional[str] = None, url: Optional[str] = None, icon_url: Optional[str] = None, proxy_icon_url: Optional[str] = None):
-        payload = {}
-        if name:
-            payload["name"] = name
-        if url:
-            payload["url"] = url
-        if icon_url:
-            payload["icon_url"] = icon_url
-        if proxy_icon_url:
-            payload["proxy_icon_url"] = proxy_icon_url
-
-        self.author = payload
-
-    def set_fields(self, *, fields: List[dict]):
-        self.fields = fields
-
-    def set_color(self, *, colour: Colour):
-        self.color = colour.value
-
-    def set_timestamp(self, *, timestamp: datetime.datetime):
-        self.timestamp = timestamp.isoformat()
-
-    def set_title(self, title: Optional[str] = None):
-        self.title = title
-
-    def set_description(self, description: Optional[str] = None):
-        self.description = description
-
-    def set_url(self, url: Optional[str] = None):
-        self.url = url
-
-    def to_dict(self):
-        final_product = {}
-
-        if getattr(self, "title"):
-            final_product["title"] = self.title
-        if getattr(self, "description"):
-            final_product["description"] = self.description
-        if getattr(self, "url"):
-            final_product["url"] = self.url
-        if getattr(self, "timestamp"):
-            final_product["timestamp"] = self.timestamp
-        if getattr(self, "color"):
-            final_product["color"] = self.color
-        if getattr(self, "footer"):
-            final_product["footer"] = self.footer
-        if getattr(self, "image"):
-            final_product["image"] = self.image
-        if getattr(self, "thumbnail"):
-            final_product["thumbnail"] = self.thumbnail
-        if getattr(self, "video"):
-            final_product["video"] = self.video
-        if getattr(self, "provider"):
-            final_product["provider"] = self.provider
-        if getattr(self, "author"):
-            final_product["author"] = self.author
-        if getattr(self, "fields"):
-            final_product["fields"] = self.fields
-
-        return final_product
 
 
 class RoleTag:
@@ -2226,92 +1846,6 @@ class Emoji:
         await self.client.http.delete(f"/guilds/{self.guild_id}/emojis/{self.id}", json=payload)
 
 
-class DiscordAPIError(Exception):
-    ...
-
-
-class InvalidData(Exception):
-    ...
-
-
-class InvalidIntents(Exception):
-    ...
-
-
-class ShardingRequired(Exception):
-    ...
-
-
-class InvalidToken(Exception):
-    ...
-
-
-class UnhandledException(Exception):
-    ...
-
-
-class DisallowedIntents(Exception):
-    ...
-
-
-class BadRequest400(Exception):
-    ...
-
-
-class Unauthorized401(Exception):
-    ...
-
-
-class Forbidden403(Exception):
-    ...
-
-
-class NotFound404(Exception):
-    ...
-
-
-class MethodNotAllowed405(Exception):
-    ...
-
-
-class Ratelimited429(Exception):
-    ...
-
-
-class GateawayUnavailable502(Exception):
-    ...
-
-
-class InternalServerError5xx(Exception):
-    ...
-
-
-class TooManyComponents(Exception):
-    ...
-
-
-class InvalidComponentStyle(Exception):
-    ...
-
-
-class CustomIdIsTooBig(Exception):
-    ...
-
-
-class InvalidArgumentType(Exception):
-    ...
-
-
-class TooManySelectMenuOptions(Exception):
-    ...
-
-
-class LabelIsTooBig(Exception):
-    ...
-
-
-class ThreadArchived(Exception):
-    ...
 
 
 class WelcomeScreenChannel:

@@ -1,5 +1,5 @@
 from typing import Optional, List, Dict, Union
-from .__init__ import GuildChannel, Messageable, Thread, PartialUser
+#from .__init__ import GuildChannel, Messageable, Thread, PartialUser
 from aiohttp import *
 from .thread import *
 
