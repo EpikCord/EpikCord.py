@@ -1,0 +1,13 @@
+name: Build Docs
+
+on: push, pull_request
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - run: pip install sphinx
+      - run: sphinx-apidoc -o ./source ../EpikCord.py
+      - run: make clean && make html
+
