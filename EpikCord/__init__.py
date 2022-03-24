@@ -468,7 +468,7 @@ class EventHandler:
                     for option in interaction.options:
                         option_values.append(option.get("value"))
                 await command_exists[0].callback(interaction, *option_values)
-        
+
         if interaction.is_message_component():
             if self._components.get(interaction.custom_id):
                 if interaction.is_button():
@@ -478,7 +478,7 @@ class EventHandler:
             action_rows = interaction.interaction_data.components
             component_object_list = []
             for action_row in action_rows:
-                for component in action_rows.get("components"):
+                for component in action_row.get("components"):
                     component_object_list.append(component["value"])
             self.client._components.get(interaction.custom_id).callback(interaction, *component_object_list)
 
