@@ -3098,6 +3098,18 @@ class MessageComponentInteraction(BaseInteraction):
         self.component_type: Optional[int] = self.data.get("component_type")
         self.values: Optional[dict] = [SelectMenuOption(option) for option in self.data.get("values", [])]
 
+    def is_action_row(self):
+        return self.component_type == 1
+
+    def is_button(self):
+        return self.component_type == 2
+    
+    def is_select_menu(self):
+        return self.component_type == 3
+
+    def is_text_input(self):
+        return self.component_type == 4
+
     async def update(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[Button, SelectMenu, TextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False) -> None:
 
         message_data = {
