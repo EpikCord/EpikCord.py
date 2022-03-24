@@ -24,6 +24,7 @@ Getting Started
 If you're new to this library, you can get started here
 
 
-* First Steps: :ref:`genindex``
+* First Steps: :ref:`genindex`
+* Logging and more info: :ref:`logging.rst`
 * :ref:`modindex`
 * :ref:`search`

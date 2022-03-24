@@ -13,8 +13,7 @@ class RoleManager:
         response = await self.guild.client.http.delete(f"guilds/{self.guild.id}/roles/{role_id}")
         #Todd: pop the local roles
 
-    async def edit_role_position(self,data:dict):
-        response = await self.guild.client.http.patch(f"guilds/{self.guild.id}/roles", data=data)
+
 
     async def edit_role(self,role_id:str,data:dict):
         response= await self.guild.client.http.patch(f"guilds/{self.guild.id}/roles/{role_id}", data=data)
