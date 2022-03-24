@@ -471,7 +471,8 @@ class EventHandler:
         
         if interaction.is_message_component():
             if self._components.get(interaction.custom_id):
-                await self._components[interaction.custom_id](interaction)
+                if interaction.is_button():
+                    await self._components[interaction.custom_id](interaction, list(filter(lambda comp: comp.custom_id == interaction.custom_id, interaction.message.components))[0])
 
         if interaction.is_modal_submit():
             action_rows = interaction.interaction_data.components
