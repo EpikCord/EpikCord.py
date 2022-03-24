@@ -177,13 +177,13 @@ class Message:
                 if component.get("type") == 1:
                     components.append(MessageActionRow(component))
                 elif component.get("type") == 2:
-                    components.append(MessageButton(component))
+                    components.append(Button(component))
                 elif components.get("type") == 3:
-                    components.append(MessageSelectMenu(component))
+                    components.append(SelectMenu(component))
                 elif components.get("type") == 4:
-                    components.append(MessageTextInput(component))
+                    components.append(TextInput(component))
 
-        self.components: Optional[List[Union[MessageTextInput, MessageSelectMenu, MessageButton]]] = components
+        self.components: Optional[List[Union[TextInput, SelectMenu, Button]]] = components
         self.stickers: Optional[List[StickerItem]] = [StickerItem(
             sticker) for sticker in data.get("stickers", [])] or None
 
@@ -1974,7 +1974,7 @@ class Colour:
 Color = Colour
 
 
-class MessageSelectMenuOption:
+class SelectMenuOption:
     def __init__(self, label: str, value: str, description: Optional[str] = None, emoji: Optional[PartialEmoji] = None, default: Optional[bool] = None):
         self.label: str = label
         self.value: str = value
@@ -2007,7 +2007,7 @@ class MessageSelectMenuOption:
 class SelectMenu(BaseComponent):
     def __init__(self, *, min_values: Optional[int] = 1, max_values: Optional[int] = 1, disabled: Optional[bool] = False, custom_id: str):
         super().__init__(custom_id=custom_id)
-        self.options: List[Union[MessageSelectMenuOption, dict]] = []
+        self.options: List[Union[SelectMenuOption, dict]] = []
         self.type: str = 3
         self.min_values = min_values
         self.max_values = max_values
@@ -2023,7 +2023,7 @@ class SelectMenu(BaseComponent):
             "custom_id": self.custom_id
         }
 
-    def add_options(self, options: List[MessageSelectMenuOption]):
+    def add_options(self, options: List[SelectMenuOption]):
         for option in options:
 
             if len(self.options) > 25:
@@ -2246,31 +2246,31 @@ class MissingCustomId(Exception):
 
 
 class MessageActionRow:
-    def __init__(self, components: Optional[List[Union[MessageButton, MessageSelectMenu]]] = None):
+    def __init__(self, components: Optional[List[Union[Button, SelectMenu]]] = None):
         self.settings = {
             "type": 1,
             "components": components or []
         }
         self.type: int = 1
-        self.components: List[Union[MessageTextInput, MessageButton, MessageSelectMenu]] = components or []
+        self.components: List[Union[TextInput, Button, SelectMenu]] = components or []
 
     def to_dict(self):
         return {"type": self.type, "components": [component.to_dict() for component in self.components]}
 
-    def add_components(self, components: List[Union[MessageButton, MessageSelectMenu]]):
+    def add_components(self, components: List[Union[Button, SelectMenu]]):
         buttons = 0
         for component in components:
             if not component.custom_id:
                 raise MissingCustomId(
                     f"You need to supply a custom id for the component {component}")
 
-            if type(component) == MessageButton:
+            if type(component) == Button:
                 buttons += 1
 
             elif buttons > 5:
                 raise TooManyComponents("You can only have 5 buttons per row.")
 
-            elif type(component) == MessageSelectMenu and buttons > 0:
+            elif type(component) == SelectMenu and buttons > 0:
                 raise TooManyComponents(
                     "You can only have 1 select menu per row. No buttons along that select menu.")
             self.components.append(component.to_dict())
@@ -2606,7 +2606,7 @@ class GuildPreview:
         self.features: List[str] = data.get("features")
         self.approximate_member_count: int = data.get("approximate_member_count")
         self.approximate_presence_count: int = data.get("approximate_presence_count")
-        self.sticekrs: List[Sticker] = [Sticker(sticker) for sticker in data.get("stickers", [])]
+        self.stickers: List[Sticker] = [Sticker(sticker) for sticker in data.get("stickers", [])]
 
 class GuildWidgetSettings:
     def __init__(self, data: dict):
@@ -2706,7 +2706,7 @@ class SystemChannelFlags:
         self.value += 1 << 2
 
     @property
-    def supporess_join_notification_replies(self):
+    def suppress_join_notification_replies(self):
         self.value += 1 << 3
 
 class Guild:
@@ -3005,7 +3005,7 @@ class BaseInteraction:
         self.original_response: Message = Message(self.client, message_data)
         return self.original_response
     
-    async def edit_original_response(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
+    async def edit_original_response(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[Button, SelectMenu, TextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
 
         message_data = {
             "tts": tts,
@@ -3035,7 +3035,7 @@ class BaseInteraction:
     async def delete_original_response(self):
         await self.client.http.delete(f"/webhooks/{self.application_id}/{self.token}/messages/@original")
 
-    async def create_followup(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
+    async def create_followup(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[Button, SelectMenu, TextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
 
         message_data = {
             "tts": tts,
@@ -3063,7 +3063,7 @@ class BaseInteraction:
         self.followup_response: Message = Message(self.client, new_message_data)
         return self.followup_response
 
-    async def edit_followup(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
+    async def edit_followup(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[Button, SelectMenu, TextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
 
         message_data = {
             "tts": tts,
@@ -3096,9 +3096,9 @@ class MessageComponentInteraction(BaseInteraction):
         super().__init__(client, data)
         self.custom_id: str = self.data.get("custom_id")
         self.component_type: Optional[int] = self.data.get("component_type")
-        self.values: Optional[dict] = [MessageSelectMenuOption(option) for option in self.data.get("values", [])]
+        self.values: Optional[dict] = [SelectMenuOption(option) for option in self.data.get("values", [])]
 
-    async def update(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False) -> None:
+    async def update(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[Button, SelectMenu, TextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False) -> None:
 
         message_data = {
             "tts": tts,
@@ -3136,14 +3136,14 @@ class ModalSubmitInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
         self.custom_id: str = self.interaction_data["custom_id"]
-        self.components: List[Union[MessageButton, MessageSelectMenu, MessageTextInput]] = []
+        self.components: List[Union[Button, SelectMenu, TextInput]] = []
         for component in self.interaction_data.get("components"):
             if component.get("type") == 2:
-                self.components.append(MessageButton(component))
+                self.components.append(Button(component))
             elif component.get("type") == 3:
-                self.components.append(MessageSelectMenu(component))
+                self.components.append(SelectMenu(component))
             elif component.get("type") == 4:
-                self.components.append(MessageTextInput(component))
+                self.components.append(TextInput(component))
 
     async def send_modal(self, *args, **kwargs):
         raise NotImplementedError("ModalSubmitInteractions cannot send modals.")
@@ -3197,7 +3197,7 @@ class ApplicationCommandInteraction(BaseInteraction):
         self.options: List[dict] | None = self.interaction_data.get("options", [])
 
 
-    async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
+    async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[Button, SelectMenu, TextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
 
         message_data = {
             "tts": tts,
