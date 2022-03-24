@@ -1,3 +1,7 @@
+"""
+NOTE: __version__ in this file, __main__ and setup.cfg
+"""
+
 import threading
 from .managers import *
 from aiohttp import *
@@ -14,7 +18,7 @@ import os
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
 logger = getLogger(__name__)
-__version__ = '0.4.12'
+__version__ = '0.4.13'
 
 
 """
