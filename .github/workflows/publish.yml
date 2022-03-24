@@ -9,5 +9,5 @@ jobs:
       - uses: actions/setup-python@v2
       - run: pip install sphinx
       - run: sphinx-apidoc -o ./source ../EpikCord.py
-      - run: make clean && make html
+      - run: cd docs && make clean && make html
 
