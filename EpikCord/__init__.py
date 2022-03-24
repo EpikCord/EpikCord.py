@@ -416,6 +416,7 @@ class EventHandler:
                 await self.identify()
 
             elif event["op"] == self.EVENT:
+                self.sequence = event["s"]
                 try:
                     await self.handle_event(event["t"], event["d"])
                 except Exception as e:
@@ -430,7 +431,6 @@ class EventHandler:
                     self.heartbeats.append(event["d"])
                 except AttributeError:
                     self.heartbeats = [event["d"]]
-                self.sequence = event["s"]
             logger.debug(f"Received event {event['t']}")
         await self.handle_close()
 
@@ -3050,7 +3050,8 @@ class BaseInteraction:
         if attachments:
             message_data["attachments"] = [attachment.to_dict() for attachment in attachments]
 
-        new_message_data = await self.client.http.post(f"/webhooks/{self.application_id}/{self.token}/", json = message_data)
+        response = await self.client.http.post(f"/webhooks/{self.application_id}/{self.token}/", json = message_data)
+        new_message_data = await response.json()
         self.followup_response: Message = Message(self.client, new_message_data)
         return self.followup_response
 
