@@ -2962,6 +2962,15 @@ class BaseInteraction:
         self.original_response: Optional[Message] = None # Can't be set on construction.
         self.followup_response: Optional[Message] = None # Can't be set on construction.
 
+    async def send_modal(self, modal: Modal):
+        if not isinstance(modal, Modal):
+            raise InvalidArgumentType("The modal argument must be of type Modal.")
+        payload = {
+            "type": 9,
+            "data": modal.to_dict()
+        }
+        await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json=payload)
+
     def is_application_command(self):
         return self.type == 2
 
@@ -3170,15 +3179,6 @@ class ApplicationCommandInteraction(BaseInteraction):
         self.resolved: ResolvedDataHandler(client, data.get("resolved", {}))
         self.options: List[dict] | None = self.interaction_data.get("options", [])
 
-    
-    async def send_modal(self, modal: Modal):
-        if not isinstance(modal, Modal):
-            raise InvalidArgumentType("The modal argument must be of type Modal.")
-        payload = {
-            "type": 9,
-            "data": modal.to_dict()
-        }
-        await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json=payload)
 
     async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
 

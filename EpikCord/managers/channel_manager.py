@@ -11,13 +11,13 @@ AnyChannel = Union[TextBasedChannel, GuildChannel, GuildTextChannel, GuildNewsCh
 class ChannelManager(CacheManager):
     def __init__(self, client, channels: Optional[List[AnyChannel]] = None):
         self.client = client
-        self.channels = channels if channels is not None else []
+        self.channels = [client.utils.channel_from_type(channel_data) for channel_data in channels] if channels else []
     
     async def fetch(self, channel_id, *, skip_cache: Optional[bool] = False):
         if not skip_cache:
-            for channel in self.channels:
-                if channel.id == channel_id:
-                    return channel
+            filtered_list = list(filter(lambda channel: channel.id == channel_id, self.channels))
+            if len(filtered_list) > 0:
+                return filtered_list[0]
 
         channel_data = await self.client.http.get(f"channels/{channel_id}")
 
