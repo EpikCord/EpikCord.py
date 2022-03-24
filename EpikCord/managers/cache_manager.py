@@ -1,7 +1,7 @@
 class CacheManager:
     def __init__(self, cache_key: str = "cache"):
         self.cache_key: str = cache_key
-        setattr(self, cache_key, []) # Dynamic for subclasses
+        setattr(self, cache_key, {}) # Dynamic for subclasses
     
     def add_to_cache(self, key, value):
         getattr(self, self.cache_key)[key] = value
