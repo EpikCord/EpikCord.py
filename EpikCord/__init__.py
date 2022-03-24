@@ -393,6 +393,14 @@ class EventHandler:
         self.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT: int = 8
         self.MODAL: int = 9
 
+    def component(self, custom_id: str):
+        """
+        Execute this function when a component with the `custom_id` is interacted with.
+        """
+        def wrapper(func):
+            self._components[custom_id] = func
+        return wrapper
+
     async def handle_events(self):
         async for event in self.ws:
             event = event.json()
@@ -445,7 +453,6 @@ class EventHandler:
                 return AutoCompleteInteraction(self, data)
             elif interaction_type == 5:
                 return ModalSubmitInteraction(self, data)
-            
 
         interaction = figure_out_interaction_class()
 
@@ -457,6 +464,18 @@ class EventHandler:
                     for option in interaction.options:
                         option_values.append(option.get("value"))
                 await command_exists[0].callback(interaction, *option_values)
+        
+        if interaction.is_message_component():
+            if self._components.get(interaction.custom_id):
+                await self._components[interaction.custom_id](interaction)
+
+        if interaction.is_modal_submit():
+            action_rows = interaction.interaction_data.components
+            component_object_list = []
+            for action_row in action_rows:
+                for component in action_rows.get("components"):
+                    component_object_list.append(component["value"])
+            self.client._components.get(interaction.custom_id).callback(interaction, *component_object_list)
 
         await event_func(interaction)
 
@@ -1145,8 +1164,12 @@ class BaseChannel:
 
 
 class BaseComponent:
-    def __init__(self, *, custom_id: str):
+    def __init__(self, *, custom_id: str, callback: callable):
         self.custom_id: str = custom_id
+        self.callback: callable = callback
+
+    def set_callback(self, callback_function: callable):
+        self.callback = callback_function
 
     def set_custom_id(self, custom_id: str):
 
@@ -1728,6 +1751,7 @@ class Client(WebsocketClient):
         self.commands: List[Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]] = [] # TODO: Need to change this to a Class Later
         self.guilds: GuildManager = GuildManager(self)
         self._checks: List[Callable] = []
+        self._components = {}
 
         self.http = HTTPClient(
             # raise_for_status = True,
@@ -1742,6 +1766,10 @@ class Client(WebsocketClient):
         self.user: ClientUser = None
         self.application: Application = None
         self.sections: List[Section] = []
+
+    def add_component(self, component):
+        self._components.append(component)
+        return self._components
 
     def command(self, *, name: Optional[str] = None, description: Optional[str] = None, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
         def register_slash_command(func):
