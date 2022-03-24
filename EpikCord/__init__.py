@@ -692,7 +692,17 @@ class WebsocketClient(EventHandler):
 
     async def reconnect(self):
         await self.close()
-        
+        self.ws = await self.http.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json")
+        await self.send_json({
+            "op": self.RECONNECT,
+            "d": {
+                "token": self.token,
+                "session_id": self.session_id,
+                "seq": self.sequence
+            }
+        })
+        self._closed = False
+        await self.handle_events()
 
     async def handle_close(self):
         if self.ws.close_code == 4014:
@@ -1662,11 +1672,9 @@ class HTTPClient(ClientSession):
 
         if url.startswith("/"):
             url = url[1:]
-        res = await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
-        # except:
-        #     await self.ratelimit_handler.process_headers(res.headers)
 
-        return res
+        res =  await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
+        print(f"{url} - {res.status}")
 
     async def patch(self, url, *args, **kwargs):
 
@@ -1996,7 +2004,7 @@ class MessageSelectMenuOption:
         return settings
 
 
-class MessageSelectMenu(BaseComponent):
+class SelectMenu(BaseComponent):
     def __init__(self, *, min_values: Optional[int] = 1, max_values: Optional[int] = 1, disabled: Optional[bool] = False, custom_id: str):
         super().__init__(custom_id=custom_id)
         self.options: List[Union[MessageSelectMenuOption, dict]] = []
@@ -2050,7 +2058,7 @@ class MessageSelectMenu(BaseComponent):
         self.disabled = disabled
 
 
-class MessageTextInput(BaseComponent):
+class TextInput(BaseComponent):
     def __init__(self, *, custom_id: str, style: Union[int, str] = 1, label: str, min_length: Optional[int] = 10, max_length: Optional[int] = 4000, required: Optional[bool] = True, value: Optional[str] = None, placeholder: Optional[str] = None):
         super().__init__(custom_id=custom_id)
         VALID_STYLES = {
@@ -2101,7 +2109,7 @@ class MessageTextInput(BaseComponent):
         return payload
 
 
-class MessageButton(BaseComponent):
+class Button(BaseComponent):
     def __init__(self, *, style: Optional[Union[int, str]] = 1, label: Optional[str] = None, emoji: Optional[Union[PartialEmoji, dict]] = None, url: Optional[str] = None, custom_id: str, disabled: bool = False):
         super().__init__(custom_id=custom_id)
         self.type: int = 2
@@ -3050,7 +3058,7 @@ class BaseInteraction:
         if attachments:
             message_data["attachments"] = [attachment.to_dict() for attachment in attachments]
 
-        response = await self.client.http.post(f"/webhooks/{self.application_id}/{self.token}/", json = message_data)
+        response = await self.client.http.post(f"/webhooks/{self.application_id}/{self.token}", json = message_data)
         new_message_data = await response.json()
         self.followup_response: Message = Message(self.client, new_message_data)
         return self.followup_response
