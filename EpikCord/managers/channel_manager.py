@@ -30,5 +30,3 @@ class ChannelManager(CacheManager):
         channel_data = await self.client.http.post(f"guilds/{guild_id}/channels", data=data)
         self.channels.append(channel_data)
         
-    async def edit_position(self,guild_id,data:dict):
-        channel_data = await self.client.http.patch(f"guilds/{guild_id}/channels", data=data)

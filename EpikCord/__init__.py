@@ -1398,6 +1398,26 @@ class GuildChannel(BaseChannel):
         data = await response.json()
         return [Message(self.client, message) for message in data]
 
+    async def edit_position(self, position:int,parent_id:str,lock_permissions:bool=False) -> None:  
+        """Edits the position of the discord :class: GuildChannel
+
+        Args:
+            position (int): The new position of the discord channel
+            parent_id (str):  The ID of the parent Category
+            lock_permissions (bool, optional): Whether to lock the permissions of the channel. Defaults to False.
+        
+        
+        """
+
+
+        data = {
+            "id": self.id,
+            "position": position,
+            "lock_permissions": lock_permissions,
+            "parent_id": parent_id
+        }
+        channel_data = await self.client.http.patch(f"/guilds/{self.guild_id}/channels", data=data)
+
     # async def edit_permission_overwrites I'll do this later
 
     # async def edit(self, *,name: str, position: str, permission_overwrites: List[dict], reason: Optional[str] = None):
