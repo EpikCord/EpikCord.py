@@ -143,7 +143,7 @@ class Message:
         self.channel_id: str = data.get("channel_id")
         self.guild_id: Optional[str] = data.get("guild_id")
         self.webhook_id: Optional[str] = data.get("webhook_id")
-        self.author: Optional[Union[WebhookUser, User]] = WebhookUser(data.get("author")) if data.get("webhook_id") else User(client, data.get("author"))
+        self.author: Optional[Union[WebhookUser, User]] = WebhookUser(data.get("author")) if data.get("webhook_id") else User(client, data.get("author")) if data.get("author") else None
         self.member: GuildMember = GuildMember(client, data.get("member")) if data.get("member") else None
         # I forgot Message Intents are gonna stop this.
         self.content: Optional[str] = data.get("content")
