@@ -690,6 +690,10 @@ class WebsocketClient(EventHandler):
                 await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
                 logger.debug("Sent a heartbeat!")
 
+    async def reconnect(self):
+        await self.close()
+        
+
     async def handle_close(self):
         if self.ws.close_code == 4014:
             raise DisallowedIntents(
@@ -713,8 +717,8 @@ class WebsocketClient(EventHandler):
 
     async def connect(self):
         self.ws = await self.http.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json")
-        await self.handle_events()
         self._closed = False
+        await self.handle_events()
 
     async def resume(self):
         await self.send_json({
