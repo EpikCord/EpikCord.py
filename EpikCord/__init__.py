@@ -175,7 +175,7 @@ class Message:
         if data.get("components"):
             for component in data.get("components"):
                 if component.get("type") == 1:
-                    components.append(MessageActionRow(component))
+                    components.append(ActionRow(component))
                 elif component.get("type") == 2:
                     components.append(Button(component))
                 elif components.get("type") == 3:
@@ -2245,7 +2245,7 @@ class MissingCustomId(Exception):
     ...
 
 
-class MessageActionRow:
+class ActionRow:
     def __init__(self, components: Optional[List[Union[Button, SelectMenu]]] = None):
         self.settings = {
             "type": 1,
@@ -2947,7 +2947,7 @@ class Webhook:
             self.url: Optional[str] = data.get("url")
 
 class Modal:
-    def __init__(self, *, title: str, custom_id: str, components: List[MessageActionRow]):
+    def __init__(self, *, title: str, custom_id: str, components: List[ActionRow]):
         self.title = title
         self.custom_id = custom_id
         self.components = [component.to_dict() for component in components]
