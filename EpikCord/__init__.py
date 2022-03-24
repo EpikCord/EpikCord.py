@@ -1767,10 +1767,6 @@ class Client(WebsocketClient):
         self.application: Application = None
         self.sections: List[Section] = []
 
-    def add_component(self, component):
-        self._components.append(component)
-        return self._components
-
     def command(self, *, name: Optional[str] = None, description: Optional[str] = None, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
         def register_slash_command(func):
             if not description and not func.__doc__:
@@ -3076,7 +3072,7 @@ class MessageComponentInteraction(BaseInteraction):
         self.component_type: Optional[int] = self.data.get("component_type")
         self.values: Optional[dict] = [MessageSelectMenuOption(option) for option in self.data.get("values", [])]
 
-    async def update(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
+    async def update(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[MessageButton, MessageSelectMenu, MessageTextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False) -> None:
 
         message_data = {
             "tts": tts,
@@ -3085,8 +3081,6 @@ class MessageComponentInteraction(BaseInteraction):
 
         if suppress_embeds:
             message_data["flags"] += 1 << 2
-        if ephemeral:
-            message_data["flags"] += 1 << 6
 
         if content:
             message_data["content"] = content
