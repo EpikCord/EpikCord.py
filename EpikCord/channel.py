@@ -1,6 +1,7 @@
 from typing import Optional, List, Dict, Union
 #from .__init__ import GuildChannel, Messageable, Thread, PartialUser
 from aiohttp import *
+from .partials import PartialUser
 from .thread import *
 
 class BaseChannel:
