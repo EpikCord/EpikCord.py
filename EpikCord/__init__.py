@@ -471,7 +471,18 @@ class EventHandler:
         if interaction.is_message_component():
             if self._components.get(interaction.custom_id):
                 if interaction.is_button():
-                    await self._components[interaction.custom_id](interaction, list(filter(lambda comp: comp.custom_id == interaction.custom_id, interaction.message.components))[0])
+                    action_rows = interaction.message.components
+                    for component in action_rows[0].components["components"]:
+                        if component["custom_id"] == interaction.custom_id:
+                            del component["type"]
+                            await self._components[interaction.custom_id](interaction, Button(**component))
+                            break
+                    # for row in action_rows:
+                    #     for component in row.components:
+                    #         print(component)
+                    #         if component.custom_id == interaction.custom_id:
+                    #             await self._components[interaction.custom_id](interaction, component)
+                    #             return
 
         if interaction.is_modal_submit():
             action_rows = interaction.interaction_data.components
@@ -2059,7 +2070,7 @@ class SelectMenu(BaseComponent):
 
 
 class TextInput(BaseComponent):
-    def __init__(self, *, custom_id: str, style: Union[int, str] = 1, label: str, min_length: Optional[int] = 10, max_length: Optional[int] = 4000, required: Optional[bool] = True, value: Optional[str] = None, placeholder: Optional[str] = None):
+    def __init__(self, *, custom_id: str, style: Union[int, str] = 1, label: str, min_length: Optional[int] = 1, max_length: Optional[int] = 4000, required: Optional[bool] = True, value: Optional[str] = None, placeholder: Optional[str] = None):
         super().__init__(custom_id=custom_id)
         VALID_STYLES = {
             "Short": 1,
@@ -2082,7 +2093,7 @@ class TextInput(BaseComponent):
         self.min_length: int = min_length
         self.max_length: int = max_length
         self.required: bool = required
-        self.value: str = value
+        self.value: Optional[str] = value
         self.placeholder: Optional[str] = placeholder
 
     def to_dict(self):
@@ -2246,11 +2257,7 @@ class MissingCustomId(Exception):
 
 
 class ActionRow:
-    def __init__(self, components: Optional[List[Union[Button, SelectMenu]]] = None):
-        self.settings = {
-            "type": 1,
-            "components": components or []
-        }
+    def __init__(self, components: Optional[List[Union[Button, SelectMenu, TextInput]]] = None):
         self.type: int = 1
         self.components: List[Union[TextInput, Button, SelectMenu]] = components or []
 
@@ -2270,9 +2277,8 @@ class ActionRow:
             elif buttons > 5:
                 raise TooManyComponents("You can only have 5 buttons per row.")
 
-            elif type(component) == SelectMenu and buttons > 0:
-                raise TooManyComponents(
-                    "You can only have 1 select menu per row. No buttons along that select menu.")
+            elif isinstance(component, SelectMenu) and buttons > 0:
+                raise TooManyComponents("You can only have 1 select menu per row. No buttons along that select menu.")
             self.components.append(component.to_dict())
         return self
 
@@ -2979,13 +2985,17 @@ class BaseInteraction:
         self.followup_response: Optional[Message] = None # Can't be set on construction.
 
     async def send_modal(self, modal: Modal):
+        """
+{'type': 9, 'data': {'title': 'Anonymous help', 'custom_id': 'anonymous_help_modal', 'components': [{'type': 1, 'components': [] }] }}
+        """
         if not isinstance(modal, Modal):
             raise InvalidArgumentType("The modal argument must be of type Modal.")
         payload = {
             "type": 9,
             "data": modal.to_dict()
         }
-        await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json=payload)
+        res = await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json=payload)
+        print(payload)
 
     def is_application_command(self):
         return self.type == 2
