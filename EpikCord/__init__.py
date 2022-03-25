@@ -1669,6 +1669,7 @@ class HTTPClient(ClientSession):
             url = url[1:]
 
         res =  await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
+        return res
 
     async def patch(self, url, *args, **kwargs):
 
