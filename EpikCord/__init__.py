@@ -468,7 +468,6 @@ class EventHandler:
                         option_values.append(option.get("value"))
                 await command_exists[0].callback(interaction, *option_values)
         if interaction.is_message_component():
-            print(interaction.custom_id)
             if self._components.get(interaction.custom_id):
                 if interaction.is_button():
                     await self._components[interaction.custom_id](interaction, list(filter(lambda comp: comp.custom_id == interaction.custom_id, interaction.message.components))[0])
@@ -1670,7 +1669,6 @@ class HTTPClient(ClientSession):
             url = url[1:]
 
         res =  await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
-        print(f"{url} - {res.status}")
 
     async def patch(self, url, *args, **kwargs):
 
@@ -3090,7 +3088,6 @@ class BaseInteraction:
 class MessageComponentInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        print(data)
         self.custom_id: str = self.interaction_data.get("custom_id")
         self.component_type: Optional[int] = self.interaction_data.get("component_type")
         self.values: Optional[dict] = [SelectMenuOption(option) for option in self.interaction_data.get("values", [])]
