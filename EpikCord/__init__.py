@@ -490,7 +490,7 @@ class EventHandler:
             for action_row in action_rows:
                 for component in action_row.get("components"):
                     component_object_list.append(component["value"])
-            self.client._components.get(interaction.custom_id).callback(interaction, *component_object_list)
+            self.client._components.get(interaction.custom_id)(interaction, *component_object_list)
 
         await event_func(interaction) if event_func else None
 
@@ -3004,6 +3004,7 @@ class BaseInteraction:
     
     def is_modal_submit(self):
         return self.type == 5
+
     async def fetch_original_response(self, *, skip_cache: Optional[bool] = False):
         if not skip_cache and self.original_response:
             return self.original_response
