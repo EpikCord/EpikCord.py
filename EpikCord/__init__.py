@@ -1184,12 +1184,8 @@ class BaseChannel:
 
 
 class BaseComponent:
-    def __init__(self, *, custom_id: str, callback: callable):
+    def __init__(self, *, custom_id: str):
         self.custom_id: str = custom_id
-        self.callback: callable = callback
-
-    def set_callback(self, callback_function: callable):
-        self.callback = callback_function
 
     def set_custom_id(self, custom_id: str):
 
