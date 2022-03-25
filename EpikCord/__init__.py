@@ -443,8 +443,6 @@ class EventHandler:
         if data.get("type") == self.PING:
             await self.client.http.post(f"/interactions/{data.get('id')}/{data.get('token')}/callback", json = {"type": self.PONG})
         
-        event_func = None
-
         event_func = self.events.get("interaction_create")
         interaction_type = data.get("type")
 
@@ -483,7 +481,7 @@ class EventHandler:
                     component_object_list.append(component["value"])
             self.client._components.get(interaction.custom_id).callback(interaction, *component_object_list)
 
-        await event_func(interaction)
+        await event_func(interaction) if event_func else None
 
 
     async def handle_event(self, event_name: str, data: dict):
