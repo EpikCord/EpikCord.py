@@ -3,6 +3,7 @@ NOTE: __version__ in this file, __main__ and setup.cfg
 """
 
 import threading
+
 from .managers import *
 from aiohttp import *
 import asyncio
@@ -557,12 +558,15 @@ class EventHandler:
 
     async def guild_create(self, data):
         if not data.get("available"): # If it's not available
-            logger.info(f"guild_create event has been fired, Details: {data}")
             self.guilds.add_to_cache(data.get("id"), UnavailableGuild(data))
             return 
             # Don't call the event for an unavailable guild, users expect this to be when they join a guild, not when they get a pre-existing guild that is unavailable.
         else:
             self.guilds.add_to_cache(data.get("id"), Guild(self, data))
+
+        channels =  data.get("channels", [])
+        for channel in channels:
+            self.channels.add_to_cache(data["id"], self.utils.channel_from_type(channel))
 
         try:
             event_func = self.events["guild_create"]
@@ -1761,6 +1765,7 @@ class Client(WebsocketClient):
 
         self.commands: List[Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]] = [] # TODO: Need to change this to a Class Later
         self.guilds: GuildManager = GuildManager(self)
+        self.channels: ChannelManager = ChannelManager(self)
         self._checks: List[Callable] = []
         self._components = {}
 
@@ -3089,6 +3094,7 @@ class BaseInteraction:
 class MessageComponentInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
+        self.message: Message = Message(client, data.get("message"))
         self.custom_id: str = self.interaction_data.get("custom_id")
         self.component_type: Optional[int] = self.interaction_data.get("component_type")
         self.values: Optional[dict] = [SelectMenuOption(option) for option in self.interaction_data.get("values", [])]
