@@ -485,12 +485,12 @@ class EventHandler:
                     #             return
 
         if interaction.is_modal_submit():
-            action_rows = interaction.interaction_data.components
+            action_rows = interaction.components
             component_object_list = []
             for action_row in action_rows:
                 for component in action_row.get("components"):
                     component_object_list.append(component["value"])
-            self.client._components.get(interaction.custom_id)(interaction, *component_object_list)
+            self._components.get(interaction.custom_id)(interaction, *component_object_list)
 
         await event_func(interaction) if event_func else None
 
