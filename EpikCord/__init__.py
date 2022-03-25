@@ -141,6 +141,7 @@ class Message:
         self.client = client
         self.id: str = data.get("id")
         self.channel_id: str = data.get("channel_id")
+        self.channel = client.channels.get_from_cache(self.channel_id)
         self.guild_id: Optional[str] = data.get("guild_id")
         self.webhook_id: Optional[str] = data.get("webhook_id")
         self.author: Optional[Union[WebhookUser, User]] = WebhookUser(data.get("author")) if data.get("webhook_id") else User(client, data.get("author")) if data.get("author") else None
