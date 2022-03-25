@@ -489,7 +489,7 @@ class EventHandler:
             component_object_list = []
             for action_row in action_rows:
                 for component in action_row.get("components"):
-                    component_object_list.append(component["value"])
+                    component_object_list.append(component["value"]) # TODO: Fix this later, component_object_list is empty ;()
             self._components.get(interaction.custom_id)(interaction, *component_object_list)
 
         await event_func(interaction) if event_func else None
