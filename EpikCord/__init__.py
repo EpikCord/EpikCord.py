@@ -2985,17 +2985,13 @@ class BaseInteraction:
         self.followup_response: Optional[Message] = None # Can't be set on construction.
 
     async def send_modal(self, modal: Modal):
-        """
-{'type': 9, 'data': {'title': 'Anonymous help', 'custom_id': 'anonymous_help_modal', 'components': [{'type': 1, 'components': [] }] }}
-        """
         if not isinstance(modal, Modal):
             raise InvalidArgumentType("The modal argument must be of type Modal.")
         payload = {
             "type": 9,
             "data": modal.to_dict()
         }
-        res = await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json=payload)
-        print(payload)
+        await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json=payload)
 
     def is_application_command(self):
         return self.type == 2
