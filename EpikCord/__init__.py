@@ -485,13 +485,12 @@ class EventHandler:
                     #             return
 
         if interaction.is_modal_submit():
-            action_rows = interaction.components
-            print(interaction.components)
+            action_rows = interaction._components
             component_object_list = []
             for action_row in action_rows:
                 for component in action_row.get("components"):
                     component_object_list.append(component["value"]) # TODO: Fix this later, component_object_list is empty ;()
-            self._components.get(interaction.custom_id)(interaction, *component_object_list)
+            await self._components.get(interaction.custom_id)(interaction, *component_object_list)
 
         await event_func(interaction) if event_func else None
 
@@ -2985,6 +2984,41 @@ class BaseInteraction:
         self.original_response: Optional[Message] = None # Can't be set on construction.
         self.followup_response: Optional[Message] = None # Can't be set on construction.
 
+    async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[Button, SelectMenu, TextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
+
+        message_data = {
+            "tts": tts,
+            "flags": 0
+        }
+
+        if suppress_embeds:
+            message_data["flags"] += 1 << 2
+        if ephemeral:
+            message_data["flags"] += 1 << 6
+
+        if content:
+            message_data["content"] = content
+        if embeds:
+            message_data["embeds"] = [embed.to_dict() for embed in embeds]
+        if allowed_mentions:
+            message_data["allowed_mentions"] = allowed_mentions.to_dict()
+        if components:
+            message_data["components"] = [component.to_dict() for component in components]
+        if attachments:
+            message_data["attachments"] = [attachment.to_dict() for attachment in attachments]
+
+        payload = {
+            "type": 4,
+            "data": message_data
+        }
+        await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json = payload)
+    
+    async def defer(self, *, show_loading_state: Optional[bool] = True):
+        if show_loading_state:
+            return await self.client.http.post(f"/interaction/{self.id}/{self.token}/callback", json = {"type": 5})
+        else:
+            return await self.client.http.post(f"/interaction/{self.id}/{self.token}/callback", json = {"type": 6})
+
     async def send_modal(self, modal: Modal):
         if not isinstance(modal, Modal):
             raise InvalidArgumentType("The modal argument must be of type Modal.")
@@ -3157,10 +3191,8 @@ class ModalSubmitInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
         self.custom_id: str = self.interaction_data["custom_id"]
-        self.components: List[Union[Button, SelectMenu, TextInput]] = []
-        for action_row in self.interaction_data.get("components", []):
-            for component in action_row.get("components"):
-                self.components.append(client.utils.component_from_type(component))
+        self._components: List[Union[Button, SelectMenu, TextInput]] = self.interaction_data.get("components")
+
     async def send_modal(self, *args, **kwargs):
         raise NotImplementedError("ModalSubmitInteractions cannot send modals.")
 
@@ -3211,42 +3243,6 @@ class ApplicationCommandInteraction(BaseInteraction):
         self.command_type: int = self.interaction_data.get("type")
         self.resolved: ResolvedDataHandler(client, data.get("resolved", {}))
         self.options: List[dict] | None = self.interaction_data.get("options", [])
-
-
-    async def reply(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[Button, SelectMenu, TextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
-
-        message_data = {
-            "tts": tts,
-            "flags": 0
-        }
-
-        if suppress_embeds:
-            message_data["flags"] += 1 << 2
-        if ephemeral:
-            message_data["flags"] += 1 << 6
-
-        if content:
-            message_data["content"] = content
-        if embeds:
-            message_data["embeds"] = [embed.to_dict() for embed in embeds]
-        if allowed_mentions:
-            message_data["allowed_mentions"] = allowed_mentions.to_dict()
-        if components:
-            message_data["components"] = [component.to_dict() for component in components]
-        if attachments:
-            message_data["attachments"] = [attachment.to_dict() for attachment in attachments]
-
-        payload = {
-            "type": 4,
-            "data": message_data
-        }
-        await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json = payload)
-    
-    async def defer(self, *, show_loading_state: Optional[bool] = True):
-        if show_loading_state:
-            return await self.client.http.post(f"/interaction/{self.id}/{self.token}/callback", json = {"type": 5})
-        else:
-            return await self.client.http.post(f"/interaction/{self.id}/{self.token}/callback", json = {"type": 6})
     
     
 class UserCommandInteraction(ApplicationCommandInteraction):
