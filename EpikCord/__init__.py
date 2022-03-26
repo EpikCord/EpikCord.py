@@ -486,6 +486,7 @@ class EventHandler:
 
         if interaction.is_modal_submit():
             action_rows = interaction.components
+            print(interaction.components)
             component_object_list = []
             for action_row in action_rows:
                 for component in action_row.get("components"):
@@ -3157,14 +3158,9 @@ class ModalSubmitInteraction(BaseInteraction):
         super().__init__(client, data)
         self.custom_id: str = self.interaction_data["custom_id"]
         self.components: List[Union[Button, SelectMenu, TextInput]] = []
-        for component in self.interaction_data.get("components"):
-            if component.get("type") == 2:
-                self.components.append(Button(component))
-            elif component.get("type") == 3:
-                self.components.append(SelectMenu(component))
-            elif component.get("type") == 4:
-                self.components.append(TextInput(component))
-
+        for action_row in self.interaction_data.get("components", []):
+            for component in action_row.get("components"):
+                self.components.append(client.utils.component_from_type(component))
     async def send_modal(self, *args, **kwargs):
         raise NotImplementedError("ModalSubmitInteractions cannot send modals.")
 
@@ -3853,6 +3849,15 @@ class Utils:
 
         self._MARKDOWN_STOCK_REGEX = fr'(?P<markdown>[_\\~|\*`]|{self._MARKDOWN_ESCAPE_COMMON})'
 
+    def component_from_type(self, component_data: dict):
+        component_type = component_data["type"]
+        del component_data["type"]
+        if component_type == 2:
+            return Button(**component_data)
+        elif component_type == 3:
+            return SelectMenu(**component_data)
+        elif component_type == 4:
+            return TextInput(**component_data)
 
     def channel_from_type(self, channel_data: dict):
         channel_type = channel_data.get("type")
