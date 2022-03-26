@@ -1660,89 +1660,98 @@ class HTTPClient(ClientSession):
         self.base_uri: str = "https://discord.com/api/v9"
         self.ratelimit_handler = RatelimitHandler(avoid_ratelimits = kwargs.get("avoid_ratelimits", False))
 
-    async def get(self, url, *args, **kwargs):
+    async def get(self, url, *args, to_discord: bool = True, **kwargs):
+        if to_discord:
+            if self.ratelimit_handler.is_ratelimited():
+                return
 
-        if self.ratelimit_handler.is_ratelimited():
-            return
+            if url.startswith("/"):
+                url = url[1:]
 
-        if url.startswith("/"):
-            url = url[1:]
+            try:
+                res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
+            except:
+                await self.ratelimit_handler.process_headers(res.headers)            
 
-        try:
-            res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
-        except:
-            await self.ratelimit_handler.process_headers(res.headers)            
+            return res
+        return await super().get(url, *args, **kwargs)
 
-        return res
+    async def post(self, url, *args, to_discord: bool = True, **kwargs):
+        if to_discord:
+            if self.ratelimit_handler.is_ratelimited():
+                return
 
-    async def post(self, url, *args, **kwargs):
+            if url.startswith("/"):
+                url = url[1:]
 
-        if self.ratelimit_handler.is_ratelimited():
-            return
+            res =  await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
+            return res
+        
+        return await super().post(url, *args, **kwargs)
 
-        if url.startswith("/"):
-            url = url[1:]
+    async def patch(self, url, *args, to_discord: bool = True, **kwargs):
+        if to_discord:
+            if self.ratelimit_handler.is_ratelimited():
+                return
 
-        res =  await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
-        return res
+            if url.startswith("/"):
+                url = url[1:]
+            try:
+                res = await super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
+            except:
+                await self.ratelimit_handler.process_headers(res.headers)
 
-    async def patch(self, url, *args, **kwargs):
+            return res
+        return await super().patch(url, *args, **kwargs)
 
-        if self.ratelimit_handler.is_ratelimited():
-            return
+    async def delete(self, url, *args, to_discord: bool = True, **kwargs):
+        if to_discord:
+            if self.ratelimit_handler.is_ratelimited():
+                return
 
-        if url.startswith("/"):
-            url = url[1:]
-        try:
-            res = await super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
-        except:
-            await self.ratelimit_handler.process_headers(res.headers)
+            if url.startswith("/"):
+                url = url[1:]
 
-        return res
+            try:
+                res = await super().delete(f"{self.base_uri}/{url}", *args, **kwargs)
+            except:
+                await self.ratelimit_handler.process_headers(res.headers)
 
-    async def delete(self, url, *args, **kwargs):
+            return res
+        
+        return await super().delete(url, *args, **kwargs)
 
-        if self.ratelimit_handler.is_ratelimited():
-            return
+    async def put(self, url, *args, to_discord: bool = True, **kwargs):
+        if to_discord:
+                
+            if self.ratelimit_handler.is_ratelimited():
+                return
 
-        if url.startswith("/"):
-            url = url[1:]
+            if url.startswith("/"):
+                url = url[1:]
+            try:
+                res = await super().put(f"{self.base_uri}/{url}", *args, **kwargs)
+            except:
+                await self.ratelimit_handler.process_headers(res.headers)
 
-        try:
-            res = await super().delete(f"{self.base_uri}/{url}", *args, **kwargs)
-        except:
-            await self.ratelimit_handler.process_headers(res.headers)
+            return res
+        return await super().put(url, *args, **kwargs)
 
-        return res
+    async def head(self, url, *args, to_discord: bool = True, **kwargs):
+        if to_discord:
+            if self.ratelimit_handler.is_ratelimited():
+                return
 
-    async def put(self, url, *args, **kwargs):
+            if url.startswith("/"):
+                url = url[1:]
 
-        if self.ratelimit_handler.is_ratelimited():
-            return
+            try:
+                res =  await super().head(f"{self.base_uri}/{url}", *args, **kwargs)
+            except:
+                await self.ratelimit_handler.process_headers(res.headers)
 
-        if url.startswith("/"):
-            url = url[1:]
-        try:
-            res = await super().put(f"{self.base_uri}/{url}", *args, **kwargs)
-        except:
-            await self.ratelimit_handler.process_headers(res.headers)
-
-        return res
-
-    async def head(self, url, *args, **kwargs):
-
-        if self.ratelimit_handler.is_ratelimited():
-            return
-
-        if url.startswith("/"):
-            url = url[1:]
-
-        try:
-            res =  await super().head(f"{self.base_uri}/{url}", *args, **kwargs)
-        except:
-            await self.ratelimit_handler.process_headers(res.headers)
-
-        return res
+            return res
+        return await super().head(url, *args, **kwargs)
 
 class Section:
     def __init__(self):
