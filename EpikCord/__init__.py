@@ -1681,6 +1681,16 @@ class HTTPClient(ClientSession):
         super().__init__(*args, **kwargs)
         self.base_uri: str = "https://discord.com/api/v9"
         self.ratelimit_handler = RatelimitHandler(avoid_ratelimits = kwargs.get("avoid_ratelimits", False))
+    
+    async def log_request(self, res):
+        message = f"Sent a {res.request_info.method} to {res.url} and got a {res.status} response. "
+        if await res.json():
+            message += f"Received body: {await res.json()} "
+        if dict(res.headers):
+            message += f"Received headers: {dict(res.headers)} "
+        if dict(res.request_info.headers):
+            message += f"Sent headers: {dict(res.request_info.headers)} "
+        logger.debug(message)
 
     async def get(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
@@ -1691,8 +1701,7 @@ class HTTPClient(ClientSession):
                 url = url[1:]
 
             res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
-            logger.debug(f"Sent a {res.method} to {res.url} and got a {res.status} response.")
-
+            await self.log_request(res)
             return res
         return await super().get(url, *args, **kwargs)
 
@@ -1705,7 +1714,7 @@ class HTTPClient(ClientSession):
                 url = url[1:]
 
             res = await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
-            logger.debug(f"Sent a {res.method} to {res.url} and got a {res.status} response.")
+            await self.log_request(res)
             return res
         
         return await super().post(url, *args, **kwargs)
@@ -1719,7 +1728,7 @@ class HTTPClient(ClientSession):
                 url = url[1:]
 
             res = await super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
-            logger.debug(f"Sent a {res.method} to {res.url} and got a {res.status} response.")
+            await self.log_request(res)
             return res
         return await super().patch(url, *args, **kwargs)
 
@@ -1732,7 +1741,7 @@ class HTTPClient(ClientSession):
                 url = url[1:]
 
             res = await super().delete(f"{self.base_uri}/{url}", *args, **kwargs)
-            logger.debug(f"Sent a {res.method} to {res.url} and got a {res.status} response.")
+            await self.log_request(res)
             return res
         return await super().delete(url, *args, **kwargs)
 
@@ -1746,7 +1755,7 @@ class HTTPClient(ClientSession):
                 url = url[1:]
 
             res = await super().put(f"{self.base_uri}/{url}", *args, **kwargs)
-            logger.debug(f"Sent a {res.method} to {res.url} and got a {res.status} response.")
+            await self.log_request(res)
 
             return res
         return await super().put(url, *args, **kwargs)
@@ -1760,7 +1769,7 @@ class HTTPClient(ClientSession):
                 url = url[1:]
 
             res =  await super().head(f"{self.base_uri}/{url}", *args, **kwargs)
-            logger.debug(f"Sent a {res.method} to {res.url} and got a {res.status} response.")
+            await self.log_request(res)
 
             return res
         return await super().head(url, *args, **kwargs)
