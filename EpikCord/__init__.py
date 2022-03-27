@@ -432,14 +432,11 @@ class Message:
 
     async def add_reaction(self, emoji: str):
         emoji = quote(emoji)
-        logger.debug(f"Added a reaction to message ({self.id}).")
         response = await self.client.http.put(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/@me")
         return await response.json()
 
     async def remove_reaction(self, emoji: str, user=None):
         emoji = quote(emoji)
-        logger.debug(
-            f"Removed reaction {emoji} from message ({self.id}) for user {user.username}.")
         response = (
             await self.client.http.delete(
                 f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/{user.id}"
@@ -453,30 +450,23 @@ class Message:
         return await response.json()
 
     async def fetch_reactions(self, *, after, limit) -> List[Reaction]:
-        logger.debug(f"Fetching reactions from message ({self.id}).")
         response = await self.client.http.get(f"channels/{self.channel_id}/messages/{self.id}/reactions?after={after}&limit={limit}")
         return await response.json()
 
     async def delete_all_reactions(self):
-        logger.debug(f"Deleting all reactions from message ({self.id}).")
         response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions")
         return await response.json()
 
     async def delete_reaction_for_emoji(self, emoji: str):
-        logger.debug(
-            f"Deleting a reaction from message ({self.id}) for emoji {emoji}.")
         emoji = quote(emoji)
         response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}")
         return await response.json()
 
     async def edit(self, message_data: dict):
-        logger.debug(
-            f"Editing message {self.id} with message_data {message_data}.")
         response = await self.client.http.patch(f"channels/{self.channel_id}/messages/{self.id}", data=message_data)
         return await response.json()
 
     async def delete(self):
-        logger.debug(f"Deleting message {self.id}.")
         response = await self.client.http.delete(f"channels/{self.channel_id}/messages/{self.id}")
         return await response.json()
 
@@ -484,7 +474,6 @@ class Message:
         headers = self.client.http.headers.copy()
         if reason:
             headers["X-Audit-Log-Reason"] = reason
-            logger.debug(f"Pinning message {self.id} with reason {reason}.")
         else:
             logger.debug(f"Pinning message {self.id}.")
         response = await self.client.http.put(f"channels/{self.channel_id}/pins/{self.id}", headers=headers)
@@ -494,22 +483,16 @@ class Message:
         headers = self.client.http.headers.copy()
         if reason:
             headers["X-Audit-Log-Reason"] = reason
-            logger.debug(f"Unpinning message {self.id} with reason {reason}.")
-        else:
-            logger.debug(f"Unpinning message {self.id}.")
         response = await self.client.http.delete(f"channels/{self.channel_id}/pins/{self.id}", headers=headers)
         return await response.json()
 
     async def start_thread(self, name: str, auto_archive_duration: Optional[int], rate_limit_per_user: Optional[int]):
-        logger.debug(
-            f"Starting thread for message {self.id} with name {name}, auto archive duration {auto_archive_duration or None}, ratelimit per user {rate_limit_per_user or None}.")
         response = await self.client.http.post(f"channels/{self.channel_id}/messages/{self.id}/threads", data={"name": name, "auto_archive_duration": auto_archive_duration, "rate_limit_per_user": rate_limit_per_user})
         # Cache it
         self.client.guilds[self.guild_id].append(Thread(await response.json()))
         return Thread(await response.json())
 
     async def crosspost(self):
-        logger.debug(f"Crossposting message {self.id}.")
         response = await self.client.http.post(f"channels/{self.channel_id}/messages/{self.id}/crosspost")
         return await response.json()
 
@@ -668,7 +651,7 @@ class EventHandler:
                     self.heartbeats = [event["d"]]
             elif event["op"] == self.RECONNECT:
                 await self.reconnect()
-            logger.debug(f"Received event {event['t']}")
+            logger.info(f"Received event {event['t']}")
 
         await self.handle_close()
 
@@ -799,7 +782,6 @@ class EventHandler:
     async def message_create(self, data: dict):
         """Event fired when messages are created"""
         if self.events.get("message_create"):
-            logger.info(f"message_create event has been fired, Details: {data}")
             message = Message(self, data)
             message.channel = Messageable(self, data.get("channel_id"))
             await self.events["message_create"](message)
@@ -971,11 +953,7 @@ class WebsocketClient(EventHandler):
             raise ClosedWebSocketConnection(f"Connection has been closed with code {self.ws.close_code}")
 
     async def send_json(self, json: dict):
-        try:
-            await self.ws.send_json(json)
-            logger.info(f"Sent {json} to Discord.")
-        except:
-            logger.debug(f"Exited with code: {self.ws.close_code}")
+        await self.ws.send_json(json)
 
     async def connect(self):
         self.ws = await self.http.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json")
@@ -1825,10 +1803,36 @@ class Client(WebsocketClient):
         self.user: ClientUser = None
         self.application: Application = None
         self.sections: List[Union[CommandsSection, EventsSection]] = []
-        self.command = command
-        self.user_command = user_command
-        self.message_command = message_command
 
+    def command(self, *, name: Optional[str] = None, description: Optional[str] = None, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
+        def register_slash_command(func):
+            if not description and not func.__doc__:
+                raise TypeError(f"Missing description for command {func.__name__}.")
+            desc = description or func.__doc__
+            self.commands.append(ClientSlashCommand(**{
+                "callback": func,
+                "name": name or func.__name__,
+                "description": desc,
+                "guild_ids": guild_ids,
+                "options": options,
+            })) # Cheat method.
+        return register_slash_command
+
+    def user_command(self, name: Optional[str] = None):
+        def register_slash_command(func):
+            self.commands.append(ClientUserCommand(**{
+                "callback": func,
+                "name": name or func.__name__,
+            }))
+        return register_slash_command
+
+    def message_command(self, name: Optional[str] = None):
+        def register_slash_command(func):
+            self.commands.append(ClientMessageCommand(**{
+                "callback": func,
+                "name": name or func.__name__,
+            }))
+        return register_slash_command
 
     def add_section(self, section: Union[CommandsSection, EventsSection]):
         if not issubclass(section, (EventsSection, CommandsSection)):
