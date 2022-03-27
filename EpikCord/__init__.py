@@ -34,7 +34,248 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
+class BaseSlashCommandOption:
+    def __init__(self, *, name: str, description: str, required: Optional[bool] = False):
+        self.name: str = name
+        self.description: str = description
+        self.required: bool = required
+        self.type: int = None # Needs to be set by the subclass
+        # People shouldn't use this class, this is just a base class for other options, but they can use this for other options we are yet to account for.
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "description": self.description,
+            "required": self.required,
+            "type": self.type
+        }
+    
+class StringOption(BaseSlashCommandOption):
+    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True, autocomplete: Optional[bool] = False):
+        super().__init__(name=name, description=description, required=required)
+        self.type = 3
+        self.autocomplete = autocomplete
+
+    def to_dict(self):
+        usual_dict = super().to_dict()
+        usual_dict["autocomplete"] = self.autocomplete
+        return usual_dict
+
+
+class IntegerOption(BaseSlashCommandOption):
+    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True, autocomplete: Optional[bool] = False, min_value: Optional[int] = None, max_value: Optional[int] = None):
+        super().__init__(name=name, description=description, required=required)
+        self.type = 4
+        self.autocomplete = autocomplete
+        self.min_value = min_value
+        self.max_value = max_value
+
+    def to_dict(self):
+        usual_dict = super().to_dict()
+        usual_dict["autocomplete"] = self.autocomplete
+        if self.min_value:
+            usual_dict["min_value"] = self.min_value
+        if self.max_value:
+            usual_dict["max_value"] = self.max_value
+        return usual_dict
+
+class BooleanOption(BaseSlashCommandOption):
+    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
+        super().__init__(name=name, description=description, required=required)
+        self.type = 5
+
+
+class UserOption(BaseSlashCommandOption):
+    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
+        super().__init__(name=name, description=description, required=required)
+        self.type = 6
+
+
+class ChannelOption(BaseSlashCommandOption):
+    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
+        super().__init__(name=name, description=description, required=required)
+        self.type = 7
+        self.channel_types: list[ChannelOptionChannelTypes] = []
+        
+    def to_dict(self):
+        usual_dict: dict = super().to_dict()
+        usual_dict["channel_types"] = self.channel_types
+        return usual_dict
+
+class RoleOption(BaseSlashCommandOption):
+    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
+        super().__init__(name=name, description=description, required=required)
+        self.type = 8
+
+
+class MentionableOption(BaseSlashCommandOption):
+    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
+        super().__init__(name=name, description=description, required=required)
+        self.type = 9
+
+
+class NumberOption(BaseSlashCommandOption):
+    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True, autocomplete: Optional[bool] = False, min_value: Optional[int] = None, max_value: Optional[int] = None):
+        super().__init__(name=name, description=description, required=required)
+        self.type = 10
+        self.autocomplete = autocomplete
+        self.min_value = min_value
+        self.max_value = max_value
+
+    def to_dict(self):
+        usual_dict = super().to_dict()
+        usual_dict["autocomplete"] = self.autocomplete
+        if self.min_value:
+            usual_dict["min_value"] = self.min_value
+        if self.max_value:
+            usual_dict["max_value"] = self.max_value
+        return usual_dict
+
+class AttachmentOption(BaseSlashCommandOption):
+    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
+        super().__init__(name=name, description=description, required=required)
+        self.type = 11
+
+
+class SlashCommandOptionChoice:
+    def __init__(self, * name: str, value: Union[float, int, str]):
+        self.name: str = name
+        self.value: Union[float, int, str] = value
+    
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "value": self.value
+        }
+
+class InvalidOption(Exception):
+    ...
+
+class Subcommand(BaseSlashCommandOption):
+    def __init__(self, *, name: str, description: str = None, required: bool = True, options: list[Union[StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]] = None):
+        super().__init__(name=name, description=description, required=required)
+        self.type = 1
+        converted_options = []
+        for option in options:
+            if option["type"] == 1:
+                converted_options.append(Subcommand(**option))
+            elif option["type"] == 2:
+                raise InvalidOption("You can't have a subcommand group with a subcommand")
+            elif option["type"] == 3:
+                converted_options.append(StringOption(**option))
+            elif option["type"] == 4:
+                converted_options.append(IntegerOption(**option))
+            elif option["type"] == 5:
+                converted_options.append(BooleanOption(**option))
+            elif option["type"] == 6:
+                converted_options.append(UserOption(**option))
+            elif option["type"] == 7:
+                converted_options.append(ChannelOption(**option))
+            elif option["type"] == 8:
+                converted_options.append(RoleOption(**option))
+            elif option["type"] == 9:
+                converted_options.append(MentionableOption(**option))
+            elif option["type"] == 10:
+                converted_options.append(NumberOption(**option))
+            elif option["type"] == 11:
+                converted_options.append(AttachmentOption(**option))
+
+        self.options: Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
+
+
+
+
+class SubCommandGroup(BaseSlashCommandOption):
+    def __init__(self, *, name: str, description: str = None, required: bool = True, options: list[Union[Subcommand, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]] = None):
+        super().__init__(name=name, description=description, required=required)
+        self.type = 2
+        converted_options = []
+        for option in options:
+            if option["type"] == 1:
+                converted_options.append(Subcommand(**option))
+            elif option["type"] == 2:
+                converted_options.append(SubCommandGroup(**option))
+            elif option["type"] == 3:
+                converted_options.append(StringOption(**option))
+            elif option["type"] == 4:
+                converted_options.append(IntegerOption(**option))
+            elif option["type"] == 5:
+                converted_options.append(BooleanOption(**option))
+            elif option["type"] == 6:
+                converted_options.append(UserOption(**option))
+            elif option["type"] == 7:
+                converted_options.append(ChannelOption(**option))
+            elif option["type"] == 8:
+                converted_options.append(RoleOption(**option))
+            elif option["type"] == 9:
+                converted_options.append(MentionableOption(**option))
+            elif option["type"] == 10:
+                converted_options.append(NumberOption(**option))
+            elif option["type"] == 11:
+                converted_options.append(AttachmentOption(**option))
+
+        self.options: Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
+
+    def to_dict(self):
+        usual_dict = super().to_dict()
+        payload_to_append = []
+        for option in self.options:
+            payload_to_append(option.to_dict())
+        
+        usual_dict["options"] = payload_to_append
+        return usual_dict
+
+
+AnyOption = Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]
+
 class InvalidStatus(Exception):
+    ...
+
+class EventsSection:
+    def __init__(self, client):
+        self.client = client
+        self.events = {}
+
+        class _:
+            client = ...
+            events = ...
+
+        temp = _()
+        for event in dir(self):
+            if event not in dir(temp):
+                self.events[event] = getattr(self, event)
+
+def command(*, name: Optional[str] = None, description: Optional[str] = None, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
+    def register_slash_command(func):
+        if not description and not func.__doc__:
+            raise TypeError(f"Missing description for command {func.__name__}.")
+        desc = description or func.__doc__
+        func.__self__.commands.append(ClientSlashCommand(**{
+            "callback": func,
+            "name": name or func.__name__,
+            "description": desc,
+            "guild_ids": guild_ids,
+            "options": options,
+        })) # Cheat method.
+    return register_slash_command
+
+def user_command(name: Optional[str] = None):
+    def register_slash_command(func):
+        func.__self__.commands.append(ClientUserCommand(**{
+            "callback": func,
+            "name": name or func.__name__,
+        }))
+    return register_slash_command
+
+def message_command(name: Optional[str] = None):
+    def register_slash_command(func):
+        func.__self__.commands.append(ClientMessageCommand(**{
+            "callback": func,
+            "name": name or func.__name__,
+        }))
+    return register_slash_command
+
+class CommandsSection:
     ...
 
 class Status:
@@ -390,14 +631,6 @@ class EventHandler:
     def __init__(self):
         self.events = {}
         # self.wait_for_events = {}
-        self.PING: int = 1
-        self.PONG: int = 1
-        self.CHANNEL_MESSAGE_WITH_SOURCE: int = 4
-        self.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE: int = 5
-        self.DEFERRED_UPDATE_MESSAGE: int = 6
-        self.UPDATE_MESSAGE: int = 7
-        self.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT: int = 8
-        self.MODAL: int = 9
 
     def component(self, custom_id: str):
         """
@@ -433,7 +666,10 @@ class EventHandler:
                     self.heartbeats.append(event["d"])
                 except AttributeError:
                     self.heartbeats = [event["d"]]
+            elif event["op"] == self.RECONNECT:
+                await self.reconnect()
             logger.debug(f"Received event {event['t']}")
+
         await self.handle_close()
 
         
@@ -441,13 +677,11 @@ class EventHandler:
 
 
     async def interaction_create(self, data):
-        if data.get("type") == self.PING:
-            await self.client.http.post(f"/interactions/{data.get('id')}/{data.get('token')}/callback", json = {"type": self.PONG})
-        
+
         event_func = self.events.get("interaction_create")
+
+
         interaction_type = data.get("type")
-
-
         def figure_out_interaction_class():
             if interaction_type == 2:
                 return ApplicationCommandInteraction(self, data)
@@ -460,7 +694,10 @@ class EventHandler:
 
         interaction = figure_out_interaction_class()
 
-        if interaction.is_application_command():
+        if interaction.is_ping():
+            await self.http.post(f"interactions/{interaction.id}/{interaction.token}/callback", json = {"type": 1})
+
+        elif interaction.is_application_command():
             command_exists = list(filter(lambda item: item.name == interaction.command_name, self.commands))
             option_values = []
             if bool(command_exists): # bool(Filter) returns True every time.
@@ -600,6 +837,7 @@ class EventHandler:
 
     async def ready(self, data: dict):
         self.user: ClientUser = ClientUser(self, data.get("user"))
+        self.session_id: str = data["session_id"]
         application_response = await self.http.get("/oauth2/applications/@me")
         application_data = await application_response.json()
         self.application: ClientApplication = ClientApplication(
@@ -832,202 +1070,6 @@ class ChannelOptionChannelTypes:
     GUILD_PUBLIC_THREAD = 11
     GUILD_PRIVATE_THREAD = 12
     GUILD_STAGE_VOICE = 13
-
-
-class BaseSlashCommandOption:
-    def __init__(self, *, name: str, description: str, required: Optional[bool] = False):
-        self.name: str = name
-        self.description: str = description
-        self.required: bool = required
-        self.type: int = None # Needs to be set by the subclass
-        # People shouldn't use this class, this is just a base class for other options, but they can use this for other options we are yet to account for.
-
-    def to_dict(self):
-        return {
-            "name": self.name,
-            "description": self.description,
-            "required": self.required,
-            "type": self.type
-        }
-    
-class StringOption(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True, autocomplete: Optional[bool] = False):
-        super().__init__(name=name, description=description, required=required)
-        self.type = 3
-        self.autocomplete = autocomplete
-
-    def to_dict(self):
-        usual_dict = super().to_dict()
-        usual_dict["autocomplete"] = self.autocomplete
-        return usual_dict
-
-
-class IntegerOption(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True, autocomplete: Optional[bool] = False, min_value: Optional[int] = None, max_value: Optional[int] = None):
-        super().__init__(name=name, description=description, required=required)
-        self.type = 4
-        self.autocomplete = autocomplete
-        self.min_value = min_value
-        self.max_value = max_value
-
-    def to_dict(self):
-        usual_dict = super().to_dict()
-        usual_dict["autocomplete"] = self.autocomplete
-        if self.min_value:
-            usual_dict["min_value"] = self.min_value
-        if self.max_value:
-            usual_dict["max_value"] = self.max_value
-        return usual_dict
-
-class BooleanOption(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
-        super().__init__(name=name, description=description, required=required)
-        self.type = 5
-
-
-class UserOption(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
-        super().__init__(name=name, description=description, required=required)
-        self.type = 6
-
-
-class ChannelOption(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
-        super().__init__(name=name, description=description, required=required)
-        self.type = 7
-        self.channel_types: list[ChannelOptionChannelTypes] = []
-        
-    def to_dict(self):
-        usual_dict: dict = super().to_dict()
-        usual_dict["channel_types"] = self.channel_types
-        return usual_dict
-
-class RoleOption(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
-        super().__init__(name=name, description=description, required=required)
-        self.type = 8
-
-
-class MentionableOption(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
-        super().__init__(name=name, description=description, required=required)
-        self.type = 9
-
-
-class NumberOption(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True, autocomplete: Optional[bool] = False, min_value: Optional[int] = None, max_value: Optional[int] = None):
-        super().__init__(name=name, description=description, required=required)
-        self.type = 10
-        self.autocomplete = autocomplete
-        self.min_value = min_value
-        self.max_value = max_value
-
-    def to_dict(self):
-        usual_dict = super().to_dict()
-        usual_dict["autocomplete"] = self.autocomplete
-        if self.min_value:
-            usual_dict["min_value"] = self.min_value
-        if self.max_value:
-            usual_dict["max_value"] = self.max_value
-        return usual_dict
-
-class AttachmentOption(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
-        super().__init__(name=name, description=description, required=required)
-        self.type = 11
-
-
-class SlashCommandOptionChoice:
-    def __init__(self, * name: str, value: Union[float, int, str]):
-        self.name: str = name
-        self.value: Union[float, int, str] = value
-    
-    def to_dict(self):
-        return {
-            "name": self.name,
-            "value": self.value
-        }
-
-class InvalidOption(Exception):
-    ...
-
-class Subcommand(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: str = None, required: bool = True, options: list[Union[StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]] = None):
-        super().__init__(name=name, description=description, required=required)
-        self.type = 1
-        converted_options = []
-        for option in options:
-            if option["type"] == 1:
-                converted_options.append(Subcommand(**option))
-            elif option["type"] == 2:
-                raise InvalidOption("You can't have a subcommand group with a subcommand")
-            elif option["type"] == 3:
-                converted_options.append(StringOption(**option))
-            elif option["type"] == 4:
-                converted_options.append(IntegerOption(**option))
-            elif option["type"] == 5:
-                converted_options.append(BooleanOption(**option))
-            elif option["type"] == 6:
-                converted_options.append(UserOption(**option))
-            elif option["type"] == 7:
-                converted_options.append(ChannelOption(**option))
-            elif option["type"] == 8:
-                converted_options.append(RoleOption(**option))
-            elif option["type"] == 9:
-                converted_options.append(MentionableOption(**option))
-            elif option["type"] == 10:
-                converted_options.append(NumberOption(**option))
-            elif option["type"] == 11:
-                converted_options.append(AttachmentOption(**option))
-
-        self.options: Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
-
-
-
-
-class SubCommandGroup(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: str = None, required: bool = True, options: list[Union[Subcommand, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]] = None):
-        super().__init__(name=name, description=description, required=required)
-        self.type = 2
-        converted_options = []
-        for option in options:
-            if option["type"] == 1:
-                converted_options.append(Subcommand(**option))
-            elif option["type"] == 2:
-                converted_options.append(SubCommandGroup(**option))
-            elif option["type"] == 3:
-                converted_options.append(StringOption(**option))
-            elif option["type"] == 4:
-                converted_options.append(IntegerOption(**option))
-            elif option["type"] == 5:
-                converted_options.append(BooleanOption(**option))
-            elif option["type"] == 6:
-                converted_options.append(UserOption(**option))
-            elif option["type"] == 7:
-                converted_options.append(ChannelOption(**option))
-            elif option["type"] == 8:
-                converted_options.append(RoleOption(**option))
-            elif option["type"] == 9:
-                converted_options.append(MentionableOption(**option))
-            elif option["type"] == 10:
-                converted_options.append(NumberOption(**option))
-            elif option["type"] == 11:
-                converted_options.append(AttachmentOption(**option))
-
-        self.options: Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
-
-    def to_dict(self):
-        usual_dict = super().to_dict()
-        payload_to_append = []
-        for option in self.options:
-            payload_to_append(option.to_dict())
-        
-        usual_dict["options"] = payload_to_append
-        return usual_dict
-
-
-AnyOption = Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]
-
 
 class ClientUserCommand:
     """
@@ -1753,26 +1795,7 @@ class HTTPClient(ClientSession):
             return res
         return await super().head(url, *args, **kwargs)
 
-class Section:
-    def __init__(self):
-        self.commands = {}
-        self.events = {}
-
-    def event(self, event_name: str):
-        def register_event(func):
-            self.events[event_name] = func
-        return register_event
-
-    def slash_command(self, *, name: str, description: Optional[str], options: List[Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]]):
-        def register_slash_command(func):
-            self.commands[name] = {
-                "callback": func,
-                "name": name,
-                "description": description,
-                "options": options
-            }
-        return register_slash_command
-
+ 
 
 class MissingClientSetting(Exception):
     ...
@@ -1801,40 +1824,14 @@ class Client(WebsocketClient):
 
         self.user: ClientUser = None
         self.application: Application = None
-        self.sections: List[Section] = []
+        self.sections: List[Union[CommandsSection, EventsSection]] = []
+        self.command = command
+        self.user_command = user_command
+        self.message_command = message_command
 
-    def command(self, *, name: Optional[str] = None, description: Optional[str] = None, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
-        def register_slash_command(func):
-            if not description and not func.__doc__:
-                raise TypeError(f"Missing description for command {func.__name__}.")
-            desc = description or func.__doc__
-            self.commands.append(ClientSlashCommand(**{
-                "callback": func,
-                "name": name or func.__name__,
-                "description": desc,
-                "guild_ids": guild_ids,
-                "options": options,
-            })) # Cheat method.
-        return register_slash_command
 
-    def user_command(self, name: Optional[str] = None):
-        def register_slash_command(func):
-            self.commands.append(ClientUserCommand(**{
-                "callback": func,
-                "name": name or func.__name__,
-            }))
-        return register_slash_command
-
-    def message_command(self, name: Optional[str] = None):
-        def register_slash_command(func):
-            self.commands.append(ClientMessageCommand(**{
-                "callback": func,
-                "name": name or func.__name__,
-            }))
-        return register_slash_command
-
-    def add_section(self, section: Section):
-        if not issubclass(section, Section):
+    def add_section(self, section: Union[CommandsSection, EventsSection]):
+        if not issubclass(section, (EventsSection, CommandsSection)):
             raise InvalidArgumentType("You must pass in a class that inherits from the Section class.")
 
         for name, command_object in section.commands:
@@ -1845,8 +1842,8 @@ class Client(WebsocketClient):
         self.sections.append(section)
         section.on_load()
     
-    def unload_section(self, section: Section):
-        if not issubclass(section, Section):
+    def unload_section(self, section: Union[CommandsSection, EventsSection]):
+        if not issubclass(section, (EventsSection, CommandsSection)):
             raise InvalidArgumentType("You must pass in a class that inherits from the Section class.")
 
         for name, command_object in section.commands:
@@ -1992,7 +1989,6 @@ class Colour:
 
 
 Color = Colour
-
 
 class SelectMenuOption:
     def __init__(self, label: str, value: str, description: Optional[str] = None, emoji: Optional[PartialEmoji] = None, default: Optional[bool] = None):
@@ -3036,6 +3032,9 @@ class BaseInteraction:
             "data": modal.to_dict()
         }
         await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json=payload)
+
+    def is_ping(self):
+        return self.type == 1
 
     def is_application_command(self):
         return self.type == 2
