@@ -954,6 +954,8 @@ class WebsocketClient(EventHandler):
 
     async def send_json(self, json: dict):
         await self.ws.send_json(json)
+        logger.debug(f"Sent {json} to the Websocket Connection to Discord.")
+
 
     async def connect(self):
         self.ws = await self.http.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json")
@@ -1688,10 +1690,8 @@ class HTTPClient(ClientSession):
             if url.startswith("/"):
                 url = url[1:]
 
-            try:
-                res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
-            except:
-                await self.ratelimit_handler.process_headers(res.headers)            
+            res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
+            logger.debug(f"Sent a {res.method} to {res.url} and got a {res.status} response.")
 
             return res
         return await super().get(url, *args, **kwargs)
@@ -1704,7 +1704,8 @@ class HTTPClient(ClientSession):
             if url.startswith("/"):
                 url = url[1:]
 
-            res =  await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
+            res = await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
+            logger.debug(f"Sent a {res.method} to {res.url} and got a {res.status} response.")
             return res
         
         return await super().post(url, *args, **kwargs)
@@ -1716,11 +1717,9 @@ class HTTPClient(ClientSession):
 
             if url.startswith("/"):
                 url = url[1:]
-            try:
-                res = await super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
-            except:
-                await self.ratelimit_handler.process_headers(res.headers)
 
+            res = await super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
+            logger.debug(f"Sent a {res.method} to {res.url} and got a {res.status} response.")
             return res
         return await super().patch(url, *args, **kwargs)
 
@@ -1732,13 +1731,9 @@ class HTTPClient(ClientSession):
             if url.startswith("/"):
                 url = url[1:]
 
-            try:
-                res = await super().delete(f"{self.base_uri}/{url}", *args, **kwargs)
-            except:
-                await self.ratelimit_handler.process_headers(res.headers)
-
+            res = await super().delete(f"{self.base_uri}/{url}", *args, **kwargs)
+            logger.debug(f"Sent a {res.method} to {res.url} and got a {res.status} response.")
             return res
-        
         return await super().delete(url, *args, **kwargs)
 
     async def put(self, url, *args, to_discord: bool = True, **kwargs):
@@ -1749,10 +1744,9 @@ class HTTPClient(ClientSession):
 
             if url.startswith("/"):
                 url = url[1:]
-            try:
-                res = await super().put(f"{self.base_uri}/{url}", *args, **kwargs)
-            except:
-                await self.ratelimit_handler.process_headers(res.headers)
+
+            res = await super().put(f"{self.base_uri}/{url}", *args, **kwargs)
+            logger.debug(f"Sent a {res.method} to {res.url} and got a {res.status} response.")
 
             return res
         return await super().put(url, *args, **kwargs)
@@ -1765,10 +1759,8 @@ class HTTPClient(ClientSession):
             if url.startswith("/"):
                 url = url[1:]
 
-            try:
-                res =  await super().head(f"{self.base_uri}/{url}", *args, **kwargs)
-            except:
-                await self.ratelimit_handler.process_headers(res.headers)
+            res =  await super().head(f"{self.base_uri}/{url}", *args, **kwargs)
+            logger.debug(f"Sent a {res.method} to {res.url} and got a {res.status} response.")
 
             return res
         return await super().head(url, *args, **kwargs)
