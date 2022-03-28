@@ -608,6 +608,7 @@ class User(Messageable):
         self.flags: int = data.get("flags")
         self.premium_type: int = data.get("premium_type")
         self.public_flags: int = data.get("public_flags")
+
 class EventHandler:
     # Class that'll contain all methods that'll be called when an event is triggered.
 
@@ -649,15 +650,15 @@ class EventHandler:
                     self.heartbeats.append(event["d"])
                 except AttributeError:
                     self.heartbeats = [event["d"]]
+                coroutine = self.send_json({
+                    "op": self.HEARTBEAT,
+                    "d": self.sequence or "null"
+                })
             elif event["op"] == self.RECONNECT:
                 await self.reconnect()
             logger.info(f"Received event {event['t']}")
 
         await self.handle_close()
-
-        
-
-
 
     async def interaction_create(self, data):
 
@@ -825,14 +826,7 @@ class EventHandler:
         self.application: ClientApplication = ClientApplication(
             self, application_data
             )
-
-        def heartbeater():
-            loop = asyncio.new_event_loop()
-            loop.run_until_complete(self.heartbeat(False))
-            loop.run_forever()
-
-        threading._start_new_thread(heartbeater, ())
-
+        asyncio.create_task(self.send_json({"op": self.READY, "d": self.sequence or "null"}))
         command_sorter = {
             "global": []
         }
@@ -863,6 +857,11 @@ class EventHandler:
                 await self.application.bulk_overwrite_global_application_commands(commands)
             else:
                 await self.application.bulk_overwrite_guild_application_commands(guild_id, commands)
+        
+        await self.send_json({
+            "op": self.HEARTBEAT,
+            "d": self.sequence or "null"
+        })
 
         try:
             await self.events["ready"]()
@@ -919,10 +918,9 @@ class WebsocketClient(EventHandler):
             return await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
 
         if self.interval:
-            while True:
-                await asyncio.sleep(self.interval / 1000)
-                await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
-                logger.debug("Sent a heartbeat!")
+            await asyncio.sleep(self.interval / 1000)
+            await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
+            logger.debug("Sent a heartbeat!")
 
     async def reconnect(self):
         await self.close()
@@ -1678,7 +1676,7 @@ class RatelimitHandler:
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs, raise_for_status = True)
         self.base_uri: str = "https://discord.com/api/v9"
         self.ratelimit_handler = RatelimitHandler(avoid_ratelimits = kwargs.get("avoid_ratelimits", False))
     
@@ -3288,7 +3286,7 @@ class Invite:
 
 class GuildMember(User):
     def __init__(self, client, data: dict):
-        super().__init__(client, data)
+        super().__init__(client, data.get("user"))
         self.data = data
         self.client = client
         # self.user: Optional[User] = User(data["user"]) or None
