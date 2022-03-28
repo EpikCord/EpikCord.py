@@ -2985,8 +2985,7 @@ class BaseInteraction:
         self.interaction_data: Optional[dict] = data.get("data")
         self.guild_id: Optional[str] = data.get("guild_id")
         self.channel_id: Optional[str] = data.get("channel_id")
-        self.member: Optional[GuildMember] = GuildMember(client, data.get("member")) if data.get("member") else None
-        self.user: Optional[User] = User(client, data.get("user")) if data.get("user") else None
+        self.author: Union[User, GuildMember] = GuildMember(client, data.get("member")) if data.get("member") else User(client, data.get("user"))
         self.token: str = data.get("token")
         self.version: int = data.get("version")
         self.locale: Optional[str] = data.get("locale")
@@ -3242,11 +3241,7 @@ class ApplicationCommandSubcommandOption(ApplicationCommandOption):
 class ResolvedDataHandler:
     def __init__(self, client, resolved_data: dict):
         self.data: dict = resolved_data # In case we miss anything and people can just do it themselves
-        self.users: dict = [User(client, user) for user in self.data.get("users", [])]
-
-        self.members: dict = [GuildMember()]
-        self.roles: dict = self.data["roles"]
-        self.channels: dict = self.data["channels"]
+        ...
 
 class ApplicationCommandInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
@@ -3291,8 +3286,9 @@ class Invite:
             data.get("guild_scheduled_event"))
 
 
-class GuildMember:
+class GuildMember(User):
     def __init__(self, client, data: dict):
+        super().__init__(client, data)
         self.data = data
         self.client = client
         # self.user: Optional[User] = User(data["user"]) or None
