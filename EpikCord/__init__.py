@@ -2,8 +2,6 @@
 NOTE: __version__ in this file, __main__ and setup.cfg
 """
 
-import threading
-
 from .managers import *
 from aiohttp import *
 import asyncio
