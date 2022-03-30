@@ -1862,11 +1862,27 @@ class Client(WebsocketClient):
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
 #         super().__init__(data)
-class ShardClient(Client):
+class ShardClient(Client):#Needs improvement lol
     def __init__(self, token: str, intents: int = 0, shard_ids:List[int] = [0]): #defaults to 1 shard
 
         super().__init__(token, intents)
-        self.http = ...
+        self.shard_ids = shard_ids
+
+    async def identify(self):
+        await self.send_json({
+            "op": self.IDENTIFY,
+            "d": {
+                "token": self.token,
+                "intents": self.intents,
+                "shard": self.shard_ids,
+                "properties": {
+                    "$os": "linux",
+                    "$browser": "EpikCord.py",
+                    "$device": "EpikCord.py"
+                }
+            }
+        }
+        )
 
 class Colour:
     # Some of this code is sourced from discord.py, rest assured all the colors are different from discord.py
