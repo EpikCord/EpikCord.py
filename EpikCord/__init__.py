@@ -1658,7 +1658,7 @@ class RatelimitHandler:
                 "reset": headers["X-Ratelimit-Reset"]
             }
 
-        if headers["X-Ratelimit-Remaining"] == 1 and self.avoid_ratelimits:
+        if headers["X-Ratelimit-Remaining"] <= 1 and self.avoid_ratelimits:
             logger.critical("You have been nearly been ratelimited. We're now pausing requests.")
             self.ratelimited = True
             await asyncio.sleep(headers["X-Ratelimit-Reset-After"])
@@ -1862,7 +1862,11 @@ class Client(WebsocketClient):
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
 #         super().__init__(data)
+class ShardClient(Client):
+    def __init__(self, token: str, intents: int = 0, shard_ids:List[int] = [0]): #defaults to 1 shard
 
+        super().__init__(token, intents)
+        self.http = ...
 
 class Colour:
     # Some of this code is sourced from discord.py, rest assured all the colors are different from discord.py
