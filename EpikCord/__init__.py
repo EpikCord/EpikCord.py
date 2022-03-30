@@ -627,15 +627,24 @@ class EventHandler:
     async def handle_events(self):
         async for event in self.ws:
             event = event.json()
+            logger.debug(f"Received {event} from Discord.")
 
             if event["op"] == self.HELLO:
 
                 self.interval = event["d"]["heartbeat_interval"]
 
+                async def wrapper():
+                    while True:
+                        await self.heartbeat(False)
+
+                asyncio.create_task(wrapper())
                 await self.identify()
+
+                
 
             elif event["op"] == self.EVENT:
                 self.sequence = event["s"]
+                logger.info(f"Received event {event['t']}")
                 try:
                     await self.handle_event(event["t"], event["d"])
                 except Exception as e:
@@ -650,13 +659,13 @@ class EventHandler:
                     self.heartbeats.append(event["d"])
                 except AttributeError:
                     self.heartbeats = [event["d"]]
-                coroutine = self.send_json({
-                    "op": self.HEARTBEAT,
-                    "d": self.sequence or "null"
-                })
+
             elif event["op"] == self.RECONNECT:
                 await self.reconnect()
-            logger.info(f"Received event {event['t']}")
+
+            if event["op"] != self.EVENT:
+                logger.debug(f"Received OPCODE: {event['op']}")
+
 
         await self.handle_close()
 
@@ -826,11 +835,10 @@ class EventHandler:
         self.application: ClientApplication = ClientApplication(
             self, application_data
             )
-        asyncio.create_task(self.send_json({"op": self.READY, "d": self.sequence or "null"}))
+
         command_sorter = {
             "global": []
         }
-
 
         for command in self.commands:
             command_payload = {
@@ -857,11 +865,6 @@ class EventHandler:
                 await self.application.bulk_overwrite_global_application_commands(commands)
             else:
                 await self.application.bulk_overwrite_guild_application_commands(guild_id, commands)
-        
-        await self.send_json({
-            "op": self.HEARTBEAT,
-            "d": self.sequence or "null"
-        })
 
         try:
             await self.events["ready"]()
@@ -918,8 +921,8 @@ class WebsocketClient(EventHandler):
             return await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
 
         if self.interval:
-            await asyncio.sleep(self.interval / 1000)
             await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
+            await asyncio.sleep(self.interval / 1000)
             logger.debug("Sent a heartbeat!")
 
     async def reconnect(self):
@@ -1015,7 +1018,7 @@ class WebsocketClient(EventHandler):
             try:
                 await self.connect()
             finally:
-                if self._closed != True:
+                if not self._closed:
                     await self.close()
 
         def stop_loop_on_completion(f: asyncio.Future):
