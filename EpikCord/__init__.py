@@ -1659,7 +1659,7 @@ class RatelimitHandler:
                 "reset": headers["X-Ratelimit-Reset"]
             }
 
-        if headers["X-Ratelimit-Remaining"] <= 1 and self.avoid_ratelimits:
+        if headers["X-Ratelimit-Remaining"] == 1 and self.avoid_ratelimits:
             logger.critical("You have been nearly been ratelimited. We're now pausing requests.")
             self.ratelimited = True
             await asyncio.sleep(headers["X-Ratelimit-Reset-After"])
