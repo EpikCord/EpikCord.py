@@ -941,13 +941,38 @@ class WebsocketClient(EventHandler):
         if self.ws.close_code == 4014:
             raise DisallowedIntents(
                 "You cannot use privellaged intents with this token, go to the developer portal and allow the privellaged intents needed.")
+        elif self.ws.close_code == 1006:
+            await self.resume()
         elif self.ws.close_code == 4004:
             raise InvalidToken("The token you provided is invalid.")
         elif self.ws.close_code == 4008:
             raise Ratelimited429(
                 "You've been rate limited. Try again in a few minutes.")
+        elif self.ws.close_code == 4011:
+            raise ShardingRequired("You need to shard the bot.")
+        elif self.ws.close_code == 4012:
+            raise DeprecationWarning("The gateway you're connecting to is deprecated and does not work, upgrade EpikCord.py.")
         elif self.ws.close_code == 4013:
             raise InvalidIntents("The intents you provided are invalid.")
+        elif self.ws.close_code == 4000:
+            await self.resume()
+        elif self.ws.close_code == 4001:
+            logger.critical("EpikCord.py sent an invalid OPCODE to the Gateway. Report this immediately.")
+            await self.resume()
+        elif self.ws.close_code == 4002:
+            logger.critical("EpikCord.py sent an invalid payload to the Gateway. Report this immediately.")
+            await self.resume()
+        elif self.ws.close_code == 4003:
+            logger.critical(f"EpikCord.py has sent a payload prior to identifying. Report this immediately.")
+        elif self.ws.close_code == 4005:
+            logger.critical("EpikCord.py tried to authenticate again. Report this immediately.")
+            await self.resume()
+        elif self.ws.close_code == 4007:
+            logger.critical("EpikCord.py sent an invalid sequence number. Report this immediately.")
+            await self.resume()
+        elif self.ws.close_code == 4009:
+            logger.critical("Session timed out.")
+            await self.resume()
         else:
             raise ClosedWebSocketConnection(f"Connection has been closed with code {self.ws.close_code}")
 
@@ -1001,7 +1026,7 @@ class WebsocketClient(EventHandler):
         #         pass
 
         if self.ws is not None and not self.ws.closed:
-            await self.ws.close(code=1000)
+            await self.ws.close(code=4000)
 
         if self.http is not None and not self.http.closed:
             await self.http.close()
