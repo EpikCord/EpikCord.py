@@ -487,7 +487,7 @@ class SubcommandGroup(BaseSlashCommandOption):
     options: :class:`list`
         The subcommands.
     """
-    
+
     def __init__(self, *, name: str, description: str = None, options: List[Subcommand] = None):
         super().__init__(name=name, description=description)
         self.type = 2
@@ -507,16 +507,19 @@ class ClientUserCommand:
 
     Attributes:
     -----------
-        * name The name set for the User Command
-        * callback: callable The function to call for the User Command (Passed in by the library)
+    name: :class:`str`
+        The name of the command.
+    callback: :class:`callable`
+        The callback function.
 
     Parameters:
     -----------
-    All parameters follow the documentation of the Attributes accordingly
-        * name
-        * callback
+    name: :class:`str`
+        The name of the command.
+    callback: :class:`callable`
+        The callback function.    
     """
-    def __init__(self, *, name: str, callback: callable): # TODO: Check if you can make GuildUserCommands etc
+    def __init__(self, *, name: str, callback: callable):
         self.name: str = name
         self.callback: callable = callback
     
@@ -525,68 +528,46 @@ class ClientUserCommand:
         return 2
 
 class ClientSlashCommand:
-    def __init__(self, *, name: str, description: str, callback: callable, guild_ids: Optional[List[str]], options: Optional[List[AnyOption]]):
-        self.name: str = name
-        self.description: str = description
-        self.callback: callable = callback
-        self.guild_ids: Optional[List[str]] = guild_ids
-        self.options: Optional[List[AnyOption]] = options
+    """
+    A class to represent a Slash Command that the Client owns.
+    
+    Attributes
+    ----------
+    name: :class:`str`
+        The name of the command.
+    callback: :class:`callable`
+        The callback function.
+    description: :class:`str`
+        The description of the command.
+    options: :class:`list`
+        The options of the command.
 
+    Parameters
+    ----------
+    name: :class:`str`
+        The name of the command.
+    callback: :class:`callable`
+        The callback function.
+    description: :class:`str`
+        The description of the command.
+    options: :class:`list`
+        The options of the command.
+    """
+    def __init__(self, *, name: str, callback: callable, description: str = None, options: List[AnyOption] = None):
+        self.name: str = name
+        self.callback: callable = callback
+        self.description: str = description
+        self.options: List[AnyOption] = options
+    
     @property
     def type(self):
         return 1
+    
 
 class ClientMessageCommand(ClientUserCommand):
-
+    """
+    A class to represent a Message Command that the Client owns.
+    """
     @property
     def type(self):
         return 3
-
-class EventsSection:
-    def __init__(self, client):
-        self.client = client
-        self.events = {}
-
-        class _:
-            client = ...
-            events = ...
-
-        temp = _()
-        for event in dir(self):
-            if event not in dir(temp):
-                self.events[event] = getattr(self, event)
-
-def command(*, name: Optional[str] = None, description: Optional[str] = None, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
-    def register_slash_command(func):
-        if not description and not func.__doc__:
-            raise TypeError(f"Missing description for command {func.__name__}.")
-        desc = description or func.__doc__
-        func.__self__.commands.append(ClientSlashCommand(**{
-            "callback": func,
-            "name": name or func.__name__,
-            "description": desc,
-            "guild_ids": guild_ids,
-            "options": options,
-        })) # Cheat method.
-    return register_slash_command
-
-def user_command(name: Optional[str] = None):
-    def register_slash_command(func):
-        func.__self__.commands.append(ClientUserCommand(**{
-            "callback": func,
-            "name": name or func.__name__,
-        }))
-    return register_slash_command
-
-def message_command(name: Optional[str] = None):
-    def register_slash_command(func):
-        func.__self__.commands.append(ClientMessageCommand(**{
-            "callback": func,
-            "name": name or func.__name__,
-        }))
-    return register_slash_command
-
-class CommandsSection:
-    def __init__(self, client):
-        self.client = client
-        self.commands = {}
