@@ -128,3 +128,6 @@ class ThreadArchived(EpikCordException):
     Raised when you try to send a message to an archived thread.
     """
     ...
+
+class InvalidOption(EpikCordException):
+    ...
