@@ -1,0 +1,8 @@
+.vscode/
+dist/
+__pycache__
+testing.py
+_build
+bin
+config.json
+RoboEpikLogs.log
