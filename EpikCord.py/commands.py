@@ -423,11 +423,19 @@ class Subcommand(BaseSlashCommandOption):
         The description of the subcommand
     options: :class:`list`
         The options of the subcommand.
-
-
+    
+    Parameters
+    ----------
+    name: :class:`str`
+        The name of the subcommand
+    description: :class:`str`
+        The description of the subcommand
+    options: :class:`list`
+        The options of the subcommand.
+    
     """
     def __init__(self, *, name: str, description: str = None, options: list[Union[StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]] = []):
-        super().__init__(name=name, description=description)
+        super().__init__(name = name, description = description)
         self.type = 1
         converted_options = []
         for option in options:
@@ -456,8 +464,8 @@ class Subcommand(BaseSlashCommandOption):
 
         self.options: Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
 
-class SubCommandGroup(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: str = None, required: bool = True, options: list[Union[Subcommand, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]] = None):
+class SubcommandGroup(BaseSlashCommandOption):
+    def __init__(self, *, name: str, description: str = None, required: bool = True, options: List[Subcommand] = None):
         super().__init__(name=name, description=description, required=required)
         self.type = 2
         converted_options = []
