@@ -661,6 +661,9 @@ class EventHandler:
             elif event["op"] == self.RECONNECT:
                 await self.reconnect()
 
+            elif event["op"] == self.RESUMED:
+                logger.debug("Connection successfully resumed and all proceeding events are new.")
+
             if event["op"] != self.EVENT:
                 logger.debug(f"Received OPCODE: {event['op']}")
 
@@ -984,9 +987,11 @@ class WebsocketClient(EventHandler):
     async def connect(self):
         self.ws = await self.http.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json")
         self._closed = False
-        await self.handle_events()
+        asyncio.create_task(self.handle_events())
 
     async def resume(self):
+        logger.critical("Reconnecting...")
+        await self.connect()
         await self.send_json({
             'op': self.RESUME,
             'd': {
