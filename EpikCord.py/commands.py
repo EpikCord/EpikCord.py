@@ -465,18 +465,37 @@ class Subcommand(BaseSlashCommandOption):
         self.options: Union[Subcommand, SubcommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
 
 class SubcommandGroup(BaseSlashCommandOption):
+    """
+    The SubcommandGroup class.
+    Used to group subcommands.
+
+    Attributes
+    ----------
+    name: :class:`str`
+        The name of the subcommand group
+    description: :class:`str`
+        The description of the subcommand group
+    options: :class:`list`
+        The subcommands.
+
+    Attributes
+    ----------
+    name: :class:`str`
+        The name of the subcommand group
+    description: :class:`str`
+        The description of the subcommand group
+    options: :class:`list`
+        The subcommands.
+    """
+    
     def __init__(self, *, name: str, description: str = None, options: List[Subcommand] = None):
         super().__init__(name=name, description=description)
         self.type = 2
         self.options = [Subcommand(**option) for option in options]            
 
     def to_dict(self):
-        usual_dict = super().to_dict()
-        payload_to_append = []
-        for option in self.options:
-            payload_to_append(option.to_dict())
-        
-        usual_dict["options"] = payload_to_append
+        usual_dict = super().to_dict()        
+        usual_dict["options"] = self.options
         return usual_dict
 
 
