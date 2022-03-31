@@ -421,9 +421,12 @@ class Subcommand(BaseSlashCommandOption):
         The name of the subcommand
     description: :class:`str`
         The description of the subcommand
-    
+    options: :class:`list`
+        The options of the subcommand.
+
+
     """
-    def __init__(self, *, name: str, description: str = None, options: list[Union[StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]] = None):
+    def __init__(self, *, name: str, description: str = None, options: list[Union[StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]] = []):
         super().__init__(name=name, description=description)
         self.type = 1
         converted_options = []
