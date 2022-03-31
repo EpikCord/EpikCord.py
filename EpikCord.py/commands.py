@@ -462,7 +462,7 @@ class Subcommand(BaseSlashCommandOption):
             elif option["type"] == 11:
                 converted_options.append(AttachmentOption(**option))
 
-        self.options: Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
+        self.options: Union[Subcommand, SubcommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
 
 class SubcommandGroup(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: str = None, required: bool = True, options: List[Subcommand] = None):
@@ -473,7 +473,7 @@ class SubcommandGroup(BaseSlashCommandOption):
             if option["type"] == 1:
                 converted_options.append(Subcommand(**option))
             elif option["type"] == 2:
-                converted_options.append(SubCommandGroup(**option))
+                converted_options.append(SubcommandGroup(**option))
             elif option["type"] == 3:
                 converted_options.append(StringOption(**option))
             elif option["type"] == 4:
@@ -493,7 +493,7 @@ class SubcommandGroup(BaseSlashCommandOption):
             elif option["type"] == 11:
                 converted_options.append(AttachmentOption(**option))
 
-        self.options: Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
+        self.options: Union[Subcommand, SubcommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
 
     def to_dict(self):
         usual_dict = super().to_dict()
@@ -505,7 +505,7 @@ class SubcommandGroup(BaseSlashCommandOption):
         return usual_dict
 
 
-AnyOption = Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]
+AnyOption = Union[Subcommand, SubcommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]
 
 class ClientUserCommand:
     """
