@@ -1,6 +1,10 @@
+from .exceptions import InvalidOption
 from typing import Optional, Union, List
 
 class ChannelOptionChannelTypes:
+    """
+    An Enum for the channel types that can be used to restrict the channel types which can be chosen for a ChannelOption.
+    """
     GUILD_TEXT = 0
     DM = 1
     GUILD_VOICE = 2
@@ -13,22 +17,76 @@ class ChannelOptionChannelTypes:
     GUILD_STAGE_VOICE = 13
 
 class BaseSlashCommandOption:
+    """
+    The base SlashCommandOption class.
+    Can be used for new options. that are yet to be created in EpikCord.
+
+    Attributes
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+
+    Parameters
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+    """
     def __init__(self, *, name: str, description: str, required: Optional[bool] = False):
         self.name: str = name
         self.description: str = description
-        self.required: bool = required
+        self.required: bool = required or None
         self.type: int = None # Needs to be set by the subclass
         # People shouldn't use this class, this is just a base class for other options, but they can use this for other options we are yet to account for.
 
     def to_dict(self):
-        return {
+        """
+        Returns a dictionary representation of the option.
+        """
+        payload = {
             "name": self.name,
             "description": self.description,
-            "required": self.required,
             "type": self.type
         }
+        if self.required is not None:
+            payload["required"] = self.required
+        
+        return payload
     
 class StringOption(BaseSlashCommandOption):
+    """
+    The StringOption class.
+    Used for options that are strings.
+
+    Attributes
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+    autocomplete: :class:`bool`
+        Whether the option should autocomplete or not.
+
+    Parameters
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+    autocomplete: :class:`bool`
+        Whether the option should autocomplete or not.
+    """
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True, autocomplete: Optional[bool] = False):
         super().__init__(name=name, description=description, required=required)
         self.type = 3
@@ -41,6 +99,40 @@ class StringOption(BaseSlashCommandOption):
 
 
 class IntegerOption(BaseSlashCommandOption):
+    """
+    The IntegerOption class.
+    Used for options that are integers (whole numbers).
+   
+    Attributes
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+    autocomplete: :class:`bool`
+        Whether the option should autocomplete or not.
+    min_value: :class:`int`
+        The minimum value of the option.
+    max_value: :class:`int`
+        The maximum value of the option.
+
+    Parameters
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+    autocomplete: :class:`bool`
+        Whether the option should autocomplete or not.
+    min_value: :class:`int`
+        The minimum value of the option.
+    max_value: :class:`int`
+        The maximum value of the option.
+    """
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True, autocomplete: Optional[bool] = False, min_value: Optional[int] = None, max_value: Optional[int] = None):
         super().__init__(name=name, description=description, required=required)
         self.type = 4
@@ -58,22 +150,94 @@ class IntegerOption(BaseSlashCommandOption):
         return usual_dict
 
 class BooleanOption(BaseSlashCommandOption):
+    """
+    The BooleanOption class.
+    Used for options that are booleans.
+
+    Attributes
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+
+    Parameters
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+    """
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
         super().__init__(name=name, description=description, required=required)
         self.type = 5
 
 
 class UserOption(BaseSlashCommandOption):
+    """
+    The UserOption class.
+    Used for options that are users.
+
+    Attributes
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+
+    Parameters
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+
+    """
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
         super().__init__(name=name, description=description, required=required)
         self.type = 6
 
 
 class ChannelOption(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
+    """
+    The ChannelOption class.
+    Used for options that are channels.
+    
+    Attributes
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+    channel_types: :class:`list`
+        The channel types that the option can be.
+
+    Parameters
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+    channel_types: :class:`list`
+        The channel types that the option can be.
+    """
+
+    def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True, channel_types: Optional[List[ChannelOptionChannelTypes]] = None):
         super().__init__(name=name, description=description, required=required)
         self.type = 7
-        self.channel_types: list[ChannelOptionChannelTypes] = []
+        self.channel_types: list[ChannelOptionChannelTypes] = channel_types if channel_types else []
         
     def to_dict(self):
         usual_dict: dict = super().to_dict()
@@ -81,18 +245,99 @@ class ChannelOption(BaseSlashCommandOption):
         return usual_dict
 
 class RoleOption(BaseSlashCommandOption):
+    """
+    The RoleOption class.
+    Used for options that are roles.
+
+    Attributes
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+
+    Parameters
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+    """
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
         super().__init__(name=name, description=description, required=required)
         self.type = 8
 
 
 class MentionableOption(BaseSlashCommandOption):
+    """
+    The MentionableOption class.
+    Used for options that are mentionable. It is very broad. Anything that can be mentioned can be used.
+
+    Attributes
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+
+    Parameters
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+    """
+
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
         super().__init__(name=name, description=description, required=required)
         self.type = 9
 
 
 class NumberOption(BaseSlashCommandOption):
+    """
+    The NumberOption class.
+    Used for options that are numbers (Can be an Integer, but could be a float).
+
+    Attributes
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+    min_value: :class:`int`
+        The minimum value of the option.
+    max_value: :class:`int`
+        The maximum value of the option.
+    autocomplete: :class:`bool`
+        Whether the option can be autocompleted or not.
+
+
+    Parameters
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+    min_value: :class:`int`
+        The minimum value of the option.
+    max_value: :class:`int`
+        The maximum value of the option.
+    autocomplete: :class:`bool`
+        Whether the option can be autocompleted or not.
+
+    """
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True, autocomplete: Optional[bool] = False, min_value: Optional[int] = None, max_value: Optional[int] = None):
         super().__init__(name=name, description=description, required=required)
         self.type = 10
@@ -110,28 +355,76 @@ class NumberOption(BaseSlashCommandOption):
         return usual_dict
 
 class AttachmentOption(BaseSlashCommandOption):
+    """
+    The AttachmentOption class.
+    Used for options that are attachments.
+
+    Attributes
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+
+
+    Parameters
+    ----------
+    name: :class:`str`
+        The name of the option.
+    description: :class:`str`
+        The description of the option.
+    required: :class:`bool`
+        Whether the option is required or not.
+    """
+
     def __init__(self, *, name: str, description: Optional[str] = None, required: bool = True):
         super().__init__(name=name, description=description, required=required)
         self.type = 11
 
 
 class SlashCommandOptionChoice:
+    """
+    The SlashCommandOptionChoice class.
+    Used for options that you would like to have static choices which are the only available values.
+
+    Attributes
+    ----------
+    name: :class:`str`
+        The name of the choice.
+    value: :class:`str`
+        The value of the choice which will be returned to you.
+
+    """
     def __init__(self, * name: str, value: Union[float, int, str]):
         self.name: str = name
         self.value: Union[float, int, str] = value
     
     def to_dict(self):
+        """
+        A dictionary representation of the Choice.
+        """
         return {
             "name": self.name,
             "value": self.value
         }
 
-class InvalidOption(Exception):
-    ...
-
 class Subcommand(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: str = None, required: bool = True, options: list[Union[StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]] = None):
-        super().__init__(name=name, description=description, required=required)
+    """
+    The Subcommand class.
+    Used for options that are subcommands.
+
+    Attributes
+    ----------
+    name: :class:`str`
+        The name of the subcommand
+    description: :class:`str`
+        The description of the subcommand
+    
+    """
+    def __init__(self, *, name: str, description: str = None, options: list[Union[StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]] = None):
+        super().__init__(name=name, description=description)
         self.type = 1
         converted_options = []
         for option in options:
