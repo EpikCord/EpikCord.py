@@ -465,35 +465,10 @@ class Subcommand(BaseSlashCommandOption):
         self.options: Union[Subcommand, SubcommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
 
 class SubcommandGroup(BaseSlashCommandOption):
-    def __init__(self, *, name: str, description: str = None, required: bool = True, options: List[Subcommand] = None):
-        super().__init__(name=name, description=description, required=required)
+    def __init__(self, *, name: str, description: str = None, options: List[Subcommand] = None):
+        super().__init__(name=name, description=description)
         self.type = 2
-        converted_options = []
-        for option in options:
-            if option["type"] == 1:
-                converted_options.append(Subcommand(**option))
-            elif option["type"] == 2:
-                converted_options.append(SubcommandGroup(**option))
-            elif option["type"] == 3:
-                converted_options.append(StringOption(**option))
-            elif option["type"] == 4:
-                converted_options.append(IntegerOption(**option))
-            elif option["type"] == 5:
-                converted_options.append(BooleanOption(**option))
-            elif option["type"] == 6:
-                converted_options.append(UserOption(**option))
-            elif option["type"] == 7:
-                converted_options.append(ChannelOption(**option))
-            elif option["type"] == 8:
-                converted_options.append(RoleOption(**option))
-            elif option["type"] == 9:
-                converted_options.append(MentionableOption(**option))
-            elif option["type"] == 10:
-                converted_options.append(NumberOption(**option))
-            elif option["type"] == 11:
-                converted_options.append(AttachmentOption(**option))
-
-        self.options: Union[Subcommand, SubcommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
+        self.options = [Subcommand(**option) for option in options]            
 
     def to_dict(self):
         usual_dict = super().to_dict()
