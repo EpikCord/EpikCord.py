@@ -608,6 +608,7 @@ class User(Messageable):
         self.flags: int = data.get("flags")
         self.premium_type: int = data.get("premium_type")
         self.public_flags: int = data.get("public_flags")
+
 class EventHandler:
     # Class that'll contain all methods that'll be called when an event is triggered.
 
@@ -626,15 +627,24 @@ class EventHandler:
     async def handle_events(self):
         async for event in self.ws:
             event = event.json()
+            logger.debug(f"Received {event} from Discord.")
 
             if event["op"] == self.HELLO:
 
                 self.interval = event["d"]["heartbeat_interval"]
 
+                async def wrapper():
+                    while True:
+                        await self.heartbeat(False)
+
+                asyncio.create_task(wrapper())
                 await self.identify()
+
+                
 
             elif event["op"] == self.EVENT:
                 self.sequence = event["s"]
+                logger.info(f"Received event {event['t']}")
                 try:
                     await self.handle_event(event["t"], event["d"])
                 except Exception as e:
@@ -649,15 +659,15 @@ class EventHandler:
                     self.heartbeats.append(event["d"])
                 except AttributeError:
                     self.heartbeats = [event["d"]]
+
             elif event["op"] == self.RECONNECT:
                 await self.reconnect()
-            logger.info(f"Received event {event['t']}")
+
+            if event["op"] != self.EVENT:
+                logger.debug(f"Received OPCODE: {event['op']}")
+
 
         await self.handle_close()
-
-        
-
-
 
     async def interaction_create(self, data):
 
@@ -826,17 +836,9 @@ class EventHandler:
             self, application_data
             )
 
-        def heartbeater():
-            loop = asyncio.new_event_loop()
-            loop.run_until_complete(self.heartbeat(False))
-            loop.run_forever()
-
-        threading._start_new_thread(heartbeater, ())
-
         command_sorter = {
             "global": []
         }
-
 
         for command in self.commands:
             command_payload = {
@@ -919,10 +921,9 @@ class WebsocketClient(EventHandler):
             return await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
 
         if self.interval:
-            while True:
-                await asyncio.sleep(self.interval / 1000)
-                await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
-                logger.debug("Sent a heartbeat!")
+            await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
+            await asyncio.sleep(self.interval / 1000)
+            logger.debug("Sent a heartbeat!")
 
     async def reconnect(self):
         await self.close()
@@ -1017,7 +1018,7 @@ class WebsocketClient(EventHandler):
             try:
                 await self.connect()
             finally:
-                if self._closed != True:
+                if not self._closed:
                     await self.close()
 
         def stop_loop_on_completion(f: asyncio.Future):
@@ -1678,7 +1679,7 @@ class RatelimitHandler:
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs, raise_for_status = True)
         self.base_uri: str = "https://discord.com/api/v9"
         self.ratelimit_handler = RatelimitHandler(avoid_ratelimits = kwargs.get("avoid_ratelimits", False))
     
@@ -3308,7 +3309,7 @@ class Invite:
 
 class GuildMember(User):
     def __init__(self, client, data: dict):
-        super().__init__(client, data)
+        super().__init__(client, data.get("user"))
         self.data = data
         self.client = client
         # self.user: Optional[User] = User(data["user"]) or None
