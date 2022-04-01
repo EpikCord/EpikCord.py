@@ -2,11 +2,11 @@
     <img alt="EpikCord logo" src="docs/EpikCord_Logo.png" width="200"> <!-- Yes I sourced this from DiscordGO because their design inspired me :D-->
 </p>
 
-# EpikCord.py
-Welcome to EpikCord.py!
-This is an API Wrapper for Discord's API for Python!
-We've decided not to fork discord.py and start completely from scratch for a new, better structuring system!
+## EpikCord.py
 
+`Important note:  The library is currently undergoing a rewrite. The library will be back soon`
+
+EpikCord.py is an **API wrapper for discord** that aims to be very customizable and easy to use.
 ## Why EpikCord.py?
 There are many other libraries for the Discord API written in Python, there is no reason for you to choose us over other great libraries!
 
