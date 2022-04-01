@@ -1,7 +1,28 @@
-from typing import Optional, Union, List
-from .exceptions import InvalidArgumentType, CustomIdIsTooBig, TooManySelectMenuOptions, InvalidComponentStyle, TooManyComponents, LabelIsTooBig, MissingCustomId
+from .partials import PartialEmoji
+from typing import Optional, List, Union
+from .exceptions import InvalidArgumentType, CustomIdIsTooBig, TooManySelectMenuOptions, InvalidComponentStyle, TooManyComponents, MissingCustomId, LabelIsTooBig
+
 
 class BaseComponent:
+    """
+    Base Component class, all components should inherit from this.
+    Can be used to make new components which are yet to be covered by EpikCord.
+
+    Attributes
+    ----------
+    custom_id: :class:`str`
+        The custom id of the component. Used for `Client.component(custom_id)`.
+
+    Parameters
+    ----------
+    custom_id: :class:`str`
+        The custom id of the component. Used for `Client.component(custom_id)`.
+    
+    Methods
+    -------
+    set_custom_id(custom_id: :class:`str`)
+        Sets the custom id of the component.
+    """
     def __init__(self, *, custom_id: str):
         self.custom_id: str = custom_id
 
