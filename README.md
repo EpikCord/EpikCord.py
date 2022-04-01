@@ -3,6 +3,7 @@
 </p>
 
 <p align="center">EpikCord.py</p>
+
 `Important note:  The library is currently undergoing a rewrite. The library will be back soon`
 
 EpikCord.py is an **API wrapper for discord** that aims to be very customizable and easy to use.
