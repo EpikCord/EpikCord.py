@@ -2,7 +2,7 @@
     <img alt="EpikCord logo" src="docs/EpikCord_Logo.png" width="200"> <!-- Yes I sourced this from DiscordGO because their design inspired me :D-->
 </p>
 
-<p align="center">EpikCord.py</p>
+## EpikCord.py
 
 `Important note:  The library is currently undergoing a rewrite. The library will be back soon`
 
