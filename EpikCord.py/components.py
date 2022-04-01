@@ -1,5 +1,5 @@
-from typing import Optional
-from .exceptions import InvalidArgumentType, CustomIdIsTooBig, TooManySelectMenuOptions, InvalidComponentStyle, TooManyComponents
+from typing import Optional, Union, List
+from .exceptions import InvalidArgumentType, CustomIdIsTooBig, TooManySelectMenuOptions, InvalidComponentStyle, TooManyComponents, LabelIsTooBig, MissingCustomId
 
 class BaseComponent:
     def __init__(self, *, custom_id: str):
