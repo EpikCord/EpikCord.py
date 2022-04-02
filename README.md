@@ -17,6 +17,13 @@ However, this library is not recommended for beginner users.
 We love contributions that help us, so feel free to! You won't be rewarded for this, but it helps us and we'd be very pleased with any contribution.
 See the [Contributing](./CONTRIBUTING.md) page for more information.
 
+## Help and Support
+If you need help, you can join our [EpikCord.py Discord Server](https://discord.gg/4R473R73kQ) and ask for help there.
+
+<a href="https://discord.gg/4R473R73kQ" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.shields.io/discord/937364424208039957?color=9cf&logo=discord&label=discord" alt="Discord server">
+</a>
+
 ## Installing
 
 Requirements = **Python 3.8 or more**
