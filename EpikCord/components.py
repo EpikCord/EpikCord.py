@@ -2,6 +2,7 @@ from .partials import PartialEmoji
 from typing import Optional, List, Union
 from .exceptions import InvalidArgumentType, CustomIdIsTooBig, TooManySelectMenuOptions, InvalidComponentStyle, TooManyComponents, MissingCustomId, LabelIsTooBig
 
+
 class BaseComponent:
     """
     Base Component class, all components should inherit from this.
