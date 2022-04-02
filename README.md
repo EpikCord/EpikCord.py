@@ -7,57 +7,65 @@
 `Important note:  The library is currently undergoing a rewrite. The library will be back soon`
 
 EpikCord.py is an **API wrapper for discord** that aims to be very customizable and easy to use.
-## Why EpikCord.py?
-There are many other libraries for the Discord API written in Python, there is no reason for you to choose us over other great libraries!
 
-## I want to contribute!
+## Why EpikCord.py?
+Unlike most libraries, Most of the classes in EpikCord.py have the data attribute. This means that you can hack and customize the class to your liking.
+
+However, this library is not recommended for beginner users.
+
+## Contributing to the library
 We love contributions that help us, so feel free to! You won't be rewarded for this, but it helps us and we'd be very pleased with any contribution.
 See the [Contributing](./CONTRIBUTING.md) page for more information.
 
-## Where are your docs?
-Have functions and attributes you not sure about? Check our docs [here](https://epikcord-guide.vercel.app/)
+## Installing
 
-## I need help!
-If you need help, you can join our [EpikCord.py Discord Server](https://discord.gg/4R473R73kQ) and ask for help there.
+Requirements = **Python 3.8 or more**
 
-<a href="https://discord.gg/4R473R73kQ" target="_blank" rel="noopener noreferrer">
-    <img src="https://img.shields.io/discord/937364424208039957?color=9cf&logo=discord&label=discord" alt="Discord server">
-</a>
+For installing base library:
 
-# Installing Epikcord.py
-
-## Requirements
-
-The minimal requirements for EpikCord.py is `Python>=3.8`. Python 3.7 and lower and Python 2 family are not supported
-
-## Install
-**Warning!**<Br>
-This Library is in preview and hasn't been released yet. Some features may not work properly.
-
-Get the library from the Python Package Index (PyPI)
-<br>
-```
-pip install EpikCord.py
+``` sh
+#Windows
+py -3.8 -m pip install epikcord.py
+#Linux/Mac
+python3 -m pip install epikcord.py
 ```
 
-### Install in an Virtual Environment (venv)
+For installing voice support (optional[uses [PyNaCl](https://pypa.org/project/pynacl/)]):
 
-Sometimes you might want to keep this library from conflicting with other libraries or use a different version of libs than the ones in the system. You also might not have permissions for installing libraries. Luckily Virtual Environments are here to save you. From Python3.3, there is a concept called Virtual Environment to help maintain these libs
+``` sh
+#Windows
+py -3.8 -m pip install epikcord.py[voice]
+#Linux/Mac
+python3 -m pip install epikcord.py[voice]
+```
+
+For installing the library directly from the GitHub repository(requires [git](https://git-scm.com/downloads)):
 
 
-#### For the quick and dirty:
+``` sh
+#Windows
+py -3.8 -m pip install git+https://github.com/EpikCord/EpikCord.py
+#Linux/Mac
+python3 -m pip install git+https://github.com/EpikCord/EpikCord.py
+```
 
-1. Go to your project's working directory:
+## Examples
+All examples are located in the [examples](./examples) folder.
+Main ones are:
+* [Basic Bot Example](./examples/basic_bot.py)
+* [Basic Command Example](./examples/message.py)
+* [Slash Command Example](./examples/slash_commands.py)
+* [User Command Example](./examples/user_commands.py)
+* [Message Command Example](./examples/message_commands.py)
 
-> ``` sh
->  $ cd bot-source-dir
->  $ python3 -m venv YourBotEnvName
-> ```
+## Important links
+Documentation - [here](https://epikcord-guide.vercel.app/)
 
-2. Activate the venv
-If you don't know how to see it [here](https://docs.python.org/3/library/venv.html)
+Discord Server for assistance - [here](https://discord.gg/4R473R73kQ)
 
-3. Installing
-> ``` sh
-> pip install -U EpikCord.py
-> ```
+All Examples - [here](./examples)
+
+
+
+
+
