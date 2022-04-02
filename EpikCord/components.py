@@ -59,7 +59,7 @@ class SelectMenuOption:
     emoji: :class:`PartialEmoji`
         The emoji of the option.
     default: :class:`bool`
-        Wether this option is added by default.
+        Whether this option is added by default.
 
     Parameters
     ----------
@@ -72,7 +72,7 @@ class SelectMenuOption:
     emoji: :class:`PartialEmoji`
         The emoji of the option.
     default: :class:`bool`
-        Wether this option is added by default.
+        Whether this option is added by default.
 
     """
     def __init__(self, label: str, value: str, description: Optional[str] = None, emoji: Optional[PartialEmoji] = None, default: Optional[bool] = None):
@@ -118,7 +118,7 @@ class SelectMenu(BaseComponent):
     max_values: :class:`int`
         The maximum amount of values that can be selected.
     disabled: :class:`bool`
-        Wether the select menu is disabled.
+        Whether the select menu is disabled.
     custom_id: :class:`str`
         The custom id of the select menu. Used for `Client.component(custom_id)`.
     
@@ -129,7 +129,7 @@ class SelectMenu(BaseComponent):
     max_values: :class:`int`
         The maximum amount of values that can be selected.
     disabled: :class:`bool`
-        Wether the select menu is disabled.
+        Whether the select menu is disabled.
     custom_id: :class:`str`
         The custom id of the select menu. Used for `Client.component(custom_id)`.
     """
@@ -252,7 +252,7 @@ class TextInput(BaseComponent):
     max_length: :class:`int`
         The maximum length of the text input.
     disabled: :class:`bool`
-        Wether the text input is disabled.
+        Whether the text input is disabled.
     custom_id: :class:`str`
         The custom id of the text input. Used for `Client.component(custom_id)`.
     
