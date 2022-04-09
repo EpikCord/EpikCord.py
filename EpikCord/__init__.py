@@ -985,7 +985,7 @@ class WebsocketClient(EventHandler):
 
 
     async def connect(self):
-        self.ws = await self.http.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json")
+        self.ws:ClientWebSocketResponse = await self.http.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json")
         self._closed = False
         asyncio.create_task(self.handle_events())
 
@@ -1063,10 +1063,7 @@ class WebsocketClient(EventHandler):
             future.remove_done_callback(stop_loop_on_completion)
             self.utils.cleanup_loop(loop)
 
-class VoiceWebsocketClient:
-    def __init__(self):
-        self.ws = None
-        # Work on later
+
 
 class ChannelOptionChannelTypes:
     GUILD_TEXT = 0
@@ -1891,7 +1888,42 @@ class Client(WebsocketClient):
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
 #         super().__init__(data)
+class VoiceWebsocketClient:
+    def __init__(self, client:Client):
+        self.client = client
+    
+        
 
+    async def connect(self, guild_id:str, channel_id:str, **kwargs):
+        await self.client.send_json({
+            "op": 4,
+            "d" : {
+                "guild_id": guild_id,
+                "channel_id": channel_id,
+                "self_mute": kwargs.get("self_mute", False),
+                "self_deaf" : kwargs.get("self_deaf", False)
+            }
+        })
+        voice_state_update_response:WSMessage = await self.client.ws.receive()
+        voice_guild_update_response:WSMessage = await self.client.ws.receive()
+        self.session_id = voice_state_update_response.json()["session_id"]
+        self.guild_voice_data:dict = voice_guild_update_response.json()["d"]
+        await self.client.user.fetch() #update data
+        self.ws = await self.client.http.ws_connect("wss://"+ self.guild_voice_data["endpoint"])
+        await self.send_ws_json({
+            "op": 0,
+            "d" : {
+                "server_id": self.guild_voice_data["guild_id"],
+                "user_id": self.client.user.id,
+                "session_id": self.session_id,
+                "token": self.guild_voice_data["token"]
+            }
+        })
+
+    async def send_ws_json(self, json):
+        await self.ws.send_json(json)
+        ...
+        
 
 class Colour:
     # Some of this code is sourced from discord.py, rest assured all the colors are different from discord.py
