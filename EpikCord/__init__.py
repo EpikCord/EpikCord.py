@@ -1897,6 +1897,7 @@ class VoiceWebsocketClient:
         self.sequence = None
 
     async def connect(self, guild_id:str, channel_id:str, **kwargs):
+        self.guild_id = guild_id
         await self.client.send_json({
             "op": 4,
             "d" : {
@@ -1906,12 +1907,21 @@ class VoiceWebsocketClient:
                 "self_deaf" : kwargs.get("self_deaf", False)
             }
         })
-        voice_state_update_response:WSMessage = await self.client.ws.receive()
-        voice_guild_update_response:WSMessage = await self.client.ws.receive()
-        self.session_id = voice_state_update_response.json()["session_id"]
-        self.guild_voice_data:dict = voice_guild_update_response.json()["d"]
+        while True:
+            try:
+                self.session_id = await self.client.ws.receive().json()["session_id"]
+            except:
+                try:
+                    voice_update = await self.client.ws.receive().json()["d"]
+                    self.token = voice_update["token"]
+                    self.endpoint = voice_update["endpoint"]
+                except:
+                    pass
+            finally:
+                break
         
-        self.ws = await self.client.http.ws_connect("wss://"+ self.guild_voice_data["endpoint"] + "/?v=4")
+        
+        self.ws = await self.client.http.ws_connect("wss://"+ self.endpoint + "/?v=4")
         await self.identify()
         ready_resp = await self.ws.receive()
         ready_parsed_data = await ready_resp.json()["d"]
@@ -1935,10 +1945,10 @@ class VoiceWebsocketClient:
         await self.send_json({
             "op": self.IDENTIFY,
             "d" : {
-                "server_id": self.guild_voice_data["guild_id"],
+                "server_id": self.guild_id,
                 "user_id": self.client.user.id,
                 "session_id": self.session_id,
-                "token": self.guild_voice_data["token"]
+                "token": self.token
             }
         })
     
