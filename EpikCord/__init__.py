@@ -1907,22 +1907,13 @@ class VoiceWebsocketClient:
                 "self_deaf" : kwargs.get("self_deaf", False)
             }
         })
-        while True:
-            try:
-                self.session_id = await self.client.ws.receive().json()["session_id"]
-            except:
-                continue
-            finally:
-                break
-        while True:    
-            try:
-                voice_update = await self.client.ws.receive().json()["d"]
-                self.token = voice_update["token"]
-                self.endpoint = voice_update["endpoint"]
-            except:
-                continue
-            finally:
-                break
+        #self.session_id = await self.client.ws.receive().json()
+        print(await self.client.ws.receive().json())
+        print(await self.client.ws.receive().json())
+        voice_update = await self.client.ws.receive().json()["d"]
+        self.token = voice_update["token"]
+        self.endpoint = voice_update["endpoint"]
+
         
         
         self.ws = await self.client.http.ws_connect("wss://"+ self.endpoint + "/?v=4")
