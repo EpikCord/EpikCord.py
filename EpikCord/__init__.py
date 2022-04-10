@@ -1601,6 +1601,12 @@ class VoiceChannel(GuildChannel):
         self.bitrate: int = data.get("bitrate")
         self.user_limit: int = data.get("user_limit")
         self.rtc_region: str = data.get("rtc_region")
+        self.__voice_client = VoiceWebsocketClient(client)
+    
+    async def connect(self):
+        return await self.__voice_client.connect()
+
+        
 
 
 class DMChannel(BaseChannel):
@@ -1907,14 +1913,30 @@ class VoiceWebsocketClient:
                 "self_deaf" : kwargs.get("self_deaf", False)
             }
         })
-        #self.session_id = await self.client.ws.receive().json()
-        print(await (await self.client.ws.receive().json()))
-        print(await (await self.client.ws.receive()).json())
-        voice_update = await self.client.ws.receive().json()["d"]
-        self.token = voice_update["token"]
-        self.endpoint = voice_update["endpoint"]
-
+        def figure_out_receive(data):
+            if data["t"] == "VOICE_SERVER_UPDATE":
+                return "VOICE_SERVER_UPDATE"
+            elif data["deaf"]:
+                return "VOICE_STATE_UPDATE"
+            else:
+                return ""
+        first_receive, second_receive = await asyncio.gather(await self.client.ws.receive(),await self.client.ws.receive())
+        receive1 = first_receive.json()
+        receive2 = second_receive.json()
+        if figure_out_receive(receive1) == "VOICE_SERVER_UPDATE":
+            voice_server_update=receive1
+        elif figure_out_receive(receive2) == "VOICE_SERVER_UPDATE":
+            voice_server_update=receive2
         
+        if figure_out_receive(receive1) == "VOICE_STATE_UPDATE":
+            self.session_id=receive1["session_id"]
+        elif figure_out_receive(receive2) == "VOICE_STATE_UPDATE":
+            self.session_id=receive2["session_id"]
+
+        print(self.session_id)
+        print(voice_server_update)
+        self.token = voice_server_update["token"]
+        self.endpoint = voice_server_update["endpoint"]
         
         self.ws = await self.client.http.ws_connect("wss://"+ self.endpoint + "/?v=4")
         await self.identify()
@@ -1924,7 +1946,7 @@ class VoiceWebsocketClient:
         self.ip:str = ready_parsed_data["ip"]
         self.port:int = ready_parsed_data["port"]
         self.encryption_modes:list = ready_parsed_data["modes"]
-        self.heartbeat_interval:int = await self.ws.recieve().json()["d"]["heartbeat_interval"] #hello my friend, how ya doing. Gimme the delay after which I tell i am still alive?
+        self.heartbeat_interval:int = (await self.ws.receive()).json()["d"]["heartbeat_interval"] #hello my friend, how ya doing. Gimme the delay after which I tell i am still alive?
         async def heartbeat():
             while True:
                 await self.heartbeat(False)
