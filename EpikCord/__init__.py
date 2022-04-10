@@ -1909,7 +1909,7 @@ class VoiceWebsocketClient:
         })
         #self.session_id = await self.client.ws.receive().json()
         print(await (await self.client.ws.receive().json()))
-        print(await (await self.client.ws.receive().json()))
+        print(await (await self.client.ws.receive()).json())
         voice_update = await self.client.ws.receive().json()["d"]
         self.token = voice_update["token"]
         self.endpoint = voice_update["endpoint"]
