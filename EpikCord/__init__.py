@@ -1891,8 +1891,10 @@ class Client(WebsocketClient):
 class VoiceWebsocketClient:
     def __init__(self, client:Client):
         self.client = client
-    
-        
+        self.HELLO = 8
+        self.IDENTIFY = 0
+        self.HEARTBEAT = 3
+        self.sequence = None
 
     async def connect(self, guild_id:str, channel_id:str, **kwargs):
         await self.client.send_json({
@@ -1908,10 +1910,30 @@ class VoiceWebsocketClient:
         voice_guild_update_response:WSMessage = await self.client.ws.receive()
         self.session_id = voice_state_update_response.json()["session_id"]
         self.guild_voice_data:dict = voice_guild_update_response.json()["d"]
-        await self.client.user.fetch() #update data
-        self.ws = await self.client.http.ws_connect("wss://"+ self.guild_voice_data["endpoint"])
-        await self.send_ws_json({
-            "op": 0,
+        
+        self.ws = await self.client.http.ws_connect("wss://"+ self.guild_voice_data["endpoint"] + "/?v=4")
+        await self.identify()
+        ready_resp = await self.ws.receive()
+        ready_parsed_data = await ready_resp.json()["d"]
+        self.ssrc:int = ready_parsed_data["ssrc"]
+        self.ip:str = ready_parsed_data["ip"]
+        self.port:int = ready_parsed_data["port"]
+        self.encryption_modes:list = ready_parsed_data["modes"]
+        self.heartbeat_interval:int = await self.ws.recieve().json()["d"]["heartbeat_interval"] #hello my friend, how ya doing. Gimme the delay after which I tell i am still alive?
+        async def heartbeat():
+            while True:
+                await self.heartbeat(False)
+        asyncio.create_task(heartbeat())
+
+    async def send_json(self, json):
+        '''Sends JSON data to the ``voice`` websocket connection
+        Note: Fails when used before ``connect()``'''
+        await self.ws.send_json(json)
+        logger.info(f"Sent {json} to Discord.")
+    
+    async def identify(self):
+        await self.send_json({
+            "op": self.IDENTIFY,
             "d" : {
                 "server_id": self.guild_voice_data["guild_id"],
                 "user_id": self.client.user.id,
@@ -1919,11 +1941,19 @@ class VoiceWebsocketClient:
                 "token": self.guild_voice_data["token"]
             }
         })
+    
+    async def heartbeat(self, forced:Optional[bool]=None ):
+        if forced:
+            return await self.send_json({
+                "op":self.HEARTBEAT, 
+                "d": self.sequence or "null"
+                })
+        if self.heartbeat_interval:
+            await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
+            await asyncio.sleep(self.heartbeat_interval / 1000)
+            logger.debug("Sent a heartbeat!")
 
-    async def send_ws_json(self, json):
-        await self.ws.send_json(json)
-        ...
-        
+    
 
 class Colour:
     # Some of this code is sourced from discord.py, rest assured all the colors are different from discord.py
