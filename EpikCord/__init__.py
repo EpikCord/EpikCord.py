@@ -1911,12 +1911,16 @@ class VoiceWebsocketClient:
             try:
                 self.session_id = await self.client.ws.receive().json()["session_id"]
             except:
-                try:
-                    voice_update = await self.client.ws.receive().json()["d"]
-                    self.token = voice_update["token"]
-                    self.endpoint = voice_update["endpoint"]
-                except:
-                    pass
+                continue
+            finally:
+                break
+        while True:    
+            try:
+                voice_update = await self.client.ws.receive().json()["d"]
+                self.token = voice_update["token"]
+                self.endpoint = voice_update["endpoint"]
+            except:
+                continue
             finally:
                 break
         
