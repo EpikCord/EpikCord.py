@@ -1603,8 +1603,8 @@ class VoiceChannel(GuildChannel):
         self.rtc_region: str = data.get("rtc_region")
         self.__voice_client = VoiceWebsocketClient(client)
     
-    async def connect(self):
-        return await self.__voice_client.connect()
+    async def connect(self, *args, **kwargs):
+        return await self.__voice_client.connect(guild_id=self.guild_id, channel_id=self.id, **kwargs)
 
         
 
