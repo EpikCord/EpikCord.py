@@ -987,7 +987,7 @@ class WebsocketClient(EventHandler):
     async def connect(self):
         self.ws:ClientWebSocketResponse = await self.http.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json")
         self._closed = False
-        asyncio.create_task(self.handle_events())
+        await self.handle_events()
 
     async def resume(self):
         logger.critical("Reconnecting...")
