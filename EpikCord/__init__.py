@@ -828,6 +828,7 @@ class EventHandler:
     async def guild_member_update(self, data):
         ...
 
+
     async def ready(self, data: dict):
         self.user: ClientUser = ClientUser(self, data.get("user"))
         self.session_id: str = data["session_id"]
@@ -1601,10 +1602,8 @@ class VoiceChannel(GuildChannel):
         self.bitrate: int = data.get("bitrate")
         self.user_limit: int = data.get("user_limit")
         self.rtc_region: str = data.get("rtc_region")
-        self.__voice_client = VoiceWebsocketClient(client)
-    
-    async def connect(self, *args, **kwargs):
-        return await self.__voice_client.connect(guild_id=self.guild_id, channel_id=self.id, **kwargs)
+        self.voice = VoiceWebsocketClient(client,guild_id=self.guild_id, channel_id=self.id)
+
 
         
 
@@ -1637,6 +1636,7 @@ class GuildStageChannel(BaseChannel):
         self.channel_id: str = data.get("channel_id")
         self.privacy_level: int = data.get("privacy_level")
         self.discoverable_disabled: bool = data.get("discoverable_disabled")
+        self.voice:VoiceWebsocketClient = VoiceWebsocketClient(client, guild_id = self.guild_id, channel_id = self.channel_id)
 
 class TextBasedChannel:
     def __init__(self, client, data: dict):
@@ -1894,51 +1894,50 @@ class Client(WebsocketClient):
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
 #         super().__init__(data)
+class PyNaClLibraryNotFound(Exception):
+    ...
+
 class VoiceWebsocketClient:
-    def __init__(self, client:Client):
+    #This class shouldnt be used for 
+    def __init__(self, client:Client, **kwargs):
         self.client = client
+        self.guild_id = kwargs.get("guild_id")
+        self.channel_id = kwargs.get("channel_id")
         self.HELLO = 8
         self.IDENTIFY = 0
         self.HEARTBEAT = 3
+        self.server_set = False
         self.sequence = None
+        try:
+            import pynacl
+        except ImportError:
+            raise PyNaClLibraryNotFound("The PyNacl library was not found, please install it by doing ``pip install PyNaCl``")
+        self.client.events["voice_state_update"] = self.voice_state_update
+        self.client.events["voice_server_update"] = self.voice_server_update            
+    async def voice_state_update(self,data:dict):
+        self.session_id = data["session_id"]
 
-    async def connect(self, guild_id:str, channel_id:str, **kwargs):
-        self.guild_id = guild_id
+    async def voice_server_update(self,data:dict):
+        if self.server_set:
+            logger.info()
+        voice_data = data["d"]
+        self.token = voice_data["token"]
+        self.endpoint = voice_data["endpoint"]
+
+    async def connect(self, guild_id:Optional[str] = None, channel_id:Optional[str] = None, **kwargs):
+        self.guild_id = guild_id if guild_id else self.guild_id
+        self.channel_id = channel_id if channel_id else self.channel_id
         await self.client.send_json({
             "op": 4,
             "d" : {
-                "guild_id": guild_id,
-                "channel_id": channel_id,
+                "guild_id": self.guild_id,
+                "channel_id": self.channel_id,
                 "self_mute": kwargs.get("self_mute", False),
                 "self_deaf" : kwargs.get("self_deaf", False)
             }
         })
-        def figure_out_receive(data):
-            if data["t"] == "VOICE_SERVER_UPDATE":
-                return "VOICE_SERVER_UPDATE"
-            elif data["deaf"]:
-                return "VOICE_STATE_UPDATE"
-            else:
-                return ""
-        first_receive, second_receive = await asyncio.gather(await self.client.ws.receive(),await self.client.ws.receive())
-        receive1 = first_receive.json()
-        receive2 = second_receive.json()
-        if figure_out_receive(receive1) == "VOICE_SERVER_UPDATE":
-            voice_server_update=receive1
-        elif figure_out_receive(receive2) == "VOICE_SERVER_UPDATE":
-            voice_server_update=receive2
         
-        if figure_out_receive(receive1) == "VOICE_STATE_UPDATE":
-            self.session_id=receive1["session_id"]
-        elif figure_out_receive(receive2) == "VOICE_STATE_UPDATE":
-            self.session_id=receive2["session_id"]
-
-        print(self.session_id)
-        print(voice_server_update)
-        self.token = voice_server_update["token"]
-        self.endpoint = voice_server_update["endpoint"]
-        
-        self.ws = await self.client.http.ws_connect("wss://"+ self.endpoint + "/?v=4")
+        self.ws = await self.client.http.ws_connect(f"wss://{self.endpoint}/?v=4")
         await self.identify()
         ready_resp = await self.ws.receive()
         ready_parsed_data = await ready_resp.json()["d"]
@@ -1954,7 +1953,7 @@ class VoiceWebsocketClient:
 
     async def send_json(self, json):
         '''Sends JSON data to the ``voice`` websocket connection
-        Note: Fails when used before ``connect()``'''
+        Note: Fails when used before ``connect()`` **and** after client disconnects'''
         await self.ws.send_json(json)
         logger.info(f"Sent {json} to Discord.")
     
