@@ -2,6 +2,10 @@
 NOTE: __version__ in this file, __main__ and setup.cfg
 """
 
+
+from sys import platform
+
+import async_timeout
 from .managers import *
 from aiohttp import *
 import asyncio
@@ -612,7 +616,13 @@ class EventHandler:
 
     def __init__(self):
         self.events = {}
-        # self.wait_for_events = {}
+
+    async def wait_for(self, event_name: str, check: Optional[callable] = lambda *args, **kwargs: ..., timeout: Optional[Union[float, int]] = None):
+        async with async_timeout.timeout(timeout):
+            async for event in self.ws:
+                event = event.json()
+                if event["t"].lower() == event_name.lower():
+                    results = self.handle_event(None, event)
 
     def component(self, custom_id: str):
         """
@@ -621,6 +631,18 @@ class EventHandler:
         def wrapper(func):
             self._components[custom_id] = func
         return wrapper
+
+    async def guild_members_chunk(self, data: dict):
+        ...
+        
+    async def guild_delete(self, data: dict):
+        if data.get("unavailable"):
+            return # The guild is just unavailable
+
+        callback = self.events.get("guild_delete", None)
+
+        if callback:
+            await callback(self.guilds.fetch(data["id"])) # Fetch the guild from Cache.
 
     async def handle_events(self):
         async for event in self.ws:
@@ -643,10 +665,17 @@ class EventHandler:
             elif event["op"] == self.EVENT:
                 self.sequence = event["s"]
                 logger.info(f"Received event {event['t']}")
+
                 try:
                     await self.handle_event(event["t"], event["d"])
                 except Exception as e:
                     logger.exception(f"Error handling event {event['t']}: {e}")
+
+                if self.wait_for_events[event["t"]]:
+                    for event in self.wait_for_events[event["t"]]:
+                        if event["check"](event["data"]):
+                            self.wait_for_events[event["t"]].remove(event["t"])
+                            return event["data"]
 
             elif event["op"] == self.HEARTBEAT:
                 # I shouldn't wait the remaining delay according to the docs.
@@ -715,6 +744,11 @@ class EventHandler:
                     #             await self._components[interaction.custom_id](interaction, component)
                     #             return
 
+        if interaction.is_autocomplete():
+            for command in self.commands:
+                if command.name == interaction.command_name:
+                    ...
+
         if interaction.is_modal_submit():
             action_rows = interaction._components
             component_object_list = []
@@ -726,16 +760,28 @@ class EventHandler:
         await event_func(interaction) if event_func else None
 
 
-    async def handle_event(self, event_name: str, data: dict):
+    async def handle_event(self, event_name: Optional[str], data: dict):
         event_name = event_name.lower()
+        callback = self.get_event_callback(event_name)
 
-        event_func = None
-        try:
-            event_func = getattr(self, event_name)
-        except AttributeError:
-            logger.warning(f"A new event, {event_name}, has been added and EpikCord hasn't added that yet. Open an issue to be the first!")
-            return
-        await event_func(data)
+
+        await callback()
+
+
+    async def get_event_callback(self, event_name: str, internal = False):
+
+        if internal:
+            event_callback = getattr(self, event_name) if hasattr(self, event_name) else None
+            
+        else:
+            event_callback = self.events.get(event_name, None)
+
+        if event_callback:
+            return event_callback
+
+        return None
+
+
 
     async def channel_create(self, data: dict):
         channel_type: str = data.get("type")
@@ -879,7 +925,6 @@ class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
 
         super().__init__()
-
         self.EVENT = 0
         self.HEARTBEAT = 1
         self.IDENTIFY = 2
@@ -925,6 +970,31 @@ class WebsocketClient(EventHandler):
             await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
             await asyncio.sleep(self.interval / 1000)
             logger.debug("Sent a heartbeat!")
+
+    async def request_guild_members(self, guild_id: int, *, query: Optional[str] = None, limit: Optional[int] = None, presences: Optional[bool] = None, user_ids: Optional[List[str]] = None, nonce: Optional[str] = None):
+        payload = {
+            "op": self.REQUEST_GUILD_MEMBERS,
+            "d": {
+                "guild_id": guild_id
+            }
+        }
+
+        if query:
+            payload["d"]["query"] = query
+
+        if limit:
+            payload["d"]["limit"] = limit
+
+        if presences:
+            payload["d"]["presences"] = presences
+        
+        if user_ids:
+            payload["d"]["user_ids"] = user_ids
+        
+        if nonce:
+            payload["d"]["nonce"] = nonce
+
+        await self.send_json(payload)
 
     async def reconnect(self):
         await self.close()
@@ -1003,19 +1073,21 @@ class WebsocketClient(EventHandler):
         self._closed = False
 
     async def identify(self):
-        await self.send_json({
+        payload = {
             "op": self.IDENTIFY,
             "d": {
                 "token": self.token,
                 "intents": self.intents,
                 "properties": {
-                    "$os": "linux",
+                    "$os": platform,
                     "$browser": "EpikCord.py",
                     "$device": "EpikCord.py"
                 }
             }
         }
-        )
+        if self.presence:
+            payload["d"]["presence"] = self.presence.to_dict()
+        return await self.send_json(payload)
 
     async def close(self) -> None:
         if self._closed:
@@ -1110,10 +1182,16 @@ class ClientSlashCommand:
         self.callback: callable = callback
         self.guild_ids: Optional[List[str]] = guild_ids
         self.options: Optional[List[AnyOption]] = options
+        self.autocomplete_options: dict = {}
 
     @property
     def type(self):
         return 1
+
+    def option_autocomplete(self, option_name: str):
+        def wrapper(func):
+            self.autocomplete_options[option_name] = func
+        return wrapper
 
 class ClientMessageCommand(ClientUserCommand):
 
@@ -1846,6 +1924,13 @@ class Client(WebsocketClient):
                 "guild_ids": guild_ids,
                 "options": options,
             })) # Cheat method.
+            return ClientSlashCommand(**{
+                "callback": func,
+                "name": name or func.__name__,
+                "description": desc,
+                "guild_ids": guild_ids,
+                "options": options,
+            })
         return register_slash_command
 
     def user_command(self, name: Optional[str] = None):
@@ -3985,3 +4070,33 @@ class Utils:
             loop.run_until_complete(loop.shutdown_asyncgens())
         finally:
             loop.close()
+
+class Shard(WebsocketClient):
+    def __init__(self, token, intents, presence: Presence, shard_id, number_of_shards):
+        super().__init__(token, intents, presence)
+        self.shard_id = [shard_id, number_of_shards]
+
+    async def identify(self):
+        payload = {
+            "op": self.IDENTIFY,
+            "d": {
+                "token": self.token,
+                "intents": self.intents,
+                "properties": {
+                    "$os": platform,
+                    "$browser": "EpikCord.py",
+                    "$device": "EpikCord.py"
+                },
+                "shard": self.shard_id
+            }
+        }
+        if self.presence:
+            payload["d"]["presence"] = self.presence.to_dict()
+        await self.send_json(payload)
+    
+    async def reconnect(self):
+        await self.close()
+        await self.connect()
+        await self.identify()
+        await self.resume()
+
