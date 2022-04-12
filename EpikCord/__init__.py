@@ -1906,8 +1906,11 @@ class VoiceWebsocketClient:
         self.HELLO = 8
         self.IDENTIFY = 0
         self.HEARTBEAT = 3
+        self.voice_connected = False
         self.server_set = False
+        self.state_set = False
         self.sequence = None
+
         try:
             import pynacl
         except ImportError:
@@ -1915,14 +1918,20 @@ class VoiceWebsocketClient:
         self.client.events["voice_state_update"] = self.voice_state_update
         self.client.events["voice_server_update"] = self.voice_server_update            
     async def voice_state_update(self,data:dict):
-        self.session_id = data["session_id"]
-
+        if self.voice_connected == True:
+            if self.state_set:
+                logger.info("Ignoring extra voice event")
+            self.session_id = data["session_id"]
+            self.state_set = True
     async def voice_server_update(self,data:dict):
-        if self.server_set:
-            logger.info()
-        voice_data = data["d"]
-        self.token = voice_data["token"]
-        self.endpoint = voice_data["endpoint"]
+        if self.voice_connected == True:
+            if self.server_set:
+                logger.info("Ignoring extra voice event")
+                return
+            voice_data = data["d"]
+            self.token = voice_data["token"]
+            self.endpoint = voice_data["endpoint"]
+            self.server_set = True
 
     async def connect(self, guild_id:Optional[str] = None, channel_id:Optional[str] = None, **kwargs):
         self.guild_id = guild_id if guild_id else self.guild_id
@@ -1936,7 +1945,7 @@ class VoiceWebsocketClient:
                 "self_deaf" : kwargs.get("self_deaf", False)
             }
         })
-        
+        self.voice_connected = True 
         self.ws = await self.client.http.ws_connect(f"wss://{self.endpoint}/?v=4")
         await self.identify()
         ready_resp = await self.ws.receive()
@@ -1979,7 +1988,7 @@ class VoiceWebsocketClient:
             await asyncio.sleep(self.heartbeat_interval / 1000)
             logger.debug("Sent a heartbeat!")
 
-    
+
 
 class Colour:
     # Some of this code is sourced from discord.py, rest assured all the colors are different from discord.py
