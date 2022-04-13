@@ -19,6 +19,11 @@ T = TypeVar('T')
 logger = getLogger(__name__)
 __version__ = '0.4.13.3'
 
+try:
+    import nacl
+except ImportError:
+    print("The PyNacl library was not found, so voice is not supported. Please install it by doing ``pip install PyNaCl`` If you want voice support")
+
 
 """
 :license:
@@ -1894,8 +1899,6 @@ class Client(WebsocketClient):
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
 #         super().__init__(data)
-class PyNaClLibraryNotFound(Exception):
-    ...
 
 class VoiceWebsocketClient:
     #This class shouldnt be used for 
@@ -1906,15 +1909,13 @@ class VoiceWebsocketClient:
         self.HELLO = 8
         self.IDENTIFY = 0
         self.HEARTBEAT = 3
+        self.READY = 2
         self.voice_connected = False
         self.server_set = False
         self.state_set = False
         self.sequence = None
 
-        try:
-            import pynacl
-        except ImportError:
-            raise PyNaClLibraryNotFound("The PyNacl library was not found, please install it by doing ``pip install PyNaCl``")
+
         self.client.events["voice_state_update"] = self.voice_state_update
         self.client.events["voice_server_update"] = self.voice_server_update            
     async def voice_state_update(self,data:dict):
@@ -1947,14 +1948,11 @@ class VoiceWebsocketClient:
         })
         self.voice_connected = True 
         self.ws = await self.client.http.ws_connect(f"wss://{self.endpoint}/?v=4")
+        while not self.ws.closed:
+            await self.handle_ws_events()
         await self.identify()
-        ready_resp = await self.ws.receive()
-        ready_parsed_data = await ready_resp.json()["d"]
-        self.ssrc:int = ready_parsed_data["ssrc"]
-        self.ip:str = ready_parsed_data["ip"]
-        self.port:int = ready_parsed_data["port"]
-        self.encryption_modes:list = ready_parsed_data["modes"]
-        self.heartbeat_interval:int = (await self.ws.receive()).json()["d"]["heartbeat_interval"] #hello my friend, how ya doing. Gimme the delay after which I tell i am still alive?
+        
+        await asyncio.sleep(1) # wait for some while for getting events       
         async def heartbeat():
             while True:
                 await self.heartbeat(False)
@@ -1965,7 +1963,19 @@ class VoiceWebsocketClient:
         Note: Fails when used before ``connect()`` **and** after client disconnects'''
         await self.ws.send_json(json)
         logger.info(f"Sent {json} to Discord.")
-    
+
+    async def handle_ws_events(self):
+        #The reason i put handle_ws_events is that it is a separate websocket than the original Client()
+        async for event in self.ws:
+            event = event.json()
+            if event["op"] == self.HELLO:
+                self.heartbeat_interval = event["d"]["heartbeat_interval"]
+            elif event["op"] == self.READY:
+                self.ssrc:int = event["d"]["ssrc"]
+                self.ip:str = event["d"]["ip"]
+                self.port:int = event["d"]["port"]
+                self.encryption_modes:list[str] = event["d"]["modes"]
+
     async def identify(self):
         await self.send_json({
             "op": self.IDENTIFY,
@@ -1978,13 +1988,14 @@ class VoiceWebsocketClient:
         })
     
     async def heartbeat(self, forced:Optional[bool]=None ):
+        heartbeat_nonce = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
         if forced:
             return await self.send_json({
                 "op":self.HEARTBEAT, 
-                "d": self.sequence or "null"
+                "d": heartbeat_nonce
                 })
         if self.heartbeat_interval:
-            await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
+            await self.send_json({"op": self.HEARTBEAT, "d":heartbeat_nonce})
             await asyncio.sleep(self.heartbeat_interval / 1000)
             logger.debug("Sent a heartbeat!")
 
