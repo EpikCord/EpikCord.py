@@ -150,8 +150,6 @@ class SlashCommandOptionChoice:
             "value": self.value
         }
 
-class InvalidOption(Exception):
-    ...
 
 class Subcommand(BaseSlashCommandOption):
     def __init__(self, *, name: str, description: str = None, required: bool = True, options: list[Union[StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]] = None):
@@ -230,8 +228,6 @@ class SubCommandGroup(BaseSlashCommandOption):
 
 AnyOption = Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]
 
-class InvalidStatus(Exception):
-    ...
 
 class EventsSection:
     def __init__(self, client):
@@ -918,8 +914,6 @@ class EventHandler:
         except KeyError:
             return
 
-class ClosedWebSocketConnection(Exception):
-    ...
 
 class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
@@ -1356,12 +1350,6 @@ class Application:
         self.team: Optional[Team] = Team(data.get("team")) if data.get("get") else None
         self.cover_image: Optional[str] = data.get("cover_image")
         self.flags: int = data.get("flags")
-
-class InvalidApplicationCommandType(Exception):
-    ...
-
-class InvalidApplicationCommandOptionType(Exception):
-    ...
 
 class ApplicationCommand:
     def __init__(self, data: dict):
@@ -1883,8 +1871,6 @@ class HTTPClient(ClientSession):
 
  
 
-class MissingClientSetting(Exception):
-    ...
 
 
 class Client(WebsocketClient):
@@ -2376,8 +2362,6 @@ class Button(BaseComponent):
         return self
 
 
-class MissingCustomId(Exception):
-    ...
 
 
 class ActionRow:
@@ -2622,95 +2606,6 @@ class Emoji:
             payload["X-Audit-Log-Reason"] = reason
 
         await self.client.http.delete(f"/guilds/{self.guild_id}/emojis/{self.id}", json=payload)
-
-
-class DiscordAPIError(Exception):
-    ...
-
-
-class InvalidData(Exception):
-    ...
-
-
-class InvalidIntents(Exception):
-    ...
-
-
-class ShardingRequired(Exception):
-    ...
-
-
-class InvalidToken(Exception):
-    ...
-
-
-class UnhandledException(Exception):
-    ...
-
-
-class DisallowedIntents(Exception):
-    ...
-
-
-class BadRequest400(Exception):
-    ...
-
-
-class Unauthorized401(Exception):
-    ...
-
-
-class Forbidden403(Exception):
-    ...
-
-
-class NotFound404(Exception):
-    ...
-
-
-class MethodNotAllowed405(Exception):
-    ...
-
-
-class Ratelimited429(Exception):
-    ...
-
-
-class GateawayUnavailable502(Exception):
-    ...
-
-
-class InternalServerError5xx(Exception):
-    ...
-
-
-class TooManyComponents(Exception):
-    ...
-
-
-class InvalidComponentStyle(Exception):
-    ...
-
-
-class CustomIdIsTooBig(Exception):
-    ...
-
-
-class InvalidArgumentType(Exception):
-    ...
-
-
-class TooManySelectMenuOptions(Exception):
-    ...
-
-
-class LabelIsTooBig(Exception):
-    ...
-
-
-class ThreadArchived(Exception):
-    ...
-
 
 class WelcomeScreenChannel:
     def __init__(self, data: dict):
@@ -4099,4 +3994,3 @@ class Shard(WebsocketClient):
         await self.connect()
         await self.identify()
         await self.resume()
-
