@@ -1988,7 +1988,6 @@ class VoiceUDP:
     def __init__(self):...
 
 class VoiceWebsocketClient:
-    #This class shouldn't be used for 
     def __init__(self, client:Client, **kwargs):
         self.client = client
         self.guild_id = kwargs.get("guild_id")
