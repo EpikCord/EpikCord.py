@@ -2037,7 +2037,7 @@ class VoiceWebsocketClient:
         self.voice_connected = True 
         self.ws = await self.client.http.ws_connect(f"wss://{self.endpoint}/?v=4")
         while not self.ws.closed:
-            await self.handle_ws_events()
+            await self.handle_events()
         await self.identify()
         
         await asyncio.sleep(1) # wait for some while for getting events       
@@ -2066,7 +2066,7 @@ class VoiceWebsocketClient:
                 }
             }
         })
-    async def handle_ws_events(self):
+    async def handle_events(self):
         #The reason i put handle_ws_events is that it is a separate websocket than the original Client()
         async for event in self.ws:
             event = event.json()
