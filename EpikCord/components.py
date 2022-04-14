@@ -1,3 +1,4 @@
+from numpy import isin
 from .exceptions import InvalidArgumentType, CustomIdIsTooBig, MissingCustomId, InvalidComponentStyle, TooManyComponents, LabelIsTooBig, TooManySelectMenuOptions
 from .partials import PartialEmoji
 from typing import Optional, List, Union
@@ -296,16 +297,20 @@ class ActionRow:
         buttons = 0
         for component in components:
             if not component.custom_id:
-                raise MissingCustomId(
-                    f"You need to supply a custom id for the component {component}")
+                raise MissingCustomId(f"You need to supply a custom id for the component {component}")
 
-            if type(component) == Button:
+            if isinstance(component, Button):
                 buttons += 1
 
             elif buttons > 5:
                 raise TooManyComponents("You can only have 5 buttons per row.")
 
-            elif isinstance(component, SelectMenu) and buttons > 0:
-                raise TooManyComponents("You can only have 1 select menu per row. No buttons along that select menu.")
+            elif isinstance(component, SelectMenu) and len(self.components) > 1:
+                raise TooManyComponents("You can only have 1 select menu per row and no other components.")
+
+            elif isinstance(component, TextInput) and buttons > 0:
+                raise TooManyComponents("You can only have 1 text input per row and no other components.")
+            
+
             self.components.append(component.to_dict())
         return self
