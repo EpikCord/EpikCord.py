@@ -1,3 +1,7 @@
+import io
+from typing import Union, Optional
+import os
+
 class File:
     """
     Represents a file. Sourced from Discord.py
