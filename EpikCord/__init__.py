@@ -1988,7 +1988,7 @@ class VoiceUDP:
     def __init__(self):...
 
 class VoiceWebsocketClient:
-    #This class shouldnt be used for 
+    #This class shouldn't be used for 
     def __init__(self, client:Client, **kwargs):
         self.client = client
         self.guild_id = kwargs.get("guild_id")
@@ -2067,7 +2067,6 @@ class VoiceWebsocketClient:
             }
         })
     async def handle_events(self):
-        #The reason i put handle_ws_events is that it is a separate websocket than the original Client()
         async for event in self.ws:
             event = event.json()
             if event["op"] == self.HELLO:
