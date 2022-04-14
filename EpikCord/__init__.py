@@ -26,7 +26,7 @@ __version__ = '0.4.13.3'
 try:
     import nacl
 except ImportError:
-    print("The PyNacl library was not found, so voice is not supported. Please install it by doing ``pip install PyNaCl`` If you want voice support")
+    logger.warning("The PyNacl library was not found, so voice is not supported. Please install it by doing ``pip install PyNaCl`` If you want voice support")
 
 
 """
@@ -1984,6 +1984,8 @@ class Client(WebsocketClient):
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
 #         super().__init__(data)
+class VoiceUDP:
+    def __init__(self):...
 
 class VoiceWebsocketClient:
     #This class shouldnt be used for 
@@ -1991,18 +1993,19 @@ class VoiceWebsocketClient:
         self.client = client
         self.guild_id = kwargs.get("guild_id")
         self.channel_id = kwargs.get("channel_id")
-        self.HELLO = 8
         self.IDENTIFY = 0
-        self.HEARTBEAT = 3
+        self.SELECT_PROTOCOL = 1
         self.READY = 2
+        self.HEARTBEAT = 3
+        self.HELLO = 8
         self.voice_connected = False
         self.server_set = False
         self.state_set = False
         self.sequence = None
-
+    
 
         self.client.events["voice_state_update"] = self.voice_state_update
-        self.client.events["voice_server_update"] = self.voice_server_update            
+        self.client.events["voice_server_update"] = self.voice_server_update       
     async def voice_state_update(self,data:dict):
         if self.voice_connected == True:
             if self.state_set:
@@ -2048,7 +2051,21 @@ class VoiceWebsocketClient:
         Note: Fails when used before ``connect()`` **and** after client disconnects'''
         await self.ws.send_json(json)
         logger.info(f"Sent {json} to Discord.")
+    async def udp_client_start(self):
+        loop = asyncio.get_running_loop()
 
+        on_connection_lost = loop.create_future()
+        transport, protocol = await loop.create_datagram_endpoint(remote_addr=(self.ip, self.port), allow_broadcast=True)
+    async def select_protocol(self):
+        await self.send_json({
+            "op": self.SELECT_PROTOCOL,
+            "d": {
+                "protocol": "udp", 
+                "data": {
+                    "address": ...
+                }
+            }
+        })
     async def handle_ws_events(self):
         #The reason i put handle_ws_events is that it is a separate websocket than the original Client()
         async for event in self.ws:
