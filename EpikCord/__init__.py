@@ -4,7 +4,7 @@ NOTE: __version__ in this file, __main__ and setup.cfg
 
 
 from sys import platform
-
+from .exceptions import *
 import async_timeout
 from .managers import *
 from aiohttp import *
