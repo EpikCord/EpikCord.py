@@ -1,109 +1,115 @@
-class InvalidApplicationCommandType(Exception):
+class EpikCordException(Exception):
+    pass
+
+class InvalidApplicationCommandType(EpikCordException):
     ...
 
-class InvalidApplicationCommandOptionType(Exception):
+class InvalidApplicationCommandOptionType(EpikCordException):
     ...
 
-class InvalidOption(Exception):
+class InvalidOption(EpikCordException):
     ...
 
-class InvalidStatus(Exception):
+class InvalidStatus(EpikCordException):
     ...
 
-class ClosedWebSocketConnection(Exception):
+class ClosedWebSocketConnection(EpikCordException):
     ...
 
-class MissingClientSetting(Exception):
+class MissingClientSetting(EpikCordException):
     ...
 
-class MissingCustomId(Exception):
-    ...
-
-
-
-class DiscordAPIError(Exception):
-    ...
-
-
-class InvalidData(Exception):
+class MissingCustomId(EpikCordException):
     ...
 
 
-class InvalidIntents(Exception):
+
+class DiscordAPIError(EpikCordException):
     ...
 
 
-class ShardingRequired(Exception):
+class InvalidData(EpikCordException):
     ...
 
 
-class InvalidToken(Exception):
+class InvalidIntents(EpikCordException):
     ...
 
 
-class UnhandledException(Exception):
+class ShardingRequired(EpikCordException):
     ...
 
 
-class DisallowedIntents(Exception):
+class InvalidToken(EpikCordException):
     ...
 
 
-class BadRequest400(Exception):
+class UnhandledEpikCordException(EpikCordException):
     ...
 
 
-class Unauthorized401(Exception):
+class DisallowedIntents(EpikCordException):
     ...
 
 
-class Forbidden403(Exception):
+class BadRequest400(EpikCordException):
     ...
 
 
-class NotFound404(Exception):
+class Unauthorized401(EpikCordException):
     ...
 
 
-class MethodNotAllowed405(Exception):
+class Forbidden403(EpikCordException):
     ...
 
 
-class Ratelimited429(Exception):
+class NotFound404(EpikCordException):
     ...
 
 
-class GateawayUnavailable502(Exception):
+class MethodNotAllowed405(EpikCordException):
     ...
 
 
-class InternalServerError5xx(Exception):
+class Ratelimited429(EpikCordException):
     ...
 
 
-class TooManyComponents(Exception):
+class GateawayUnavailable502(EpikCordException):
     ...
 
 
-class InvalidComponentStyle(Exception):
+class InternalServerError5xx(EpikCordException):
     ...
 
 
-class CustomIdIsTooBig(Exception):
+class TooManyComponents(EpikCordException):
     ...
 
 
-class InvalidArgumentType(Exception):
+class InvalidComponentStyle(EpikCordException):
     ...
 
 
-class TooManySelectMenuOptions(Exception):
+class CustomIdIsTooBig(EpikCordException):
     ...
 
 
-class LabelIsTooBig(Exception):
+class InvalidArgumentType(EpikCordException):
     ...
 
 
-class ThreadArchived(Exception):
+class TooManySelectMenuOptions(EpikCordException):
+    ...
+
+
+class LabelIsTooBig(EpikCordException):
+    ...
+
+
+class ThreadArchived(EpikCordException):
+    ...
+
+class FailedToConnectToVoice(EpikCordException):
     ...
