@@ -1135,9 +1135,27 @@ class WebsocketClient(EventHandler):
             self.utils.cleanup_loop(loop)
 
 class VoiceWebsocketClient:
-    def __init__(self):
+    def __init__(self, client, *, guild_id: Optional[str] = None, channel_id: Optional[str] = None, channel: Optional[VoiceChannel] = None):
         self.ws = None
-        # Work on later
+        self.client = client
+        # TODO: Figure out which one I will use later in production
+        if channel:
+            self.guild_id = channel.guild.id
+            self.channel_id = channel.id
+        else:
+            self.guild_id = guild_id
+            self.channel_id = channel_id
+
+        self.IDENTIFY = 0
+        self.SELECT_PROTOCOL = 1
+        self.READY = 2
+        self.HEARTBEAT = 3
+        self.HELLO = 8
+
+        self.connected = False
+        self.server_set = False
+        self.state_set = False
+        self.sequence = None
 
 class ChannelOptionChannelTypes:
     GUILD_TEXT = 0
