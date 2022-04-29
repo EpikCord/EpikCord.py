@@ -13,6 +13,7 @@ from base64 import b64encode
 import datetime
 import re
 from logging import getLogger
+logger = getLogger(__name__)
 from typing import *
 from urllib.parse import quote
 import io
@@ -25,7 +26,6 @@ except ImportError:
 
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
-logger = getLogger(__name__)
 __version__ = '0.4.13.3'
 
 
@@ -625,6 +625,14 @@ class EventHandler:
                 if event["t"].lower() == event_name.lower():
                     results = self.handle_event(None, event)
 
+    async def voice_server_update(self, data: dict):
+        token = data["token"]
+        guild_id = data["guild_id"]
+        endpoint = data["endpoint"]
+        if not endpoint:
+            raise FailedToConnectToVoice(f"Failed to connect to voice server for guild {guild_id}")
+        
+
     def component(self, custom_id: str):
         """
         Execute this function when a component with the `custom_id` is interacted with.
@@ -1156,7 +1164,20 @@ class VoiceWebsocketClient:
         self.server_set = False
         self.state_set = False
         self.sequence = None
+        self.endpoint = None
+    
+    async def connect(self, muted: Optional[bool] = False, deafened: Optional[bool] = False):
+        await self.client.send_json({
+            "op": self.client.VOICE_STATE_UPDATE,
+            "d": {
+                "guild_id": self.guild_id,
+                "channel_id": self.channel_id,
+                "self_mute": muted,
+                "self_deaf": deafened
 
+            }
+        })
+        
 class ChannelOptionChannelTypes:
     GUILD_TEXT = 0
     DM = 1
