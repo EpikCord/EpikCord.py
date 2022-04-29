@@ -3439,324 +3439,135 @@ class Webhook:  # Not used for making webhooks.
         self.source_channel: Optional[SourceChannel] = SourceChannel(data.get("source_channel"))
         self.url: Optional[str] = data.get("url")
 
-class Intents:
-    def __init__(self, *, intents: Optional[int] = None):
-        self.value = intents or 0
+class Flag:
+    if TYPE_CHECKING:
+        class_flags: "dict[str, Any]"
 
-    @property
-    def guilds(self):
-        self.value += 1 << 0
-        return self
+    def __init_subclass__(cls) -> None:
+        cls.class_flags = {k: v for k, v in cls.__dict__.items() if isinstance(v, int)}
+        return cls
 
-    @property
-    def guild_members(self):
-        self.value += 1 << 1
-        return self
+    def __init__(self, value: int = 0, **kwargs):
+        self.value = value
+        self.turned_on: "list[str]" = []
 
-    @property
-    def guild_bans(self):
-        self.value += 1 << 2
-        return self
-
-    @property
-    def guild_emojis_and_stickers(self):
-        self.value += 1 << 3
-        return self
-
-    @property
-    def guild_integrations(self):
-        self.value += 1 << 4
-        return self
-
-    @property
-    def guild_webhooks(self):
-        self.value += 1 << 5
-        return self
-
-    @property
-    def guild_invites(self):
-        self.value += 1 << 6
-        return self
-
-    @property
-    def guild_voice_states(self):
-        self.value += 1 << 7
-        return self
-
-    @property
-    def guild_presences(self):
-        self.value += 1 << 8
-        return self
-
-    @property
-    def guild_messages(self):
-        self.value += 1 << 9
-        return self
-
-    @property
-    def guild_message_reactions(self):
-        self.value += 1 << 10
-        return self
-
-    @property
-    def guild_message_typing(self):
-        self.value += 1 << 11
-        return self
-
-    @property
-    def direct_messages(self):
-        self.value += 1 << 12
-        return self
-
-    @property
-    def direct_message_reactions(self):
-        self.value += 1 << 13
-        return self
-
-    @property
-    def direct_message_typing(self):
-        self.value += 1 << 14
-        return self
-
-    @property
-    def all(self):
-        for attr in dir(self):
-            if attr not in ["value", "all", "none", "remove_value", "add_intent"]:
-                getattr(self, attr)
-        return self
-
-    @property
-    def none(self):
-        self.value = 0
-
-    def remove_intent(self, intent: str) -> int:
-        try:
-            attr = getattr(self, intent.lower())
-        except AttributeError:
-            raise InvalidIntents(
-                f"Intent {intent.lower()} is not a valid intent.")
-        self.value -= attr.value
-        return self.value
-
-    def add_intent(self, intent: str) -> int:
-        try:
-            attr = getattr(self, intent)
-        except AttributeError:
-            raise InvalidIntents(f"Intent {intent} is not a valid intent.")
-        self.value += attr
-        return self.value
-
-    @property
-    def message_content(self):
-        self.value += 1 << 15
-        return self
-
-    # TODO: Add some presets such as "Moderation", "Logging" etc.
+        for k, a in kwargs.items():
+            if not a: continue
+            self.turned_on.append(k)
+        
+        for k, v in self.class_flags.items():
+            if v & value and not k in self.turned_on:
+                self.turned_on.append(k)
+        
+        self.calculate_from_turned()
+    
+    def calculate_from_turned(self):
+        value = 0
+        for key, flag in self.class_flags.items():
+            if key in self.class_flags:
+                value |= flag
+        self.value = value
+    
+    def __getattribute__(self, __name: str) -> Any:
+        original = super().__getattribute__
+        if __name in original("class_flags"):
+            return __name in original("turned_on")
+        return original(__name)
+    
+    def __setattr__(self, __name: str, __value: Any) -> None:
+        if not __name in self.class_flags:
+            return super().__setattr__(__name, __value)
+        if __value and not __name in self.turned_on:
+            self.turned_on.append(__name)
+        elif not __value and __name in self.turned_on:
+            self.turned_on.remove(__name)
+        self.calculate_from_turned()
+    
+    @classmethod
+    def all(cls):
+        return cls(**{k: True for k in cls.class_flags})
 
 
-class Permission:
-    def __init__(self, *, bit: int = 0):
-        self.value = bit
+class Intents(Flag):
+    guilds = 1 << 0
+    members = 1 << 1
+    bans = 1 << 2
+    emojis_and_stickers = 1 << 3
+    integrations = 1 << 4
+    webhooks = 1 << 5
+    invites = 1 << 6
+    voice_States = 1 << 7
+    presences = 1 << 8
+    
+    guild_messages = 1 << 9
+    guild_message_reactions = 1 << 10
+    guild_message_typing = 1 << 11
 
-    @property
-    def create_instant_invite(self):
-        self.value += 1 << 0
-        return self
+    direct_messages = 1 << 12
+    direct_message_reactions = 1 << 13
+    direct_message_typing = 1 << 14
 
-    @property
-    def kick_members(self):
-        self.value += 1 << 1
-        return self
+    message_content = 1 << 15
+    scheduled_event = 1 << 16
 
-    @property
-    def ban_members(self):
-        self.value += 1 << 2
-        return self
+    """
+    @classmethod
+    def example_intent_preset(cls):
+        i = cls.all()
+        
+        i.presences = False 
+        i.message_content = False
 
-    @property
-    def administrator(self):
-        self.value += 1 << 3
-        return self
-
-    @property
-    def manage_channels(self):
-        self.value += 1 << 4
-        return self
-
-    @property
-    def manage_guild(self):
-        self.value += 1 << 5
-        return self
-
-    @property
-    def add_reactions(self):
-        self.value += 1 << 6
-        return self
-
-    @property
-    def view_audit_log(self):
-        self.value += 1 << 7
-        return self
-
-    @property
-    def priority_speaker(self):
-        self.value += 1 << 8
-        return self
-
-    @property
-    def stream(self):
-        self.value += 1 << 9
-        return self
-
-    @property
-    def read_messages(self):
-        self.value += 1 << 10
-        return self
-
-    @property
-    def send_messages(self):
-        self.value += 1 << 11
-        return self
-
-    @property
-    def send_tts_messages(self):
-        self.value += 1 << 12
-        return self
-
-    @property
-    def manage_messages(self):
-        self.value += 1 << 13
-        return self
-
-    @property
-    def embed_links(self):
-        self.value += 1 << 14
-        return self
-
-    @property
-    def attach_files(self):
-        self.value += 1 << 15
-        return self
-
-    @property
-    def read_message_history(self):
-        self.value += 1 << 16
-        return self
-
-    @property
-    def mention_everyone(self):
-        self.value += 1 << 17
-        return self
-
-    @property
-    def use_external_emojis(self):
-        self.value += 1 << 18
-        return self
-
-    @property
-    def connect(self):
-        self.value += 1 << 20
-        return self
-
-    @property
-    def speak(self):
-        self.value += 1 << 21
-        return self
-
-    @property
-    def mute_members(self):
-        self.value += 1 << 22
-        return self
-
-    @property
-    def deafen_members(self):
-        self.value += 1 << 23
-        return self
-
-    @property
-    def move_members(self):
-        self.value += 1 << 24
-        return self
-
-    @property
-    def use_voice_activation(self):
-        self.value += 1 << 25
-        return self
-
-    @property
-    def change_nickname(self):
-        self.value += 1 << 26
-        return self
-
-    @property
-    def manage_nicknames(self):
-        self.value += 1 << 27
-        return self
-
-    @property
-    def manage_roles(self):
-        self.value += 1 << 28
-        return self
-
-    @property
-    def manage_webhooks(self):
-        self.value += 1 << 29
-        return self
-
-    @property
-    def manage_emojis_and_stickers(self):
-        self.value += 1 << 30
-        return self
-
-    @property
-    def use_application_commands(self):
-        self.value += 1 << 31
-        return self
-
-    @property
-    def request_to_speak(self):
-        self.value += 1 << 32
-        return self
-
-    @property
-    def manage_events(self):
-        self.value += 1 << 33
-        return self
-
-    @property
-    def manage_threads(self):
-        self.value += 1 << 34
-        return self
-
-    @property
-    def create_public_threads(self):
-        self.value += 1 << 35
-        return self
-
-    @property
-    def create_private_threads(self):
-        self.value += 1 << 36
-        return self
-
-    @property
-    def use_external_stickers(self):
-        self.value += 1 << 37
-        return self
-
-    @property
-    def send_messages_in_threads(self):
-        self.value += 1 << 38
-        return self
-
-    @property
-    def start_embedded_activities(self):
-        self.value += 1 << 39
-        return self
-
-    @property
-    def moderator_members(self):
-        self.value += 1 << 40
-        return self
+        return i
+        # what this does is, i get all intents other than presences and message contents
+        # you can do i.presences to see if its turned on and stuff
+        # iirc you can do Intents.presences to get value of that flag
+        # but you can do Intents.presences to see if its turned on if it is instance
+     """
+    
+     # TODO: Add some presets such as "Moderation", "Logging" etc.
+    
+class Permissions(Flag):
+    create_instant_invite = 1 << 0
+    kick_members = 1 << 1
+    ban_members = 1 << 2
+    administrator = 1 << 3
+    manage_channels = 1 << 4
+    manage_guild = 1 << 5
+    add_reactions = 1 << 6
+    view_audit_log = 1 << 7
+    priority_speaker = 1 << 8
+    stream = 1 << 9
+    read_messages = 1 << 10
+    send_messages = 1 << 11
+    send_tts_messages = 1 << 12
+    manage_messages = 1 << 13
+    embed_links = 1 << 14
+    attach_files = 1 << 15
+    read_message_history = 1 << 16
+    mention_everyone = 1 << 17
+    use_external_emojis = 1 << 18
+    connect = 1 << 20
+    speak = 1 << 21
+    mute_members = 1 << 22
+    deafen_members = 1 << 23
+    move_members = 1 << 24
+    use_voice_activation = 1 << 25
+    change_nickname = 1 << 26
+    manage_nicknames = 1 << 27
+    manage_roles = 1 << 28
+    manage_webhooks = 1 << 29
+    manage_emojis_and_stickers = 1 << 30
+    use_application_commands = 1 << 31
+    request_to_speak = 1 << 32
+    manage_events = 1 << 33
+    manage_threads = 1 << 34
+    create_public_threads = 1 << 35
+    create_private_threads = 1 << 36
+    use_external_stickers = 1 << 37
+    send_messages_in_threads = 1 << 38
+    start_embedded_activities = 1 << 39
+    moderator_members = 1 << 40
 
 class VoiceState:
     def __init__(self, client, data: dict):
