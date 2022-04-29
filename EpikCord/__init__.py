@@ -1679,12 +1679,6 @@ class ChannelCategory(GuildChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
 
-
-class GuildStoreChannel(GuildChannel):
-    def __init__(self, client, data: dict):
-        super().__init__(client, data)
-
-
 class GuildNewsThread(Thread, GuildNewsChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
