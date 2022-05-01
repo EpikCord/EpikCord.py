@@ -3340,7 +3340,7 @@ class ApplicationCommandInteraction(BaseInteraction):
         self.command_name: str = self.interaction_data.get("name")
         self.command_type: int = self.interaction_data.get("type")
         self.resolved: ResolvedDataHandler(client, data.get("resolved", {}))
-        self.options: List[dict] | None = self.interaction_data.get("options", [])
+        self.options: Optional[List[dict]] = self.interaction_data.get("options", [])
     
     
 class UserCommandInteraction(ApplicationCommandInteraction):
