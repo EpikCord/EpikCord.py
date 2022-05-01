@@ -3,6 +3,8 @@ NOTE: __version__ in this file, __main__ and setup.cfg
 """
 
 
+
+import socket
 from sys import platform
 from .exceptions import *
 import async_timeout
@@ -18,11 +20,17 @@ from urllib.parse import quote
 import io
 import os
 
+
+
+
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
 logger = getLogger(__name__)
 __version__ = '0.4.13.3'
-
+try:
+    import nacl
+except ImportError:
+    logger.warning("The PyNacl library was not found, so voice is not supported. Please install it by doing ``pip install PyNaCl`` If you want voice support")
 
 """
 :license:
@@ -1129,10 +1137,9 @@ class WebsocketClient(EventHandler):
             future.remove_done_callback(stop_loop_on_completion)
             self.utils.cleanup_loop(loop)
 
-class VoiceWebsocketClient:
-    def __init__(self):
-        self.ws = None
-        # Work on later
+
+
+
 
 class ChannelOptionChannelTypes:
     GUILD_TEXT = 0
@@ -1667,6 +1674,7 @@ class VoiceChannel(GuildChannel):
         self.bitrate: int = data.get("bitrate")
         self.user_limit: int = data.get("user_limit")
         self.rtc_region: str = data.get("rtc_region")
+        self.voice= VoiceWebsocketClient(client,guild_id=self.guild_id, channel_id = self.channel_id)
 
 
 class DMChannel(BaseChannel):
@@ -1691,6 +1699,7 @@ class GuildStageChannel(BaseChannel):
         self.channel_id: str = data.get("channel_id")
         self.privacy_level: int = data.get("privacy_level")
         self.discoverable_disabled: bool = data.get("discoverable_disabled")
+        self.voice = VoiceWebsocketClient(client)
 
 class RatelimitHandler:
     """
@@ -1922,6 +1931,118 @@ class Client(WebsocketClient):
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
 #         super().__init__(data)
+
+class VoiceUDPProtocol(asyncio.DatagramProtocol):...
+class VoiceWebsocketClient:
+    #This class shouldnt be used by users.Instead, it is given on voice channels
+    #This class, however, can be used by lavalink libraries
+    def __init__(self, client:Client, **kwargs):
+        self.client = client
+        self.guild_id = kwargs.get("guild_id")
+        self.channel_id = kwargs.get("channel_id")
+        self.HELLO = 8
+        self.IDENTIFY = 0
+        self.HEARTBEAT = 3
+        self.voice_connected =False
+        self.server_set = False
+        self.state_set = False
+        self.sequence = None
+        self.client.events["voice_state_update"] = self.voice_state_update
+        self.client.events["voice_server_update"] = self.voice_server_update
+    
+    async def voice_state_update(self, data:dict):
+        if self.voice_connected and self.state_set:
+            logger.info("Ignoring extra voice state update")
+            return
+        self.session_id=data["session_id"]
+        self.state_set=True
+
+    async def voice_server_update(self,data:dict):
+        if self.voice_connected and self.server_set:
+            logger.info("Ignoring etra voice server update")
+            return
+        voice_data = data["d"]
+        self.token = voice_data["token"]
+        self.endpoint = voice_data["endpoint"]
+        self.server_set = True
+
+    async def connect(self,guild_id:Optional[str] = None ,channel_id:Optional[str] = None, **kwargs):
+        self.guild_id:int = guild_id or self.guild_id
+        self.channel_id:int = channel_id or self.channel_id
+        await self.send_json({
+            "op": 4,
+            "d" : {
+                "guild_id": self.guild_id,
+                "channel_id": self.channel_id,
+                "self_mute": kwargs.get("self_mute", False),
+                "self_deaf" : kwargs.get("self_deaf", False)
+            }
+        })
+        self.voice_connected = True 
+        self.ws = await self.client.http.ws_connect(f"wss://{self.endpoint}/?v=4")
+        while not self.ws.closed:
+            await self.handle_events()
+        await self.identify()
+
+        await asyncio.sleep(1) # wait for some while for getting events       
+        async def heartbeat():
+            while True:
+                await self.heartbeat(False)
+        asyncio.create_task(heartbeat())
+
+    async def send_json(self, json):
+        '''Sends JSON data to the ``voice`` websocket connection
+        Note: Fails when used before ``connect()`` **and** after client disconnects'''
+        await self.ws.send_json(json)
+        logger.info(f"Sent {json} to Discord.")
+    async def udp_client_start(self):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.setblocking(False)
+    async def select_protocol(self):
+        await self.send_json({
+            "op": self.SELECT_PROTOCOL,
+            "d": {
+                "protocol": "udp", 
+                "data": {
+                    "address": ...
+                }
+            }
+        })
+
+    async def handle_events(self):
+        async for event in self.ws:
+            event = event.json()
+            if event["op"] == self.HELLO:
+                self.heartbeat_interval = event["d"]["heartbeat_interval"]
+            elif event["op"] == self.READY:
+                self.ssrc:int = event["d"]["ssrc"]
+                self.ip:str = event["d"]["ip"]
+                self.port:int = event["d"]["port"]
+                self.encryption_modes:list[str] = event["d"]["modes"]
+
+
+    async def identify(self):
+        await self.send_json({
+            "op": self.IDENTIFY,
+            "d" : {
+                "server_id": self.guild_id,
+                "user_id": self.client.user.id,
+                "session_id": self.session_id,
+                "token": self.token
+            }
+        })
+
+    async def heartbeat(self, forced:Optional[bool]=None ):
+        heartbeat_nonce = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
+        if forced:
+            return await self.send_json({
+                "op":self.HEARTBEAT, 
+                "d": heartbeat_nonce
+                })
+        if self.heartbeat_interval:
+            await self.send_json({"op": self.HEARTBEAT, "d":heartbeat_nonce})
+            await asyncio.sleep(self.heartbeat_interval / 1000)
+            logger.debug("Sent a heartbeat!")
 
 
 class Colour:
