@@ -14,7 +14,7 @@ import datetime
 import re
 from logging import getLogger
 logger = getLogger(__name__)
-from typing import *
+from typing import Optional, List, Union, Dict, List, TypeVar, Callable, Tuple, Any, Type
 from urllib.parse import quote
 import io
 import os
