@@ -7,7 +7,7 @@ from sys import platform
 from .exceptions import *
 import async_timeout
 from .managers import *
-from aiohttp import *
+from aiohttp import ClientSession, ClientResponse
 import asyncio
 from base64 import b64encode
 import datetime
@@ -1634,7 +1634,7 @@ class GuildTextChannel(GuildChannel, Messageable):
             "default_auto_archive_duration")
 
     async def create_webhook(self, *, name: str, avatar: Optional[str] = None, reason: Optional[str] = None):
-        headers = client.http.headers.clone()
+        headers = self.client.http.headers.clone()
         if reason:
             headers["X-Audit-Log-Reason"] = reason
 
