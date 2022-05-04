@@ -8,6 +8,7 @@ from .exceptions import *
 import async_timeout
 from .managers import *
 from .components import *
+from .partials import *
 from aiohttp import ClientSession, ClientResponse
 import asyncio
 from base64 import b64encode
