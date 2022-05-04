@@ -1,3 +1,5 @@
+from typing import Optional, List
+
 class PartialEmoji:
     def __init__(self, data: dict):
         self.data: dict = data
