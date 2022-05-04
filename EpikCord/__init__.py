@@ -1355,7 +1355,7 @@ def _bytes_to_base64_data(data: bytes) -> str:
     return fmt.format(mime=mime, data=b64)
 
 class BaseComponent:
-    def __init__(self, *, custom_id: str):
+    def __init__(self, *, custom_id: str):      
         self.custom_id: str = custom_id
 
     def set_custom_id(self, custom_id: str):
@@ -1366,7 +1366,7 @@ class BaseComponent:
         elif len(custom_id) > 100:
             raise CustomIdIsTooBig("Custom Id must be 100 characters or less.")
 
-        self.settings["custom_id"] = custom_id
+        self.custom_id = custom_id
 
 
 class Application:
