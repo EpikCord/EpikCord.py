@@ -7,6 +7,7 @@ from sys import platform
 from .exceptions import *
 import async_timeout
 from .managers import *
+from .components import *
 from aiohttp import ClientSession, ClientResponse
 import asyncio
 from base64 import b64encode
@@ -19,16 +20,18 @@ from typing import Optional, List, Union, Dict, List, TypeVar, Callable, Tuple, 
 from urllib.parse import quote
 import io
 import os
+
+CT = TypeVar('CT', bound='Colour')
+T = TypeVar('T')
+__version__ = '0.4.13.3'
+logger = getLogger(__name__)
+
 try:
     import nacl
 except ImportError:
     logger.warning("The PyNacl library was not found, so voice is not supported. Please install it by doing ``pip install PyNaCl`` If you want voice support")
 
 
-CT = TypeVar('CT', bound='Colour')
-T = TypeVar('T')
-__version__ = '0.4.13.3'
-logger = getLogger(__name__)
 
 
 """
