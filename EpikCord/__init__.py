@@ -3439,7 +3439,7 @@ class Utils:
             loop.close()
 
 class Shard(WebsocketClient):
-    def __init__(self, token, intents, presence: Presence, shard_id, number_of_shards):
+    def __init__(self, token, intents, shard_id, number_of_shards, presence: Optional[Presence] = None):
         super().__init__(token, intents, presence)
         self.shard_id = [shard_id, number_of_shards]
 
