@@ -3473,8 +3473,8 @@ class ExtUtils:
     def __init__(self, client:Client):
         self.client = client
 
-    def check(self, checker:Callable):
+    def checks(self, checker:Callable):
         def wrap(func):
-            checked:bool = if func()
+            checked:bool = checker()
             return checked
         return wrap
