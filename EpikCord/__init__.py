@@ -1867,7 +1867,7 @@ class Client(WebsocketClient):
             }
         )
 
-        self.utils = Utils(self.http)
+        self.utils = _Utils(self.http)
 
         self.user: ClientUser = None
         self.application: Application = None
@@ -3310,7 +3310,7 @@ class Paginator:
     def current(self) -> Embed:
         return self.pages[self.current_index] 
 
-class Utils:
+class _Utils:
     """
     A utility class, used to make difficult things easy.
 
@@ -3466,3 +3466,15 @@ class Shard(WebsocketClient):
         await self.connect()
         await self.identify()
         await self.resume()
+
+class ExtUtils:
+    """The utility class used by the user"""
+    #Note: soon will be shifted to EpikCord.ext namespace!
+    def __init__(self, client:Client):
+        self.client = client
+
+    def check(self, checker:Callable):
+        def wrap(func):
+            checked:bool = if func()
+            return checked
+        return wrap
