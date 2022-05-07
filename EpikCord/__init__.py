@@ -1216,11 +1216,28 @@ class ClientSlashCommand:
         def wrapper(func):
             self.autocomplete_options[option_name] = func
         return wrapper
-    def checks(self, checker:Callable):
+    def checks(self, *args):
+      
+        """Checks the conditions given to it
+        Parameters:
+            All parameters should be functions returning boolean
+        
+        Returns:
+            A wrapper for a function
+        """
         async def wrap(func):
-            checked:bool = checker()
-            if checked:
-                await func()
+            check_no = len(args)
+            success_check = 0
+            for checker in args:
+                if not success_check == check_no:
+                    checked:bool = checker()
+                    if checked:
+                        success_check += 1
+                else:
+                    await func()
+                    break
+                    
+                    
         return wrap
 
 class ClientMessageCommand(ClientUserCommand):
