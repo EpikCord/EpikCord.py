@@ -3,6 +3,7 @@ NOTE: __version__ in this file, __main__ and setup.cfg
 """
 
 
+import inspect
 from sys import platform
 from .exceptions import *
 import async_timeout
@@ -722,7 +723,18 @@ class EventHandler:
                 if interaction.options:
                     for option in interaction.options:
                         option_values.append(option.get("value"))
-                await command_exists[0].callback(interaction, *option_values)
+                total_checks = len(command_exists[0].check)
+                checks_completed = 0
+                for check in command_exists[0].check:
+                    checked = check(interaction) if not asyncio.iscoroutinefunction(check) else await check(interaction)
+                    if checked:
+                        checks_completed += 1
+                    else:
+                        break
+                        
+                if total_checks == checks_completed:
+
+                    await command_exists[0].callback(interaction, *option_values)
         if interaction.is_message_component():
             if self._components.get(interaction.custom_id):
                 if interaction.is_button():
@@ -751,8 +763,8 @@ class EventHandler:
                 for component in action_row.get("components"):
                     component_object_list.append(component["value"]) # TODO: Fix this later, component_object_list is empty ;()
             await self._components.get(interaction.custom_id)(interaction, *component_object_list)
-
-        await event_func(interaction) if event_func else None
+        
+        await event_func(interaction)if event_func else None
 
 
     async def handle_event(self, event_name: Optional[str], data: dict):
@@ -1207,7 +1219,8 @@ class ClientSlashCommand:
         self.guild_ids: Optional[List[str]] = guild_ids
         self.options: Optional[List[AnyOption]] = options
         self.autocomplete_options: dict = {}
-
+        self.check = []
+        self.check_func = None
     @property
     def type(self):
         return 1
@@ -1227,30 +1240,8 @@ class ClientSlashCommand:
         """
         
         async def wrap(func:Callable):
-            check_no = len(args)
-            success_check = 0
-            for checker in args:
-                
-                checker:Callable = checker
-                if not asyncio.iscoroutinefunction(checker):
-                    checked:bool = checker()
-                    if checked:
-                        success_check += 1
-                        logger.debug(f"Checker {checker.__name__} for {func.__name__} is successful {success_check}/{check_no} PASS")
-                    else:
-                        logger.debug(f"Checker {checker.__name__} for {func.__name__} failed. Aborting.")
-                        break #No logger messages can be sent now haha!
-                else:
-                    checked:bool = await checker()
-                    if checked:
-                        success_check += 1
-                        logger.debug(f"Checker {checker.__name__} for {func.__name__} is successful {success_check}/{check_no} PASS")
-                    else:
-                        logger.debug(f"Checker {checker.__name__} for {func.__name__} failed. Aborting.")
-                        break #No logger messages can be sent now haha!
-
-            if check_no == success_check:
-                await func()
+            self.check = args
+            self.check_func = func
                     
                     
         return wrap
