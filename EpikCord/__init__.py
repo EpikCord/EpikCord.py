@@ -1225,18 +1225,30 @@ class ClientSlashCommand:
         Returns:
             A wrapper for a function
         """
+        
         async def wrap(func:Callable):
             check_no = len(args)
             success_check = 0
             for checker in args:
+                
                 checker:Callable = checker
-                checked:bool = checker()
-                if checked:
-                    success_check += 1
-                    logger.debug(f"Checker {checker.__name__} for {func.__name__} is successful {success_check}/{check_no} PASS")
+                if not asyncio.iscoroutinefunction(checker):
+                    checked:bool = checker()
+                    if checked:
+                        success_check += 1
+                        logger.debug(f"Checker {checker.__name__} for {func.__name__} is successful {success_check}/{check_no} PASS")
+                    else:
+                        logger.debug(f"Checker {checker.__name__} for {func.__name__} failed. Aborting.")
+                        break #No logger messages can be sent now haha!
                 else:
-                    logger.debug(f"Checker {checker.__name__} for {func.__name__} failed. Aborting.")
-                    break #No logger messages can be sent now haha!
+                    checked:bool = await checker()
+                    if checked:
+                        success_check += 1
+                        logger.debug(f"Checker {checker.__name__} for {func.__name__} is successful {success_check}/{check_no} PASS")
+                    else:
+                        logger.debug(f"Checker {checker.__name__} for {func.__name__} failed. Aborting.")
+                        break #No logger messages can be sent now haha!
+
             if check_no == success_check:
                 await func()
                     
