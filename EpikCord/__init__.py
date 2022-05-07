@@ -1216,6 +1216,12 @@ class ClientSlashCommand:
         def wrapper(func):
             self.autocomplete_options[option_name] = func
         return wrapper
+    def checks(self, checker:Callable):
+        async def wrap(func):
+            checked:bool = checker()
+            if checked:
+                await func()
+        return wrap
 
 class ClientMessageCommand(ClientUserCommand):
 
@@ -3467,14 +3473,3 @@ class Shard(WebsocketClient):
         await self.identify()
         await self.resume()
 
-class ExtUtils:
-    """The utility class used by the user"""
-    #Note: soon will be shifted to EpikCord.ext namespace!
-    def __init__(self, client:Client):
-        self.client = client
-
-    def checks(self, checker:Callable):
-        def wrap(func):
-            checked:bool = checker()
-            return checked
-        return wrap
