@@ -8,11 +8,11 @@
 
 # EpikCord.py
 Welcome to EpikCord.py!
-This is an API Wrapper for Discord's API for Python!
+This is an API Wrapper for Discord's API, made in Python!
 We've decided not to fork discord.py and start completely from scratch for a new, better structuring system!
 
 ## Why EpikCord.py?
-There are many other libraries for the Discord API written in Python, there is no reason for you to choose us over other great libraries!
+There are many other libraries for the Discord API written in Python, there is no reason for you to choose us over other great libraries, however we are in active development and constantly releasing new features very often, we're also built from the ground up rather than most of the other libraries, which are forks of Discord.py.
 
 ## I want to contribute!
 We love contributions that help us, so feel free to! You won't be rewarded for this, but it helps us and we'd be very pleased with any contribution.
@@ -24,13 +24,11 @@ Have functions and attributes you are not sure about? Check our docs [here](http
 ## I need help!
 If you need help, you can join our [EpikCord.py Discord Server](https://discord.gg/4R473R73kQ) and ask for help there.
 
-
-
 # Installing Epikcord.py
 
 ## Requirements
 
-The minimal requirements for EpikCord.py are`Python>=3.8`. Python 3.7 and lower and Python 2 family are not supported
+The minimal requirements for EpikCord.py are`Python>=3.8`. Python 3.7 and lower and the Python 2 family are not supported at all and we will not provide support for issues involving them.
 
 ## Install
 **Warning!**<Br>
@@ -43,7 +41,7 @@ Get the library from the Python Package Index (PyPI)
 pip install EpikCord.py
 ```
 
-Or use git to get the development version
+Or use git to get the development version with the latest features!
 
 ```sh
 pip install git+https://github.com/EpikHost/EpikCord.py
