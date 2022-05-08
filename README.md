@@ -46,6 +46,29 @@ Or use git to get the development version with the latest features!
 ```sh
 pip install git+https://github.com/EpikHost/EpikCord.py
 ```
+
+### Install in an Virtual Environment (venv)
+
+Sometimes you might want to keep this library from conflicting with other libraries or use a different version of libs than the ones in the system. You also might not have permissions for installing libraries. Luckily Virtual Environments are here to save you. From Python3.3, there is a concept called Virtual Environment to help maintain these libs
+
+
+#### For the quick and dirty:
+
+1. Go to your project's working directory:
+
+> ``` sh
+>  $ cd bot-source-dir
+>  $ python3 -m venv YourBotEnvName
+> ```
+
+2. Activate the venv
+If you don't know how to see it [here](https://docs.python.org/3/library/venv.html)
+
+3. Installing
+> ``` sh
+> pip install -U EpikCord.py
+> ```
+
 # Examples
 
 Basic bot example- [here](./examples/basic_bot.py)
