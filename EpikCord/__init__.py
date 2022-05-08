@@ -3,7 +3,7 @@ NOTE: __version__ in this file, __main__ and setup.cfg
 """
 
 
-import inspect
+
 from sys import platform
 from .exceptions import *
 import async_timeout
@@ -1242,9 +1242,9 @@ class ClientSlashCommand:
             A wrapper for a function
         """
         
-        async def wrap(func:Callable):
+        async def wrap():
             self.check = [self.check + arg for arg in list(args)]
-            self.check_func = func
+            
                     
                     
         return wrap
