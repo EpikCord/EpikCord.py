@@ -507,19 +507,7 @@ class EventHandler:
 
         event_func = self.events.get("interaction_create")
 
-
-        interaction_type = data.get("type")
-        def figure_out_interaction_class():
-            if interaction_type == 2:
-                return ApplicationCommandInteraction(self, data)
-            elif interaction_type == 3:
-                return MessageComponentInteraction(self, data)
-            elif interaction_type == 4:
-                return AutoCompleteInteraction(self, data)
-            elif interaction_type == 5:
-                return ModalSubmitInteraction(self, data)
-
-        interaction = figure_out_interaction_class()
+        interaction = self.utils.figure_out_interaction_class(data)
 
         if interaction.is_ping():
             await self.http.post(f"interactions/{interaction.id}/{interaction.token}/callback", json = {"type": 1})
@@ -1150,25 +1138,6 @@ class Thread:
 
 class PrivateThread(Thread):
     ...
-
-def _get_mime_type_for_image(data: bytes):
-    if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
-        return 'image/png'
-    elif data[:3] == b'\xff\xd8\xff' or data[6:10] in (b'JFIF', b'Exif'):
-        return 'image/jpeg'
-    elif data.startswith((b'\x47\x49\x46\x38\x37\x61', b'\x47\x49\x46\x38\x39\x61')):
-        return 'image/gif'
-    elif data.startswith(b'RIFF') and data[8:12] == b'WEBP':
-        return 'image/webp'
-    else:
-        raise InvalidArgumentType('Unsupported image type given')
-
-
-def _bytes_to_base64_data(data: bytes) -> str:
-    fmt = 'data:{mime};base64,{data}'
-    mime = _get_mime_type_for_image(data)
-    b64 = b64encode(data).decode('ascii')
-    return fmt.format(mime=mime, data=b64)
 
 class Application:
     def __init__(self, data: dict):
@@ -2203,26 +2172,6 @@ class Integration:
         self.revoked: bool = data.get("revoked")
         self.application: Optional[Application] = Application(data.get("application")) if data.get("application") else None
 
-def _figure_out_channel_type(client, channel):
-    channel_type = channel["type"]
-    if channel_type == 0:
-        return GuildTextChannel(client, channel)
-    elif channel_type == 1:
-        return DMChannel(client, channel)
-    elif channel_type == 2:
-        return VoiceChannel(client, channel)
-    elif channel_type == 4:
-        return ChannelCategory(client, channel)
-    elif channel_type == 5:
-        return GuildNewsChannel(client, channel)
-    elif channel_type == 6:
-        return GuildStoreChannel(client, channel)
-    elif channel_type == 10:
-        return GuildNewsThread(client, channel)
-    elif  channel_type in (11, 12):
-        return Thread(client, channel)
-    elif channel_type == 13:
-        return GuildStageChannel(client, channel)
 class SystemChannelFlags:
     def __init__(self, *, value: Optional[int] = None):
         self.value: int = value
@@ -2393,7 +2342,7 @@ class Guild:
             The guild channels.
         """
         channels = await self.client.http.get(f"/guilds/{self.id}/channels")
-        return [_figure_out_channel_type(channel) for channel in channels]
+        return [self.client.utils.channel_from_type(channel) for channel in channels]
     
     async def create_channel(self, *, name: str, reason: Optional[str] = None, type: Optional[int] = None, topic: Optional[str] = None, bitrate: Optional[int] = None, user_limit: Optional[int] = None, rate_limit_per_user: Optional[int] = None, position: Optional[int] = None, permission_overwrites: List[Optional[Overwrite]] = None, parent_id: Optional[str] = None, nsfw: Optional[bool] = None):
         """Creates a channel.
@@ -2449,7 +2398,7 @@ class Guild:
         if reason:
             headers["X-Audit-Log-Reason"] = reason
 
-        return _figure_out_channel_type(await self.client.http.post(f"/guilds/{self.id}/channels", json=data, headers=headers))
+        return self.client.utils.channel_from_type(await self.client.http.post(f"/guilds/{self.id}/channels", json=data, headers=headers))
 
 class WebhookUser:
     def __init__(self, data: dict):
@@ -2943,7 +2892,7 @@ class ClientUser:
         if username:
             payload["username"] = username
         if avatar:
-            payload["avatar"] = _bytes_to_base64_data(avatar)
+            payload["avatar"] = self.client.utils.bytes_to_base64_data(avatar)
         response = await self.client.http.patch("users/@me", json=payload)
         data = await response.json()
         # Reinitialize the class with the new data, the full data.
@@ -3165,6 +3114,26 @@ class _Utils:
 
         self._MARKDOWN_STOCK_REGEX = fr'(?P<markdown>[_\\~|\*`]|{self._MARKDOWN_ESCAPE_COMMON})'
 
+    def get_mime_type_for_image(self, data: bytes):
+        if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
+            return 'image/png'
+        elif data[:3] == b'\xff\xd8\xff' or data[6:10] in (b'JFIF', b'Exif'):
+            return 'image/jpeg'
+        elif data.startswith((b'\x47\x49\x46\x38\x37\x61', b'\x47\x49\x46\x38\x39\x61')):
+            return 'image/gif'
+        elif data.startswith(b'RIFF') and data[8:12] == b'WEBP':
+            return 'image/webp'
+        else:
+            raise InvalidArgumentType('Unsupported image type given')
+
+
+    def _bytes_to_base64_data(self, data: bytes) -> str:
+        fmt = 'data:{mime};base64,{data}'
+        mime = self.get_mime_type_for_image(data)
+        b64 = b64encode(data).decode('ascii')
+        return fmt.format(mime=mime, data=b64)
+
+
     def component_from_type(self, component_data: dict):
         component_type = component_data["type"]
         del component_data["type"]
@@ -3174,6 +3143,19 @@ class _Utils:
             return SelectMenu(**component_data)
         elif component_type == 4:
             return TextInput(**component_data)
+
+    def interaction_from_type(self, data):
+        interaction_type = data["type"]
+
+        if interaction_type == 2:
+            return ApplicationCommandInteraction(self, data)
+        elif interaction_type == 3:
+            return MessageComponentInteraction(self, data)
+        elif interaction_type == 4:
+            return AutoCompleteInteraction(self, data)
+        elif interaction_type == 5:
+            return ModalSubmitInteraction(self, data)
+
 
     def channel_from_type(self, channel_data: dict):
         channel_type = channel_data.get("type")
