@@ -25,7 +25,10 @@ import os
 
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
-__version__ = '0.4.13.3'
+with open("./__main__.py") as f:
+    __version__ = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',f.read(), re.MULTILINE).group(1)
+
+
 logger = getLogger(__name__)
 
 try:
