@@ -726,7 +726,10 @@ class EventHandler:
                 total_checks = len(command_exists[0].check)
                 checks_completed = 0
                 for check in command_exists[0].check:
-                    checked = await check(interaction) if asyncio.iscoroutinefunction(command_exists[0]) else raise CheckIsNotCoroutine()
+                    if asyncio.iscoroutinefunction(check):
+                        checked = await check(interaction)
+                    else:
+                        raise CheckIsNotCoroutine(f"Check {check.__name__} is not a coroutine")
                     if checked:
                         checks_completed += 1
                     else:
