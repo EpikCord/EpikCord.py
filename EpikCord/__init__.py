@@ -533,15 +533,17 @@ class EventHandler:
                        option_values.append(option.get("value"))
                 total_checks = len(command_exists[0].check)
                 checks_completed = 0
-                for check in command_exists[0].check:
+                for check in command_exists[0].checks:
                     if asyncio.iscoroutinefunction(check):
                         checked = await check(interaction)
                     else:
-                        raise CheckIsNotCoroutine(f"Check {check.__name__} is not a coroutine")
+                        checked = check(interaction)
                     if checked:
                         checks_completed += 1
+                        #logger.debug(f"Check {check.__name__} for {command_exists[0].__name__} has reported success!")
                     else:
                         break
+                        #raise CommandCheckFailed(f"Check {check.__name__} for {command_exists[0].__name__} failed. Aborting")
                         
                 if total_checks == checks_completed:
 
@@ -1018,7 +1020,7 @@ class ClientSlashCommand:
         self.guild_ids: Optional[List[str]] = guild_ids
         self.options: Optional[List[AnyOption]] = options
         self.autocomplete_options: dict = {}
-        self.check = None
+        self.checks = None
         self.check_func = None
     @property
     def type(self):
@@ -1028,7 +1030,7 @@ class ClientSlashCommand:
         def wrapper(func):
             self.autocomplete_options[option_name] = func
         return wrapper
-    def checks(self, *args):
+    def check(self, *args):
       
         """Checks the conditions given to it
         Parameters:
@@ -1039,7 +1041,7 @@ class ClientSlashCommand:
         """
         
         async def wrap():
-            self.check = [self.check + arg for arg in list(args)]
+            self.checks = [self.checks + arg for arg in list(args)]
             
                     
                     

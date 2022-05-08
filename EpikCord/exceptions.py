@@ -114,5 +114,5 @@ class ThreadArchived(EpikCordException):
 class FailedToConnectToVoice(EpikCordException):
     ...
 
-class CheckIsNotCoroutine(EpikCordException):
+class CommandCheckFailed(EpikCordException):
     ...
