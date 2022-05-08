@@ -10,19 +10,22 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
-
+import os
+import sys
+sys.path.insert(0, os.path.abspath('../../EpikCord'))
+import re
 
 # -- Project information -----------------------------------------------------
 
 project = 'EpikCord.py'
-copyright = '2022, EpikHost'
-author = 'EpikHost'
+copyright = '2022, EpikCord'
+author = 'EpikCord'
 
 # The full version, including alpha/beta/rc tags
-release = 'Alpha 0.4.11'
+release = ''
+with open("../../EpikCord/__main__.py") as f:
+    release = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',f.read(), re.MULTILINE).group(1)
+
 
 
 # -- General configuration ---------------------------------------------------
@@ -30,7 +33,8 @@ release = 'Alpha 0.4.11'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['autodoc']
+extensions = [ 'sphinx.ext.autodoc'
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -38,8 +42,7 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
+exclude_patterns = []
 
 
 # -- Options for HTML output -------------------------------------------------
