@@ -2,6 +2,10 @@
     <img alt="EpikCord logo" src="docs/EpikCord_Logo.png" width="200"> <!-- Yes I sourced this from DiscordGO because their design inspired me :D-->
 </p>
 
+<a href="https://discord.gg/4R473R73kQ" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.shields.io/discord/937364424208039957?color=9cf&logo=discord&label=discord&style=for-the-badge" alt="Discord server">
+</a>
+
 # EpikCord.py
 Welcome to EpikCord.py!
 This is an API Wrapper for Discord's API for Python!
@@ -20,9 +24,7 @@ Have functions and attributes you not sure about? Check our docs [here](https://
 ## I need help!
 If you need help, you can join our [EpikCord.py Discord Server](https://discord.gg/4R473R73kQ) and ask for help there.
 
-<a href="https://discord.gg/4R473R73kQ" target="_blank" rel="noopener noreferrer">
-    <img src="https://img.shields.io/discord/937364424208039957?color=9cf&logo=discord&label=discord" alt="Discord server">
-</a>
+
 
 # Installing Epikcord.py
 
@@ -36,28 +38,21 @@ This Library is in preview and hasn't been released yet. Some features may not w
 
 Get the library from the Python Package Index (PyPI)
 <br>
+
 ```
 pip install EpikCord.py
 ```
 
-### Install in an Virtual Environment (venv)
+Or use git to get the development version
 
-Sometimes you might want to keep this library from conflicting with other libraries or use a different version of libs than the ones in the system. You also might not have permissions for installing libraries. Luckily Virtual Environments are here to save you. From Python3.3, there is a concept called Virtual Environment to help maintain these libs
+```sh
+pip install git+https://github.com/EpikHost/EpikCord.py
+```
+# Examples
+
+Basic bot example- [here](./examples/basic_bot.py)
+Message command example - [here](./examples/message_commands.py)
+Slash command example - [here](./examples/slash_commands.py)
+User Commands example - [here](./examples/user_commands.py)
 
 
-#### For the quick and dirty:
-
-1. Go to your project's working directory:
-
-> ``` sh
->  $ cd bot-source-dir
->  $ python3 -m venv YourBotEnvName
-> ```
-
-2. Activate the venv
-If you don't know how to see it [here](https://docs.python.org/3/library/venv.html)
-
-3. Installing
-> ``` sh
-> pip install -U EpikCord.py
-> ```
