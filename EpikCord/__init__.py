@@ -722,11 +722,11 @@ class EventHandler:
             if bool(command_exists): # bool(Filter) returns True every time.
                 if interaction.options:
                     for option in interaction.options:
-                        option_values.append(option.get("value"))
+                       option_values.append(option.get("value"))
                 total_checks = len(command_exists[0].check)
                 checks_completed = 0
                 for check in command_exists[0].check:
-                    checked = check(interaction) if not asyncio.iscoroutinefunction(check) else await check(interaction)
+                    checked = await check(interaction) if asyncio.iscoroutinefunction(command_exists[0]) else raise CheckIsNotCoroutine()
                     if checked:
                         checks_completed += 1
                     else:
@@ -1219,7 +1219,7 @@ class ClientSlashCommand:
         self.guild_ids: Optional[List[str]] = guild_ids
         self.options: Optional[List[AnyOption]] = options
         self.autocomplete_options: dict = {}
-        self.check = []
+        self.check = None
         self.check_func = None
     @property
     def type(self):
@@ -1240,7 +1240,7 @@ class ClientSlashCommand:
         """
         
         async def wrap(func:Callable):
-            self.check = args
+            self.check = [self.check + arg for arg in list(args)]
             self.check_func = func
                     
                     
