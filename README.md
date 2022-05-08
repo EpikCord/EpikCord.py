@@ -2,9 +2,9 @@
     <img alt="EpikCord logo" src="docs/EpikCord_Logo.png" width="200"> <!-- Yes I sourced this from DiscordGO because their design inspired me :D-->
 </p>
 
-<a href="https://discord.gg/4R473R73kQ" target="_blank" rel="noopener noreferrer">
-    <img src="https://img.shields.io/discord/937364424208039957?color=9cf&logo=discord&label=discord&style=for-the-badge" alt="Discord server">
-</a>
+
+[![Discord server](https://img.shields.io/discord/937364424208039957?color=9cf&logo=discord&label=discord&style=for-the-badge)](https://discord.gg/4R473R73kQ)
+[![Documentation Status](https://readthedocs.org/projects/epikcordpy/badge/?version=latest&style=for-the-badge)](https://epikcordpy.readthedocs.io/en/latest/?badge=latest)
 
 # EpikCord.py
 Welcome to EpikCord.py!
