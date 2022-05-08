@@ -1,5 +1,5 @@
 """
-NOTE: __version__ in this file, __main__ and setup.cfg
+NOTE: version string only in setup.cfg
 """
 
 
@@ -25,6 +25,7 @@ import os
 
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
+__version__ = ''
 with open("./__main__.py") as f:
     __version__ = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',f.read(), re.MULTILINE).group(1)
 

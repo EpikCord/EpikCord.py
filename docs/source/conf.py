@@ -10,9 +10,9 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('../../EpikCord'))
 import re
 
 # -- Project information -----------------------------------------------------
@@ -22,6 +22,7 @@ copyright = '2022, EpikCord'
 author = 'EpikCord'
 
 # The full version, including alpha/beta/rc tags
+release = ''
 with open("../../EpikCord/__main__.py") as f:
     release = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',f.read(), re.MULTILINE).group(1)
 
@@ -32,7 +33,7 @@ with open("../../EpikCord/__main__.py") as f:
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [
+extensions = [ 'sphinx.ext.autodoc'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
