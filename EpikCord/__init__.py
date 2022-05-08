@@ -531,7 +531,7 @@ class EventHandler:
                 if interaction.options:
                     for option in interaction.options:
                        option_values.append(option.get("value"))
-                total_checks = len(command_exists[0].check)
+                total_checks = len(command_exists[0].checks)
                 checks_completed = 0
                 for check in command_exists[0].checks:
                     if asyncio.iscoroutinefunction(check):
