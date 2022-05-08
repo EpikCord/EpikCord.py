@@ -19,7 +19,7 @@ We love contributions that help us, so feel free to! You won't be rewarded for t
 See the [Contributing](./CONTRIBUTING.md) page for more information.
 
 ## Where are your docs?
-Have functions and attributes you not sure about? Check our docs [here](https://epikcord-guide.vercel.app/)
+Have functions and attributes you are not sure about? Check our docs [here](https://epikcord-guide.vercel.app/)
 
 ## I need help!
 If you need help, you can join our [EpikCord.py Discord Server](https://discord.gg/4R473R73kQ) and ask for help there.
@@ -30,7 +30,7 @@ If you need help, you can join our [EpikCord.py Discord Server](https://discord.
 
 ## Requirements
 
-The minimal requirements for EpikCord.py is `Python>=3.8`. Python 3.7 and lower and Python 2 family are not supported
+The minimal requirements for EpikCord.py are`Python>=3.8`. Python 3.7 and lower and Python 2 family are not supported
 
 ## Install
 **Warning!**<Br>
