@@ -97,7 +97,8 @@ def message_command(name: Optional[str] = None):
     return register_slash_command
 
 class CommandsSection:
-    ...
+    def __init__(self):
+        self.commands = []
 
 class Status:
     def __init__(self, status: str):
