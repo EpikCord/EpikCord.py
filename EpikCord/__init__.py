@@ -420,14 +420,7 @@ class EventHandler:
 
     def __init__(self):
         self.events = {}
-
-    async def wait_for(self, event_name: str, check: Optional[callable] = lambda *args, **kwargs: ..., timeout: Optional[Union[float, int]] = None):
-        async with async_timeout.timeout(timeout):
-            async for event in self.ws:
-                event = event.json()
-                if event["t"].lower() == event_name.lower():
-                    results = await self.handle_event(None, event)
-                    return results
+        self.wait_for_events = {}
 
     async def voice_server_update(self, data: dict):
         token = data["token"]
@@ -435,7 +428,6 @@ class EventHandler:
         endpoint = data["endpoint"]
         if not endpoint:
             raise FailedToConnectToVoice(f"Failed to connect to voice server for guild {guild_id}")
-        
 
     def component(self, custom_id: str):
         """
@@ -483,12 +475,6 @@ class EventHandler:
                     await self.handle_event(event["t"], event["d"])
                 except Exception as e:
                     logger.exception(f"Error handling event {event['t']}: {e}")
-
-                if self.wait_for_events[event["t"]]:
-                    for event in self.wait_for_events[event["t"]]:
-                        if event["check"](event["data"]):
-                            self.wait_for_events[event["t"]].remove(event["t"])
-                            return event["data"]
 
             elif event["op"] == self.HEARTBEAT:
                 # I shouldn't wait the remaining delay according to the docs.
@@ -565,10 +551,10 @@ class EventHandler:
         event_name = event_name.lower()
         callback = self.get_event_callback(event_name)
 
-        return await callback()
+        return await callback(data)
 
 
-    async def get_event_callback(self, event_name: str, internal = False):
+    def get_event_callback(self, event_name: str, internal = False):
 
         if internal:
             event_callback = getattr(self, event_name) if hasattr(self, event_name) else None
