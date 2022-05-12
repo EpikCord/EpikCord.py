@@ -25,11 +25,7 @@ import os
 
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
-__version__ = ''
-with open("./__main__.py") as f:
-    __version__ = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',f.read(), re.MULTILINE).group(1)
-
-
+from .__main__ import __version__
 logger = getLogger(__name__)
 
 try:
@@ -422,7 +418,8 @@ class EventHandler:
             async for event in self.ws:
                 event = event.json()
                 if event["t"].lower() == event_name.lower():
-                    results = self.handle_event(None, event)
+                    results = await self.handle_event(None, event)
+                    return results
 
     async def voice_server_update(self, data: dict):
         token = data["token"]
@@ -560,15 +557,14 @@ class EventHandler:
         event_name = event_name.lower()
         callback = self.get_event_callback(event_name)
 
-
-        await callback()
+        return await callback()
 
 
     async def get_event_callback(self, event_name: str, internal = False):
 
         if internal:
             event_callback = getattr(self, event_name) if hasattr(self, event_name) else None
-            
+
         else:
             event_callback = self.events.get(event_name, None)
 
@@ -576,8 +572,6 @@ class EventHandler:
             return event_callback
 
         return None
-
-
 
     async def channel_create(self, data: dict):
         channel_type: str = data.get("type")
