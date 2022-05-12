@@ -106,12 +106,17 @@ class Status:
 
 
 class Activity:
-    """_summary_
-    Represents an Discord Activity object.
-    :param name: The name of the activity.
-    :param type: The type of the activity.
-    :param url: The url of the activity (if its a stream).
+    """Represents an Discord Activity object.
     
+    Paramters
+    ---------
+    name
+        The name of the activity.
+    type
+        The type of the activity.
+    url
+        The url of the activity. Only available for the streaming activity
+
     """
     def __init__(self, *, name: str, type: int, url: Optional[str] = None):
         self.name = name
@@ -124,29 +129,32 @@ class Activity:
         Returns:
             dict: returns :class:`dict` of :class:`activity`
         """
-        return {
+        payload = {
             "name": self.name,
             "type": self.type,
-            "url": self.url
         }
 
+        if self.url:
+            if self.type != 1:
+                raise InvalidData("You cannot set a URL")
+            payload["url"] = self.url
+        
+        return payload
+
 class Presence:
-    def __init__(self, *, since: Optional[int] = None, activities: Optional[List[Activity]] = None, status: Optional[Status] = None, afk: Optional[bool] = None):
-        self.since: Optional[int] = since or None
-        self.activities: Optional[List[Activity]] = activities or None
-        self.status: Status = status.status if status else None
-        self.afk: Optional[bool] = afk or None
+    def __init__(self, *, activity: Optional[List[Activity]] = None, status: Optional[Status] = None):
+
+        self.activity: Optional[List[Activity]] = activity
+        self.status: Status = status.status if isinstance(status, Status) else status
 
     def to_dict(self):
         payload = {}
-        if self.since:
-            payload["since"] = self.since
-        if self.activities:
-            payload["activities"] = [activity.to_dict() for activity in self.activities]
-        if self.afk:
-            payload["afk"] = self.afk
+
         if self.status:
             payload["status"] = self.status
+
+        if self.activity:
+            payload["activity"] = [self.activity.to_dict()]
         
         return payload
 
@@ -725,7 +733,7 @@ class WebsocketClient(EventHandler):
             self.intents = intents.value
 
         self.commands = {}
-        self._closed = False  # Well nah we're starting closed
+        self._closed = False
         self.heartbeats = []
         self.average_latency = 0
 
@@ -1568,16 +1576,17 @@ class HTTPClient(ClientSession):
 
 class Client(WebsocketClient):
 
-    def __init__(self, token: str, intents: int = 0):
+    def __init__(self, token: str, intents: int = 0, *, status: Optional[Status] = None, activity: Optional[Activity] = None):
         super().__init__(token, intents)
 
         self.commands: List[Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]] = [] # TODO: Need to change this to a Class Later
         self.guilds: GuildManager = GuildManager(self)
         self.channels: ChannelManager = ChannelManager(self)
+        self.presence: Presence = Presence(status = status, activity = activity)
         self._checks: List[Callable] = []
         self._components = {}
 
-        self.http = HTTPClient(
+        self.http: HTTPClient = HTTPClient(
             # raise_for_status = True,
             headers = {
                 "Authorization": f"Bot {token}",
@@ -1630,7 +1639,7 @@ class Client(WebsocketClient):
 
     def add_section(self, section: Union[CommandsSection, EventsSection]):
         if not issubclass(section, (EventsSection, CommandsSection)):
-            raise InvalidArgumentType("You must pass in a class that inherits from the Section class.")
+            raise InvalidArgumentType("You must pass in a class that inherits from one of the Section classes.")
 
         for name, command_object in section.commands:
             self.commands[name] = command_object
@@ -3186,8 +3195,10 @@ class Shard(WebsocketClient):
                 "shard": self.shard_id
             }
         }
+
         if self.presence:
             payload["d"]["presence"] = self.presence.to_dict()
+
         await self.send_json(payload)
     
     async def reconnect(self):
@@ -3195,6 +3206,43 @@ class Shard(WebsocketClient):
         await self.connect()
         await self.identify()
         await self.resume()
+
+class ShardClient:
+    def __init__(self, token: str, *, intents: Optional[Union[Intents, int]], shards: Optional[int] = None):
+        self.token: str = token
+        self.http: HTTPClient = HTTPClient(
+            # raise_for_status = True,
+            headers = {
+                "Authorization": f"Bot {token}",
+                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})"
+            }
+        )
+        self.intents = intents if not isinstance(intents, Intents) else intents.value
+        self.desired_shards: Optional[int] = shards
+        self.shards: List[Shard] = []
+
+    def run(self):
+        endpoint_data = asyncio.wait_for(self.http.get("/gateway/bot")) # ClientResponse
+        endpoint_data = asyncio.wait_for(endpoint_data.json()) # Dict
+        
+        max_concurrency = endpoint_data["session_start_limit"]["max_concurrency"]
+
+        shards = self.desired_shards
+        
+        if not shards:
+            shards = endpoint_data["shards"]
+        
+        for shard_id in range(shards):
+            self.shards.append(Shard(self.token, self.intents, shard_id, shards))
+
+
+        current_iteration = 0 # The current shard_id we've ran
+
+        for shard in self.shards:
+            shard.login()
+            current_iteration += 1
+            if current_iteration == max_concurrency:
+                asyncio.wait_for(asyncio.sleep(5))
 
 class VoiceWebsocketClient:
     def __init__(self, client, *, guild_id: Optional[str] = None, channel_id: Optional[str] = None, channel: Optional[VoiceChannel] = None):
