@@ -4,9 +4,9 @@ from typing import (
     Optional
 )
 from .cache_manager import CacheManager
-from ..__init__ import TextBasedChannel, GuildChannel, GuildTextChannel, GuildNewsChannel, VoiceChannel, DMChannel, ChannelCategory, GuildStoreChannel, GuildNewsThread, GuildStageChannel
+from ..__init__ import GuildChannel, GuildTextChannel, GuildNewsChannel, VoiceChannel, DMChannel, ChannelCategory, GuildNewsThread, GuildStageChannel
 
-AnyChannel = Union[TextBasedChannel, GuildChannel, GuildTextChannel, GuildNewsChannel, VoiceChannel, DMChannel, ChannelCategory, GuildStoreChannel, GuildNewsThread, GuildStageChannel]
+AnyChannel = Union[GuildChannel, GuildTextChannel, GuildNewsChannel, VoiceChannel, DMChannel, ChannelCategory, GuildNewsThread, GuildStageChannel]
 
 class ChannelManager(CacheManager):
     def __init__(self, client, channels: Optional[List[AnyChannel]] = None):
