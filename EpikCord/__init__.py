@@ -108,7 +108,7 @@ class Status:
 class Activity:
     """Represents an Discord Activity object.
     
-    Paramters
+    Parameters
     ---------
     name
         The name of the activity.
