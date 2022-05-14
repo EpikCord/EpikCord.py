@@ -32,7 +32,7 @@ class SelectMenuOption:
         return settings
 
 class BaseComponent:
-    def __init__(self, *, custom_id: str):      
+    def __init__(self, *, custom_id: str):
         self.custom_id: str = custom_id
 
     def set_custom_id(self, custom_id: str):
@@ -140,13 +140,13 @@ class TextInput(BaseComponent):
         
         if self.max_length:
             payload["max_length"] = self.max_length
-        
+
         if self.value:
             payload["value"] = self.value
-        
+
         if self.placeholder:
             payload["placeholder"] = self.placeholder
-        
+
         return payload
 
 
@@ -307,44 +307,35 @@ class ActionRow:
             component = component_from_type(component)
             components.append(component)
         return cls(components)
-        
 
-    def add_components(self, components: List[Union[Button, SelectMenu]]):
+
+    def check_still_valid(self, list_of_components):
         buttons = 0
         select_menus = 0
         text_inputs = 0
-        for component in components:
+
+        for component in list_of_components:
+
             if isinstance(component, Button):
                 buttons += 1
-            
+
             elif isinstance(component, SelectMenu):
                 select_menus += 1
-            
+
             elif isinstance(component, TextInput):
                 text_inputs += 1
 
             if not buttons < 5 and text_inputs < 1 and select_menus < 1:
                 raise TooManyComponents("You can only have 1 SelectMenu/TextInput per ActionRow or 5 Buttons per ActionRow.")
 
+            yield component
+
+    def add_components(self, components: List[Union[Button, SelectMenu]]):
+        for component in self.check_still_valid(components):
             self.components.append(component.to_dict())
 
     def add_component(self, component: Union[Button, SelectMenu, TextInput]):
-        buttons = 0
-        select_menus = 0
-        text_inputs = 0
+        for component in self.check_still_valid(self.components):
+            ... # Just let the validator run
 
-        for component in self.components:
-
-            if isinstance(component, Button):
-                buttons += 1
-            
-            elif isinstance(component, SelectMenu):
-                select_menus += 1
-            
-            elif isinstance(component, TextInput):
-                text_inputs += 1
-            
-            if not buttons < 5 and text_inputs < 1 and select_menus < 1:
-                raise TooManyComponents("You can only have 1 SelectMenu/TextInput per ActionRow or 5 Buttons per ActionRow.")
-
-        self.components.append(component)
+        self.components.append(component.to_dict())
