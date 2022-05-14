@@ -336,8 +336,8 @@ class Message:
         self.member: GuildMember = GuildMember(client, data.get("member")) if data.get("member") else None
         # I forgot Message Intents are gonna stop this.
         self.content: Optional[str] = data.get("content")
-        self.timestamp: str = data.get("timestamp")
-        self.edited_timestamp: Optional[str] = data.get("edited_timestamp")
+        self.timestamp: datetime.datetime = datetime.datetime.fromisoformat(data["timestamp"])
+        self.edited_timestamp: Optional[str] = datetime.datetime.fromisoformat(data.get("edited_timestamp")) if data.get("edited_timestamp") else None
         self.tts: bool = data.get("tts")
         self.mention_everyone: bool = data.get("mention_everyone")
         self.mentions: Optional[List[MentionedUser]] = [MentionedUser(client, mention) for mention in data.get("mentions", [])]
@@ -1100,7 +1100,7 @@ class ThreadMember:
     def __init__(self, data: dict):
         self.id: str = data.get("user_id")
         self.thread_id: str = data.get("thread_id")
-        self.join_timestamp: str = data.get("join_timestamp")
+        self.join_timestamp: datetime.datetime = datetime.datetime.fromisoformat(data["join_timestamp"])
         self.flags: int = data.get("flags")
 
 
@@ -1112,7 +1112,7 @@ class Thread:
         self.member_count: int = data.get("member_count")
         self.archived: bool = data.get("archived")
         self.auto_archive_duration: int = data.get("auto_archive_duration")
-        self.archive_timestamp: str = data.get("archive_timestamp")
+        self.archive_timestamp: datetime.datetime = datetime.datetime.fromisoformat(data["archive_timestamp"])
         self.locked: bool = data.get("locked")
 
     async def join(self):
@@ -2023,29 +2023,29 @@ class Embed:  # Always wanted to make this class :D
     def to_dict(self):
         final_product = {}
 
-        if getattr(self, "title"):
+        if hasattr(self, "title"):
             final_product["title"] = self.title
-        if getattr(self, "description"):
+        if hasattr(self, "description"):
             final_product["description"] = self.description
-        if getattr(self, "url"):
+        if hasattr(self, "url"):
             final_product["url"] = self.url
-        if getattr(self, "timestamp"):
+        if hasattr(self, "timestamp"):
             final_product["timestamp"] = self.timestamp
-        if getattr(self, "color"):
+        if hasattr(self, "color"):
             final_product["color"] = self.color
-        if getattr(self, "footer"):
+        if hasattr(self, "footer"):
             final_product["footer"] = self.footer
-        if getattr(self, "image"):
+        if hasattr(self, "image"):
             final_product["image"] = self.image
-        if getattr(self, "thumbnail"):
+        if hasattr(self, "thumbnail"):
             final_product["thumbnail"] = self.thumbnail
-        if getattr(self, "video"):
+        if hasattr(self, "video"):
             final_product["video"] = self.video
-        if getattr(self, "provider"):
+        if hasattr(self, "provider"):
             final_product["provider"] = self.provider
-        if getattr(self, "author"):
+        if hasattr(self, "author"):
             final_product["author"] = self.author
-        if getattr(self, "fields"):
+        if hasattr(self, "fields"):
             final_product["fields"] = self.fields
 
         return final_product
