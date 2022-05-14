@@ -33,9 +33,6 @@ try:
 except ImportError:
     logger.warning("The PyNacl library was not found, so voice is not supported. Please install it by doing ``pip install PyNaCl`` If you want voice support")
 
-
-
-
 """
 :license:
 Some parts of the code is sourced from discord.py
@@ -114,14 +111,14 @@ def user_command(name: Optional[str] = None) -> "ClientUserCommand":
     ClientUserCommand
         The command which was registered.
     """
-    def register_slash_command(func):
+    def register_user_command(func):
         result = ClientUserCommand(**{
             "callback": func,
             "name": name or func.__name__,
         })
         func.__self__.commands.append(result)
         return result
-    return register_slash_command
+    return register_user_command
 
 def message_command(name: Optional[str] = None) -> "ClientMessageCommand":
     """Registers a message command to a CommandsSection.
@@ -136,14 +133,14 @@ def message_command(name: Optional[str] = None) -> "ClientMessageCommand":
     ClientMessageCommand
         The command which was registered.
     """
-    def register_slash_command(func):
+    def register_message_command(func):
         result = ClientMessageCommand(**{
             "callback": func,
             "name": name or func.__name__,
         })
         func.__self__.commands.append(result)
         return result
-    return register_slash_command
+    return register_message_command
 
 class CommandsSection:
     """
