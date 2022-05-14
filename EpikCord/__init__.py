@@ -225,7 +225,6 @@ class Activity:
         ------
             InvalidData
                 You tried to set a url for a non-streaming activity.
-
         """
         payload = {
             "name": self.name,
@@ -240,12 +239,37 @@ class Activity:
         return payload
 
 class Presence:
-    def __init__(self, *, activity: Optional[List[Activity]] = None, status: Optional[Status] = None):
+    """
+    A class representation of a Presence.
 
+    Attributes
+    ----------
+    activity : Optional[Activity]
+        The activity of the user.
+    status : Status
+        The status of the user.
+    """
+    def __init__(self, *, activity: Optional[List[Activity]] = None, status: Optional[Status] = None):
+        """
+        Arguments
+        ---------
+        activity : Optional[Activity]
+            The activity of the user.
+        status : Status
+            The status of the user.
+        """
         self.activity: Optional[List[Activity]] = activity
         self.status: Status = status.status if isinstance(status, Status) else status
 
     def to_dict(self):
+        """
+        The dict representation of the Presence.
+
+        Returns
+        -------
+        payload : dict
+            The dict representation of the Presence.
+        """
         payload = {}
 
         if self.status:
@@ -257,13 +281,27 @@ class Presence:
         return payload
 
 class UnavailableGuild:
-
+    """The class representation of an UnavailableGuild. The Guild object should be given to use when the guild is available. 
+    """
     def __init__(self, data):
         self.data = data
         self.id: str = data.get("id")
         self.available: bool = data.get("available")
 class Reaction:
+    """
+    A class representation of a Reaction.
+    Not for direct use.
 
+
+    Attributes
+    ----------
+    count : int
+        The amount of times this reaction has been added to the Message.
+    me : bool
+        If the ClientUser has reacted to this Message with this Reaction.
+    emoji : PartialEmoji
+        The partial emoji of this Reaction.
+    """
     def __init__(self, data: dict):
         self.count: int = data.get("count")
         self.me: bool = data.get("me")
@@ -282,7 +320,8 @@ class Message:
     author : :class:`User`
         The author of the message 
     guild_id: str
-        The Guild ID the message was sent in"""
+        The Guild ID the message was sent in
+    """
     def __init__(self, client, data: dict):
         self.client = client
         self.id: str = data.get("id")
@@ -1483,7 +1522,7 @@ class GuildNewsChannel(GuildTextChannel):
         return await response.json()
 
 
-class VoiceChannel(GuildChannel):
+class VoiceChannel(GuildChannel, Messageable):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
         self.bitrate: int = data.get("bitrate")
