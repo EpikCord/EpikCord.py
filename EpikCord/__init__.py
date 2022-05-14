@@ -3092,7 +3092,7 @@ class VoiceState:
         self.self_stream: Optional[bool] = data.get("self_stream")
         self.self_video: bool = data.get("self_video")
         self.suppress: bool = data.get("suppress")
-        self.request_to_speak_timestamp: datetime.datetime = datetime.datetime.fromisoformat(data.get("request_to_speak_timestamp"))
+        self.request_to_speak_timestamp: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data.get("request_to_speak_timestamp")) if data.get("request_to_speak_timestamp") else None
 
 class Paginator:
     def __init__(self, *, pages: List[Embed]):
