@@ -49,8 +49,13 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
 class EventsSection:
-    def __init__(self, client):
-        self.client = client
+    """The class which you should inherit from to create a Section which handles events.
+    Attributes
+    ----------
+    events : dict
+        A dictionary of events and their functions.
+    """
+    def __init__(self):
         self.events = {}
 
         class _:
@@ -63,42 +68,116 @@ class EventsSection:
                 self.events[event] = getattr(self, event)
 
 def command(*, name: Optional[str] = None, description: Optional[str] = None, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
-    def register_slash_command(func):
+    """A decorator which registers a command to a ``CommandsSection``.
+
+    Arguments
+    ---------
+    name : Optional[str]
+        The name of the command. Defaults to the name of the function.
+    description : Optional[str]
+        The description of the command. Defaults to the docstring of the function.
+    guild_ids : Optional[List[str]]
+        A list of guild IDs which the command is available in. By default has no guild_ids and is registered globally.
+    options : Optional[AnyOption]
+        A list of options which the command has. This will be rendered to the Discord Client for users.
+
+    Returns
+    -------
+    ClientSlashCommand
+        The command which was registered.
+    """
+    def register_slash_command(func) -> ClientSlashCommand:
         if not description and not func.__doc__:
             raise TypeError(f"Missing description for command {func.__name__}.")
         desc = description or func.__doc__
-        func.__self__.commands.append(ClientSlashCommand(**{
+        result = ClientSlashCommand(**{
             "callback": func,
             "name": name or func.__name__,
             "description": desc,
             "guild_ids": guild_ids,
             "options": options,
-        })) # Cheat method.
+        }) # Cheat method.
+        func.__self__.commands.append(result)
+        return result
     return register_slash_command
 
-def user_command(name: Optional[str] = None):
+def user_command(name: Optional[str] = None) -> "ClientUserCommand":
+    """Registers a user command to a CommandsSection.
+
+    Arguments
+    ---------
+    name : Optional[str]
+        The name of the command. Defaults to the name of the function.
+
+    Returns
+    -------
+    ClientUserCommand
+        The command which was registered.
+    """
     def register_slash_command(func):
-        func.__self__.commands.append(ClientUserCommand(**{
+        result = ClientUserCommand(**{
             "callback": func,
             "name": name or func.__name__,
-        }))
+        })
+        func.__self__.commands.append(result)
+        return result
     return register_slash_command
 
-def message_command(name: Optional[str] = None):
+def message_command(name: Optional[str] = None) -> "ClientMessageCommand":
+    """Registers a message command to a CommandsSection.
+    
+    Arguments
+    ---------
+    name : Optional[str]
+        The name of the command. Defaults to the name of the function.
+    
+    Returns
+    -------
+    ClientMessageCommand
+        The command which was registered.
+    """
     def register_slash_command(func):
-        func.__self__.commands.append(ClientMessageCommand(**{
+        result = ClientMessageCommand(**{
             "callback": func,
             "name": name or func.__name__,
-        }))
+        })
+        func.__self__.commands.append(result)
+        return result
     return register_slash_command
 
 class CommandsSection:
+    """
+    The CommandsSection class which you should inherit from to create a Section which handles commands.
+
+    Attributes
+    ----------
+    commands : List[Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]]
+        A list of commands which the section has.
+    """
     def __init__(self):
         self.commands = []
 
 class Status:
+    """The class which represents a Status.
+    
+    Attributes
+    ----------
+    status : str
+        The status of the user.
+    """
     def __init__(self, status: str):
+        """Represents a Status.
         
+        Arguments
+        ---------
+        status : str
+            The status of the user. Either ``online``, ``idle``, ``dnd`` or ``invisible``.
+        
+        Raises
+        ------
+        InvalidStatus
+            The status that you supplied is not valid.
+        """
         if status in {"online", "dnd", "idle", "invisible", "offline"}:
             setattr(self, "status", status if status != "offline" else "invisible")
         else:
@@ -108,17 +187,28 @@ class Status:
 class Activity:
     """Represents an Discord Activity object.
     
-    Parameters
+    Attributes
     ---------
-    name
+    name : str
         The name of the activity.
-    type
+    type : int
         The type of the activity.
-    url
+    url : Optional[str]
         The url of the activity. Only available for the streaming activity
 
     """
     def __init__(self, *, name: str, type: int, url: Optional[str] = None):
+        """Represents a Discord Activity object.
+
+        Arguments
+        ---------
+        name : str
+            The name of the activity.
+        type : int
+            The type of the activity.
+        url : Optional[str]
+            The url of the activity. Only available for the streaming activity.
+        """
         self.name = name
         self.type = type
         self.url = url
@@ -126,8 +216,16 @@ class Activity:
     def to_dict(self):
         """Returns activity class as dict
 
-        Returns:
-            dict: returns :class:`dict` of :class:`activity`
+        Returns
+        -------
+        payload : dict
+            The dict representation of the Activity.
+        
+        Raises
+        ------
+            InvalidData
+                You tried to set a url for a non-streaming activity.
+
         """
         payload = {
             "name": self.name,
@@ -671,7 +769,7 @@ class EventHandler:
                 command_payload["description"] = command.description
                 command_payload["options"] = [option.to_dict() for option in getattr(command, "options", [])]
 
-            if getattr(command, "guild_ids", None):
+            if hasattr(command, "guild_ids"):
                 for guild_id in command.guild_ids:
                     try:
                         command_sorter[guild_id].append(command_payload)
@@ -691,7 +789,6 @@ class EventHandler:
             await self.events["ready"]()
         except KeyError:
             return
-
 
 class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
@@ -1165,8 +1262,7 @@ class ClientApplication(Application):
         await self.client.http.delete(f"/applications/{self.id}/commands/{command_id}")
 
     async def bulk_overwrite_global_application_commands(self, commands: List[ApplicationCommand]):
-        payload = list(commands)
-        await self.client.http.put(f"/applications/{self.id}/commands", json =  payload)
+        await self.client.http.put(f"/applications/{self.id}/commands", json = list(commands))
 
     async def fetch_guild_application_commands(self, guild_id: str):
         response = await self.client.http.get(f"/applications/{self.id}/guilds/{guild_id}/commands")
@@ -1212,8 +1308,7 @@ class ClientApplication(Application):
         await self.client.http.delete(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}")
 
     async def bulk_overwrite_guild_application_commands(self, guild_id: str, commands: List[ApplicationCommand]):
-        payload = list(commands)
-        await self.client.http.put(f"/applications/{self.id}/guilds/{guild_id}/commands", json =  payload)
+        await self.client.http.put(f"/applications/{self.id}/guilds/{guild_id}/commands", json = list(commands))
 
     async def fetch_guild_application_command_permissions(self, guild_id: str, command_id: str):
         response = await self.client.http.get(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}/permissions")
@@ -1583,7 +1678,7 @@ class Client(WebsocketClient):
         self.utils = Utils(self.http)
 
         self.user: ClientUser = None
-        self.application: Application = None
+        self.application: Optional[ClientApplication] = None
         self.sections: List[Union[CommandsSection, EventsSection]] = []
 
     def command(self, *, name: Optional[str] = None, description: Optional[str] = None, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
@@ -3208,27 +3303,31 @@ class ShardClient:
         self.shards: List[Shard] = []
 
     def run(self):
-        endpoint_data = asyncio.wait_for(self.http.get("/gateway/bot")) # ClientResponse
-        endpoint_data = asyncio.wait_for(endpoint_data.json()) # Dict
-        
-        max_concurrency = endpoint_data["session_start_limit"]["max_concurrency"]
+        async def wrapper():
+            endpoint_data = await self.http.get("/gateway/bot") # ClientResponse
+            endpoint_data = await endpoint_data.json() # Dict
+            
+            max_concurrency = endpoint_data["session_start_limit"]["max_concurrency"]
 
-        shards = self.desired_shards
-        
-        if not shards:
-            shards = endpoint_data["shards"]
-        
-        for shard_id in range(shards):
-            self.shards.append(Shard(self.token, self.intents, shard_id, shards))
+            shards = self.desired_shards
+            
+            if not shards:
+                shards = endpoint_data["shards"]
+            
+            for shard_id in range(shards):
+                self.shards.append(Shard(self.token, self.intents, shard_id, shards))
 
 
-        current_iteration = 0 # The current shard_id we've ran
+            current_iteration = 0 # The current shard_id we've ran
 
-        for shard in self.shards:
-            shard.login()
-            current_iteration += 1
-            if current_iteration == max_concurrency:
-                asyncio.wait_for(asyncio.sleep(5))
+            for shard in self.shards:
+                shard.login()
+                current_iteration += 1
+                if current_iteration == max_concurrency:
+                    await asyncio.sleep(5)
+                    current_iteration = 0 # Reset it
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(wrapper())
 
 class VoiceWebsocketClient:
     def __init__(self, client, *, guild_id: Optional[str] = None, channel_id: Optional[str] = None, channel: Optional[VoiceChannel] = None):

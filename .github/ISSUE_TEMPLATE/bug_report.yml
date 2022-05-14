@@ -46,9 +46,9 @@ body:
       label: Intents
       description: >
         What intents are you using for your bot?
-        This is the `discord.Intents` class you pass to the client.
+        This is the Intents you pass to the client.
     validations:
-      required: true
+      required: false
   - type: textarea
     attributes:
       label: System Information
@@ -60,7 +60,7 @@ body:
     attributes:
       label: Checklist
       description: >
-        Let's make sure you've properly done due dilligence when reporting this issue!
+        Let's make sure you've properly done due diligence when reporting this issue!
       options:
         - label: This bug was found on the latest version of EpikCord
           required: true
