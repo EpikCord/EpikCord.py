@@ -639,7 +639,7 @@ class EventHandler:
 
         event_func = self.events.get("interaction_create")
 
-        interaction = self.utils.figure_out_interaction_class(data)
+        interaction = self.utils.interaction_from_type(data)
 
         if interaction.is_ping():
             await self.http.post(f"interactions/{interaction.id}/{interaction.token}/callback", json = {"type": 1})
@@ -707,13 +707,8 @@ class EventHandler:
     async def channel_create(self, data: dict):
         channel_type: str = data.get("type")
         event_func = None
-        try:
-            event_func = self.events["channel_create"]
-        except KeyError:
-            ...
 
-
-        await event_func(self.utils.figure_out_channel_class(data)) if event_func else None
+        await event_func(self.utils.channel_from_type(data)) if event_func else None
 
         # if channel_type in (0, 5, 6):
         #     try:
@@ -780,7 +775,10 @@ class EventHandler:
         if func_name.startswith("on_"):
             func_name = func_name[3:]
         
-        self.events[func_name] = func
+        try:
+            self.events[func_name].append(func)
+        except KeyError:
+            self.events[func_name] = [func]
 
     async def guild_member_update(self, data):
         ...
