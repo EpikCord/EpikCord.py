@@ -313,14 +313,17 @@ class Message:
     
     Attributes
     ----------
+    client : Client
+        The client which initialised this Message.
     id : str
         The message ID.
     channel_id : str
         The channel ID the message was sent in.
-    author : :class:`User`
+    author : Union[GuildMember, User]
         The author of the message 
     guild_id: str
         The Guild ID the message was sent in
+    
     """
     def __init__(self, client, data: dict):
         self.client = client
@@ -345,33 +348,15 @@ class Message:
         self.nonce: Optional[Union[int, str]] = data.get("nonce")
         self.pinned: bool = data.get("pinned")
         self.type: int = data.get("type")
-        self.activity: Optional[MessageActivity] = MessageActivity(
-            data.get("activity")) if data.get("activity") else None
+        self.activity: Optional[MessageActivity] = MessageActivity(data.get("activity")) if data.get("activity") else None
         # Despite there being a PartialApplication, Discord don't specify what attributes it has
-        self.application: Application = Application(
-            data.get("application")) if data.get("application") else None
+        self.application: Application = Application(data.get("application")) if data.get("application") else None
         self.flags: int = data.get("flags")
         self.referenced_message: Optional[Message] = Message(client, data.get("referenced_message")) if data.get("referenced_message") else None
-        self.interaction: Optional[MessageInteraction] = MessageInteraction(
-            client, data.get("interaction")) if data.get("interaction") else None
-        self.thread: Optional[Thread] = Thread(
-            data.get("thread")) if data.get("thread") else None
-
-        components: List[Any] = []
-        if data.get("components"):
-            for component in data.get("components"):
-                if component.get("type") == 1:
-                    components.append(ActionRow(component))
-                elif component.get("type") == 2:
-                    components.append(Button(component))
-                elif components.get("type") == 3:
-                    components.append(SelectMenu(component))
-                elif components.get("type") == 4:
-                    components.append(TextInput(component))
-
-        self.components: Optional[List[Union[TextInput, SelectMenu, Button]]] = components
-        self.stickers: Optional[List[StickerItem]] = [StickerItem(
-            sticker) for sticker in data.get("stickers", [])] or None
+        self.interaction: Optional[MessageInteraction] = MessageInteraction(client, data.get("interaction")) if data.get("interaction") else None
+        self.thread: Optional[Thread] = Thread(data.get("thread")) if data.get("thread") else None
+        self.components: Optional[List[Union[TextInput, SelectMenu, Button]]] = [ActionRow.from_dict(component) for component in data.get("components")]
+        self.stickers: Optional[List[StickerItem]] = [StickerItem(sticker) for sticker in data.get("stickers", [])] or None
 
     async def add_reaction(self, emoji: str):
         emoji = quote(emoji)
@@ -652,21 +637,18 @@ class EventHandler:
                     for option in interaction.options:
                         option_values.append(option.get("value"))
                 await command_exists[0].callback(interaction, *option_values)
-        if interaction.is_message_component():
-            if self._components.get(interaction.custom_id):
-                if interaction.is_button():
-                    action_rows = interaction.message.components
-                    for component in action_rows[0].components["components"]:
-                        if component["custom_id"] == interaction.custom_id:
-                            del component["type"]
-                            await self._components[interaction.custom_id](interaction, Button(**component))
-                            break
-                    # for row in action_rows:
-                    #     for component in row.components:
-                    #         print(component)
-                    #         if component.custom_id == interaction.custom_id:
-                    #             await self._components[interaction.custom_id](interaction, component)
-                    #             return
+        if interaction.is_message_component(): # If it's a message component interaction
+            if self._components.get(interaction.custom_id): # If it's registered with the bot
+                if interaction.is_button(): # If it's a button
+                    await self._components[interaction.custom_id](interaction, self.utils.interaction_from_type(component)) # Call the callback
+                elif interaction.is_select_menu():
+                    def get_select_menu():
+                        for action_row in interaction.message.components:
+                            for component in action_row["components"]:
+                                if component["custom_id"] == interaction.custom_id:
+                                    component = self.utils.component_from_type(component)
+                                    return component
+                    await self._components[interaction.custom_id](interaction, get_select_menu(), *interaction.values)
 
         if interaction.is_autocomplete():
             for command in self.commands:

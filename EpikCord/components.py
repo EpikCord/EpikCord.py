@@ -1,4 +1,4 @@
-from .exceptions import InvalidArgumentType, CustomIdIsTooBig, InvalidComponentStyle, TooManySelectMenuOptions, TooManyComponents, MissingCustomId, LabelIsTooBig
+from .exceptions import InvalidArgumentType, CustomIdIsTooBig, InvalidComponentStyle, TooManySelectMenuOptions, TooManyComponents, LabelIsTooBig
 from .partials import PartialEmoji
 from typing import Union, Optional, List
 
@@ -281,8 +281,15 @@ class Button(BaseComponent):
         self.settings["style"] = 5
         return self
 
-
-
+def component_from_type(component_data: dict):
+    component_type = component_data["type"]
+    del component_data["type"]
+    if component_type == 2:
+        return Button(**component_data)
+    elif component_type == 3:
+        return SelectMenu(**component_data)
+    elif component_type == 4:
+        return TextInput(**component_data)
 
 class ActionRow:
     def __init__(self, components: Optional[List[Union[Button, SelectMenu, TextInput]]] = None):
@@ -292,20 +299,52 @@ class ActionRow:
     def to_dict(self):
         return {"type": self.type, "components": [component.to_dict() for component in self.components]}
 
+    @classmethod
+    def from_dict(cls, data):
+        # Data right now is an ActionRow.
+        components = []
+        for component in data.get("components"): # List[Dict]
+            component = component_from_type(component)
+            components.append(component)
+        return cls(components)
+        
+
     def add_components(self, components: List[Union[Button, SelectMenu]]):
         buttons = 0
+        select_menus = 0
+        text_inputs = 0
         for component in components:
-            if not component.custom_id:
-                raise MissingCustomId(
-                    f"You need to supply a custom id for the component {component}")
-
-            if type(component) == Button:
+            if isinstance(component, Button):
                 buttons += 1
+            
+            elif isinstance(component, SelectMenu):
+                select_menus += 1
+            
+            elif isinstance(component, TextInput):
+                text_inputs += 1
 
-            elif buttons > 5:
-                raise TooManyComponents("You can only have 5 buttons per row.")
+            if not buttons < 5 and text_inputs < 1 and select_menus < 1:
+                raise TooManyComponents("You can only have 1 SelectMenu/TextInput per ActionRow or 5 Buttons per ActionRow.")
 
-            elif isinstance(component, SelectMenu) and buttons > 0:
-                raise TooManyComponents("You can only have 1 select menu per row. No buttons along that select menu.")
             self.components.append(component.to_dict())
-        return self
+
+    def add_component(self, component: Union[Button, SelectMenu, TextInput]):
+        buttons = 0
+        select_menus = 0
+        text_inputs = 0
+
+        for component in self.components:
+
+            if isinstance(component, Button):
+                buttons += 1
+            
+            elif isinstance(component, SelectMenu):
+                select_menus += 1
+            
+            elif isinstance(component, TextInput):
+                text_inputs += 1
+            
+            if not buttons < 5 and text_inputs < 1 and select_menus < 1:
+                raise TooManyComponents("You can only have 1 SelectMenu/TextInput per ActionRow or 5 Buttons per ActionRow.")
+
+        self.components.append(component)
