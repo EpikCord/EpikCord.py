@@ -1,5 +1,5 @@
 class EpikCordException(Exception):
-    pass
+    ...
 
 class InvalidApplicationCommandType(EpikCordException):
     ...
@@ -21,8 +21,6 @@ class MissingClientSetting(EpikCordException):
 
 class MissingCustomId(EpikCordException):
     ...
-
-
 
 class DiscordAPIError(EpikCordException):
     ...

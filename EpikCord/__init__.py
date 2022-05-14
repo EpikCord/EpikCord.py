@@ -26,11 +26,7 @@ import os
 
 CT = TypeVar('CT', bound='Colour')
 T = TypeVar('T')
-__version__ = ''
-with open("./__main__.py") as f:
-    __version__ = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',f.read(), re.MULTILINE).group(1)
-
-
+from .__main__ import __version__
 logger = getLogger(__name__)
 
 try:
@@ -54,8 +50,13 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
 class EventsSection:
-    def __init__(self, client):
-        self.client = client
+    """The class which you should inherit from to create a Section which handles events.
+    Attributes
+    ----------
+    events : dict
+        A dictionary of events and their functions.
+    """
+    def __init__(self):
         self.events = {}
 
         class _:
@@ -68,41 +69,116 @@ class EventsSection:
                 self.events[event] = getattr(self, event)
 
 def command(*, name: Optional[str] = None, description: Optional[str] = None, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
-    def register_slash_command(func):
+    """A decorator which registers a command to a ``CommandsSection``.
+
+    Arguments
+    ---------
+    name : Optional[str]
+        The name of the command. Defaults to the name of the function.
+    description : Optional[str]
+        The description of the command. Defaults to the docstring of the function.
+    guild_ids : Optional[List[str]]
+        A list of guild IDs which the command is available in. By default has no guild_ids and is registered globally.
+    options : Optional[AnyOption]
+        A list of options which the command has. This will be rendered to the Discord Client for users.
+
+    Returns
+    -------
+    ClientSlashCommand
+        The command which was registered.
+    """
+    def register_slash_command(func) -> ClientSlashCommand:
         if not description and not func.__doc__:
             raise TypeError(f"Missing description for command {func.__name__}.")
         desc = description or func.__doc__
-        func.__self__.commands.append(ClientSlashCommand(**{
+        result = ClientSlashCommand(**{
             "callback": func,
             "name": name or func.__name__,
             "description": desc,
             "guild_ids": guild_ids,
             "options": options,
-        })) # Cheat method.
+        }) # Cheat method.
+        func.__self__.commands.append(result)
+        return result
     return register_slash_command
 
-def user_command(name: Optional[str] = None):
+def user_command(name: Optional[str] = None) -> "ClientUserCommand":
+    """Registers a user command to a CommandsSection.
+
+    Arguments
+    ---------
+    name : Optional[str]
+        The name of the command. Defaults to the name of the function.
+
+    Returns
+    -------
+    ClientUserCommand
+        The command which was registered.
+    """
     def register_slash_command(func):
-        func.__self__.commands.append(ClientUserCommand(**{
+        result = ClientUserCommand(**{
             "callback": func,
             "name": name or func.__name__,
-        }))
+        })
+        func.__self__.commands.append(result)
+        return result
     return register_slash_command
 
-def message_command(name: Optional[str] = None):
+def message_command(name: Optional[str] = None) -> "ClientMessageCommand":
+    """Registers a message command to a CommandsSection.
+    
+    Arguments
+    ---------
+    name : Optional[str]
+        The name of the command. Defaults to the name of the function.
+    
+    Returns
+    -------
+    ClientMessageCommand
+        The command which was registered.
+    """
     def register_slash_command(func):
-        func.__self__.commands.append(ClientMessageCommand(**{
+        result = ClientMessageCommand(**{
             "callback": func,
             "name": name or func.__name__,
-        }))
+        })
+        func.__self__.commands.append(result)
+        return result
     return register_slash_command
 
 class CommandsSection:
-    ...
+    """
+    The CommandsSection class which you should inherit from to create a Section which handles commands.
+
+    Attributes
+    ----------
+    commands : List[Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]]
+        A list of commands which the section has.
+    """
+    def __init__(self):
+        self.commands = []
 
 class Status:
+    """The class which represents a Status.
+    
+    Attributes
+    ----------
+    status : str
+        The status of the user.
+    """
     def __init__(self, status: str):
+        """Represents a Status.
         
+        Arguments
+        ---------
+        status : str
+            The status of the user. Either ``online``, ``idle``, ``dnd`` or ``invisible``.
+        
+        Raises
+        ------
+        InvalidStatus
+            The status that you supplied is not valid.
+        """
         if status in {"online", "dnd", "idle", "invisible", "offline"}:
             setattr(self, "status", status if status != "offline" else "invisible")
         else:
@@ -110,14 +186,30 @@ class Status:
 
 
 class Activity:
-    """_summary_
-    Represents an Discord Activity object.
-    :param name: The name of the activity.
-    :param type: The type of the activity.
-    :param url: The url of the activity (if its a stream).
+    """Represents an Discord Activity object.
     
+    Attributes
+    ---------
+    name : str
+        The name of the activity.
+    type : int
+        The type of the activity.
+    url : Optional[str]
+        The url of the activity. Only available for the streaming activity
+
     """
     def __init__(self, *, name: str, type: int, url: Optional[str] = None):
+        """Represents a Discord Activity object.
+
+        Arguments
+        ---------
+        name : str
+            The name of the activity.
+        type : int
+            The type of the activity.
+        url : Optional[str]
+            The url of the activity. Only available for the streaming activity.
+        """
         self.name = name
         self.type = type
         self.url = url
@@ -125,43 +217,92 @@ class Activity:
     def to_dict(self):
         """Returns activity class as dict
 
-        Returns:
-            dict: returns :class:`dict` of :class:`activity`
+        Returns
+        -------
+        payload : dict
+            The dict representation of the Activity.
+        
+        Raises
+        ------
+            InvalidData
+                You tried to set a url for a non-streaming activity.
         """
-        return {
+        payload = {
             "name": self.name,
             "type": self.type,
-            "url": self.url
         }
 
+        if self.url:
+            if self.type != 1:
+                raise InvalidData("You cannot set a URL")
+            payload["url"] = self.url
+        
+        return payload
+
 class Presence:
-    def __init__(self, *, since: Optional[int] = None, activities: Optional[List[Activity]] = None, status: Optional[Status] = None, afk: Optional[bool] = None):
-        self.since: Optional[int] = since or None
-        self.activities: Optional[List[Activity]] = activities or None
-        self.status: Status = status.status if status else None
-        self.afk: Optional[bool] = afk or None
+    """
+    A class representation of a Presence.
+
+    Attributes
+    ----------
+    activity : Optional[Activity]
+        The activity of the user.
+    status : Status
+        The status of the user.
+    """
+    def __init__(self, *, activity: Optional[List[Activity]] = None, status: Optional[Status] = None):
+        """
+        Arguments
+        ---------
+        activity : Optional[Activity]
+            The activity of the user.
+        status : Status
+            The status of the user.
+        """
+        self.activity: Optional[List[Activity]] = activity
+        self.status: Status = status.status if isinstance(status, Status) else status
 
     def to_dict(self):
+        """
+        The dict representation of the Presence.
+
+        Returns
+        -------
+        payload : dict
+            The dict representation of the Presence.
+        """
         payload = {}
-        if self.since:
-            payload["since"] = self.since
-        if self.activities:
-            payload["activities"] = [activity.to_dict() for activity in self.activities]
-        if self.afk:
-            payload["afk"] = self.afk
+
         if self.status:
             payload["status"] = self.status
+
+        if self.activity:
+            payload["activity"] = [self.activity.to_dict()]
         
         return payload
 
 class UnavailableGuild:
-
+    """The class representation of an UnavailableGuild. The Guild object should be given to use when the guild is available. 
+    """
     def __init__(self, data):
         self.data = data
         self.id: str = data.get("id")
         self.available: bool = data.get("available")
 class Reaction:
+    """
+    A class representation of a Reaction.
+    Not for direct use.
 
+
+    Attributes
+    ----------
+    count : int
+        The amount of times this reaction has been added to the Message.
+    me : bool
+        If the ClientUser has reacted to this Message with this Reaction.
+    emoji : PartialEmoji
+        The partial emoji of this Reaction.
+    """
     def __init__(self, data: dict):
         self.count: int = data.get("count")
         self.me: bool = data.get("me")
@@ -173,14 +314,18 @@ class Message:
     
     Attributes
     ----------
+    client : Client
+        The client which initialised this Message.
     id : str
         The message ID.
     channel_id : str
         The channel ID the message was sent in.
-    author : :class:`User`
+    author : Union[GuildMember, User]
         The author of the message 
     guild_id: str
-        The Guild ID the message was sent in"""
+        The Guild ID the message was sent in
+    
+    """
     def __init__(self, client, data: dict):
         self.client = client
         self.id: str = data.get("id")
@@ -192,8 +337,8 @@ class Message:
         self.member: GuildMember = GuildMember(client, data.get("member")) if data.get("member") else None
         # I forgot Message Intents are gonna stop this.
         self.content: Optional[str] = data.get("content")
-        self.timestamp: str = data.get("timestamp")
-        self.edited_timestamp: Optional[str] = data.get("edited_timestamp")
+        self.timestamp: datetime.datetime = datetime.datetime.fromisoformat(data["timestamp"])
+        self.edited_timestamp: Optional[str] = datetime.datetime.fromisoformat(data.get("edited_timestamp")) if data.get("edited_timestamp") else None
         self.tts: bool = data.get("tts")
         self.mention_everyone: bool = data.get("mention_everyone")
         self.mentions: Optional[List[MentionedUser]] = [MentionedUser(client, mention) for mention in data.get("mentions", [])]
@@ -204,33 +349,15 @@ class Message:
         self.nonce: Optional[Union[int, str]] = data.get("nonce")
         self.pinned: bool = data.get("pinned")
         self.type: int = data.get("type")
-        self.activity: Optional[MessageActivity] = MessageActivity(
-            data.get("activity")) if data.get("activity") else None
+        self.activity: Optional[MessageActivity] = MessageActivity(data.get("activity")) if data.get("activity") else None
         # Despite there being a PartialApplication, Discord don't specify what attributes it has
-        self.application: Application = Application(
-            data.get("application")) if data.get("application") else None
+        self.application: Application = Application(data.get("application")) if data.get("application") else None
         self.flags: int = data.get("flags")
         self.referenced_message: Optional[Message] = Message(client, data.get("referenced_message")) if data.get("referenced_message") else None
-        self.interaction: Optional[MessageInteraction] = MessageInteraction(
-            client, data.get("interaction")) if data.get("interaction") else None
-        self.thread: Optional[Thread] = Thread(
-            data.get("thread")) if data.get("thread") else None
-
-        components: List[Any] = []
-        if data.get("components"):
-            for component in data.get("components"):
-                if component.get("type") == 1:
-                    components.append(ActionRow(component))
-                elif component.get("type") == 2:
-                    components.append(Button(component))
-                elif components.get("type") == 3:
-                    components.append(SelectMenu(component))
-                elif components.get("type") == 4:
-                    components.append(TextInput(component))
-
-        self.components: Optional[List[Union[TextInput, SelectMenu, Button]]] = components
-        self.stickers: Optional[List[StickerItem]] = [StickerItem(
-            sticker) for sticker in data.get("stickers", [])] or None
+        self.interaction: Optional[MessageInteraction] = MessageInteraction(client, data.get("interaction")) if data.get("interaction") else None
+        self.thread: Optional[Thread] = Thread(data.get("thread")) if data.get("thread") else None
+        self.components: Optional[List[Union[TextInput, SelectMenu, Button]]] = [ActionRow.from_dict(component) for component in data.get("components")]
+        self.stickers: Optional[List[StickerItem]] = [StickerItem(sticker) for sticker in data.get("stickers", [])] or None
 
     async def add_reaction(self, emoji: str):
         emoji = quote(emoji)
@@ -416,13 +543,7 @@ class EventHandler:
 
     def __init__(self):
         self.events = {}
-
-    async def wait_for(self, event_name: str, check: Optional[callable] = lambda *args, **kwargs: ..., timeout: Optional[Union[float, int]] = None):
-        async with async_timeout.timeout(timeout):
-            async for event in self.ws:
-                event = event.json()
-                if event["t"].lower() == event_name.lower():
-                    results = self.handle_event(None, event)
+        self.wait_for_events = {}
 
     async def voice_server_update(self, data: dict):
         token = data["token"]
@@ -430,7 +551,6 @@ class EventHandler:
         endpoint = data["endpoint"]
         if not endpoint:
             raise FailedToConnectToVoice(f"Failed to connect to voice server for guild {guild_id}")
-        
 
     def component(self, custom_id: str):
         """
@@ -479,12 +599,6 @@ class EventHandler:
                 except Exception as e:
                     logger.exception(f"Error handling event {event['t']}: {e}")
 
-                if self.wait_for_events[event["t"]]:
-                    for event in self.wait_for_events[event["t"]]:
-                        if event["check"](event["data"]):
-                            self.wait_for_events[event["t"]].remove(event["t"])
-                            return event["data"]
-
             elif event["op"] == self.HEARTBEAT:
                 # I shouldn't wait the remaining delay according to the docs.
                 await self.heartbeat(True)
@@ -511,7 +625,7 @@ class EventHandler:
 
         event_func = self.events.get("interaction_create")
 
-        interaction = self.utils.figure_out_interaction_class(data)
+        interaction = self.utils.interaction_from_type(data)
 
         if interaction.is_ping():
             await self.http.post(f"interactions/{interaction.id}/{interaction.token}/callback", json = {"type": 1})
@@ -522,39 +636,6 @@ class EventHandler:
             if bool(command_exists): # bool(Filter) returns True every time.
                 if interaction.options:
                     for option in interaction.options:
-                       option_values.append(option.get("value"))
-                total_checks = len(command_exists[0].checks)
-                checks_completed = 0
-                for check in command_exists[0].checks:
-                    if asyncio.iscoroutinefunction(check):
-                        checked = await check(interaction)
-                    else:
-                        checked = check(interaction)
-                    if checked:
-                        checks_completed += 1
-                        #logger.debug(f"Check {check.__name__} for {command_exists[0].__name__} has reported success!")
-                    else:
-                        break
-                        #raise CommandCheckFailed(f"Check {check.__name__} for {command_exists[0].__name__} failed. Aborting")
-                        
-                if total_checks == checks_completed:
-
-                    await command_exists[0].callback(interaction, *option_values)
-        if interaction.is_message_component():
-            if self._components.get(interaction.custom_id):
-                if interaction.is_button():
-                    action_rows = interaction.message.components
-                    for component in action_rows[0].components["components"]:
-                        if component["custom_id"] == interaction.custom_id:
-                            del component["type"]
-                            await self._components[interaction.custom_id](interaction, Button(**component))
-                            break
-                    # for row in action_rows:
-                    #     for component in row.components:
-                    #         print(component)
-                    #         if component.custom_id == interaction.custom_id:
-                    #             await self._components[interaction.custom_id](interaction, component)
-                    #             return
 
         if interaction.is_autocomplete():
             for command in self.commands:
@@ -576,15 +657,14 @@ class EventHandler:
         event_name = event_name.lower()
         callback = self.get_event_callback(event_name)
 
+        return await callback(data)
 
-        await callback()
 
-
-    async def get_event_callback(self, event_name: str, internal = False):
+    def get_event_callback(self, event_name: str, internal = False):
 
         if internal:
             event_callback = getattr(self, event_name) if hasattr(self, event_name) else None
-            
+
         else:
             event_callback = self.events.get(event_name, None)
 
@@ -593,28 +673,11 @@ class EventHandler:
 
         return None
 
-
-
     async def channel_create(self, data: dict):
         channel_type: str = data.get("type")
         event_func = None
-        try:
-            event_func = self.events["channel_create"]
-        except KeyError:
-            ...
 
-        if channel_type in {0, 1, 5, 6, 10, 11, 12}:
-
-            if event_func:
-                await event_func(TextBasedChannel(self, data).to_type())
-
-        elif channel_type == 2:
-            if event_func:
-                await event_func(VoiceChannel(self, data))
-
-        elif channel_type == 13:
-            if event_func:
-                await event_func(GuildStageChannel(self, data))
+        await event_func(self.utils.channel_from_type(data)) if event_func else None
 
         # if channel_type in (0, 5, 6):
         #     try:
@@ -681,7 +744,10 @@ class EventHandler:
         if func_name.startswith("on_"):
             func_name = func_name[3:]
         
-        self.events[func_name] = func
+        try:
+            self.events[func_name].append(func)
+        except KeyError:
+            self.events[func_name] = [func]
 
     async def guild_member_update(self, data):
         ...
@@ -709,7 +775,7 @@ class EventHandler:
                 command_payload["description"] = command.description
                 command_payload["options"] = [option.to_dict() for option in getattr(command, "options", [])]
 
-            if getattr(command, "guild_ids", None):
+            if hasattr(command, "guild_ids"):
                 for guild_id in command.guild_ids:
                     try:
                         command_sorter[guild_id].append(command_payload)
@@ -729,7 +795,6 @@ class EventHandler:
             await self.events["ready"]()
         except KeyError:
             return
-
 
 class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
@@ -757,7 +822,7 @@ class WebsocketClient(EventHandler):
             self.intents = intents.value
 
         self.commands = {}
-        self._closed = False  # Well nah we're starting closed
+        self._closed = False
         self.heartbeats = []
         self.average_latency = 0
 
@@ -867,7 +932,7 @@ class WebsocketClient(EventHandler):
     async def connect(self):
         self.ws = await self.http.ws_connect("wss://gateway.discord.gg/?v=9&encoding=json")
         self._closed = False
-        self.handle_events()
+        await self.handle_events()
 
     async def resume(self):
         logger.critical("Reconnecting...")
@@ -944,42 +1009,6 @@ class WebsocketClient(EventHandler):
         finally:
             future.remove_done_callback(stop_loop_on_completion)
             self.utils.cleanup_loop(loop)
-
-class VoiceWebsocketClient:
-    def __init__(self, client, *, guild_id: Optional[str] = None, channel_id: Optional[str] = None, channel: Optional[VoiceChannel] = None):
-        self.ws = None
-        self.client = client
-        # TODO: Figure out which one I will use later in production
-        if channel:
-            self.guild_id = channel.guild.id
-            self.channel_id = channel.id
-        else:
-            self.guild_id = guild_id
-            self.channel_id = channel_id
-
-        self.IDENTIFY = 0
-        self.SELECT_PROTOCOL = 1
-        self.READY = 2
-        self.HEARTBEAT = 3
-        self.HELLO = 8
-
-        self.connected = False
-        self.server_set = False
-        self.state_set = False
-        self.sequence = None
-        self.endpoint = None
-    
-    async def connect(self, muted: Optional[bool] = False, deafened: Optional[bool] = False):
-        await self.client.send_json({
-            "op": self.client.VOICE_STATE_UPDATE,
-            "d": {
-                "guild_id": self.guild_id,
-                "channel_id": self.channel_id,
-                "self_mute": muted,
-                "self_deaf": deafened
-
-            }
-        })
 
 class ClientUserCommand:
     """
@@ -1075,7 +1104,7 @@ class ThreadMember:
     def __init__(self, data: dict):
         self.id: str = data.get("user_id")
         self.thread_id: str = data.get("thread_id")
-        self.join_timestamp: str = data.get("join_timestamp")
+        self.join_timestamp: datetime.datetime = datetime.datetime.fromisoformat(data["join_timestamp"])
         self.flags: int = data.get("flags")
 
 
@@ -1087,7 +1116,7 @@ class Thread:
         self.member_count: int = data.get("member_count")
         self.archived: bool = data.get("archived")
         self.auto_archive_duration: int = data.get("auto_archive_duration")
-        self.archive_timestamp: str = data.get("archive_timestamp")
+        self.archive_timestamp: datetime.datetime = datetime.datetime.fromisoformat(data["archive_timestamp"])
         self.locked: bool = data.get("locked")
 
     async def join(self):
@@ -1256,8 +1285,7 @@ class ClientApplication(Application):
         await self.client.http.delete(f"/applications/{self.id}/commands/{command_id}")
 
     async def bulk_overwrite_global_application_commands(self, commands: List[ApplicationCommand]):
-        payload = list(commands)
-        await self.client.http.put(f"/applications/{self.id}/commands", json =  payload)
+        await self.client.http.put(f"/applications/{self.id}/commands", json = list(commands))
 
     async def fetch_guild_application_commands(self, guild_id: str):
         response = await self.client.http.get(f"/applications/{self.id}/guilds/{guild_id}/commands")
@@ -1303,8 +1331,7 @@ class ClientApplication(Application):
         await self.client.http.delete(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}")
 
     async def bulk_overwrite_guild_application_commands(self, guild_id: str, commands: List[ApplicationCommand]):
-        payload = list(commands)
-        await self.client.http.put(f"/applications/{self.id}/guilds/{guild_id}/commands", json =  payload)
+        await self.client.http.put(f"/applications/{self.id}/guilds/{guild_id}/commands", json = list(commands))
 
     async def fetch_guild_application_command_permissions(self, guild_id: str, command_id: str):
         response = await self.client.http.get(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}/permissions")
@@ -1337,7 +1364,7 @@ class GuildChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
         if data["type"] == 0:
-            return TextBasedChannel(client, data).to_type()
+            return self.client.utils.channel_from_type(data)
         self.guild_id: str = data.get("guild_id")
         self.position: int = data.get("position")
         self.nsfw: bool = data.get("nsfw")
@@ -1479,7 +1506,7 @@ class GuildNewsChannel(GuildTextChannel):
         return await response.json()
 
 
-class VoiceChannel(GuildChannel):
+class VoiceChannel(GuildChannel, Messageable):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
         self.bitrate: int = data.get("bitrate")
@@ -1653,16 +1680,17 @@ class HTTPClient(ClientSession):
 
 class Client(WebsocketClient):
 
-    def __init__(self, token: str, intents: int = 0):
+    def __init__(self, token: str, intents: int = 0, *, status: Optional[Status] = None, activity: Optional[Activity] = None):
         super().__init__(token, intents)
 
         self.commands: List[Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]] = [] # TODO: Need to change this to a Class Later
         self.guilds: GuildManager = GuildManager(self)
         self.channels: ChannelManager = ChannelManager(self)
+        self.presence: Presence = Presence(status = status, activity = activity)
         self._checks: List[Callable] = []
         self._components = {}
 
-        self.http = HTTPClient(
+        self.http: HTTPClient = HTTPClient(
             # raise_for_status = True,
             headers = {
                 "Authorization": f"Bot {token}",
@@ -1673,7 +1701,7 @@ class Client(WebsocketClient):
         self.utils = _Utils(self.http)
 
         self.user: ClientUser = None
-        self.application: Application = None
+        self.application: Optional[ClientApplication] = None
         self.sections: List[Union[CommandsSection, EventsSection]] = []
 
     def command(self, *, name: Optional[str] = None, description: Optional[str] = None, guild_ids: Optional[List[str]] = [], options: Optional[AnyOption] = []):
@@ -1715,7 +1743,7 @@ class Client(WebsocketClient):
 
     def add_section(self, section: Union[CommandsSection, EventsSection]):
         if not issubclass(section, (EventsSection, CommandsSection)):
-            raise InvalidArgumentType("You must pass in a class that inherits from the Section class.")
+            raise InvalidArgumentType("You must pass in a class that inherits from one of the Section classes.")
 
         for name, command_object in section.commands:
             self.commands[name] = command_object
@@ -1999,29 +2027,29 @@ class Embed:  # Always wanted to make this class :D
     def to_dict(self):
         final_product = {}
 
-        if getattr(self, "title"):
+        if hasattr(self, "title"):
             final_product["title"] = self.title
-        if getattr(self, "description"):
+        if hasattr(self, "description"):
             final_product["description"] = self.description
-        if getattr(self, "url"):
+        if hasattr(self, "url"):
             final_product["url"] = self.url
-        if getattr(self, "timestamp"):
+        if hasattr(self, "timestamp"):
             final_product["timestamp"] = self.timestamp
-        if getattr(self, "color"):
+        if hasattr(self, "color"):
             final_product["color"] = self.color
-        if getattr(self, "footer"):
+        if hasattr(self, "footer"):
             final_product["footer"] = self.footer
-        if getattr(self, "image"):
+        if hasattr(self, "image"):
             final_product["image"] = self.image
-        if getattr(self, "thumbnail"):
+        if hasattr(self, "thumbnail"):
             final_product["thumbnail"] = self.thumbnail
-        if getattr(self, "video"):
+        if hasattr(self, "video"):
             final_product["video"] = self.video
-        if getattr(self, "provider"):
+        if hasattr(self, "provider"):
             final_product["provider"] = self.provider
-        if getattr(self, "author"):
+        if hasattr(self, "author"):
             final_product["author"] = self.author
-        if getattr(self, "fields"):
+        if hasattr(self, "fields"):
             final_product["fields"] = self.fields
 
         return final_product
@@ -3068,7 +3096,7 @@ class VoiceState:
         self.self_stream: Optional[bool] = data.get("self_stream")
         self.self_video: bool = data.get("self_video")
         self.suppress: bool = data.get("suppress")
-        self.request_to_speak_timestamp: datetime.datetime = datetime.datetime.fromisoformat(data.get("request_to_speak_timestamp"))
+        self.request_to_speak_timestamp: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data.get("request_to_speak_timestamp")) if data.get("request_to_speak_timestamp") else None
 
 class Paginator:
     def __init__(self, *, pages: List[Embed]):
@@ -3173,8 +3201,6 @@ class _Utils:
             return ChannelCategory(self.client, channel_data)
         elif channel_type == 5:
             return GuildNewsChannel(self.client, channel_data)
-        elif channel_type == 6:
-            return GuildStoreChannel(self.client, channel_data)
         elif channel_type == 10:
             return GuildNewsThread(self.client, channel_data)
         elif channel_type == 11:
@@ -3273,8 +3299,10 @@ class Shard(WebsocketClient):
                 "shard": self.shard_id
             }
         }
+
         if self.presence:
             payload["d"]["presence"] = self.presence.to_dict()
+
         await self.send_json(payload)
     
     async def reconnect(self):
@@ -3282,4 +3310,5 @@ class Shard(WebsocketClient):
         await self.connect()
         await self.identify()
         await self.resume()
+
 
