@@ -21,9 +21,9 @@ Some of the features of EpikCord.py are:
 
 Getting Started
 ==================
-If you're new to this library, you can get started here
+If you're new to this library, you can get started here.
 
 
-* First Steps: :ref:`genindex``
+* First Steps: :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
