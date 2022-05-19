@@ -699,13 +699,6 @@ class EventHandler:
         #         ...
         #     if event_func:
         #         await event_func(TextBasedChannel(self, channel_data))
-
-        # elif channel_type == 1:
-        #     try:
-        #         event_func = self.events["dm_channel_create"]
-        #         await event_func(DMChannel(self, channel_data))
-        #     except KeyError:
-        #         pass
         
         # elif channel_type == 2:
         #     try:
@@ -2496,9 +2489,9 @@ class BaseInteraction:
         }
 
         if suppress_embeds:
-            message_data["flags"] += 1 << 2
+            message_data["flags"] |+ 1 << 2
         if ephemeral:
-            message_data["flags"] += 1 << 6
+            message_data["flags"] |= 1 << 6
 
         if content:
             message_data["content"] = content
@@ -3371,7 +3364,7 @@ class VoiceWebsocketClient:
         self.state_set = False
         self.sequence = None
         self.endpoint = None
-    
+
     async def connect(self, muted: Optional[bool] = False, deafened: Optional[bool] = False):
         await self.client.send_json({
             "op": self.client.VOICE_STATE_UPDATE,
