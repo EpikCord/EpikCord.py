@@ -21,8 +21,9 @@ class ChannelManager(CacheManager):
 
     async def fetch(self, channel_id, *, skip_cache: Optional[bool] = False):
         if not skip_cache:
-            filtered_list = list(filter(lambda channel: channel.id == channel_id, self.channels))
-            if len(filtered_list) > 0:
+            if filtered_list := list(
+                filter(lambda channel: channel.id == channel_id, self.channels)
+            ):
                 return filtered_list[0]
 
         channel_data = await self.client.http.get(f"channels/{channel_id}")

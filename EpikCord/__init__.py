@@ -566,9 +566,7 @@ class EventHandler:
         if data.get("unavailable"):
             return # The guild is just unavailable
 
-        callback = self.events.get("guild_delete", None)
-
-        if callback:
+        if callback := self.events.get("guild_delete", None):
             await callback(self.guilds.fetch(data["id"])) # Fetch the guild from Cache.
 
     async def handle_events(self):
@@ -917,7 +915,10 @@ class WebsocketClient(EventHandler):
             logger.critical("EpikCord.py sent an invalid payload to the Gateway. Report this immediately.")
             await self.resume()
         elif self.ws.close_code == 4003:
-            logger.critical(f"EpikCord.py has sent a payload prior to identifying. Report this immediately.")
+            logger.critical(
+                "EpikCord.py has sent a payload prior to identifying. Report this immediately."
+            )
+
         elif self.ws.close_code == 4005:
             logger.critical("EpikCord.py tried to authenticate again. Report this immediately.")
             await self.resume()
@@ -2950,16 +2951,12 @@ class Flag:
 
     def __init__(self, value: int = 0, **kwargs):
         self.value = value
-        self.turned_on: "list[str]" = []
+        self.turned_on: "list[str]" = [k for k, a in kwargs.items() if a]
 
-        for k, a in kwargs.items():
-            if not a: continue
-            self.turned_on.append(k)
-        
         for k, v in self.class_flags.items():
-            if v & value and not k in self.turned_on:
+            if v & value and k not in self.turned_on:
                 self.turned_on.append(k)
-        
+
         self.calculate_from_turned()
     
     def calculate_from_turned(self):
@@ -2976,9 +2973,9 @@ class Flag:
         return original(__name)
     
     def __setattr__(self, __name: str, __value: Any) -> None:
-        if not __name in self.class_flags:
+        if __name not in self.class_flags:
             return super().__setattr__(__name, __value)
-        if __value and not __name in self.turned_on:
+        if __value and __name not in self.turned_on:
             self.turned_on.append(__name)
         elif not __value and __name in self.turned_on:
             self.turned_on.remove(__name)
@@ -3310,7 +3307,7 @@ class ShardClient:
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})"
             }
         )
-        self.intents = intents if not isinstance(intents, Intents) else intents.value
+        self.intents = intents.value if isinstance(intents, Intents) else intents
         self.desired_shards: Optional[int] = shards
         self.shards: List[Shard] = []
 
