@@ -20,14 +20,14 @@ async def ready():
 )
 async def ping(interaction):
     start = time.perf_counter()
-    await interaction.reply(content = f"Pong!")
+    await interaction.reply(content="Pong!")
     end = time.perf_counter()
-    
+
     asyncio.sleep(0.5)
-    
+
     trip = end - start
     rt_ping = f'{(trip * 1000):.2f}ms ({humanize.precisedelta(datetime.timedelta(seconds=trip))})'
-    
+
     await interaction.edit_original_response(content = f"Pong! {rt_ping}")
     
 @client.command(

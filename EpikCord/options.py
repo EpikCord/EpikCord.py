@@ -129,67 +129,58 @@ class SlashCommandOptionChoice:
 
 
 class Subcommand(BaseSlashCommandOption):
+    conversion_type = {
+        3: StringOption,
+        4: IntegerOption,
+        5: BooleanOption,
+        6: UserOption,
+        7: ChannelOption,
+        8: RoleOption,
+        9: MentionableOption,
+        10: NumberOption,
+        11: AttachmentOption
+    }
+
     def __init__(self, *, name: str, description: str = None, required: bool = True, options: list[Union[StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]] = None):
         super().__init__(name=name, description=description, required=required)
         self.type = 1
         converted_options = []
         for option in options:
             if option["type"] == 1:
-                converted_options.append(Subcommand(**option))
-            elif option["type"] == 2:
-                raise InvalidOption("You can't have a subcommand group with a subcommand")
-            elif option["type"] == 3:
                 converted_options.append(StringOption(**option))
-            elif option["type"] == 4:
-                converted_options.append(IntegerOption(**option))
-            elif option["type"] == 5:
-                converted_options.append(BooleanOption(**option))
-            elif option["type"] == 6:
-                converted_options.append(UserOption(**option))
-            elif option["type"] == 7:
-                converted_options.append(ChannelOption(**option))
-            elif option["type"] == 8:
-                converted_options.append(RoleOption(**option))
-            elif option["type"] == 9:
-                converted_options.append(MentionableOption(**option))
-            elif option["type"] == 10:
-                converted_options.append(NumberOption(**option))
-            elif option["type"] == 11:
-                converted_options.append(AttachmentOption(**option))
+
+            elif option["type"] == 2:
+                converted_options.append(SubCommandGroup(**option))
+
+            else:
+                converted_options.append(self.conversion_type[option["type"]](**option))
 
         self.options: Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
 
 
-
-
 class SubCommandGroup(BaseSlashCommandOption):
+    conversion_type = {
+        1: Subcommand,
+        3: StringOption,
+        4: IntegerOption,
+        5: BooleanOption,
+        6: UserOption,
+        7: ChannelOption,
+        8: RoleOption,
+        9: MentionableOption,
+        10: NumberOption,
+        11: AttachmentOption
+    }
+
     def __init__(self, *, name: str, description: str = None, required: bool = True, options: list[Union[Subcommand, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption]] = None):
         super().__init__(name=name, description=description, required=required)
         self.type = 2
         converted_options = []
         for option in options:
-            if option["type"] == 1:
-                converted_options.append(Subcommand(**option))
-            elif option["type"] == 2:
+            if option["type"] == 2:
                 converted_options.append(SubCommandGroup(**option))
-            elif option["type"] == 3:
-                converted_options.append(StringOption(**option))
-            elif option["type"] == 4:
-                converted_options.append(IntegerOption(**option))
-            elif option["type"] == 5:
-                converted_options.append(BooleanOption(**option))
-            elif option["type"] == 6:
-                converted_options.append(UserOption(**option))
-            elif option["type"] == 7:
-                converted_options.append(ChannelOption(**option))
-            elif option["type"] == 8:
-                converted_options.append(RoleOption(**option))
-            elif option["type"] == 9:
-                converted_options.append(MentionableOption(**option))
-            elif option["type"] == 10:
-                converted_options.append(NumberOption(**option))
-            elif option["type"] == 11:
-                converted_options.append(AttachmentOption(**option))
+            else:
+                converted_options.append(self.conversion_type[option["type"]](**option))
 
         self.options: Union[Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption] = converted_options
 
