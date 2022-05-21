@@ -1572,8 +1572,8 @@ class HTTPClient(ClientSession):
     async def log_request(self, res):
         message = f"Sent a {res.request_info.method} to {res.url} and got a {res.status} response. "
         try:
-            await res.json():
-            message += f"Received body: {await res.json()} "
+            await res.json()
+            message += f"Received body: {await res.json()}"
         except:
             ...
 
