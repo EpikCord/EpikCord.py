@@ -18,7 +18,7 @@ import re
 
 from logging import getLogger
 
-from typing import Optional, List, Union, Dict, List, TypeVar, Callable, Tuple, Any, Type, TYPE_CHECKING
+from typing import Optional, List, Union, Dict, TypeVar, Callable, Tuple, Any, Type, TYPE_CHECKING
 from urllib.parse import quote
 import io
 import os
@@ -560,12 +560,8 @@ class EventHandler:
         ...
         
     async def guild_delete(self, data: dict):
-        if data.get("unavailable"):
-            return # The guild is just unavailable
 
-        callback = self.events.get("guild_delete", None)
-
-        if callback:
+        if callback := self.get_event_callback("guild_delete", None):
             await callback(self.guilds.fetch(data["id"])) # Fetch the guild from Cache.
 
     async def handle_events(self):
@@ -664,23 +660,21 @@ class EventHandler:
 
 
     async def handle_event(self, event_name: Optional[str], data: dict):
-        event_name = event_name.lower()
-        callback = self.get_event_callback(event_name)
 
-        return await callback(data)
+        if callback := self.get_event_callback(event_name.lower(), True):
+
+            return await callback(data)
 
 
     def get_event_callback(self, event_name: str, internal = False):
 
         if internal:
             event_callback = getattr(self, event_name) if hasattr(self, event_name) else None
-
         else:
             event_callback = self.events.get(event_name, None)
 
         if event_callback:
             return event_callback
-
         return None
 
     async def channel_create(self, data: dict):
@@ -1577,10 +1571,15 @@ class HTTPClient(ClientSession):
     
     async def log_request(self, res):
         message = f"Sent a {res.request_info.method} to {res.url} and got a {res.status} response. "
-        if await res.json():
+        try:
+            await res.json():
             message += f"Received body: {await res.json()} "
+        except:
+            ...
+
         if dict(res.headers):
             message += f"Received headers: {dict(res.headers)} "
+
         if dict(res.request_info.headers):
             message += f"Sent headers: {dict(res.request_info.headers)} "
         logger.debug(message)
@@ -1691,7 +1690,7 @@ class Client(WebsocketClient):
             }
         )
 
-        self.utils = Utils(self.http)
+        self.utils = Utils(self)
 
         self.user: ClientUser = None
         self.application: Optional[ClientApplication] = None
@@ -3173,13 +3172,13 @@ class Utils:
         interaction_type = data["type"]
 
         if interaction_type == 2:
-            return ApplicationCommandInteraction(self, data)
+            return ApplicationCommandInteraction(self.client, data)
         elif interaction_type == 3:
-            return MessageComponentInteraction(self, data)
+            return MessageComponentInteraction(self.client, data)
         elif interaction_type == 4:
-            return AutoCompleteInteraction(self, data)
+            return AutoCompleteInteraction(self.client, data)
         elif interaction_type == 5:
-            return ModalSubmitInteraction(self, data)
+            return ModalSubmitInteraction(self.client, data)
 
 
     def channel_from_type(self, channel_data: dict):
