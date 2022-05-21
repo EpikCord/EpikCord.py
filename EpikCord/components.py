@@ -325,7 +325,7 @@ class ActionRow:
             elif isinstance(component, TextInput):
                 text_inputs += 1
 
-            if not buttons < 5 and text_inputs < 1 and select_menus < 1:
+            if buttons >= 5 and text_inputs < 1 and select_menus < 1:
                 raise TooManyComponents("You can only have 1 SelectMenu/TextInput per ActionRow or 5 Buttons per ActionRow.")
 
             yield component

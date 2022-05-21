@@ -24,7 +24,10 @@ author = 'EpikCord'
 # The full version, including alpha/beta/rc tags
 release = ''
 with open("../../EpikCord/__main__.py") as f:
-    release = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',f.read(), re.MULTILINE).group(1)
+    release = re.search(
+        r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE
+    )[1]
+
 
 
 
