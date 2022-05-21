@@ -1715,10 +1715,12 @@ class Client(WebsocketClient):
 
     def user_command(self, name: Optional[str] = None):
         def register_slash_command(func):
-            self.commands.append(ClientUserCommand(**{
+            result = ClientUserCommand(**{
                 "callback": func,
                 "name": name or func.__name__,
-            }))
+            })
+            self.commands.append(result)
+            return result
         return register_slash_command
 
     def message_command(self, name: Optional[str] = None):
