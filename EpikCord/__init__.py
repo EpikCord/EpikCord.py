@@ -5,7 +5,7 @@ NOTE: version string only in setup.cfg
 
 from sys import platform
 from .exceptions import *
-import async_timeout
+
 from .managers import *
 from .options import *
 from .components import *
@@ -232,7 +232,7 @@ class Activity:
             if self.type != 1:
                 raise InvalidData("You cannot set a URL")
             payload["url"] = self.url
-        
+
         return payload
 
 class Presence:
@@ -274,7 +274,7 @@ class Presence:
 
         if self.activity:
             payload["activity"] = [self.activity.to_dict()]
-        
+
         return payload
 
 class UnavailableGuild:
@@ -442,7 +442,7 @@ class File:
                 self._original_pos = 0
         self._closer = self.fp.close
         self.fp.close = lambda: None
-        
+
         if filename is None:
             if isinstance(fp, str):
                 _, self.filename = os.path.split(fp)
@@ -455,13 +455,14 @@ class File:
 
             self.spoiler = spoiler or (self.filename is not None and self.filename.startswith('SPOILER_'))
 
-        def reset(self, *, seek: Union[int, bool] = True) -> None:
-            if seek:
-                self.fp.seek(self._original_pos)
+    def reset(self, *, seek: Union[int, bool] = True) -> None:
+        if seek:
+            self.fp.seek(self._original_pos)
 
-        def close(self) -> None:
-            self.fp.close = self._closer
-            self._closer()
+    def close(self) -> None:
+        self.fp.close = self._closer
+        self._closer()
+
 
 class Messageable:
     def __init__(self, client, channel_id: str):
@@ -558,7 +559,7 @@ class EventHandler:
 
     async def guild_members_chunk(self, data: dict):
         ...
-        
+
     async def guild_delete(self, data: dict):
         return self.guilds.fetch(data["id"])
 
@@ -578,7 +579,7 @@ class EventHandler:
                 asyncio.create_task(wrapper())
                 await self.identify()
 
-                
+
 
             elif event["op"] == self.EVENT:
                 self.sequence = event["s"]
@@ -729,7 +730,7 @@ class EventHandler:
 
         if func_name.startswith("on_"):
             func_name = func_name[3:]
-        
+
         try:
             self.events[func_name].append(func)
         except KeyError:
@@ -844,10 +845,10 @@ class WebsocketClient(EventHandler):
 
         if presences:
             payload["d"]["presences"] = presences
-        
+
         if user_ids:
             payload["d"]["user_ids"] = user_ids
-        
+
         if nonce:
             payload["d"]["nonce"] = nonce
 
@@ -1013,7 +1014,7 @@ class ClientUserCommand:
     def __init__(self, *, name: str, callback: callable): # TODO: Check if you can make GuildUserCommands etc
         self.name: str = name
         self.callback: callable = callback
-    
+
     @property
     def type(self):
         return 2
@@ -1055,7 +1056,7 @@ class StickerItem:
         self.name: str = data.get("name")
         self.format_type: int = data.get("format_type")
 
-class Sticker():
+class Sticker:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
         self.name: str = data.get("name")
@@ -1212,7 +1213,7 @@ class ClientApplication(Application):
         payload = [ApplicationCommand(command) for command in await response.json()]
         self.client.application_commands = payload
         return payload
-    
+
     async def create_global_application_command(self,*, name: str, description: str, options: Optional[List[AnyOption]], default_permission: Optional[bool] = False, command_type: Optional[int] = 1):
         payload = {
             "name": name,
@@ -1246,7 +1247,7 @@ class ClientApplication(Application):
             payload["options"] = [option.to_dict() for option in options]
         if default_permissions:
             payload["default_permissions"] = default_permissions
-        
+
         await self.client.http.patch(f"/applications/{self.id}/commands/{command_id}", json=payload)
 
     async def delete_global_application_command(self, command_id: str):
@@ -1292,7 +1293,7 @@ class ClientApplication(Application):
             payload["options"] = [option.to_dict() for option in options]
         if default_permissions:
             payload["default_permissions"] = default_permissions
-        
+
         await self.client.http.patch(f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}", json = payload)
 
     async def delete_guild_application_command(self, guild_id: str, command_id: str):
@@ -1549,13 +1550,13 @@ class HTTPClient(ClientSession):
         super().__init__(*args, **kwargs, raise_for_status = True)
         self.base_uri: str = "https://discord.com/api/v9"
         self.ratelimit_handler = RatelimitHandler(avoid_ratelimits = kwargs.get("avoid_ratelimits", False))
-    
+
     async def log_request(self, res):
         message = f"Sent a {res.request_info.method} to {res.url} and got a {res.status} response. "
         try:
             await res.json()
             message += f"Received body: {await res.json()}"
-        except:
+        except Exception:
             ...
 
         if dict(res.headers):
@@ -1589,7 +1590,7 @@ class HTTPClient(ClientSession):
             res = await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
             return res
-        
+
         return await super().post(url, *args, **kwargs)
 
     async def patch(self, url, *args, to_discord: bool = True, **kwargs):
@@ -1620,7 +1621,7 @@ class HTTPClient(ClientSession):
 
     async def put(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-                
+
             if self.ratelimit_handler.is_ratelimited():
                 return
 
@@ -1647,7 +1648,7 @@ class HTTPClient(ClientSession):
             return res
         return await super().head(url, *args, **kwargs)
 
- 
+
 
 
 
@@ -1727,7 +1728,7 @@ class Client(WebsocketClient):
             self.events[event_name.lower()] = event_func
         self.sections.append(section)
         section.on_load()
-    
+
     def unload_section(self, section: Union[CommandsSection, EventsSection]):
         if not issubclass(section, (EventsSection, CommandsSection)):
             raise InvalidArgumentType("You must pass in a class that inherits from the Section class.")
@@ -1794,7 +1795,7 @@ class Colour:
 
     def to_rgb(self) -> Tuple[int, int, int]:
         """Returns an rgb color as a tuple"""
-        return (self.r, self.g, self.b)
+        return self.r, self.g, self.b
 
     @classmethod
     def from_rgb(cls: Type[CT], r: int, g: int, b: int) -> CT:
@@ -2186,11 +2187,11 @@ class SystemChannelFlags:
     @property
     def suppress_join_notifications(self):
         self.value += 1 << 0
-    
+
     @property
     def suppress_premium_subscriptions(self):
         self.value += 1 << 1
-    
+
     @property
     def suppress_guild_reminder_notifications(self):
         self.value += 1 << 2
@@ -2318,12 +2319,12 @@ class Guild:
             data["description"] = description
         if premium_progress_bar_enabled is not None:
             data["premium_progress_bar_enabled"] = premium_progress_bar_enabled
-        
+
         headers = self.client.http.headers.copy()
         if reason:
             headers["X-Audit-Log-Reason"] = reason
         return Guild(await self.client.http.patch(f"/guilds/{self.id}", json=data, headers=headers))
-    
+
     async def fetch_guild_preview(self) -> GuildPreview:
         """Fetches the guild preview.
 
@@ -2336,10 +2337,10 @@ class Guild:
             return self.preview
 
         return GuildPreview(await self.client.http.get(f"/guilds/{self.id}/preview"))
-    
+
     async def delete(self):
         await self.client.http.delete(f"/guilds/{self.id}")
-    
+
     async def fetch_channels(self) -> List[GuildChannel]:
         """Fetches the guild channels.
 
@@ -2350,7 +2351,7 @@ class Guild:
         """
         channels = await self.client.http.get(f"/guilds/{self.id}/channels")
         return [self.client.utils.channel_from_type(channel) for channel in channels]
-    
+
     async def create_channel(self, *, name: str, reason: Optional[str] = None, type: Optional[int] = None, topic: Optional[str] = None, bitrate: Optional[int] = None, user_limit: Optional[int] = None, rate_limit_per_user: Optional[int] = None, position: Optional[int] = None, permission_overwrites: List[Optional[Overwrite]] = None, parent_id: Optional[str] = None, nsfw: Optional[bool] = None):
         """Creates a channel.
 
@@ -2400,7 +2401,7 @@ class Guild:
             data["parent_id"] = parent_id
         if nsfw is not None:
             data["nsfw"] = nsfw
-        
+
         headers = self.client.http.headers.copy()
         if reason:
             headers["X-Audit-Log-Reason"] = reason
@@ -2441,7 +2442,7 @@ class Modal:
         self.title = title
         self.custom_id = custom_id
         self.components = [component.to_dict() for component in components]
-    
+
     def to_dict(self):
         return {
             "title": self.title,
@@ -2495,7 +2496,7 @@ class BaseInteraction:
             "data": message_data
         }
         await self.client.http.post(f"/interactions/{self.id}/{self.token}/callback", json = payload)
-    
+
     async def defer(self, *, show_loading_state: Optional[bool] = True):
         if show_loading_state:
             return await self.client.http.post(f"/interaction/{self.id}/{self.token}/callback", json = {"type": 5})
@@ -2522,7 +2523,7 @@ class BaseInteraction:
 
     def is_autocomplete(self):
         return self.type == 4
-    
+
     def is_modal_submit(self):
         return self.type == 5
 
@@ -2532,7 +2533,7 @@ class BaseInteraction:
         message_data = await self.client.http.get(f"/webhooks/{self.application_id}/{self.token}/messages/@original")
         self.original_response: Message = Message(self.client, message_data)
         return self.original_response
-    
+
     async def edit_original_response(self, *, tts: bool = False, content: Optional[str] = None, embeds: Optional[List[Embed]] = None, allowed_mentions = None, components: Optional[List[Union[Button, SelectMenu, TextInput]]] = None, attachments: Optional[List[Attachment]] = None, suppress_embeds: Optional[bool] = False, ephemeral: Optional[bool] = False) -> None:
 
         message_data = {
@@ -2559,7 +2560,7 @@ class BaseInteraction:
         new_message_data = await self.client.http.patch(f"/webhooks/{self.application_id}/{self.token}/messages/@original", json = message_data)
         self.original_response: Message = Message(self.client, new_message_data)
         return self.original_response
-    
+
     async def delete_original_response(self):
         await self.client.http.delete(f"/webhooks/{self.application_id}/{self.token}/messages/@original")
 
@@ -2632,7 +2633,7 @@ class MessageComponentInteraction(BaseInteraction):
 
     def is_button(self):
         return self.component_type == 2
-    
+
     def is_select_menu(self):
         return self.component_type == 3
 
@@ -2725,8 +2726,8 @@ class ApplicationCommandInteraction(BaseInteraction):
         self.command_type: int = self.interaction_data.get("type")
         self.resolved: ResolvedDataHandler(client, data.get("resolved", {}))
         self.options: List[dict] | None = self.interaction_data.get("options", [])
-    
-    
+
+
 class UserCommandInteraction(ApplicationCommandInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
@@ -2943,20 +2944,20 @@ class Flag:
                 self.turned_on.append(k)
 
         self.calculate_from_turned()
-    
+
     def calculate_from_turned(self):
         value = 0
         for key, flag in self.class_flags.items():
             if key in self.class_flags:
                 value |= flag
         self.value = value
-    
+
     def __getattribute__(self, __name: str) -> Any:
         original = super().__getattribute__
         if __name in original("class_flags"):
             return __name in original("turned_on")
         return original(__name)
-    
+
     def __setattr__(self, __name: str, __value: Any) -> None:
         if __name not in self.class_flags:
             return super().__setattr__(__name, __value)
@@ -2965,7 +2966,7 @@ class Flag:
         elif not __value and __name in self.turned_on:
             self.turned_on.remove(__name)
         self.calculate_from_turned()
-    
+
     @classmethod
     def all(cls):
         return cls(**{k: True for k in cls.class_flags})
@@ -2981,7 +2982,7 @@ class Intents(Flag):
     invites = 1 << 6
     voice_States = 1 << 7
     presences = 1 << 8
-    
+
     guild_messages = 1 << 9
     guild_message_reactions = 1 << 10
     guild_message_typing = 1 << 11
@@ -3007,9 +3008,9 @@ class Intents(Flag):
         # iirc you can do Intents.presences to get value of that flag
         # but you can do Intents.presences to see if its turned on if it is instance
      """
-    
+
      # TODO: Add some presets such as "Moderation", "Logging" etc.
-    
+
 class Permissions(Flag):
     create_instant_invite = 1 << 0
     kick_members = 1 << 1
@@ -3090,7 +3091,8 @@ class Paginator:
         self.pages = len(filter(lambda embed: embed != page, self.pages))
 
     def current(self) -> Embed:
-        return self.pages[self.current_index] 
+        return self.pages[self.current_index]
+
 
 class Utils:
     """
@@ -3102,6 +3104,30 @@ class Utils:
         The client that this utility class is attached to.
         
     """
+    channels_types = {
+        1: GuildTextChannel,
+        2: DMChannel,
+        3: VoiceChannel,
+        4: ChannelCategory,
+        5: GuildNewsChannel,
+        10: GuildNewsThread,
+        11: Thread,
+        12: PrivateThread,
+        13: GuildStageChannel
+    }
+
+    component_types = {
+        2: Button,
+        3: SelectMenu,
+        4: TextInput
+    }
+
+    interaction_types = {
+        2: ApplicationCommandInteraction,
+        3: MessageComponentInteraction,
+        4: AutoCompleteInteraction,
+        5: ModalSubmitInteraction
+    }
 
     def __init__(self, client):
         self.client = client
@@ -3129,57 +3155,40 @@ class Utils:
         else:
             raise InvalidArgumentType('Unsupported image type given')
 
-
     def _bytes_to_base64_data(self, data: bytes) -> str:
         fmt = 'data:{mime};base64,{data}'
         mime = self.get_mime_type_for_image(data)
         b64 = b64encode(data).decode('ascii')
         return fmt.format(mime=mime, data=b64)
 
-
     def component_from_type(self, component_data: dict):
-        component_type = component_data["type"]
-        del component_data["type"]
-        if component_type == 2:
-            return Button(**component_data)
-        elif component_type == 3:
-            return SelectMenu(**component_data)
-        elif component_type == 4:
-            return TextInput(**component_data)
+        component_type = component_data.get("type")
+        component_cls = self.component_types.get(component_type)
+
+        if not component_cls:
+            logger.warning(f"Unknown component type: {component_type}")
+            return
+
+        return component_cls(**component_data)
 
     def interaction_from_type(self, data):
         interaction_type = data["type"]
+        interaction_cls = self.interaction_types.get(interaction_type)
 
-        if interaction_type == 2:
-            return ApplicationCommandInteraction(self.client, data)
-        elif interaction_type == 3:
-            return MessageComponentInteraction(self.client, data)
-        elif interaction_type == 4:
-            return AutoCompleteInteraction(self.client, data)
-        elif interaction_type == 5:
-            return ModalSubmitInteraction(self.client, data)
+        if not interaction_cls:
+            logger.warning(f"Unknown interaction type: {interaction_type}")
+            return
 
+        return interaction_cls(self.client, **data)
 
     def channel_from_type(self, channel_data: dict):
-        channel_type = channel_data.get("type")
-        if channel_type == 0:
-            return GuildTextChannel(self.client, channel_data)
-        elif channel_type == 1:
-            return DMChannel(self.client, channel_data)
-        elif channel_type == 2:
-            return VoiceChannel(self.client, channel_data)
-        elif channel_type == 4:
-            return ChannelCategory(self.client, channel_data)
-        elif channel_type == 5:
-            return GuildNewsChannel(self.client, channel_data)
-        elif channel_type == 10:
-            return GuildNewsThread(self.client, channel_data)
-        elif channel_type == 11:
-            return Thread(self.client, channel_data)
-        elif channel_type == 12:
-            return PrivateThread(self.client, channel_data)
-        elif channel_type == 13:
-            return GuildStageChannel(self.client, channel_data)
+        channel_type = channel_data.get('type')
+        channel_cls = self.channels_types.get(channel_type)
+
+        if not channel_cls:
+            raise InvalidArgumentType(f"Unknown channel type: {channel_type}")
+
+        return channel_cls(self.client, channel_data)
 
     def compute_timedelta(self, dt: datetime.datetime):
         if dt.tzinfo is None:
@@ -3187,13 +3196,11 @@ class Utils:
         now = datetime.datetime.now(datetime.timezone.utc)
         return max((dt - now).total_seconds(), 0)
 
-
     async def sleep_until(self, when: Union[datetime.datetime, int, float], result: Optional[T] = None) -> Optional[T]:
         if when == datetime.datetime:
             delta = self.compute_timedelta(when)
 
         return await asyncio.sleep(delta if when == datetime.datetime else when, result)
-
 
     def remove_markdown(self, text: str, *, ignore_links: bool = True) -> str:
         def replacement(match):
@@ -3204,7 +3211,6 @@ class Utils:
         if ignore_links:
             regex = f'(?:{self._URL_REGEX}|{regex})'
         return re.sub(regex, replacement, text, 0, re.MULTILINE)
-
 
     def escape_markdown(self, text: str, *, as_needed: bool = False, ignore_links: bool = True) -> str:
         if not as_needed:
@@ -3223,10 +3229,8 @@ class Utils:
             text = re.sub(r'\\', r'\\\\', text)
             return self._MARKDOWN_ESCAPE_REGEX.sub(r'\\\1', text)
 
-
     def escape_mentions(self, text: str) -> str:
-        return re.sub(r'@(everyone|here|[!&]?[0-9]{17,20})', '@\u200b\\1', text)
-
+        return re.sub(r'@(everyone|here|[!&]?\d{17,20})', '@\u200b\\1', text)
 
     def utcnow(self) -> datetime.datetime:
         return datetime.datetime.now(datetime.timezone.utc)
@@ -3242,7 +3246,6 @@ class Utils:
         logger.debug(f"Cancelled {len(tasks)} tasks")
         loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
 
-
     def cleanup_loop(self, loop) -> None:
         try:
             self.cancel_tasks(loop)
@@ -3250,6 +3253,7 @@ class Utils:
             loop.run_until_complete(loop.shutdown_asyncgens())
         finally:
             loop.close()
+
 
 class Shard(WebsocketClient):
     def __init__(self, token, intents, shard_id, number_of_shards, presence: Optional[Presence] = None):
@@ -3275,7 +3279,7 @@ class Shard(WebsocketClient):
             payload["d"]["presence"] = self.presence.to_dict()
 
         await self.send_json(payload)
-    
+
     async def reconnect(self):
         await self.close()
         await self.connect()
@@ -3300,14 +3304,14 @@ class ShardClient:
         async def wrapper():
             endpoint_data = await self.http.get("/gateway/bot") # ClientResponse
             endpoint_data = await endpoint_data.json() # Dict
-            
+
             max_concurrency = endpoint_data["session_start_limit"]["max_concurrency"]
 
             shards = self.desired_shards
-            
+
             if not shards:
                 shards = endpoint_data["shards"]
-            
+
             for shard_id in range(shards):
                 self.shards.append(Shard(self.token, self.intents, shard_id, shards))
 

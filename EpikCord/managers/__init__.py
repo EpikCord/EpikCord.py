@@ -9,4 +9,4 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 from .cache_manager import *
 from .guilds_manager import *
 from .roles_manager import *
-from .channel_manager  import *
+from .channel_manager import *

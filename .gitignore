@@ -1,8 +1,16 @@
+# IDE Configuration folders
+.idea
 .vscode/
-dist/
+
+# Python environment
 __pycache__
-testing.py
-_build
+.py[cod]
+dist/
+
+# Other
 bin
+_build
+testing.py
+
 config.json
 RoboEpikLogs.log

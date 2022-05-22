@@ -3,8 +3,10 @@ from typing import (
     List,
     Optional
 )
+
 from .cache_manager import CacheManager
-from ..__init__ import GuildChannel, GuildTextChannel, GuildNewsChannel, VoiceChannel, DMChannel, ChannelCategory, GuildNewsThread, GuildStageChannel
+from ..__init__ import GuildChannel, GuildTextChannel, GuildNewsChannel, VoiceChannel, DMChannel, ChannelCategory, \
+    GuildNewsThread, GuildStageChannel
 
 AnyChannel = Union[GuildChannel, GuildTextChannel, GuildNewsChannel, VoiceChannel, DMChannel, ChannelCategory, GuildNewsThread, GuildStageChannel]
 

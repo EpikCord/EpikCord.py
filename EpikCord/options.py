@@ -1,4 +1,3 @@
-from .exceptions import InvalidOption
 from typing import Optional, Union
 
 class ChannelOptionChannelTypes:

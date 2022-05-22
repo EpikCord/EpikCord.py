@@ -1,6 +1,9 @@
-from .exceptions import InvalidArgumentType, CustomIdIsTooBig, InvalidComponentStyle, TooManySelectMenuOptions, TooManyComponents, LabelIsTooBig
-from .partials import PartialEmoji
 from typing import Union, Optional, List
+
+from .exceptions import InvalidArgumentType, CustomIdIsTooBig, InvalidComponentStyle, TooManySelectMenuOptions, \
+    TooManyComponents, LabelIsTooBig
+from .partials import PartialEmoji
+
 
 class SelectMenuOption:
     def __init__(self, label: str, value: str, description: Optional[str] = None, emoji: Optional[PartialEmoji] = None, default: Optional[bool] = None):
