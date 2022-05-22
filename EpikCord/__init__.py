@@ -560,9 +560,7 @@ class EventHandler:
         ...
         
     async def guild_delete(self, data: dict):
-
-        if callback := self.events.get("guild_delete", None):
-            await callback(self.guilds.fetch(data["id"])) # Fetch the guild from Cache.
+        return self.guilds.fetch(data["id"])
 
     async def handle_events(self):
         async for event in self.ws:
@@ -613,12 +611,15 @@ class EventHandler:
 
         await self.handle_close()
 
-    async def interaction_create(self, data):
-
-        event_func = self.events.get("interaction_create")
-
-        interaction = self.utils.interaction_from_type(data)
-
+    async def handle_interaction(self, interaction):
+        """The function which is the handler for interactions.
+        Change this if you want to, to change how your "command handler" works
+        
+        Arguments
+        ---------
+        interaction: Union[ApplicationCommandInteraction, MessageComponentInteraction, AutoCompleteInteraction, ModalSubmitInteraction]
+            A subclass of BaseInteraction which represents the Interaction
+        """
         if interaction.is_ping():
             await self.http.post(f"interactions/{interaction.id}/{interaction.token}/callback", json = {"type": 1})
 
@@ -629,11 +630,15 @@ class EventHandler:
                 if interaction.options:
                     for option in interaction.options:
                         option_values.append(option.get("value"))
-                await command_exists[0].callback(interaction, *option_values)
+                return await command_exists[0].callback(interaction, *option_values)
+
         if interaction.is_message_component(): # If it's a message component interaction
+
             if self._components.get(interaction.custom_id): # If it's registered with the bot
+
                 if interaction.is_button(): # If it's a button
-                    await self._components[interaction.custom_id](interaction, self.utils.interaction_from_type(component)) # Call the callback
+                    return await self._components[interaction.custom_id](interaction, self.utils.interaction_from_type(component)) # Call the callback
+
                 elif interaction.is_select_menu():
                     def get_select_menu():
                         for action_row in interaction.message.components:
@@ -641,28 +646,35 @@ class EventHandler:
                                 if component["custom_id"] == interaction.custom_id:
                                     component = self.utils.component_from_type(component)
                                     return component
-                    await self._components[interaction.custom_id](interaction, get_select_menu(), *interaction.values)
+                    return await self._components[interaction.custom_id](interaction, get_select_menu(), *interaction.values)
 
         if interaction.is_autocomplete():
-            for command in self.commands:
-                if command.name == interaction.command_name:
-                    ...
+            command = self.commands.get(interaction.command_name)
+            if not command:
+                return
+            ... # TODO: Implement autocomplete
 
         if interaction.is_modal_submit():
             action_rows = interaction._components
             component_object_list = []
             for action_row in action_rows:
                 for component in action_row.get("components"):
-                    component_object_list.append(component["value"]) # TODO: Fix this later, component_object_list is empty ;()
+                    component_object_list.append(component["value"]) # TODO: Fix this later, component_object_list is empty ;(
+
             await self._components.get(interaction.custom_id)(interaction, *component_object_list)
 
-        await event_func(interaction) if event_func else None
+    async def interaction_create(self, data):
+
+        interaction = self.utils.interaction_from_type(data)
+
+        await self.handle_interaction(interaction)
+
+        return interaction
 
 
     async def handle_event(self, event_name: Optional[str], data: dict):
 
         if callback := self.get_event_callback(event_name.lower(), True):
-
             return await callback(data)
 
 
@@ -678,62 +690,33 @@ class EventHandler:
         return None
 
     async def channel_create(self, data: dict):
-        channel_type: str = data.get("type")
-        event_func = None
-
-        await event_func(self.utils.channel_from_type(data)) if event_func else None
-
-        # if channel_type in (0, 5, 6):
-        #     try:
-        #         event_func = self.events["channel_create"]
-        #     except KeyError:
-        #         ...
-        #     if event_func:
-        #         await event_func(TextBasedChannel(self, channel_data))
-        
-        # elif channel_type == 2:
-        #     try:
-        #         event_func = self.events["channel_create"]
-        #     except KeyError:
-        #         pass    
-        #     await event_func(VoiceChannel(self, channel_data))
-        
-        # elif channel_type == 13:
-        #     try:
-        #         event_func = self.events["channel_create"]
-        #     except KeyError:
-        #         pass
-        #     await event_func(GuildStageChannel(self, channel_data))
-        
-        # elif channel_type in (10, 11, 12)
-    
+        return self.utils.channel_from_type(data)
 
     async def message_create(self, data: dict):
         """Event fired when messages are created"""
-        if self.events.get("message_create"):
-            message = Message(self, data)
-            message.channel = Messageable(self, data.get("channel_id"))
-            await self.events["message_create"](message)
+        message = Message(self, data)
+        return message
 
     async def guild_create(self, data):
-        if not data.get("available"): # If it's not available
-            self.guilds.add_to_cache(data.get("id"), UnavailableGuild(data))
-            return 
-            # Don't call the event for an unavailable guild, users expect this to be when they join a guild, not when they get a pre-existing guild that is unavailable.
-        else:
-            self.guilds.add_to_cache(data.get("id"), Guild(self, data))
+        guild = UnavailableGuild(data) if data.get("unavailable") is True else Guild(data) if data.get("unavailable") is False else None
 
-        channels =  data.get("channels", [])
-        for channel in channels:
-            self.channels.add_to_cache(data["id"], self.utils.channel_from_type(channel))
-
-        try:
-            event_func = self.events["guild_create"]
-        except KeyError:
+        if not guild:
             return
 
-        await event_func(Guild(self, data))
+        self.guilds.add_to_cache(guild.id, guild)
 
+        if data.get("unavailable") is None:
+            return # Bot was removed
+
+        for channel in data["channels"]:
+            self.channels.add_to_cache(data["id"], self.utils.channel_from_type(channel))
+
+        for thread in data["threads"]:
+            self.channels.add_to_cache(data["id"], self.utils.channel_from_type(thread))
+
+        return guild
+
+        # TODO: Add other attributes to cache
 
     def event(self, func):
         func_name = func.__name__.lower()
@@ -747,7 +730,8 @@ class EventHandler:
             self.events[func_name] = [func]
 
     async def guild_member_update(self, data):
-        ...
+        guild_member = GuildMember(self, data)
+        return (self.members.fetch(data["id"]), guild_member)
 
     async def ready(self, data: dict):
         self.user: ClientUser = ClientUser(self, data.get("user"))
@@ -787,11 +771,6 @@ class EventHandler:
                 await self.application.bulk_overwrite_global_application_commands(commands)
             else:
                 await self.application.bulk_overwrite_guild_application_commands(guild_id, commands)
-
-        try:
-            await self.events["ready"]()
-        except KeyError:
-            return
 
 class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
@@ -2729,7 +2708,7 @@ class ApplicationCommandSubcommandOption(ApplicationCommandOption):
 
 class ResolvedDataHandler:
     def __init__(self, client, resolved_data: dict):
-        self.data: dict = resolved_data # In case we miss anything and people can just do it themselves
+        self.data: dict = resolved_data
         ...
 
 class ApplicationCommandInteraction(BaseInteraction):
