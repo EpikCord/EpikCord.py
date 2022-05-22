@@ -1,5 +1,7 @@
 from typing import Optional
+
 from .cache_manager import CacheManager
+
 
 class MemberManager(CacheManager):
     def __init__(self, client, guild_id: str, members: Optional[list] = []): # Will cause circular import
