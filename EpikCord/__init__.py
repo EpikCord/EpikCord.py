@@ -3105,6 +3105,7 @@ class Paginator:
     def current(self) -> Embed:
         return self.pages[self.current_index] 
 
+
 class Utils:
     """
     A utility class, used to make difficult things easy.
@@ -3115,6 +3116,30 @@ class Utils:
         The client that this utility class is attached to.
         
     """
+    channels_types = {
+        1: GuildTextChannel,
+        2: DMChannel,
+        3: VoiceChannel,
+        4: ChannelCategory,
+        5: GuildNewsChannel,
+        10: GuildNewsThread,
+        11: Thread,
+        12: PrivateThread,
+        13: GuildStageChannel
+    }
+
+    component_types = {
+        2: Button,
+        3: SelectMenu,
+        4: TextInput
+    }
+
+    interaction_types = {
+        2: ApplicationCommandInteraction,
+        3: MessageComponentInteraction,
+        4: AutoCompleteInteraction,
+        5: ModalSubmitInteraction
+    }
 
     def __init__(self, client):
         self.client = client
@@ -3142,57 +3167,40 @@ class Utils:
         else:
             raise InvalidArgumentType('Unsupported image type given')
 
-
     def _bytes_to_base64_data(self, data: bytes) -> str:
         fmt = 'data:{mime};base64,{data}'
         mime = self.get_mime_type_for_image(data)
         b64 = b64encode(data).decode('ascii')
         return fmt.format(mime=mime, data=b64)
 
-
     def component_from_type(self, component_data: dict):
-        component_type = component_data["type"]
-        del component_data["type"]
-        if component_type == 2:
-            return Button(**component_data)
-        elif component_type == 3:
-            return SelectMenu(**component_data)
-        elif component_type == 4:
-            return TextInput(**component_data)
+        component_type = component_data.get("type")
+        component_cls = self.component_types.get(component_type)
+
+        if not component_cls:
+            logger.warning(f"Unknown component type: {component_type}")
+            return
+
+        return component_cls(**component_data)
 
     def interaction_from_type(self, data):
         interaction_type = data["type"]
+        interaction_cls = self.interaction_types.get(interaction_type)
 
-        if interaction_type == 2:
-            return ApplicationCommandInteraction(self.client, data)
-        elif interaction_type == 3:
-            return MessageComponentInteraction(self.client, data)
-        elif interaction_type == 4:
-            return AutoCompleteInteraction(self.client, data)
-        elif interaction_type == 5:
-            return ModalSubmitInteraction(self.client, data)
+        if not interaction_cls:
+            logger.warning(f"Unknown interaction type: {interaction_type}")
+            return
 
+        return interaction_cls(self.client, **data)
 
     def channel_from_type(self, channel_data: dict):
-        channel_type = channel_data.get("type")
-        if channel_type == 0:
-            return GuildTextChannel(self.client, channel_data)
-        elif channel_type == 1:
-            return DMChannel(self.client, channel_data)
-        elif channel_type == 2:
-            return VoiceChannel(self.client, channel_data)
-        elif channel_type == 4:
-            return ChannelCategory(self.client, channel_data)
-        elif channel_type == 5:
-            return GuildNewsChannel(self.client, channel_data)
-        elif channel_type == 10:
-            return GuildNewsThread(self.client, channel_data)
-        elif channel_type == 11:
-            return Thread(self.client, channel_data)
-        elif channel_type == 12:
-            return PrivateThread(self.client, channel_data)
-        elif channel_type == 13:
-            return GuildStageChannel(self.client, channel_data)
+        channel_type = channel_data.get('type')
+        channel_cls = self.channels_types.get(channel_type)
+
+        if not channel_cls:
+            raise InvalidArgumentType(f"Unknown channel type: {channel_type}")
+
+        return channel_cls(self.client, channel_data)
 
     def compute_timedelta(self, dt: datetime.datetime):
         if dt.tzinfo is None:
@@ -3200,13 +3208,11 @@ class Utils:
         now = datetime.datetime.now(datetime.timezone.utc)
         return max((dt - now).total_seconds(), 0)
 
-
     async def sleep_until(self, when: Union[datetime.datetime, int, float], result: Optional[T] = None) -> Optional[T]:
         if when == datetime.datetime:
             delta = self.compute_timedelta(when)
 
         return await asyncio.sleep(delta if when == datetime.datetime else when, result)
-
 
     def remove_markdown(self, text: str, *, ignore_links: bool = True) -> str:
         def replacement(match):
@@ -3217,7 +3223,6 @@ class Utils:
         if ignore_links:
             regex = f'(?:{self._URL_REGEX}|{regex})'
         return re.sub(regex, replacement, text, 0, re.MULTILINE)
-
 
     def escape_markdown(self, text: str, *, as_needed: bool = False, ignore_links: bool = True) -> str:
         if not as_needed:
@@ -3236,10 +3241,8 @@ class Utils:
             text = re.sub(r'\\', r'\\\\', text)
             return self._MARKDOWN_ESCAPE_REGEX.sub(r'\\\1', text)
 
-
     def escape_mentions(self, text: str) -> str:
         return re.sub(r'@(everyone|here|[!&]?[0-9]{17,20})', '@\u200b\\1', text)
-
 
     def utcnow(self) -> datetime.datetime:
         return datetime.datetime.now(datetime.timezone.utc)
@@ -3255,7 +3258,6 @@ class Utils:
         logger.debug(f"Cancelled {len(tasks)} tasks")
         loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
 
-
     def cleanup_loop(self, loop) -> None:
         try:
             self.cancel_tasks(loop)
@@ -3263,6 +3265,7 @@ class Utils:
             loop.run_until_complete(loop.shutdown_asyncgens())
         finally:
             loop.close()
+
 
 class Shard(WebsocketClient):
     def __init__(self, token, intents, shard_id, number_of_shards, presence: Optional[Presence] = None):
