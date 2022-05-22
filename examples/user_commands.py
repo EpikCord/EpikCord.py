@@ -14,4 +14,5 @@ async def ready():
 async def mention(interaction):
     await interaction.reply(content="Lol I'm not pinging them.")
 
+
 client.login()

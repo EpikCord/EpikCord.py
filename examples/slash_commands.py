@@ -54,11 +54,12 @@ async def ping(interaction):
     ]
 )
 async def say(interaction, content, delete_after):
-    await interaction.reply(content = f"{content}")
+    await interaction.reply(content=f"{content}")
     await asyncio.sleep(int(delete_after))
     await interaction.delete_original_response()
 
-# extra 
+
+# extra
 # @client.event
 # async def interaction_create(interaction):
 #     if interaction.is_message_component():

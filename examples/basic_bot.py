@@ -9,4 +9,5 @@ client: Client = Client("token", intents)
 async def ready():
     print("Ready!")
 
+
 client.login()

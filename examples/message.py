@@ -4,7 +4,6 @@ If you have a test bot and are professional with your code, you can experiment
 with different features and report the bugs in an issue
 """
 
-
 from EpikCord import Client, Intents, Messageable, Embed
 
 intents = Intents().all()
@@ -20,5 +19,6 @@ async def message_create(message):
         message.channel = Messageable(client, message.channel_id)
 
         await message.channel.send(content="hello, chat testing")
+
 
 client.login()
