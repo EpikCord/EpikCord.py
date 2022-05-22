@@ -681,23 +681,29 @@ class EventHandler:
 
     async def handle_event(self, event_name: Optional[str], *data: dict, internal):
 
-        if callback := self.get_event_callback(event_name.lower(), internal):
-            return await callback(*data)
-
+        if callbacks := self.get_event_callback(event_name.lower(), internal):
+            for callback in callbacks:
+                await callback(*data)
 
     def get_event_callback(self, event_name: str, internal = False):
 
         if internal:
-            event_callback = getattr(self, event_name) if hasattr(self, event_name) else None
+            event_callback = getattr(self, event_name) if hasattr(self, event_name) else []
         else:
-            event_callback = self.events.get(event_name, None)
+            event_callback = self.events.get(event_name, [])
 
         if event_callback:
             return event_callback
+
         return None
 
     async def channel_create(self, data: dict):
-        return self.utils.channel_from_type(data)
+        
+        channel = self.utils.channel_from_type(data)
+
+        self.channels.add_to_cache(channel.id, channel)
+
+        return channel
 
     async def message_create(self, data: dict):
         """Event fired when messages are created"""
