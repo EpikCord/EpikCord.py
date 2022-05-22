@@ -9,7 +9,10 @@ from ..__init__ import Guild, UnavailableGuild
 
 
 class GuildManager(CacheManager):
-    def __init__(self, client, guilds: Optional[List[Union[Guild, UnavailableGuild]]] = []):
+    def __init__(self, client, guilds: Optional[List[Union[Guild, UnavailableGuild]]] = None):
+        if guilds is None:
+            guilds = []
+
         super().__init__("guilds_cache")
         self.client = client
         self.available_guilds = [guild for guild in guilds if not isinstance(guild, UnavailableGuild)]
