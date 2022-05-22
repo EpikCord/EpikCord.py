@@ -5,11 +5,12 @@ with different features and report the bugs in an issue
 """
 
 
-from EpikCord import Client,Intents,Messageable, Embed
+from EpikCord import Client, Intents, Messageable, Embed
 
-intents = Intents().guilds.guild_members.guild_messages.direct_messages
+intents = Intents().all()
 
 client = Client("your_token", intents)
+
 
 @client.event
 async def message_create(message):

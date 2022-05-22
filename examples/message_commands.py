@@ -1,9 +1,10 @@
 from EpikCord import Client, Intents
 
-intents = Intents().guilds.guild_members.guild_messages.direct_messages.message_content
+intents = Intents().all()
 
 client: Client = Client("token", intents)
-  
+
+
 @client.event
 async def ready():
     print("Ready!")

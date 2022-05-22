@@ -1,20 +1,25 @@
 import asyncio
 import datetime
 import time
+
+import humanize
+
 from EpikCord import Client, Intents, StringOption, NumberOption
 
-intents = Intents().guilds.guild_members.guild_messages.direct_messages.message_content
+intents = Intents().all()
 
 client: Client = Client("token", intents)
-  
+
+
 @client.event
 async def ready():
     print("Ready!")
 
+
 @client.command(
-    name = "ping",
-    description = "A test command",
-    guild_ids = [
+    name="ping",
+    description="A test command",
+    guild_ids=[
         "id"
     ]
 )
@@ -23,40 +28,40 @@ async def ping(interaction):
     await interaction.reply(content="Pong!")
     end = time.perf_counter()
 
-    asyncio.sleep(0.5)
+    await asyncio.sleep(0.5)
 
     trip = end - start
     rt_ping = f'{(trip * 1000):.2f}ms ({humanize.precisedelta(datetime.timedelta(seconds=trip))})'
 
-    await interaction.edit_original_response(content = f"Pong! {rt_ping}")
-    
+    await interaction.edit_original_response(content=f"Pong! {rt_ping}")
+
+
 @client.command(
-    name = "say",
-    description = "Say what you say",
-    guild_ids = [
+    name="say",
+    description="Say what you say",
+    guild_ids=[
         "id"
     ],
-    options = [
+    options=[
         StringOption(
-            name = "content",
-            description = "The message content"
+            name="content",
+            description="The message content"
         ),
         NumberOption(
-            name = "delete_after",
-            description = "Delete after"
+            name="delete_after",
+            description="Delete after"
         )
     ]
 )
 async def say(interaction, content, delete_after):
     await interaction.reply(content = f"{content}")
-    asyncio.sleep(int(delete_after))
+    await asyncio.sleep(int(delete_after))
     await interaction.delete_original_response()
 
-    
 # extra 
-#@client.event
-#async def interaction_create(interaction):
-#    if interaction.is_message_component():
-#        await interaction.reply(content = "You clicked me. Why.")
-    
+# @client.event
+# async def interaction_create(interaction):
+#     if interaction.is_message_component():
+#         await interaction.reply(content = "You clicked me. Why.")
+
 client.login()
