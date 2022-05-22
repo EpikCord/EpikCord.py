@@ -585,9 +585,15 @@ class EventHandler:
                 logger.info(f"Received event {event['t']}")
 
                 try:
-                    await self.handle_event(event["t"], event["d"])
+                    results_from_event = await self.handle_event(event["t"], event["d"], internal = True)
                 except Exception as e:
                     logger.exception(f"Error handling event {event['t']}: {e}")
+
+                try:
+                    await self.handle_event(event["t"], *results_from_event, internal = False)
+                except Exception as e:
+                    logger.exception(f"Error handling event {event['t']}: {e}")
+
 
             elif event["op"] == self.HEARTBEAT:
                 # I shouldn't wait the remaining delay according to the docs.
@@ -672,10 +678,10 @@ class EventHandler:
         return interaction
 
 
-    async def handle_event(self, event_name: Optional[str], data: dict):
+    async def handle_event(self, event_name: Optional[str], *data: dict, internal):
 
-        if callback := self.get_event_callback(event_name.lower(), True):
-            return await callback(data)
+        if callback := self.get_event_callback(event_name.lower(), internal):
+            return await callback(*data)
 
 
     def get_event_callback(self, event_name: str, internal = False):
