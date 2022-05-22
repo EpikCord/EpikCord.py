@@ -5,7 +5,7 @@ NOTE: version string only in setup.cfg
 
 from sys import platform
 from .exceptions import *
-import async_timeout
+
 from .managers import *
 from .options import *
 from .components import *
@@ -455,13 +455,14 @@ class File:
 
             self.spoiler = spoiler or (self.filename is not None and self.filename.startswith('SPOILER_'))
 
-        def reset(self, *, seek: Union[int, bool] = True) -> None:
-            if seek:
-                self.fp.seek(self._original_pos)
+    def reset(self, *, seek: Union[int, bool] = True) -> None:
+        if seek:
+            self.fp.seek(self._original_pos)
 
-        def close(self) -> None:
-            self.fp.close = self._closer
-            self._closer()
+    def close(self) -> None:
+        self.fp.close = self._closer
+        self._closer()
+
 
 class Messageable:
     def __init__(self, client, channel_id: str):
