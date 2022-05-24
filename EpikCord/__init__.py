@@ -632,11 +632,13 @@ class EventHandler:
 
         elif interaction.is_application_command():
             command_exists = list(filter(lambda item: item.name == interaction.command_name, self.commands))
+
             option_values = []
             if bool(command_exists): # bool(Filter) returns True every time.
                 if interaction.options:
                     for option in interaction.options:
                         option_values.append(option.get("value"))
+
                 return await command_exists[0].callback(interaction, *option_values)
 
         if interaction.is_message_component(): # If it's a message component interaction
@@ -1002,7 +1004,18 @@ class WebsocketClient(EventHandler):
             future.remove_done_callback(stop_loop_on_completion)
             self.utils.cleanup_loop(loop)
 
-class ClientUserCommand:
+class BaseCommand:
+
+    def is_slash_command(self):
+        return self.type == 1
+
+    def is_user_command(self):
+        return self.type == 2
+
+    def is_message_command(self):
+        return self.type == 3
+
+class ClientUserCommand(BaseCommand):
     """
     A class to represent a User Command that the Client owns.
 
