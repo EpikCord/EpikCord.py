@@ -19,6 +19,7 @@ class PartialEmoji:
 
         return payload
 
+
 class PartialUser:
     def __init__(self, data: dict):
         self.data: dict = data

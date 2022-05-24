@@ -16,13 +16,7 @@ async def ready():
     print("Ready!")
 
 
-@client.command(
-    name="ping",
-    description="A test command",
-    guild_ids=[
-        "id"
-    ]
-)
+@client.command(name="ping", description="A test command", guild_ids=["id"])
 async def ping(interaction):
     start = time.perf_counter()
     await interaction.reply(content="Pong!")
@@ -31,7 +25,7 @@ async def ping(interaction):
     await asyncio.sleep(0.5)
 
     trip = end - start
-    rt_ping = f'{(trip * 1000):.2f}ms ({humanize.precisedelta(datetime.timedelta(seconds=trip))})'
+    rt_ping = f"{(trip * 1000):.2f}ms ({humanize.precisedelta(datetime.timedelta(seconds=trip))})"
 
     await interaction.edit_original_response(content=f"Pong! {rt_ping}")
 
@@ -39,19 +33,11 @@ async def ping(interaction):
 @client.command(
     name="say",
     description="Say what you say",
-    guild_ids=[
-        "id"
-    ],
+    guild_ids=["id"],
     options=[
-        StringOption(
-            name="content",
-            description="The message content"
-        ),
-        NumberOption(
-            name="delete_after",
-            description="Delete after"
-        )
-    ]
+        StringOption(name="content", description="The message content"),
+        NumberOption(name="delete_after", description="Delete after"),
+    ],
 )
 async def say(interaction, content, delete_after):
     await interaction.reply(content=f"{content}")

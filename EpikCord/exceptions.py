@@ -1,26 +1,34 @@
 class EpikCordException(Exception):
     ...
 
+
 class InvalidApplicationCommandType(EpikCordException):
     ...
+
 
 class InvalidApplicationCommandOptionType(EpikCordException):
     ...
 
+
 class InvalidOption(EpikCordException):
     ...
+
 
 class InvalidStatus(EpikCordException):
     ...
 
+
 class ClosedWebSocketConnection(EpikCordException):
     ...
+
 
 class MissingClientSetting(EpikCordException):
     ...
 
+
 class MissingCustomId(EpikCordException):
     ...
+
 
 class DiscordAPIError(EpikCordException):
     ...
@@ -108,6 +116,7 @@ class LabelIsTooBig(EpikCordException):
 
 class ThreadArchived(EpikCordException):
     ...
+
 
 class FailedToConnectToVoice(EpikCordException):
     ...

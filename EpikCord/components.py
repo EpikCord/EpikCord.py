@@ -1,12 +1,25 @@
 from typing import Union, Optional, List
 
-from .exceptions import InvalidArgumentType, CustomIdIsTooBig, InvalidComponentStyle, TooManySelectMenuOptions, \
-    TooManyComponents, LabelIsTooBig
+from .exceptions import (
+    InvalidArgumentType,
+    CustomIdIsTooBig,
+    InvalidComponentStyle,
+    TooManySelectMenuOptions,
+    TooManyComponents,
+    LabelIsTooBig,
+)
 from .partials import PartialEmoji
 
 
 class SelectMenuOption:
-    def __init__(self, label: str, value: str, description: Optional[str] = None, emoji: Optional[PartialEmoji] = None, default: Optional[bool] = None):
+    def __init__(
+        self,
+        label: str,
+        value: str,
+        description: Optional[str] = None,
+        emoji: Optional[PartialEmoji] = None,
+        default: Optional[bool] = None,
+    ):
         self.label: str = label
         self.value: str = value
         self.description: Optional[str] = description
@@ -14,10 +27,7 @@ class SelectMenuOption:
         self.default: Optional[bool] = default
 
     def to_dict(self):
-        settings = {
-            "label": self.label,
-            "value": self.value
-        }
+        settings = {"label": self.label, "value": self.value}
 
         if self.description:
             settings["description"] = self.description
@@ -34,6 +44,7 @@ class SelectMenuOption:
 
         return settings
 
+
 class BaseComponent:
     def __init__(self, *, custom_id: str):
         self.custom_id: str = custom_id
@@ -48,8 +59,16 @@ class BaseComponent:
 
         self.custom_id = custom_id
 
+
 class SelectMenu(BaseComponent):
-    def __init__(self, *, min_values: Optional[int] = 1, max_values: Optional[int] = 1, disabled: Optional[bool] = False, custom_id: str):
+    def __init__(
+        self,
+        *,
+        min_values: Optional[int] = 1,
+        max_values: Optional[int] = 1,
+        disabled: Optional[bool] = False,
+        custom_id: str
+    ):
         super().__init__(custom_id=custom_id)
         self.options: List[Union[SelectMenuOption, dict]] = []
         self.type: str = 3
@@ -64,7 +83,7 @@ class SelectMenu(BaseComponent):
             "min_values": self.min_values,
             "max_values": self.max_values,
             "disabled": self.disabled,
-            "custom_id": self.custom_id
+            "custom_id": self.custom_id,
         }
 
     def add_options(self, options: List[SelectMenuOption]):
@@ -72,7 +91,8 @@ class SelectMenu(BaseComponent):
 
             if len(self.options) > 25:
                 raise TooManySelectMenuOptions(
-                    "You can only have 25 options in a select menu.")
+                    "You can only have 25 options in a select menu."
+                )
 
             self.options.append(option.to_dict())
         return self
@@ -103,17 +123,26 @@ class SelectMenu(BaseComponent):
 
 
 class TextInput(BaseComponent):
-    def __init__(self, *, custom_id: str, style: Union[int, str] = 1, label: str, min_length: Optional[int] = 1, max_length: Optional[int] = 4000, required: Optional[bool] = True, value: Optional[str] = None, placeholder: Optional[str] = None):
+    def __init__(
+        self,
+        *,
+        custom_id: str,
+        style: Union[int, str] = 1,
+        label: str,
+        min_length: Optional[int] = 1,
+        max_length: Optional[int] = 4000,
+        required: Optional[bool] = True,
+        value: Optional[str] = None,
+        placeholder: Optional[str] = None
+    ):
         super().__init__(custom_id=custom_id)
-        VALID_STYLES = {
-            "Short": 1,
-            "Paragraph": 2
-        }
+        VALID_STYLES = {"Short": 1, "Paragraph": 2}
 
         if isinstance(style, str):
             if style not in VALID_STYLES:
                 raise InvalidComponentStyle(
-                    "Style must be either 'Short' or 'Paragraph'.")
+                    "Style must be either 'Short' or 'Paragraph'."
+                )
             style = VALID_STYLES[style]
 
         elif isinstance(style, int):
@@ -135,12 +164,12 @@ class TextInput(BaseComponent):
             "custom_id": self.custom_id,
             "style": self.style,
             "label": self.label,
-            "required": self.required
+            "required": self.required,
         }
 
         if self.min_length:
             payload["min_length"] = self.min_length
-        
+
         if self.max_length:
             payload["max_length"] = self.max_length
 
@@ -154,7 +183,16 @@ class TextInput(BaseComponent):
 
 
 class Button(BaseComponent):
-    def __init__(self, *, style: Optional[Union[int, str]] = 1, label: Optional[str] = None, emoji: Optional[Union[PartialEmoji, dict]] = None, url: Optional[str] = None, custom_id: str, disabled: bool = False):
+    def __init__(
+        self,
+        *,
+        style: Optional[Union[int, str]] = 1,
+        label: Optional[str] = None,
+        emoji: Optional[Union[PartialEmoji, dict]] = None,
+        url: Optional[str] = None,
+        custom_id: str,
+        disabled: bool = False
+    ):
         super().__init__(custom_id=custom_id)
         self.type: int = 2
         self.disabled = disabled
@@ -163,19 +201,21 @@ class Button(BaseComponent):
             "SECONDARY": 2,
             "SUCCESS": 3,
             "DANGER": 4,
-            "LINK": 5
+            "LINK": 5,
         }
 
         if isinstance(style, str):
             if style.upper() not in valid_styles:
                 raise InvalidComponentStyle(
-                    "Invalid button style. Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS.")
+                    "Invalid button style. Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS."
+                )
             self.style: int = valid_styles[style.upper()]
 
         elif isinstance(style, int):
             if style not in valid_styles.values():
                 raise InvalidComponentStyle(
-                    "Invalid button style. Style must be in range 1 to 5 inclusive.")
+                    "Invalid button style. Style must be in range 1 to 5 inclusive."
+                )
             self.style: int = style
 
         if url:
@@ -190,26 +230,30 @@ class Button(BaseComponent):
     def PRIMARY(self):
         self.style = 1
         return self
-    
+
     @property
     def SECONDARY(self):
         self.style = 2
         return self
-    
+
     @property
     def SUCCESS(self):
         self.style = 3
         return self
+
     GREEN = SUCCESS
+
     @property
     def DANGER(self):
         self.style = 4
         return self
+
     RED = DANGER
+
     @property
     def LINK(self):
         self.style = 5
-        return self 
+        return self
 
     def to_dict(self):
         settings = {
@@ -247,19 +291,21 @@ class Button(BaseComponent):
             "SECONDARY": 2,
             "SUCCESS": 3,
             "DANGER": 4,
-            "LINK": 5
+            "LINK": 5,
         }
         if isinstance(style, str):
             if style.upper() not in valid_styles:
                 raise InvalidComponentStyle(
-                    "Invalid button style. Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS.")
+                    "Invalid button style. Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS."
+                )
             self.settings["style"] = valid_styles[style.upper()]
             return self
 
         elif isinstance(style, int):
             if style not in valid_styles.values():
                 raise InvalidComponentStyle(
-                    "Invalid button style. Style must be in range 1 to 5 inclusive.")
+                    "Invalid button style. Style must be in range 1 to 5 inclusive."
+                )
             self.settings["style"] = style
             return self
 
@@ -273,7 +319,8 @@ class Button(BaseComponent):
             self.settings["emoji"] = emoji.data
             return self
         raise InvalidArgumentType(
-            "Emoji must be a PartialEmoji or a dict that represents a PartialEmoji.")
+            "Emoji must be a PartialEmoji or a dict that represents a PartialEmoji."
+        )
 
     def set_url(self, url: str):
 
@@ -283,6 +330,7 @@ class Button(BaseComponent):
         self.settings["url"] = url
         self.settings["style"] = 5
         return self
+
 
 def component_from_type(component_data: dict):
     component_type = component_data["type"]
@@ -294,23 +342,28 @@ def component_from_type(component_data: dict):
     elif component_type == 4:
         return TextInput(**component_data)
 
+
 class ActionRow:
-    def __init__(self, components: Optional[List[Union[Button, SelectMenu, TextInput]]] = None):
+    def __init__(
+        self, components: Optional[List[Union[Button, SelectMenu, TextInput]]] = None
+    ):
         self.type: int = 1
         self.components: List[Union[TextInput, Button, SelectMenu]] = components or []
 
     def to_dict(self):
-        return {"type": self.type, "components": [component.to_dict() for component in self.components]}
+        return {
+            "type": self.type,
+            "components": [component.to_dict() for component in self.components],
+        }
 
     @classmethod
     def from_dict(cls, data):
         # Data right now is an ActionRow.
         components = []
-        for component in data.get("components"): # List[Dict]
+        for component in data.get("components"):  # List[Dict]
             component = component_from_type(component)
             components.append(component)
         return cls(components)
-
 
     def check_still_valid(self, list_of_components):
         buttons = 0
@@ -329,7 +382,9 @@ class ActionRow:
                 text_inputs += 1
 
             if buttons >= 5 and text_inputs < 1 and select_menus < 1:
-                raise TooManyComponents("You can only have 1 SelectMenu/TextInput per ActionRow or 5 Buttons per ActionRow.")
+                raise TooManyComponents(
+                    "You can only have 1 SelectMenu/TextInput per ActionRow or 5 Buttons per ActionRow."
+                )
 
             yield component
 
@@ -339,6 +394,6 @@ class ActionRow:
 
     def add_component(self, component: Union[Button, SelectMenu, TextInput]):
         for component in self.check_still_valid(self.components):
-            ... # Just let the validator run
+            ...  # Just let the validator run
 
         self.components.append(component.to_dict())
