@@ -809,16 +809,17 @@ class EventHandler:
 
             command = command_exists[0]
 
-            if command.is_user() or command.is_message():
-                interaction.target_id
 
-            option_values = []
+            if command.is_user():
+                ...
+
+            options = []
             if bool(command_exists):  # bool(Filter) returns True every time.
                 if interaction.options:
                     for option in interaction.options:
-                        option_values.append(option.get("value"))
+                        options.append(option.get("value"))
 
-                return await command_exists[0].callback(interaction, *option_values)
+                return await command_exists[0].callback(interaction, *options)
 
         if (
             interaction.is_message_component()
