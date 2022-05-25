@@ -3,6 +3,7 @@ NOTE: version string only in setup.cfg
 """
 
 
+from inspect import iscoroutine
 from sys import platform
 from .exceptions import *
 
@@ -798,16 +799,10 @@ class EventHandler:
             )
 
         elif interaction.is_application_command():
-            command_exists = list(
-                filter(
-                    lambda item: item.name == interaction.command_name, self.commands
-                )
-            )
+            command = self.commands.get(interaction.command_name)
 
-            if not command_exists:
-                return
-
-            command = command_exists[0]
+            if not command:
+                return # TODO Possibly add an error which people can handle?
 
             options = []
 
@@ -815,6 +810,12 @@ class EventHandler:
                 options.append(interaction.target_id)
 
             if interaction.is_slash_command():
+                for check in command.checks:
+                    if iscoroutine(check):
+                        await check.callback(interaction)
+                    else:
+                        check.callback(interaction)
+
                 for option in interaction.options:
                     options.append(option.get("value"))
 
@@ -1232,6 +1233,9 @@ class WebsocketClient(EventHandler):
 
 
 class BaseCommand:
+    def __init__(self):
+        self.checks: List[Check] = []
+
     def is_slash_command(self):
         return self.type == 1
 
@@ -1261,6 +1265,7 @@ class ClientUserCommand(BaseCommand):
     def __init__(
         self, *, name: str, callback: callable
     ):  # TODO: Check if you can make GuildUserCommands etc
+        super().__init__()
         self.name: str = name
         self.callback: callable = callback
 
@@ -1279,6 +1284,7 @@ class ClientSlashCommand:
         guild_ids: Optional[List[str]],
         options: Optional[List[AnyOption]],
     ):
+        super().__init__()
         self.name: str = name
         self.description: str = description
         self.callback: callable = callback
@@ -1295,7 +1301,6 @@ class ClientSlashCommand:
             self.autocomplete_options[option_name] = func
 
         return wrapper
-
 
 class ClientMessageCommand(ClientUserCommand):
     @property
@@ -4208,3 +4213,19 @@ class VoiceWebsocketClient:
                 },
             }
         )
+
+
+class Check:
+    def __init__(self, callback):
+        self.callback = callback
+
+    async def success(self, interaction):
+        logger.info(f"{interaction.author.username} ({interaction.author.id}) passed the check {self.command_callback.__name__}.")
+
+    async def failure(self, interaction):
+        logger.critical(f"{interaction.author.username} ({interaction.author.id}) failed the check {self.command_callback.__name__}.")
+        raise FailedCheck(f"{interaction.author.username} ({interaction.author.id}) failed the check {self.command_callback.__name__}.")
+
+class CommandUtils:
+    def check(self, callback):
+        return Check(callback)
