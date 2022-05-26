@@ -121,5 +121,6 @@ class ThreadArchived(EpikCordException):
 class FailedToConnectToVoice(EpikCordException):
     ...
 
+
 class FailedCheck(EpikCordException):
     ...

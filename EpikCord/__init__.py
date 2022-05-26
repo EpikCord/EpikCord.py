@@ -2,6 +2,194 @@
 NOTE: version string only in setup.cfg
 """
 
+__all__ = (
+    "ActionRow",
+    "Activity",
+    "AllowedMention",
+    "AnyChannel",
+    "AnyOption",
+    "Application",
+    "ApplicationCommand",
+    "ApplicationCommandInteraction",
+    "ApplicationCommandOption",
+    "ApplicationCommandPermission",
+    "ApplicationCommandSubcommandOption",
+    "Attachment",
+    "AttachmentOption",
+    "AutoCompleteInteraction",
+    "BadRequest400",
+    "BaseChannel",
+    "BaseCommand",
+    "BaseComponent",
+    "BaseInteraction",
+    "BaseSlashCommandOption",
+    "BooleanOption",
+    "Button",
+    "CacheManager",
+    "ChannelCategory",
+    "ChannelManager",
+    "ChannelOption",
+    "ChannelOptionChannelTypes",
+    "Check",
+    "Client",
+    "ClientApplication",
+    "ClientMessageCommand",
+    "ClientSlashCommand",
+    "ClientUser",
+    "ClientUserCommand",
+    "ClosedWebSocketConnection",
+    "Color",
+    "Colour",
+    "CommandUtils",
+    "CommandsSection",
+    "CustomIdIsTooBig",
+    "DMChannel",
+    "DisallowedIntents",
+    "DiscordAPIError",
+    "Embed",
+    "Emoji",
+    "EpikCordException",
+    "EventHandler",
+    "EventsSection",
+    "FailedCheck",
+    "FailedToConnectToVoice",
+    "File",
+    "Flag",
+    "Forbidden403",
+    "GateawayUnavailable502",
+    "Guild",
+    "GuildApplicationCommandPermission",
+    "GuildBan",
+    "GuildChannel",
+    "GuildManager",
+    "GuildMember",
+    "GuildNewsChannel",
+    "GuildNewsThread",
+    "GuildPreview",
+    "GuildScheduledEvent",
+    "GuildStageChannel",
+    "GuildTextChannel",
+    "GuildWidget",
+    "GuildWidgetSettings",
+    "HTTPClient",
+    "IntegerOption",
+    "Integration",
+    "IntegrationAccount",
+    "Intents",
+    "InternalServerError5xx",
+    "InvalidApplicationCommandOptionType",
+    "InvalidApplicationCommandType",
+    "InvalidArgumentType",
+    "InvalidComponentStyle",
+    "InvalidData",
+    "InvalidIntents",
+    "InvalidOption",
+    "InvalidStatus",
+    "InvalidToken",
+    "Invite",
+    "LabelIsTooBig",
+    "List",
+    "MentionableOption",
+    "MentionedChannel",
+    "MentionedUser",
+    "Message",
+    "MessageActivity",
+    "MessageCommandInteraction",
+    "MessageComponentInteraction",
+    "MessageInteraction",
+    "Messageable",
+    "MethodNotAllowed405",
+    "MissingClientSetting",
+    "MissingCustomId",
+    "Modal",
+    "ModalSubmitInteraction",
+    "NotFound404",
+    "NumberOption",
+    "Overwrite",
+    "Paginator",
+    "PartialEmoji",
+    "PartialGuild",
+    "PartialUser",
+    "Permissions",
+    "Presence",
+    "PrivateThread",
+    "RatelimitHandler",
+    "Ratelimited429",
+    "Reaction",
+    "ResolvedDataHandler",
+    "Role",
+    "RoleOption",
+    "RoleTag",
+    "SelectMenu",
+    "SelectMenuOption",
+    "Shard",
+    "ShardClient",
+    "ShardingRequired",
+    "SlashCommand",
+    "SlashCommandOptionChoice",
+    "SourceChannel",
+    "Status",
+    "Sticker",
+    "StickerItem",
+    "StringOption",
+    "SubCommandGroup",
+    "Subcommand",
+    "SystemChannelFlags",
+    "Team",
+    "TeamMember",
+    "TextInput",
+    "Thread",
+    "ThreadArchived",
+    "ThreadMember",
+    "TooManyComponents",
+    "TooManySelectMenuOptions",
+    "Unauthorized401",
+    "UnavailableGuild",
+    "UnhandledEpikCordException",
+    "User",
+    "UserCommandInteraction",
+    "UserOption",
+    "Utils",
+    "VoiceChannel",
+    "VoiceState",
+    "VoiceWebsocketClient",
+    "Webhook",
+    "WebhookUser",
+    "WebsocketClient",
+    "WelcomeScreen",
+    "WelcomeScreenChannel",
+    "__builtins__",
+    "__cached__",
+    "__doc__",
+    "__file__",
+    "__init__",
+    "__loader__",
+    "__main__",
+    "__name__",
+    "__package__",
+    "__path__",
+    "__spec__",
+    "__version__",
+    "__warningregistry__",
+    "b64encode",
+    "cache_manager",
+    "channel_manager",
+    "command",
+    "components",
+    "datetime",
+    "exceptions",
+    "guilds_manager",
+    "logger",
+    "managers",
+    "message_command",
+    "nacl",
+    "options",
+    "partials",
+    "platform",
+    "roles_manager",
+    "user_command",
+)
+
 
 from inspect import iscoroutine
 from sys import platform
@@ -31,7 +219,7 @@ from typing import (
     Type,
     TYPE_CHECKING,
 )
-from urllib.parse import quote
+from urllib.parse import quote as _quote
 import io
 import os
 
@@ -451,14 +639,14 @@ class Message:
         ] or None
 
     async def add_reaction(self, emoji: str):
-        emoji = quote(emoji)
+        emoji = _quote(emoji)
         response = await self.client.http.put(
             f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/@me"
         )
         return await response.json()
 
     async def remove_reaction(self, emoji: str, user=None):
-        emoji = quote(emoji)
+        emoji = _quote(emoji)
         response = (
             await self.client.http.delete(
                 f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/{user.id}"
@@ -484,7 +672,7 @@ class Message:
         return await response.json()
 
     async def delete_reaction_for_emoji(self, emoji: str):
-        emoji = quote(emoji)
+        emoji = _quote(emoji)
         response = await self.client.http.delete(
             f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}"
         )
@@ -746,6 +934,8 @@ class EventHandler:
                 self.sequence = event["s"]
                 logger.info(f"Received event {event['t']}")
 
+                results_from_event = event["d"]
+
                 try:
                     results_from_event = await self.handle_event(
                         event["t"], event["d"], internal=True
@@ -753,12 +943,22 @@ class EventHandler:
                 except Exception as e:
                     logger.exception(f"Error handling event {event['t']}: {e}")
 
-                try:
-                    await self.handle_event(
-                        event["t"], *results_from_event, internal=False
-                    )
-                except Exception as e:
-                    logger.exception(f"Error handling event {event['t']}: {e}")
+                if results_from_event is not None:
+                    try:
+                        if results_from_event != event["d"]:
+
+                            await self.handle_event(
+                                event["t"], *results_from_event, internal=False
+                            )
+                        else:
+
+                            logger.warning(f"{event['t']} received unparsed data.")
+
+                            await self.handle_event(
+                                event["t"], results_from_event, internal=False
+                            )
+                    except Exception as e:
+                        logger.exception(f"Error handling event {event['t']}: {e}")
 
             elif event["op"] == self.HEARTBEAT:
                 # I shouldn't wait the remaining delay according to the docs.
@@ -802,7 +1002,7 @@ class EventHandler:
             command = self.commands.get(interaction.command_name)
 
             if not command:
-                return # TODO Possibly add an error which people can handle?
+                return  # TODO Possibly add an error which people can handle?
 
             options = []
 
@@ -880,7 +1080,8 @@ class EventHandler:
 
         if callbacks := self.get_event_callback(event_name.lower(), internal):
             for callback in callbacks:
-                await callback(*data)
+                if not internal:
+                    await callback(*data)
 
     def get_event_callback(self, event_name: str, internal=False):
 
@@ -892,7 +1093,6 @@ class EventHandler:
             event_callback = self.events.get(event_name, [])
 
         return event_callback or []
-
 
     async def channel_create(self, data: dict):
 
@@ -1301,6 +1501,7 @@ class ClientSlashCommand:
             self.autocomplete_options[option_name] = func
 
         return wrapper
+
 
 class ClientMessageCommand(ClientUserCommand):
     @property
@@ -2118,6 +2319,7 @@ class Client(WebsocketClient):
         *,
         status: Optional[Status] = None,
         activity: Optional[Activity] = None,
+        overwrite_commands_on_ready: Optional[bool] = True,
     ):
         super().__init__(token, intents)
 
@@ -4220,11 +4422,18 @@ class Check:
         self.callback = callback
 
     async def success(self, interaction):
-        logger.info(f"{interaction.author.username} ({interaction.author.id}) passed the check {self.command_callback.__name__}.")
+        logger.info(
+            f"{interaction.author.username} ({interaction.author.id}) passed the check {self.command_callback.__name__}."
+        )
 
     async def failure(self, interaction):
-        logger.critical(f"{interaction.author.username} ({interaction.author.id}) failed the check {self.command_callback.__name__}.")
-        raise FailedCheck(f"{interaction.author.username} ({interaction.author.id}) failed the check {self.command_callback.__name__}.")
+        logger.critical(
+            f"{interaction.author.username} ({interaction.author.id}) failed the check {self.command_callback.__name__}."
+        )
+        raise FailedCheck(
+            f"{interaction.author.username} ({interaction.author.id}) failed the check {self.command_callback.__name__}."
+        )
+
 
 class CommandUtils:
     def check(self, callback):
