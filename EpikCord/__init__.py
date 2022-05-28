@@ -4403,13 +4403,21 @@ class VoiceWebsocketClient:
 class Check:
     def __init__(self, callback):
         self.callback = callback
+        self.success_callback = self.default_success
+        self.failure_callback = self.default_failure
 
-    async def success(self, interaction):
+    def success(self, callback: Optional[Callable] = None):
+        self.success_callback = callback or self.default_success
+
+    def failure(self, callback: Optional[Callable] = None):
+        self.failure_callback = callback or self.default_failure
+
+    async def default_success(self, interaction):
         logger.info(
             f"{interaction.author.username} ({interaction.author.id}) passed the check {self.command_callback.__name__}."
         )
 
-    async def failure(self, interaction):
+    async def default_failure(self, interaction):
         logger.critical(
             f"{interaction.author.username} ({interaction.author.id}) failed the check {self.command_callback.__name__}."
         )
