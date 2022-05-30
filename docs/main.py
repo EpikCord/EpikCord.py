@@ -12,7 +12,7 @@ def document_method(method):
     type_of = "Any"
 
     sig = signature(method)
-    to_append += f"def {method_name}({', '.join([f'{param.name}: {param.annotation if param.annotation != _empty else type_of}' for param in sig.parameters.values()])}) -> {sig.return_annotation or 'None'}"
+    to_append += f"def {method_name}({', '.join([f'{param.name}: {param.annotation if param.annotation != _empty else type_of}' for param in sig.parameters.values()])}) -> {sig.return_annotation if sig.return_annotation != _empty else 'None'}"
     
 
     if getdoc(method):
