@@ -2,7 +2,7 @@
 NOTE: version string only in setup.cfg
 """
 
-__all__ = (
+__slots__ = __all__ = (
     "ActionRow",
     "Activity",
     "AllowedMention",

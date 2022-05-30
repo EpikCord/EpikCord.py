@@ -1,4 +1,7 @@
-__all__ = "__version__"
+__all__ = (
+    "__version__",
+    "info"
+)
 
 
 __version__ = "0.4.13.3"
