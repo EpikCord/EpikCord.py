@@ -1,0 +1,11 @@
+name: document
+on: [pull_request, push]
+jobs:
+  document_code:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - run: git clone https://github.com/EpikCord/EpikCord.py
+      - run: cd EpikCord.py/docs
+      - run: python main.py

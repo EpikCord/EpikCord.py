@@ -1,3 +1,4 @@
+from docutils.core import publish_file
 from inspect import isclass, isfunction, iscoroutine, signature, _empty, getdoc
 import EpikCord
 
@@ -62,6 +63,4 @@ def recursive_document(cls):
 
 message = recursive_document(EpikCord)
 
-print(message)
-with open("docs.rst", "w") as f:
-    f.write(message)
+publish_file(source_path="index.rst", destination_path="api.html", writer_name="html")
