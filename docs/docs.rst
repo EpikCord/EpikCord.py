@@ -377,48 +377,6 @@ def text(self: Any, encoding: typing.Optional[str], errors: <class 'str'>) -> <c
 
 def wait_for_close(self: Any) -> None
 
-
-ClientSession
--------------
-
-def close(self: Any) -> NoneClose underlying connector.
-
-Release all acquired resources.
-
-
-def delete(self: Any, url: typing.Union[str, yarl.URL], kwargs: typing.Any) -> _RequestContextManagerPerform HTTP DELETE request.
-
-
-def detach(self: Any) -> NoneDetach connector from session without closing the former.
-
-Session is switched to closed state anyway.
-
-
-def get(self: Any, url: typing.Union[str, yarl.URL], allow_redirects: <class 'bool'>, kwargs: typing.Any) -> _RequestContextManagerPerform HTTP GET request.
-
-
-def head(self: Any, url: typing.Union[str, yarl.URL], allow_redirects: <class 'bool'>, kwargs: typing.Any) -> _RequestContextManagerPerform HTTP HEAD request.
-
-
-def options(self: Any, url: typing.Union[str, yarl.URL], allow_redirects: <class 'bool'>, kwargs: typing.Any) -> _RequestContextManagerPerform HTTP OPTIONS request.
-
-
-def patch(self: Any, url: typing.Union[str, yarl.URL], data: typing.Any, kwargs: typing.Any) -> _RequestContextManagerPerform HTTP PATCH request.
-
-
-def post(self: Any, url: typing.Union[str, yarl.URL], data: typing.Any, kwargs: typing.Any) -> _RequestContextManagerPerform HTTP POST request.
-
-
-def put(self: Any, url: typing.Union[str, yarl.URL], data: typing.Any, kwargs: typing.Any) -> _RequestContextManagerPerform HTTP PUT request.
-
-
-def request(self: Any, method: <class 'str'>, url: typing.Union[str, yarl.URL], kwargs: typing.Any) -> _RequestContextManagerPerform HTTP request.
-
-
-def ws_connect(self: Any, url: typing.Union[str, yarl.URL], method: <class 'str'>, protocols: typing.Iterable[str], timeout: <class 'float'>, receive_timeout: typing.Optional[float], autoclose: <class 'bool'>, autoping: <class 'bool'>, heartbeat: typing.Optional[float], auth: typing.Optional[aiohttp.helpers.BasicAuth], origin: typing.Optional[str], params: typing.Optional[typing.Mapping[str, str]], headers: typing.Union[typing.Mapping[typing.Union[str, multidict._multidict.istr], str], multidict._multidict.CIMultiDict, multidict._multidict.CIMultiDictProxy, NoneType], proxy: typing.Union[str, yarl.URL, NoneType], proxy_auth: typing.Optional[aiohttp.helpers.BasicAuth], ssl: typing.Union[ssl.SSLContext, bool, NoneType, aiohttp.client_reqrep.Fingerprint], verify_ssl: typing.Optional[bool], fingerprint: typing.Optional[bytes], ssl_context: typing.Optional[ssl.SSLContext], proxy_headers: typing.Union[typing.Mapping[typing.Union[str, multidict._multidict.istr], str], multidict._multidict.CIMultiDict, multidict._multidict.CIMultiDictProxy, NoneType], compress: <class 'int'>, max_msg_size: <class 'int'>) -> _WSRequestContextManagerInitiate websocket connection.
-
-
-
 ClientSlashCommand
 ------------------
 

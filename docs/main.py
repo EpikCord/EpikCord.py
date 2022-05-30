@@ -9,10 +9,13 @@ def document_method(method):
     if iscoroutine(method):
         to_append += "async "
 
-    type_of = "Any"
+    def type_of(annotation):
+        if isclass(annotation) and annotation != _empty:
+            return annotation.__name__
+        return "Any"
 
     sig = signature(method)
-    to_append += f"def {method_name}({', '.join([f'{param.name}: {param.annotation if param.annotation != _empty else type_of}' for param in sig.parameters.values()])}) -> {sig.return_annotation if sig.return_annotation != _empty else 'None'}"
+    to_append += f"def {method_name}({', '.join([f'{param.name}: {type_of(param.annotation)}' for param in sig.parameters.values()])}) -> {sig.return_annotation if sig.return_annotation != _empty else 'None'}"
     
 
     if getdoc(method):
