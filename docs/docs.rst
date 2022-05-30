@@ -3,15 +3,15 @@
 ActionRow
 ---------
 
-def add_components(self: Any, components: typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu]]) -> <class 'inspect._empty'>
+def add_components(self: Any, components: Any) -> None
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 Activity
 --------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>Returns activity class as dict
+def to_dict(self: Any) -> NoneReturns activity class as dict
 
 Returns:
     dict: returns :class:`dict` of :class:`activity`
@@ -33,33 +33,33 @@ ApplicationCommand
 ApplicationCommandInteraction
 -----------------------------
 
-def create_followup(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def create_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def defer(self: Any, show_loading_state: typing.Optional[bool]) -> <class 'inspect._empty'>
+def defer(self: Any, show_loading_state: Any) -> None
 
-def delete_followup(self: Any) -> <class 'inspect._empty'>
+def delete_followup(self: Any) -> None
 
-def delete_original_response(self: Any) -> <class 'inspect._empty'>
+def delete_original_response(self: Any) -> None
 
-def edit_followup(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def edit_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def edit_original_response(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def edit_original_response(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def fetch_original_response(self: Any, skip_cache: typing.Optional[bool]) -> <class 'inspect._empty'>
+def fetch_original_response(self: Any, skip_cache: Any) -> None
 
-def is_application_command(self: Any) -> <class 'inspect._empty'>
+def is_application_command(self: Any) -> None
 
-def is_autocomplete(self: Any) -> <class 'inspect._empty'>
+def is_autocomplete(self: Any) -> None
 
-def is_message_component(self: Any) -> <class 'inspect._empty'>
+def is_message_component(self: Any) -> None
 
-def is_modal_submit(self: Any) -> <class 'inspect._empty'>
+def is_modal_submit(self: Any) -> None
 
-def is_ping(self: Any) -> <class 'inspect._empty'>
+def is_ping(self: Any) -> None
 
-def reply(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def reply(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def send_modal(self: Any, modal: <class 'EpikCord.Modal'>) -> <class 'inspect._empty'>
+def send_modal(self: Any, modal: Modal) -> None
 
 
 ApplicationCommandOption
@@ -69,7 +69,7 @@ ApplicationCommandOption
 ApplicationCommandPermission
 ----------------------------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 ApplicationCommandSubcommandOption
@@ -83,39 +83,39 @@ Attachment
 AttachmentOption
 ----------------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 AutoCompleteInteraction
 -----------------------
 
-def create_followup(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def create_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def defer(self: Any, show_loading_state: typing.Optional[bool]) -> <class 'inspect._empty'>
+def defer(self: Any, show_loading_state: Any) -> None
 
-def delete_followup(self: Any) -> <class 'inspect._empty'>
+def delete_followup(self: Any) -> None
 
-def delete_original_response(self: Any) -> <class 'inspect._empty'>
+def delete_original_response(self: Any) -> None
 
-def edit_followup(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def edit_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def edit_original_response(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def edit_original_response(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def fetch_original_response(self: Any, skip_cache: typing.Optional[bool]) -> <class 'inspect._empty'>
+def fetch_original_response(self: Any, skip_cache: Any) -> None
 
-def is_application_command(self: Any) -> <class 'inspect._empty'>
+def is_application_command(self: Any) -> None
 
-def is_autocomplete(self: Any) -> <class 'inspect._empty'>
+def is_autocomplete(self: Any) -> None
 
-def is_message_component(self: Any) -> <class 'inspect._empty'>
+def is_message_component(self: Any) -> None
 
-def is_modal_submit(self: Any) -> <class 'inspect._empty'>
+def is_modal_submit(self: Any) -> None
 
-def is_ping(self: Any) -> <class 'inspect._empty'>
+def is_ping(self: Any) -> None
 
-def reply(self: Any, choices: typing.List[EpikCord.options.SlashCommandOptionChoice]) -> None
+def reply(self: Any, choices: Any) -> None
 
-def send_modal(self: Any, modal: <class 'EpikCord.Modal'>) -> <class 'inspect._empty'>
+def send_modal(self: Any, modal: Modal) -> None
 
 
 BadRequest400
@@ -129,93 +129,93 @@ BaseChannel
 BaseComponent
 -------------
 
-def set_custom_id(self: Any, custom_id: <class 'str'>) -> <class 'inspect._empty'>
+def set_custom_id(self: Any, custom_id: str) -> None
 
 
 BaseInteraction
 ---------------
 
-def create_followup(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def create_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def defer(self: Any, show_loading_state: typing.Optional[bool]) -> <class 'inspect._empty'>
+def defer(self: Any, show_loading_state: Any) -> None
 
-def delete_followup(self: Any) -> <class 'inspect._empty'>
+def delete_followup(self: Any) -> None
 
-def delete_original_response(self: Any) -> <class 'inspect._empty'>
+def delete_original_response(self: Any) -> None
 
-def edit_followup(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def edit_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def edit_original_response(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def edit_original_response(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def fetch_original_response(self: Any, skip_cache: typing.Optional[bool]) -> <class 'inspect._empty'>
+def fetch_original_response(self: Any, skip_cache: Any) -> None
 
-def is_application_command(self: Any) -> <class 'inspect._empty'>
+def is_application_command(self: Any) -> None
 
-def is_autocomplete(self: Any) -> <class 'inspect._empty'>
+def is_autocomplete(self: Any) -> None
 
-def is_message_component(self: Any) -> <class 'inspect._empty'>
+def is_message_component(self: Any) -> None
 
-def is_modal_submit(self: Any) -> <class 'inspect._empty'>
+def is_modal_submit(self: Any) -> None
 
-def is_ping(self: Any) -> <class 'inspect._empty'>
+def is_ping(self: Any) -> None
 
-def reply(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def reply(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def send_modal(self: Any, modal: <class 'EpikCord.Modal'>) -> <class 'inspect._empty'>
+def send_modal(self: Any, modal: Modal) -> None
 
 
 BaseSlashCommandOption
 ----------------------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 BooleanOption
 -------------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 Button
 ------
 
-def set_custom_id(self: Any, custom_id: <class 'str'>) -> <class 'inspect._empty'>
+def set_custom_id(self: Any, custom_id: str) -> None
 
-def set_emoji(self: Any, emoji: typing.Union[EpikCord.partials.PartialEmoji, dict]) -> <class 'inspect._empty'>
+def set_emoji(self: Any, emoji: Any) -> None
 
-def set_label(self: Any, label: <class 'str'>) -> <class 'inspect._empty'>
+def set_label(self: Any, label: str) -> None
 
-def set_style(self: Any, style: typing.Union[int, str]) -> <class 'inspect._empty'>
+def set_style(self: Any, style: Any) -> None
 
-def set_url(self: Any, url: <class 'str'>) -> <class 'inspect._empty'>
+def set_url(self: Any, url: str) -> None
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 CacheManager
 ------------
 
-def add_to_cache(self: Any, key: Any, value: Any) -> <class 'inspect._empty'>
+def add_to_cache(self: Any, key: Any, value: Any) -> None
 
-def clear_cache(self: Any) -> <class 'inspect._empty'>
+def clear_cache(self: Any) -> None
 
-def get_from_cache(self: Any, key: Any) -> <class 'inspect._empty'>
+def get_from_cache(self: Any, key: Any) -> None
 
-def is_in_cache(self: Any, key: Any) -> <class 'inspect._empty'>
+def is_in_cache(self: Any, key: Any) -> None
 
-def remove_from_cache(self: Any, key: Any) -> <class 'inspect._empty'>
+def remove_from_cache(self: Any, key: Any) -> None
 
 
 ChannelCategory
 ---------------
 
-def create_invite(self: Any, max_age: typing.Optional[int], max_uses: typing.Optional[int], temporary: typing.Optional[bool], unique: typing.Optional[bool], target_type: typing.Optional[int], target_user_id: typing.Optional[str], target_application_id: typing.Optional[str]) -> <class 'inspect._empty'>
+def create_invite(self: Any, max_age: Any, max_uses: Any, temporary: Any, unique: Any, target_type: Any, target_user_id: Any, target_application_id: Any) -> None
 
-def delete(self: Any, reason: typing.Optional[str]) -> None
+def delete(self: Any, reason: Any) -> None
 
-def delete_overwrite(self: Any, overwrites: <class 'EpikCord.Overwrite'>) -> None
+def delete_overwrite(self: Any, overwrites: Overwrite) -> None
 
-def fetch_invites(self: Any) -> <class 'inspect._empty'>
+def fetch_invites(self: Any) -> None
 
 def fetch_pinned_messages(self: Any) -> typing.List[EpikCord.Message]
 
@@ -223,25 +223,25 @@ def fetch_pinned_messages(self: Any) -> typing.List[EpikCord.Message]
 ChannelManager
 --------------
 
-def add_to_cache(self: Any, key: Any, value: Any) -> <class 'inspect._empty'>
+def add_to_cache(self: Any, key: Any, value: Any) -> None
 
-def clear_cache(self: Any) -> <class 'inspect._empty'>
+def clear_cache(self: Any) -> None
 
-def fetch(self: Any, channel_id: Any, skip_cache: typing.Optional[bool]) -> <class 'inspect._empty'>
+def fetch(self: Any, channel_id: Any, skip_cache: Any) -> None
 
-def format_cache(self: Any) -> <class 'inspect._empty'>
+def format_cache(self: Any) -> None
 
-def get_from_cache(self: Any, key: Any) -> <class 'inspect._empty'>
+def get_from_cache(self: Any, key: Any) -> None
 
-def is_in_cache(self: Any, key: Any) -> <class 'inspect._empty'>
+def is_in_cache(self: Any, key: Any) -> None
 
-def remove_from_cache(self: Any, key: Any) -> <class 'inspect._empty'>
+def remove_from_cache(self: Any, key: Any) -> None
 
 
 ChannelOption
 -------------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 ChannelOptionChannelTypes
@@ -251,101 +251,101 @@ ChannelOptionChannelTypes
 Client
 ------
 
-def add_section(self: Any, section: typing.Union[EpikCord.CommandsSection, EpikCord.EventsSection]) -> <class 'inspect._empty'>
+def add_section(self: Any, section: Any) -> None
 
-def change_presence(self: Any, presence: typing.Optional[EpikCord.Presence]) -> <class 'inspect._empty'>
+def change_presence(self: Any, presence: Any) -> None
 
-def channel_create(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
+def channel_create(self: Any, data: dict) -> None
 
 def close(self: Any) -> None
 
-def command(self: Any, name: typing.Optional[str], description: typing.Optional[str], guild_ids: typing.Optional[typing.List[str]], options: typing.Union[EpikCord.options.Subcommand, EpikCord.options.SubCommandGroup, EpikCord.options.StringOption, EpikCord.options.IntegerOption, EpikCord.options.BooleanOption, EpikCord.options.UserOption, EpikCord.options.ChannelOption, EpikCord.options.RoleOption, EpikCord.options.MentionableOption, EpikCord.options.NumberOption, NoneType]) -> <class 'inspect._empty'>
+def command(self: Any, name: Any, description: Any, guild_ids: Any, options: Any) -> None
 
-def component(self: Any, custom_id: <class 'str'>) -> <class 'inspect._empty'>Execute this function when a component with the `custom_id` is interacted with.
-
-
-def connect(self: Any) -> <class 'inspect._empty'>
-
-def event(self: Any, func: Any) -> <class 'inspect._empty'>
-
-def get_event_callback(self: Any, event_name: <class 'str'>, internal: Any) -> <class 'inspect._empty'>
-
-def guild_create(self: Any, data: Any) -> <class 'inspect._empty'>
-
-def guild_delete(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
-
-def guild_member_update(self: Any, data: Any) -> <class 'inspect._empty'>
-
-def guild_members_chunk(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
-
-def handle_close(self: Any) -> <class 'inspect._empty'>
-
-def handle_event(self: Any, event_name: typing.Optional[str], data: <class 'dict'>) -> <class 'inspect._empty'>
-
-def handle_events(self: Any) -> <class 'inspect._empty'>
-
-def heartbeat(self: Any, forced: typing.Optional[bool]) -> <class 'inspect._empty'>
-
-def identify(self: Any) -> <class 'inspect._empty'>
-
-def interaction_create(self: Any, data: Any) -> <class 'inspect._empty'>
-
-def login(self: Any) -> <class 'inspect._empty'>
-
-def message_command(self: Any, name: typing.Optional[str]) -> <class 'inspect._empty'>
-
-def message_create(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>Event fired when messages are created
+def component(self: Any, custom_id: str) -> NoneExecute this function when a component with the `custom_id` is interacted with.
 
 
-def ready(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
+def connect(self: Any) -> None
 
-def reconnect(self: Any) -> <class 'inspect._empty'>
+def event(self: Any, func: Any) -> None
 
-def request_guild_members(self: Any, guild_id: <class 'int'>, query: typing.Optional[str], limit: typing.Optional[int], presences: typing.Optional[bool], user_ids: typing.Optional[typing.List[str]], nonce: typing.Optional[str]) -> <class 'inspect._empty'>
+def get_event_callback(self: Any, event_name: str, internal: Any) -> None
 
-def resume(self: Any) -> <class 'inspect._empty'>
+def guild_create(self: Any, data: Any) -> None
 
-def send_json(self: Any, json: <class 'dict'>) -> <class 'inspect._empty'>
+def guild_delete(self: Any, data: dict) -> None
 
-def unload_section(self: Any, section: typing.Union[EpikCord.CommandsSection, EpikCord.EventsSection]) -> <class 'inspect._empty'>
+def guild_member_update(self: Any, data: Any) -> None
 
-def user_command(self: Any, name: typing.Optional[str]) -> <class 'inspect._empty'>
+def guild_members_chunk(self: Any, data: dict) -> None
 
-def voice_server_update(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
+def handle_close(self: Any) -> None
 
-def wait_for(self: Any, event_name: <class 'str'>, check: typing.Optional[<built-in function callable>], timeout: typing.Union[float, int, NoneType]) -> <class 'inspect._empty'>
+def handle_event(self: Any, event_name: Any, data: dict) -> None
+
+def handle_events(self: Any) -> None
+
+def heartbeat(self: Any, forced: Any) -> None
+
+def identify(self: Any) -> None
+
+def interaction_create(self: Any, data: Any) -> None
+
+def login(self: Any) -> None
+
+def message_command(self: Any, name: Any) -> None
+
+def message_create(self: Any, data: dict) -> NoneEvent fired when messages are created
+
+
+def ready(self: Any, data: dict) -> None
+
+def reconnect(self: Any) -> None
+
+def request_guild_members(self: Any, guild_id: int, query: Any, limit: Any, presences: Any, user_ids: Any, nonce: Any) -> None
+
+def resume(self: Any) -> None
+
+def send_json(self: Any, json: dict) -> None
+
+def unload_section(self: Any, section: Any) -> None
+
+def user_command(self: Any, name: Any) -> None
+
+def voice_server_update(self: Any, data: dict) -> None
+
+def wait_for(self: Any, event_name: str, check: Any, timeout: Any) -> None
 
 
 ClientApplication
 -----------------
 
-def bulk_overwrite_global_application_commands(self: Any, commands: typing.List[EpikCord.ApplicationCommand]) -> <class 'inspect._empty'>
+def bulk_overwrite_global_application_commands(self: Any, commands: Any) -> None
 
-def bulk_overwrite_guild_application_commands(self: Any, guild_id: <class 'str'>, commands: typing.List[EpikCord.ApplicationCommand]) -> <class 'inspect._empty'>
+def bulk_overwrite_guild_application_commands(self: Any, guild_id: str, commands: Any) -> None
 
-def create_global_application_command(self: Any, name: <class 'str'>, description: <class 'str'>, options: typing.Optional[typing.List[typing.Union[EpikCord.options.Subcommand, EpikCord.options.SubCommandGroup, EpikCord.options.StringOption, EpikCord.options.IntegerOption, EpikCord.options.BooleanOption, EpikCord.options.UserOption, EpikCord.options.ChannelOption, EpikCord.options.RoleOption, EpikCord.options.MentionableOption, EpikCord.options.NumberOption]]], default_permission: typing.Optional[bool], command_type: typing.Optional[int]) -> <class 'inspect._empty'>
+def create_global_application_command(self: Any, name: str, description: str, options: Any, default_permission: Any, command_type: Any) -> None
 
-def create_guild_application_command(self: Any, guild_id: <class 'str'>, name: <class 'str'>, description: <class 'str'>, options: typing.Optional[typing.List[typing.Union[EpikCord.options.Subcommand, EpikCord.options.SubCommandGroup, EpikCord.options.StringOption, EpikCord.options.IntegerOption, EpikCord.options.BooleanOption, EpikCord.options.UserOption, EpikCord.options.ChannelOption, EpikCord.options.RoleOption, EpikCord.options.MentionableOption, EpikCord.options.NumberOption]]], default_permission: typing.Optional[bool], command_type: typing.Optional[int]) -> <class 'inspect._empty'>
+def create_guild_application_command(self: Any, guild_id: str, name: str, description: str, options: Any, default_permission: Any, command_type: Any) -> None
 
-def delete_global_application_command(self: Any, command_id: <class 'str'>) -> <class 'inspect._empty'>
+def delete_global_application_command(self: Any, command_id: str) -> None
 
-def delete_guild_application_command(self: Any, guild_id: <class 'str'>, command_id: <class 'str'>) -> <class 'inspect._empty'>
+def delete_guild_application_command(self: Any, guild_id: str, command_id: str) -> None
 
-def edit_application_command_permissions(self: Any, guild_id: <class 'str'>, command_id: Any, permissions: typing.List[EpikCord.ApplicationCommandPermission]) -> <class 'inspect._empty'>
+def edit_application_command_permissions(self: Any, guild_id: str, command_id: Any, permissions: Any) -> None
 
-def edit_global_application_command(self: Any, guild_id: <class 'str'>, command_id: <class 'str'>, name: typing.Optional[str], description: typing.Optional[str], options: typing.Optional[typing.List[typing.Union[EpikCord.options.Subcommand, EpikCord.options.SubCommandGroup, EpikCord.options.StringOption, EpikCord.options.IntegerOption, EpikCord.options.BooleanOption, EpikCord.options.UserOption, EpikCord.options.ChannelOption, EpikCord.options.RoleOption, EpikCord.options.MentionableOption, EpikCord.options.NumberOption]]], default_permissions: typing.Optional[bool]) -> <class 'inspect._empty'>
+def edit_global_application_command(self: Any, guild_id: str, command_id: str, name: Any, description: Any, options: Any, default_permissions: Any) -> None
 
-def fetch_application(self: Any) -> <class 'inspect._empty'>
+def fetch_application(self: Any) -> None
 
-def fetch_application_command(self: Any, command_id: <class 'str'>) -> <class 'inspect._empty'>
+def fetch_application_command(self: Any, command_id: str) -> None
 
 def fetch_global_application_commands(self: Any) -> typing.List[EpikCord.ApplicationCommand]
 
-def fetch_guild_application_command(self: Any, guild_id: <class 'str'>, command_id: <class 'str'>) -> <class 'inspect._empty'>
+def fetch_guild_application_command(self: Any, guild_id: str, command_id: str) -> None
 
-def fetch_guild_application_command_permissions(self: Any, guild_id: <class 'str'>, command_id: <class 'str'>) -> <class 'inspect._empty'>
+def fetch_guild_application_command_permissions(self: Any, guild_id: str, command_id: str) -> None
 
-def fetch_guild_application_commands(self: Any, guild_id: <class 'str'>) -> <class 'inspect._empty'>
+def fetch_guild_application_commands(self: Any, guild_id: str) -> None
 
 
 ClientMessageCommand
@@ -359,7 +359,7 @@ def close(self: Any) -> None
 
 def get_encoding(self: Any) -> <class 'str'>
 
-def json(self: Any, encoding: typing.Optional[str], loads: typing.Callable[[str], typing.Any], content_type: typing.Optional[str]) -> typing.AnyRead and decodes JSON response.
+def json(self: Any, encoding: Any, loads: Any, content_type: Any) -> typing.AnyRead and decodes JSON response.
 
 
 def raise_for_status(self: Any) -> None
@@ -369,26 +369,68 @@ def read(self: Any) -> <class 'bytes'>Read response payload.
 
 def release(self: Any) -> typing.Any
 
-def start(self: Any, connection: Connection) -> ClientResponseStart response processing.
+def start(self: Any, connection: Any) -> ClientResponseStart response processing.
 
 
-def text(self: Any, encoding: typing.Optional[str], errors: <class 'str'>) -> <class 'str'>Read response payload and decode.
+def text(self: Any, encoding: Any, errors: str) -> <class 'str'>Read response payload and decode.
 
 
 def wait_for_close(self: Any) -> None
 
+
+ClientSession
+-------------
+
+def close(self: Any) -> NoneClose underlying connector.
+
+Release all acquired resources.
+
+
+def delete(self: Any, url: Any, kwargs: Any) -> _RequestContextManagerPerform HTTP DELETE request.
+
+
+def detach(self: Any) -> NoneDetach connector from session without closing the former.
+
+Session is switched to closed state anyway.
+
+
+def get(self: Any, url: Any, allow_redirects: bool, kwargs: Any) -> _RequestContextManagerPerform HTTP GET request.
+
+
+def head(self: Any, url: Any, allow_redirects: bool, kwargs: Any) -> _RequestContextManagerPerform HTTP HEAD request.
+
+
+def options(self: Any, url: Any, allow_redirects: bool, kwargs: Any) -> _RequestContextManagerPerform HTTP OPTIONS request.
+
+
+def patch(self: Any, url: Any, data: Any, kwargs: Any) -> _RequestContextManagerPerform HTTP PATCH request.
+
+
+def post(self: Any, url: Any, data: Any, kwargs: Any) -> _RequestContextManagerPerform HTTP POST request.
+
+
+def put(self: Any, url: Any, data: Any, kwargs: Any) -> _RequestContextManagerPerform HTTP PUT request.
+
+
+def request(self: Any, method: str, url: Any, kwargs: Any) -> _RequestContextManagerPerform HTTP request.
+
+
+def ws_connect(self: Any, url: Any, method: str, protocols: Any, timeout: float, receive_timeout: Any, autoclose: bool, autoping: bool, heartbeat: Any, auth: Any, origin: Any, params: Any, headers: Any, proxy: Any, proxy_auth: Any, ssl: Any, verify_ssl: Any, fingerprint: Any, ssl_context: Any, proxy_headers: Any, compress: int, max_msg_size: int) -> _WSRequestContextManagerInitiate websocket connection.
+
+
+
 ClientSlashCommand
 ------------------
 
-def option_autocomplete(self: Any, option_name: <class 'str'>) -> <class 'inspect._empty'>
+def option_autocomplete(self: Any, option_name: str) -> None
 
 
 ClientUser
 ----------
 
-def edit(self: Any, username: typing.Optional[str], avatar: typing.Optional[bytes]) -> <class 'inspect._empty'>
+def edit(self: Any, username: Any, avatar: Any) -> None
 
-def fetch(self: Any) -> <class 'inspect._empty'>
+def fetch(self: Any) -> None
 
 
 ClientUserCommand
@@ -436,41 +478,41 @@ DiscordAPIError
 Embed
 -----
 
-def add_field(self: Any, name: <class 'str'>, value: <class 'str'>, inline: <class 'bool'>) -> <class 'inspect._empty'>
+def add_field(self: Any, name: str, value: str, inline: bool) -> None
 
-def set_author(self: Any, name: typing.Optional[str], url: typing.Optional[str], icon_url: typing.Optional[str], proxy_icon_url: typing.Optional[str]) -> <class 'inspect._empty'>
+def set_author(self: Any, name: Any, url: Any, icon_url: Any, proxy_icon_url: Any) -> None
 
-def set_color(self: Any, colour: <class 'EpikCord.Colour'>) -> <class 'inspect._empty'>
+def set_color(self: Any, colour: Colour) -> None
 
-def set_description(self: Any, description: typing.Optional[str]) -> <class 'inspect._empty'>
+def set_description(self: Any, description: Any) -> None
 
-def set_fields(self: Any, fields: typing.List[dict]) -> <class 'inspect._empty'>
+def set_fields(self: Any, fields: Any) -> None
 
-def set_footer(self: Any, text: typing.Optional[str], icon_url: typing.Optional[str], proxy_icon_url: typing.Optional[str]) -> <class 'inspect._empty'>
+def set_footer(self: Any, text: Any, icon_url: Any, proxy_icon_url: Any) -> None
 
-def set_image(self: Any, url: typing.Optional[str], proxy_url: typing.Optional[str], height: typing.Optional[int], width: typing.Optional[int]) -> <class 'inspect._empty'>
+def set_image(self: Any, url: Any, proxy_url: Any, height: Any, width: Any) -> None
 
-def set_provider(self: Any, name: typing.Optional[str], url: typing.Optional[str]) -> <class 'inspect._empty'>
+def set_provider(self: Any, name: Any, url: Any) -> None
 
-def set_thumbnail(self: Any, url: typing.Optional[str], proxy_url: typing.Optional[str], height: typing.Optional[int], width: typing.Optional[int]) -> <class 'inspect._empty'>
+def set_thumbnail(self: Any, url: Any, proxy_url: Any, height: Any, width: Any) -> None
 
-def set_timestamp(self: Any, timestamp: <class 'datetime.datetime'>) -> <class 'inspect._empty'>
+def set_timestamp(self: Any, timestamp: datetime) -> None
 
-def set_title(self: Any, title: typing.Optional[str]) -> <class 'inspect._empty'>
+def set_title(self: Any, title: Any) -> None
 
-def set_url(self: Any, url: typing.Optional[str]) -> <class 'inspect._empty'>
+def set_url(self: Any, url: Any) -> None
 
-def set_video(self: Any, url: typing.Optional[str], proxy_url: typing.Optional[str], height: typing.Optional[int], width: typing.Optional[int]) -> <class 'inspect._empty'>
+def set_video(self: Any, url: Any, proxy_url: Any, height: Any, width: Any) -> None
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 Emoji
 -----
 
-def delete(self: Any, reason: typing.Optional[str]) -> <class 'inspect._empty'>
+def delete(self: Any, reason: Any) -> None
 
-def edit(self: Any, name: typing.Optional[str], roles: typing.Optional[typing.List[EpikCord.Role]], reason: typing.Optional[str]) -> <class 'inspect._empty'>
+def edit(self: Any, name: Any, roles: Any, reason: Any) -> None
 
 
 EpikCordException
@@ -480,37 +522,37 @@ EpikCordException
 EventHandler
 ------------
 
-def channel_create(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
+def channel_create(self: Any, data: dict) -> None
 
-def component(self: Any, custom_id: <class 'str'>) -> <class 'inspect._empty'>Execute this function when a component with the `custom_id` is interacted with.
-
-
-def event(self: Any, func: Any) -> <class 'inspect._empty'>
-
-def get_event_callback(self: Any, event_name: <class 'str'>, internal: Any) -> <class 'inspect._empty'>
-
-def guild_create(self: Any, data: Any) -> <class 'inspect._empty'>
-
-def guild_delete(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
-
-def guild_member_update(self: Any, data: Any) -> <class 'inspect._empty'>
-
-def guild_members_chunk(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
-
-def handle_event(self: Any, event_name: typing.Optional[str], data: <class 'dict'>) -> <class 'inspect._empty'>
-
-def handle_events(self: Any) -> <class 'inspect._empty'>
-
-def interaction_create(self: Any, data: Any) -> <class 'inspect._empty'>
-
-def message_create(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>Event fired when messages are created
+def component(self: Any, custom_id: str) -> NoneExecute this function when a component with the `custom_id` is interacted with.
 
 
-def ready(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
+def event(self: Any, func: Any) -> None
 
-def voice_server_update(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
+def get_event_callback(self: Any, event_name: str, internal: Any) -> None
 
-def wait_for(self: Any, event_name: <class 'str'>, check: typing.Optional[<built-in function callable>], timeout: typing.Union[float, int, NoneType]) -> <class 'inspect._empty'>
+def guild_create(self: Any, data: Any) -> None
+
+def guild_delete(self: Any, data: dict) -> None
+
+def guild_member_update(self: Any, data: Any) -> None
+
+def guild_members_chunk(self: Any, data: dict) -> None
+
+def handle_event(self: Any, event_name: Any, data: dict) -> None
+
+def handle_events(self: Any) -> None
+
+def interaction_create(self: Any, data: Any) -> None
+
+def message_create(self: Any, data: dict) -> NoneEvent fired when messages are created
+
+
+def ready(self: Any, data: dict) -> None
+
+def voice_server_update(self: Any, data: dict) -> None
+
+def wait_for(self: Any, event_name: str, check: Any, timeout: Any) -> None
 
 
 EventsSection
@@ -528,7 +570,7 @@ File
 Flag
 ----
 
-def calculate_from_turned(self: Any) -> <class 'inspect._empty'>
+def calculate_from_turned(self: Any) -> None
 
 
 Forbidden403
@@ -542,7 +584,7 @@ GateawayUnavailable502
 Guild
 -----
 
-def create_channel(self: Any, name: <class 'str'>, reason: typing.Optional[str], type: typing.Optional[int], topic: typing.Optional[str], bitrate: typing.Optional[int], user_limit: typing.Optional[int], rate_limit_per_user: typing.Optional[int], position: typing.Optional[int], permission_overwrites: typing.List[typing.Optional[EpikCord.Overwrite]], parent_id: typing.Optional[str], nsfw: typing.Optional[bool]) -> <class 'inspect._empty'>Creates a channel.
+def create_channel(self: Any, name: str, reason: Any, type: Any, topic: Any, bitrate: Any, user_limit: Any, rate_limit_per_user: Any, position: Any, permission_overwrites: Any, parent_id: Any, nsfw: Any) -> NoneCreates a channel.
 
 Parameters
 ----------
@@ -570,9 +612,9 @@ nsfw: Optional[bool]
     Whether the channel is nsfw.
 
 
-def delete(self: Any) -> <class 'inspect._empty'>
+def delete(self: Any) -> None
 
-def edit(self: Any, name: typing.Optional[str], verification_level: typing.Optional[int], default_message_notifications: typing.Optional[int], explicit_content_filter: typing.Optional[int], afk_channel_id: typing.Optional[str], afk_timeout: typing.Optional[int], owner_id: typing.Optional[str], system_channel_id: typing.Optional[str], system_channel_flags: typing.Optional[EpikCord.SystemChannelFlags], rules_channel_id: typing.Optional[str], preferred_locale: typing.Optional[str], features: typing.Optional[typing.List[str]], description: typing.Optional[str], premium_progress_bar_enabled: typing.Optional[bool], reason: typing.Optional[str]) -> <class 'inspect._empty'>Edits the guild.
+def edit(self: Any, name: Any, verification_level: Any, default_message_notifications: Any, explicit_content_filter: Any, afk_channel_id: Any, afk_timeout: Any, owner_id: Any, system_channel_id: Any, system_channel_flags: Any, rules_channel_id: Any, preferred_locale: Any, features: Any, description: Any, premium_progress_bar_enabled: Any, reason: Any) -> NoneEdits the guild.
 
 Parameters
 ----------
@@ -630,7 +672,7 @@ GuildPreview
 GuildApplicationCommandPermission
 ---------------------------------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 GuildBan
@@ -640,13 +682,13 @@ GuildBan
 GuildChannel
 ------------
 
-def create_invite(self: Any, max_age: typing.Optional[int], max_uses: typing.Optional[int], temporary: typing.Optional[bool], unique: typing.Optional[bool], target_type: typing.Optional[int], target_user_id: typing.Optional[str], target_application_id: typing.Optional[str]) -> <class 'inspect._empty'>
+def create_invite(self: Any, max_age: Any, max_uses: Any, temporary: Any, unique: Any, target_type: Any, target_user_id: Any, target_application_id: Any) -> None
 
-def delete(self: Any, reason: typing.Optional[str]) -> None
+def delete(self: Any, reason: Any) -> None
 
-def delete_overwrite(self: Any, overwrites: <class 'EpikCord.Overwrite'>) -> None
+def delete_overwrite(self: Any, overwrites: Overwrite) -> None
 
-def fetch_invites(self: Any) -> <class 'inspect._empty'>
+def fetch_invites(self: Any) -> None
 
 def fetch_pinned_messages(self: Any) -> typing.List[EpikCord.Message]
 
@@ -654,109 +696,109 @@ def fetch_pinned_messages(self: Any) -> typing.List[EpikCord.Message]
 GuildManager
 ------------
 
-def add_to_cache(self: Any, key: Any, value: Any) -> <class 'inspect._empty'>
+def add_to_cache(self: Any, key: Any, value: Any) -> None
 
-def clear_cache(self: Any) -> <class 'inspect._empty'>
+def clear_cache(self: Any) -> None
 
-def fetch(self: Any, guild_id: <class 'str'>, skip_cache: typing.Optional[bool], with_counts: typing.Optional[bool]) -> <class 'inspect._empty'>
+def fetch(self: Any, guild_id: str, skip_cache: Any, with_counts: Any) -> None
 
-def format_cache(self: Any) -> <class 'inspect._empty'>
+def format_cache(self: Any) -> None
 
-def get_from_cache(self: Any, key: Any) -> <class 'inspect._empty'>
+def get_from_cache(self: Any, key: Any) -> None
 
-def is_in_cache(self: Any, key: Any) -> <class 'inspect._empty'>
+def is_in_cache(self: Any, key: Any) -> None
 
-def remove_from_cache(self: Any, key: Any) -> <class 'inspect._empty'>
+def remove_from_cache(self: Any, key: Any) -> None
 
 
 GuildMember
 -----------
 
-def fetch_message(self: Any, message_id: <class 'str'>) -> <class 'EpikCord.Message'>
+def fetch_message(self: Any, message_id: str) -> <class 'EpikCord.Message'>
 
-def fetch_messages(self: Any, around: typing.Optional[str], before: typing.Optional[str], after: typing.Optional[str], limit: typing.Optional[int]) -> typing.List[EpikCord.Message]
+def fetch_messages(self: Any, around: Any, before: Any, after: Any, limit: Any) -> typing.List[EpikCord.Message]
 
-def send(self: Any, content: typing.Optional[str], embeds: typing.Optional[typing.List[dict]], components: Any, tts: typing.Optional[bool], allowed_mentions: Any, sticker_ids: typing.Optional[typing.List[str]], attachments: typing.List[EpikCord.File], suppress_embeds: <class 'bool'>) -> <class 'EpikCord.Message'>
+def send(self: Any, content: Any, embeds: Any, components: Any, tts: Any, allowed_mentions: Any, sticker_ids: Any, attachments: Any, suppress_embeds: bool) -> <class 'EpikCord.Message'>
 
 
 GuildNewsChannel
 ----------------
 
-def bulk_delete(self: Any, message_ids: typing.List[str], reason: typing.Optional[str]) -> None
+def bulk_delete(self: Any, message_ids: Any, reason: Any) -> None
 
-def create_invite(self: Any, max_age: typing.Optional[int], max_uses: typing.Optional[int], temporary: typing.Optional[bool], unique: typing.Optional[bool], target_type: typing.Optional[int], target_user_id: typing.Optional[str], target_application_id: typing.Optional[str]) -> <class 'inspect._empty'>
+def create_invite(self: Any, max_age: Any, max_uses: Any, temporary: Any, unique: Any, target_type: Any, target_user_id: Any, target_application_id: Any) -> None
 
-def create_webhook(self: Any, name: <class 'str'>, avatar: typing.Optional[str], reason: typing.Optional[str]) -> <class 'inspect._empty'>
+def create_webhook(self: Any, name: str, avatar: Any, reason: Any) -> None
 
-def delete(self: Any, reason: typing.Optional[str]) -> None
+def delete(self: Any, reason: Any) -> None
 
-def delete_overwrite(self: Any, overwrites: <class 'EpikCord.Overwrite'>) -> None
+def delete_overwrite(self: Any, overwrites: Overwrite) -> None
 
-def fetch_invites(self: Any) -> <class 'inspect._empty'>
+def fetch_invites(self: Any) -> None
 
-def fetch_message(self: Any, message_id: <class 'str'>) -> <class 'EpikCord.Message'>
+def fetch_message(self: Any, message_id: str) -> <class 'EpikCord.Message'>
 
-def fetch_messages(self: Any, around: typing.Optional[str], before: typing.Optional[str], after: typing.Optional[str], limit: typing.Optional[int]) -> typing.List[EpikCord.Message]
+def fetch_messages(self: Any, around: Any, before: Any, after: Any, limit: Any) -> typing.List[EpikCord.Message]
 
 def fetch_pinned_messages(self: Any) -> typing.List[EpikCord.Message]
 
-def follow(self: Any, webhook_channel_id: <class 'str'>) -> <class 'inspect._empty'>
+def follow(self: Any, webhook_channel_id: str) -> None
 
-def list_joined_private_archived_threads(self: Any, before: typing.Optional[str], limit: typing.Optional[int]) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
+def list_joined_private_archived_threads(self: Any, before: Any, limit: Any) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
 
-def list_private_archived_threads(self: Any, before: typing.Optional[str], limit: typing.Optional[int]) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
+def list_private_archived_threads(self: Any, before: Any, limit: Any) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
 
-def list_public_archived_threads(self: Any, before: typing.Optional[str], limit: typing.Optional[int]) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
+def list_public_archived_threads(self: Any, before: Any, limit: Any) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
 
-def send(self: Any, content: typing.Optional[str], embeds: typing.Optional[typing.List[dict]], components: Any, tts: typing.Optional[bool], allowed_mentions: Any, sticker_ids: typing.Optional[typing.List[str]], attachments: typing.List[EpikCord.File], suppress_embeds: <class 'bool'>) -> <class 'EpikCord.Message'>
+def send(self: Any, content: Any, embeds: Any, components: Any, tts: Any, allowed_mentions: Any, sticker_ids: Any, attachments: Any, suppress_embeds: bool) -> <class 'EpikCord.Message'>
 
-def start_thread(self: Any, name: <class 'str'>, auto_archive_duration: typing.Optional[int], type: typing.Optional[int], invitable: typing.Optional[bool], rate_limit_per_user: typing.Optional[int], reason: typing.Optional[str]) -> <class 'inspect._empty'>
+def start_thread(self: Any, name: str, auto_archive_duration: Any, type: Any, invitable: Any, rate_limit_per_user: Any, reason: Any) -> None
 
 
 GuildNewsThread
 ---------------
 
-def add_member(self: Any, member_id: <class 'str'>) -> <class 'inspect._empty'>
+def add_member(self: Any, member_id: str) -> None
 
-def bulk_delete(self: Any, message_ids: typing.List[str], reason: typing.Optional[str]) -> None
+def bulk_delete(self: Any, message_ids: Any, reason: Any) -> None
 
-def create_invite(self: Any, max_age: typing.Optional[int], max_uses: typing.Optional[int], temporary: typing.Optional[bool], unique: typing.Optional[bool], target_type: typing.Optional[int], target_user_id: typing.Optional[str], target_application_id: typing.Optional[str]) -> <class 'inspect._empty'>
+def create_invite(self: Any, max_age: Any, max_uses: Any, temporary: Any, unique: Any, target_type: Any, target_user_id: Any, target_application_id: Any) -> None
 
-def create_webhook(self: Any, name: <class 'str'>, avatar: typing.Optional[str], reason: typing.Optional[str]) -> <class 'inspect._empty'>
+def create_webhook(self: Any, name: str, avatar: Any, reason: Any) -> None
 
-def delete(self: Any, reason: typing.Optional[str]) -> None
+def delete(self: Any, reason: Any) -> None
 
-def delete_overwrite(self: Any, overwrites: <class 'EpikCord.Overwrite'>) -> None
+def delete_overwrite(self: Any, overwrites: Overwrite) -> None
 
-def fetch_invites(self: Any) -> <class 'inspect._empty'>
+def fetch_invites(self: Any) -> None
 
-def fetch_member(self: Any, member_id: <class 'str'>) -> <class 'EpikCord.ThreadMember'>
+def fetch_member(self: Any, member_id: str) -> <class 'EpikCord.ThreadMember'>
 
-def fetch_message(self: Any, message_id: <class 'str'>) -> <class 'EpikCord.Message'>
+def fetch_message(self: Any, message_id: str) -> <class 'EpikCord.Message'>
 
-def fetch_messages(self: Any, around: typing.Optional[str], before: typing.Optional[str], after: typing.Optional[str], limit: typing.Optional[int]) -> typing.List[EpikCord.Message]
+def fetch_messages(self: Any, around: Any, before: Any, after: Any, limit: Any) -> typing.List[EpikCord.Message]
 
 def fetch_pinned_messages(self: Any) -> typing.List[EpikCord.Message]
 
-def follow(self: Any, webhook_channel_id: <class 'str'>) -> <class 'inspect._empty'>
+def follow(self: Any, webhook_channel_id: str) -> None
 
-def join(self: Any) -> <class 'inspect._empty'>
+def join(self: Any) -> None
 
-def leave(self: Any) -> <class 'inspect._empty'>
+def leave(self: Any) -> None
 
-def list_joined_private_archived_threads(self: Any, before: typing.Optional[str], limit: typing.Optional[int]) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
+def list_joined_private_archived_threads(self: Any, before: Any, limit: Any) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
 
 def list_members(self: Any) -> typing.List[EpikCord.ThreadMember]
 
-def list_private_archived_threads(self: Any, before: typing.Optional[str], limit: typing.Optional[int]) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
+def list_private_archived_threads(self: Any, before: Any, limit: Any) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
 
-def list_public_archived_threads(self: Any, before: typing.Optional[str], limit: typing.Optional[int]) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
+def list_public_archived_threads(self: Any, before: Any, limit: Any) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
 
-def remove_member(self: Any, member_id: <class 'str'>) -> <class 'inspect._empty'>
+def remove_member(self: Any, member_id: str) -> None
 
-def send(self: Any, content: typing.Optional[str], embeds: typing.Optional[typing.List[dict]], components: Any, tts: typing.Optional[bool], allowed_mentions: Any, sticker_ids: typing.Optional[typing.List[str]], attachments: typing.List[EpikCord.File], suppress_embeds: <class 'bool'>) -> <class 'EpikCord.Message'>
+def send(self: Any, content: Any, embeds: Any, components: Any, tts: Any, allowed_mentions: Any, sticker_ids: Any, attachments: Any, suppress_embeds: bool) -> <class 'EpikCord.Message'>
 
-def start_thread(self: Any, name: <class 'str'>, auto_archive_duration: typing.Optional[int], type: typing.Optional[int], invitable: typing.Optional[bool], rate_limit_per_user: typing.Optional[int], reason: typing.Optional[str]) -> <class 'inspect._empty'>
+def start_thread(self: Any, name: str, auto_archive_duration: Any, type: Any, invitable: Any, rate_limit_per_user: Any, reason: Any) -> None
 
 
 GuildPreview
@@ -774,33 +816,33 @@ GuildStageChannel
 GuildTextChannel
 ----------------
 
-def bulk_delete(self: Any, message_ids: typing.List[str], reason: typing.Optional[str]) -> None
+def bulk_delete(self: Any, message_ids: Any, reason: Any) -> None
 
-def create_invite(self: Any, max_age: typing.Optional[int], max_uses: typing.Optional[int], temporary: typing.Optional[bool], unique: typing.Optional[bool], target_type: typing.Optional[int], target_user_id: typing.Optional[str], target_application_id: typing.Optional[str]) -> <class 'inspect._empty'>
+def create_invite(self: Any, max_age: Any, max_uses: Any, temporary: Any, unique: Any, target_type: Any, target_user_id: Any, target_application_id: Any) -> None
 
-def create_webhook(self: Any, name: <class 'str'>, avatar: typing.Optional[str], reason: typing.Optional[str]) -> <class 'inspect._empty'>
+def create_webhook(self: Any, name: str, avatar: Any, reason: Any) -> None
 
-def delete(self: Any, reason: typing.Optional[str]) -> None
+def delete(self: Any, reason: Any) -> None
 
-def delete_overwrite(self: Any, overwrites: <class 'EpikCord.Overwrite'>) -> None
+def delete_overwrite(self: Any, overwrites: Overwrite) -> None
 
-def fetch_invites(self: Any) -> <class 'inspect._empty'>
+def fetch_invites(self: Any) -> None
 
-def fetch_message(self: Any, message_id: <class 'str'>) -> <class 'EpikCord.Message'>
+def fetch_message(self: Any, message_id: str) -> <class 'EpikCord.Message'>
 
-def fetch_messages(self: Any, around: typing.Optional[str], before: typing.Optional[str], after: typing.Optional[str], limit: typing.Optional[int]) -> typing.List[EpikCord.Message]
+def fetch_messages(self: Any, around: Any, before: Any, after: Any, limit: Any) -> typing.List[EpikCord.Message]
 
 def fetch_pinned_messages(self: Any) -> typing.List[EpikCord.Message]
 
-def list_joined_private_archived_threads(self: Any, before: typing.Optional[str], limit: typing.Optional[int]) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
+def list_joined_private_archived_threads(self: Any, before: Any, limit: Any) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
 
-def list_private_archived_threads(self: Any, before: typing.Optional[str], limit: typing.Optional[int]) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
+def list_private_archived_threads(self: Any, before: Any, limit: Any) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
 
-def list_public_archived_threads(self: Any, before: typing.Optional[str], limit: typing.Optional[int]) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
+def list_public_archived_threads(self: Any, before: Any, limit: Any) -> typing.Dict[str, typing.Union[typing.List[EpikCord.Messageable], typing.List[EpikCord.ThreadMember], bool]]
 
-def send(self: Any, content: typing.Optional[str], embeds: typing.Optional[typing.List[dict]], components: Any, tts: typing.Optional[bool], allowed_mentions: Any, sticker_ids: typing.Optional[typing.List[str]], attachments: typing.List[EpikCord.File], suppress_embeds: <class 'bool'>) -> <class 'EpikCord.Message'>
+def send(self: Any, content: Any, embeds: Any, components: Any, tts: Any, allowed_mentions: Any, sticker_ids: Any, attachments: Any, suppress_embeds: bool) -> <class 'EpikCord.Message'>
 
-def start_thread(self: Any, name: <class 'str'>, auto_archive_duration: typing.Optional[int], type: typing.Optional[int], invitable: typing.Optional[bool], rate_limit_per_user: typing.Optional[int], reason: typing.Optional[str]) -> <class 'inspect._empty'>
+def start_thread(self: Any, name: str, auto_archive_duration: Any, type: Any, invitable: Any, rate_limit_per_user: Any, reason: Any) -> None
 
 
 GuildWidget
@@ -819,7 +861,7 @@ def close(self: Any) -> NoneClose underlying connector.
 Release all acquired resources.
 
 
-def delete(self: Any, url: Any, args: Any, to_discord: <class 'bool'>, kwargs: Any) -> <class 'inspect._empty'>Perform HTTP DELETE request.
+def delete(self: Any, url: Any, args: Any, to_discord: bool, kwargs: Any) -> NonePerform HTTP DELETE request.
 
 
 def detach(self: Any) -> NoneDetach connector from session without closing the former.
@@ -827,37 +869,37 @@ def detach(self: Any) -> NoneDetach connector from session without closing the f
 Session is switched to closed state anyway.
 
 
-def get(self: Any, url: Any, args: Any, to_discord: <class 'bool'>, kwargs: Any) -> <class 'inspect._empty'>Perform HTTP GET request.
+def get(self: Any, url: Any, args: Any, to_discord: bool, kwargs: Any) -> NonePerform HTTP GET request.
 
 
-def head(self: Any, url: Any, args: Any, to_discord: <class 'bool'>, kwargs: Any) -> <class 'inspect._empty'>Perform HTTP HEAD request.
+def head(self: Any, url: Any, args: Any, to_discord: bool, kwargs: Any) -> NonePerform HTTP HEAD request.
 
 
-def log_request(self: Any, res: Any) -> <class 'inspect._empty'>
+def log_request(self: Any, res: Any) -> None
 
-def options(self: Any, url: typing.Union[str, yarl.URL], allow_redirects: <class 'bool'>, kwargs: typing.Any) -> _RequestContextManagerPerform HTTP OPTIONS request.
-
-
-def patch(self: Any, url: Any, args: Any, to_discord: <class 'bool'>, kwargs: Any) -> <class 'inspect._empty'>Perform HTTP PATCH request.
+def options(self: Any, url: Any, allow_redirects: bool, kwargs: Any) -> _RequestContextManagerPerform HTTP OPTIONS request.
 
 
-def post(self: Any, url: Any, args: Any, to_discord: <class 'bool'>, kwargs: Any) -> <class 'inspect._empty'>Perform HTTP POST request.
+def patch(self: Any, url: Any, args: Any, to_discord: bool, kwargs: Any) -> NonePerform HTTP PATCH request.
 
 
-def put(self: Any, url: Any, args: Any, to_discord: <class 'bool'>, kwargs: Any) -> <class 'inspect._empty'>Perform HTTP PUT request.
+def post(self: Any, url: Any, args: Any, to_discord: bool, kwargs: Any) -> NonePerform HTTP POST request.
 
 
-def request(self: Any, method: <class 'str'>, url: typing.Union[str, yarl.URL], kwargs: typing.Any) -> _RequestContextManagerPerform HTTP request.
+def put(self: Any, url: Any, args: Any, to_discord: bool, kwargs: Any) -> NonePerform HTTP PUT request.
 
 
-def ws_connect(self: Any, url: typing.Union[str, yarl.URL], method: <class 'str'>, protocols: typing.Iterable[str], timeout: <class 'float'>, receive_timeout: typing.Optional[float], autoclose: <class 'bool'>, autoping: <class 'bool'>, heartbeat: typing.Optional[float], auth: typing.Optional[aiohttp.helpers.BasicAuth], origin: typing.Optional[str], params: typing.Optional[typing.Mapping[str, str]], headers: typing.Union[typing.Mapping[typing.Union[str, multidict._multidict.istr], str], multidict._multidict.CIMultiDict, multidict._multidict.CIMultiDictProxy, NoneType], proxy: typing.Union[str, yarl.URL, NoneType], proxy_auth: typing.Optional[aiohttp.helpers.BasicAuth], ssl: typing.Union[ssl.SSLContext, bool, NoneType, aiohttp.client_reqrep.Fingerprint], verify_ssl: typing.Optional[bool], fingerprint: typing.Optional[bytes], ssl_context: typing.Optional[ssl.SSLContext], proxy_headers: typing.Union[typing.Mapping[typing.Union[str, multidict._multidict.istr], str], multidict._multidict.CIMultiDict, multidict._multidict.CIMultiDictProxy, NoneType], compress: <class 'int'>, max_msg_size: <class 'int'>) -> _WSRequestContextManagerInitiate websocket connection.
+def request(self: Any, method: str, url: Any, kwargs: Any) -> _RequestContextManagerPerform HTTP request.
+
+
+def ws_connect(self: Any, url: Any, method: str, protocols: Any, timeout: float, receive_timeout: Any, autoclose: bool, autoping: bool, heartbeat: Any, auth: Any, origin: Any, params: Any, headers: Any, proxy: Any, proxy_auth: Any, ssl: Any, verify_ssl: Any, fingerprint: Any, ssl_context: Any, proxy_headers: Any, compress: int, max_msg_size: int) -> _WSRequestContextManagerInitiate websocket connection.
 
 
 
 IntegerOption
 -------------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 Integration
@@ -871,7 +913,7 @@ IntegrationAccount
 Intents
 -------
 
-def calculate_from_turned(self: Any) -> <class 'inspect._empty'>
+def calculate_from_turned(self: Any) -> None
 
 
 InternalServerError5xx
@@ -925,7 +967,7 @@ LabelIsTooBig
 MentionableOption
 -----------------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 MentionedChannel
@@ -935,37 +977,37 @@ MentionedChannel
 MentionedUser
 -------------
 
-def fetch_message(self: Any, message_id: <class 'str'>) -> <class 'EpikCord.Message'>
+def fetch_message(self: Any, message_id: str) -> <class 'EpikCord.Message'>
 
-def fetch_messages(self: Any, around: typing.Optional[str], before: typing.Optional[str], after: typing.Optional[str], limit: typing.Optional[int]) -> typing.List[EpikCord.Message]
+def fetch_messages(self: Any, around: Any, before: Any, after: Any, limit: Any) -> typing.List[EpikCord.Message]
 
-def send(self: Any, content: typing.Optional[str], embeds: typing.Optional[typing.List[dict]], components: Any, tts: typing.Optional[bool], allowed_mentions: Any, sticker_ids: typing.Optional[typing.List[str]], attachments: typing.List[EpikCord.File], suppress_embeds: <class 'bool'>) -> <class 'EpikCord.Message'>
+def send(self: Any, content: Any, embeds: Any, components: Any, tts: Any, allowed_mentions: Any, sticker_ids: Any, attachments: Any, suppress_embeds: bool) -> <class 'EpikCord.Message'>
 
 
 Message
 -------
 
-def add_reaction(self: Any, emoji: <class 'str'>) -> <class 'inspect._empty'>
+def add_reaction(self: Any, emoji: str) -> None
 
-def crosspost(self: Any) -> <class 'inspect._empty'>
+def crosspost(self: Any) -> None
 
-def delete(self: Any) -> <class 'inspect._empty'>
+def delete(self: Any) -> None
 
-def delete_all_reactions(self: Any) -> <class 'inspect._empty'>
+def delete_all_reactions(self: Any) -> None
 
-def delete_reaction_for_emoji(self: Any, emoji: <class 'str'>) -> <class 'inspect._empty'>
+def delete_reaction_for_emoji(self: Any, emoji: str) -> None
 
-def edit(self: Any, message_data: <class 'dict'>) -> <class 'inspect._empty'>
+def edit(self: Any, message_data: dict) -> None
 
 def fetch_reactions(self: Any, after: Any, limit: Any) -> typing.List[EpikCord.Reaction]
 
-def pin(self: Any, reason: typing.Optional[str]) -> <class 'inspect._empty'>
+def pin(self: Any, reason: Any) -> None
 
-def remove_reaction(self: Any, emoji: <class 'str'>, user: Any) -> <class 'inspect._empty'>
+def remove_reaction(self: Any, emoji: str, user: Any) -> None
 
-def start_thread(self: Any, name: <class 'str'>, auto_archive_duration: typing.Optional[int], rate_limit_per_user: typing.Optional[int]) -> <class 'inspect._empty'>
+def start_thread(self: Any, name: str, auto_archive_duration: Any, rate_limit_per_user: Any) -> None
 
-def unpin(self: Any, reason: typing.Optional[str]) -> <class 'inspect._empty'>
+def unpin(self: Any, reason: Any) -> None
 
 
 MessageActivity
@@ -975,77 +1017,77 @@ MessageActivity
 MessageCommandInteraction
 -------------------------
 
-def create_followup(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def create_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def defer(self: Any, show_loading_state: typing.Optional[bool]) -> <class 'inspect._empty'>
+def defer(self: Any, show_loading_state: Any) -> None
 
-def delete_followup(self: Any) -> <class 'inspect._empty'>
+def delete_followup(self: Any) -> None
 
-def delete_original_response(self: Any) -> <class 'inspect._empty'>
+def delete_original_response(self: Any) -> None
 
-def edit_followup(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def edit_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def edit_original_response(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def edit_original_response(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def fetch_original_response(self: Any, skip_cache: typing.Optional[bool]) -> <class 'inspect._empty'>
+def fetch_original_response(self: Any, skip_cache: Any) -> None
 
-def is_application_command(self: Any) -> <class 'inspect._empty'>
+def is_application_command(self: Any) -> None
 
-def is_autocomplete(self: Any) -> <class 'inspect._empty'>
+def is_autocomplete(self: Any) -> None
 
-def is_message_component(self: Any) -> <class 'inspect._empty'>
+def is_message_component(self: Any) -> None
 
-def is_modal_submit(self: Any) -> <class 'inspect._empty'>
+def is_modal_submit(self: Any) -> None
 
-def is_ping(self: Any) -> <class 'inspect._empty'>
+def is_ping(self: Any) -> None
 
-def reply(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def reply(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def send_modal(self: Any, modal: <class 'EpikCord.Modal'>) -> <class 'inspect._empty'>
+def send_modal(self: Any, modal: Modal) -> None
 
 
 MessageComponentInteraction
 ---------------------------
 
-def create_followup(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def create_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def defer(self: Any, show_loading_state: typing.Optional[bool]) -> <class 'inspect._empty'>
+def defer(self: Any, show_loading_state: Any) -> None
 
-def defer_update(self: Any) -> <class 'inspect._empty'>
+def defer_update(self: Any) -> None
 
-def delete_followup(self: Any) -> <class 'inspect._empty'>
+def delete_followup(self: Any) -> None
 
-def delete_original_response(self: Any) -> <class 'inspect._empty'>
+def delete_original_response(self: Any) -> None
 
-def edit_followup(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def edit_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def edit_original_response(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def edit_original_response(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def fetch_original_response(self: Any, skip_cache: typing.Optional[bool]) -> <class 'inspect._empty'>
+def fetch_original_response(self: Any, skip_cache: Any) -> None
 
-def is_action_row(self: Any) -> <class 'inspect._empty'>
+def is_action_row(self: Any) -> None
 
-def is_application_command(self: Any) -> <class 'inspect._empty'>
+def is_application_command(self: Any) -> None
 
-def is_autocomplete(self: Any) -> <class 'inspect._empty'>
+def is_autocomplete(self: Any) -> None
 
-def is_button(self: Any) -> <class 'inspect._empty'>
+def is_button(self: Any) -> None
 
-def is_message_component(self: Any) -> <class 'inspect._empty'>
+def is_message_component(self: Any) -> None
 
-def is_modal_submit(self: Any) -> <class 'inspect._empty'>
+def is_modal_submit(self: Any) -> None
 
-def is_ping(self: Any) -> <class 'inspect._empty'>
+def is_ping(self: Any) -> None
 
-def is_select_menu(self: Any) -> <class 'inspect._empty'>
+def is_select_menu(self: Any) -> None
 
-def is_text_input(self: Any) -> <class 'inspect._empty'>
+def is_text_input(self: Any) -> None
 
-def reply(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def reply(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def send_modal(self: Any, modal: <class 'EpikCord.Modal'>) -> <class 'inspect._empty'>
+def send_modal(self: Any, modal: Modal) -> None
 
-def update(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool]) -> None
+def update(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any) -> None
 
 
 MessageInteraction
@@ -1055,11 +1097,11 @@ MessageInteraction
 Messageable
 -----------
 
-def fetch_message(self: Any, message_id: <class 'str'>) -> <class 'EpikCord.Message'>
+def fetch_message(self: Any, message_id: str) -> <class 'EpikCord.Message'>
 
-def fetch_messages(self: Any, around: typing.Optional[str], before: typing.Optional[str], after: typing.Optional[str], limit: typing.Optional[int]) -> typing.List[EpikCord.Message]
+def fetch_messages(self: Any, around: Any, before: Any, after: Any, limit: Any) -> typing.List[EpikCord.Message]
 
-def send(self: Any, content: typing.Optional[str], embeds: typing.Optional[typing.List[dict]], components: Any, tts: typing.Optional[bool], allowed_mentions: Any, sticker_ids: typing.Optional[typing.List[str]], attachments: typing.List[EpikCord.File], suppress_embeds: <class 'bool'>) -> <class 'EpikCord.Message'>
+def send(self: Any, content: Any, embeds: Any, components: Any, tts: Any, allowed_mentions: Any, sticker_ids: Any, attachments: Any, suppress_embeds: bool) -> <class 'EpikCord.Message'>
 
 
 MethodNotAllowed405
@@ -1077,39 +1119,39 @@ MissingCustomId
 Modal
 -----
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 ModalSubmitInteraction
 ----------------------
 
-def create_followup(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def create_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def defer(self: Any, show_loading_state: typing.Optional[bool]) -> <class 'inspect._empty'>
+def defer(self: Any, show_loading_state: Any) -> None
 
-def delete_followup(self: Any) -> <class 'inspect._empty'>
+def delete_followup(self: Any) -> None
 
-def delete_original_response(self: Any) -> <class 'inspect._empty'>
+def delete_original_response(self: Any) -> None
 
-def edit_followup(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def edit_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def edit_original_response(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def edit_original_response(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def fetch_original_response(self: Any, skip_cache: typing.Optional[bool]) -> <class 'inspect._empty'>
+def fetch_original_response(self: Any, skip_cache: Any) -> None
 
-def is_application_command(self: Any) -> <class 'inspect._empty'>
+def is_application_command(self: Any) -> None
 
-def is_autocomplete(self: Any) -> <class 'inspect._empty'>
+def is_autocomplete(self: Any) -> None
 
-def is_message_component(self: Any) -> <class 'inspect._empty'>
+def is_message_component(self: Any) -> None
 
-def is_modal_submit(self: Any) -> <class 'inspect._empty'>
+def is_modal_submit(self: Any) -> None
 
-def is_ping(self: Any) -> <class 'inspect._empty'>
+def is_ping(self: Any) -> None
 
-def reply(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def reply(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def send_modal(self: Any, args: Any, kwargs: Any) -> <class 'inspect._empty'>
+def send_modal(self: Any, args: Any, kwargs: Any) -> None
 
 
 NotFound404
@@ -1119,7 +1161,7 @@ NotFound404
 NumberOption
 ------------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 Overwrite
@@ -1129,21 +1171,21 @@ Overwrite
 Paginator
 ---------
 
-def add_page(self: Any, page: <class 'EpikCord.Embed'>) -> <class 'inspect._empty'>
+def add_page(self: Any, page: Embed) -> None
 
-def back(self: Any) -> <class 'inspect._empty'>
+def back(self: Any) -> None
 
 def current(self: Any) -> <class 'EpikCord.Embed'>
 
-def forward(self: Any) -> <class 'inspect._empty'>
+def forward(self: Any) -> None
 
-def remove_page(self: Any, page: <class 'EpikCord.Embed'>) -> <class 'inspect._empty'>
+def remove_page(self: Any, page: Embed) -> None
 
 
 PartialEmoji
 ------------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 PartialGuild
@@ -1157,31 +1199,31 @@ PartialUser
 Permissions
 -----------
 
-def calculate_from_turned(self: Any) -> <class 'inspect._empty'>
+def calculate_from_turned(self: Any) -> None
 
 
 Presence
 --------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 PrivateThread
 -------------
 
-def add_member(self: Any, member_id: <class 'str'>) -> <class 'inspect._empty'>
+def add_member(self: Any, member_id: str) -> None
 
-def bulk_delete(self: Any, message_ids: typing.List[str], reason: typing.Optional[str]) -> None
+def bulk_delete(self: Any, message_ids: Any, reason: Any) -> None
 
-def fetch_member(self: Any, member_id: <class 'str'>) -> <class 'EpikCord.ThreadMember'>
+def fetch_member(self: Any, member_id: str) -> <class 'EpikCord.ThreadMember'>
 
-def join(self: Any) -> <class 'inspect._empty'>
+def join(self: Any) -> None
 
-def leave(self: Any) -> <class 'inspect._empty'>
+def leave(self: Any) -> None
 
 def list_members(self: Any) -> typing.List[EpikCord.ThreadMember]
 
-def remove_member(self: Any, member_id: <class 'str'>) -> <class 'inspect._empty'>
+def remove_member(self: Any, member_id: str) -> None
 
 
 RatelimitHandler
@@ -1190,7 +1232,7 @@ RatelimitHandler
 def is_ratelimited(self: Any) -> <class 'bool'>Checks if the client is ratelimited.
 
 
-def process_headers(self: Any, headers: <class 'dict'>) -> <class 'inspect._empty'>Read the headers from a request and then digest it.
+def process_headers(self: Any, headers: dict) -> NoneRead the headers from a request and then digest it.
 
 
 
@@ -1213,7 +1255,7 @@ Role
 RoleOption
 ----------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 RoleTag
@@ -1223,83 +1265,83 @@ RoleTag
 SelectMenu
 ----------
 
-def add_options(self: Any, options: typing.List[EpikCord.components.SelectMenuOption]) -> <class 'inspect._empty'>
+def add_options(self: Any, options: Any) -> None
 
-def set_custom_id(self: Any, custom_id: <class 'str'>) -> <class 'inspect._empty'>
+def set_custom_id(self: Any, custom_id: str) -> None
 
-def set_disabled(self: Any, disabled: <class 'bool'>) -> <class 'inspect._empty'>
+def set_disabled(self: Any, disabled: bool) -> None
 
-def set_max_values(self: Any, max: <class 'int'>) -> <class 'inspect._empty'>
+def set_max_values(self: Any, max: int) -> None
 
-def set_min_values(self: Any, min: <class 'int'>) -> <class 'inspect._empty'>
+def set_min_values(self: Any, min: int) -> None
 
-def set_placeholder(self: Any, placeholder: <class 'str'>) -> <class 'inspect._empty'>
+def set_placeholder(self: Any, placeholder: str) -> None
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 SelectMenuOption
 ----------------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 Shard
 -----
 
-def change_presence(self: Any, presence: typing.Optional[EpikCord.Presence]) -> <class 'inspect._empty'>
+def change_presence(self: Any, presence: Any) -> None
 
-def channel_create(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
+def channel_create(self: Any, data: dict) -> None
 
 def close(self: Any) -> None
 
-def component(self: Any, custom_id: <class 'str'>) -> <class 'inspect._empty'>Execute this function when a component with the `custom_id` is interacted with.
+def component(self: Any, custom_id: str) -> NoneExecute this function when a component with the `custom_id` is interacted with.
 
 
-def connect(self: Any) -> <class 'inspect._empty'>
+def connect(self: Any) -> None
 
-def event(self: Any, func: Any) -> <class 'inspect._empty'>
+def event(self: Any, func: Any) -> None
 
-def get_event_callback(self: Any, event_name: <class 'str'>, internal: Any) -> <class 'inspect._empty'>
+def get_event_callback(self: Any, event_name: str, internal: Any) -> None
 
-def guild_create(self: Any, data: Any) -> <class 'inspect._empty'>
+def guild_create(self: Any, data: Any) -> None
 
-def guild_delete(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
+def guild_delete(self: Any, data: dict) -> None
 
-def guild_member_update(self: Any, data: Any) -> <class 'inspect._empty'>
+def guild_member_update(self: Any, data: Any) -> None
 
-def guild_members_chunk(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
+def guild_members_chunk(self: Any, data: dict) -> None
 
-def handle_close(self: Any) -> <class 'inspect._empty'>
+def handle_close(self: Any) -> None
 
-def handle_event(self: Any, event_name: typing.Optional[str], data: <class 'dict'>) -> <class 'inspect._empty'>
+def handle_event(self: Any, event_name: Any, data: dict) -> None
 
-def handle_events(self: Any) -> <class 'inspect._empty'>
+def handle_events(self: Any) -> None
 
-def heartbeat(self: Any, forced: typing.Optional[bool]) -> <class 'inspect._empty'>
+def heartbeat(self: Any, forced: Any) -> None
 
-def identify(self: Any) -> <class 'inspect._empty'>
+def identify(self: Any) -> None
 
-def interaction_create(self: Any, data: Any) -> <class 'inspect._empty'>
+def interaction_create(self: Any, data: Any) -> None
 
-def login(self: Any) -> <class 'inspect._empty'>
+def login(self: Any) -> None
 
-def message_create(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>Event fired when messages are created
+def message_create(self: Any, data: dict) -> NoneEvent fired when messages are created
 
 
-def ready(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
+def ready(self: Any, data: dict) -> None
 
-def reconnect(self: Any) -> <class 'inspect._empty'>
+def reconnect(self: Any) -> None
 
-def request_guild_members(self: Any, guild_id: <class 'int'>, query: typing.Optional[str], limit: typing.Optional[int], presences: typing.Optional[bool], user_ids: typing.Optional[typing.List[str]], nonce: typing.Optional[str]) -> <class 'inspect._empty'>
+def request_guild_members(self: Any, guild_id: int, query: Any, limit: Any, presences: Any, user_ids: Any, nonce: Any) -> None
 
-def resume(self: Any) -> <class 'inspect._empty'>
+def resume(self: Any) -> None
 
-def send_json(self: Any, json: <class 'dict'>) -> <class 'inspect._empty'>
+def send_json(self: Any, json: dict) -> None
 
-def voice_server_update(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
+def voice_server_update(self: Any, data: dict) -> None
 
-def wait_for(self: Any, event_name: <class 'str'>, check: typing.Optional[<built-in function callable>], timeout: typing.Union[float, int, NoneType]) -> <class 'inspect._empty'>
+def wait_for(self: Any, event_name: str, check: Any, timeout: Any) -> None
 
 
 ShardingRequired
@@ -1309,13 +1351,13 @@ ShardingRequired
 SlashCommand
 ------------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 SlashCommandOptionChoice
 ------------------------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 SourceChannel
@@ -1337,19 +1379,19 @@ StickerItem
 StringOption
 ------------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 SubCommandGroup
 ---------------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 Subcommand
 ----------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 SystemChannelFlags
@@ -1367,27 +1409,27 @@ TeamMember
 TextInput
 ---------
 
-def set_custom_id(self: Any, custom_id: <class 'str'>) -> <class 'inspect._empty'>
+def set_custom_id(self: Any, custom_id: str) -> None
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 Thread
 ------
 
-def add_member(self: Any, member_id: <class 'str'>) -> <class 'inspect._empty'>
+def add_member(self: Any, member_id: str) -> None
 
-def bulk_delete(self: Any, message_ids: typing.List[str], reason: typing.Optional[str]) -> None
+def bulk_delete(self: Any, message_ids: Any, reason: Any) -> None
 
-def fetch_member(self: Any, member_id: <class 'str'>) -> <class 'EpikCord.ThreadMember'>
+def fetch_member(self: Any, member_id: str) -> <class 'EpikCord.ThreadMember'>
 
-def join(self: Any) -> <class 'inspect._empty'>
+def join(self: Any) -> None
 
-def leave(self: Any) -> <class 'inspect._empty'>
+def leave(self: Any) -> None
 
 def list_members(self: Any) -> typing.List[EpikCord.ThreadMember]
 
-def remove_member(self: Any, member_id: <class 'str'>) -> <class 'inspect._empty'>
+def remove_member(self: Any, member_id: str) -> None
 
 
 ThreadArchived
@@ -1425,49 +1467,49 @@ UnhandledEpikCordException
 User
 ----
 
-def fetch_message(self: Any, message_id: <class 'str'>) -> <class 'EpikCord.Message'>
+def fetch_message(self: Any, message_id: str) -> <class 'EpikCord.Message'>
 
-def fetch_messages(self: Any, around: typing.Optional[str], before: typing.Optional[str], after: typing.Optional[str], limit: typing.Optional[int]) -> typing.List[EpikCord.Message]
+def fetch_messages(self: Any, around: Any, before: Any, after: Any, limit: Any) -> typing.List[EpikCord.Message]
 
-def send(self: Any, content: typing.Optional[str], embeds: typing.Optional[typing.List[dict]], components: Any, tts: typing.Optional[bool], allowed_mentions: Any, sticker_ids: typing.Optional[typing.List[str]], attachments: typing.List[EpikCord.File], suppress_embeds: <class 'bool'>) -> <class 'EpikCord.Message'>
+def send(self: Any, content: Any, embeds: Any, components: Any, tts: Any, allowed_mentions: Any, sticker_ids: Any, attachments: Any, suppress_embeds: bool) -> <class 'EpikCord.Message'>
 
 
 UserCommandInteraction
 ----------------------
 
-def create_followup(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def create_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def defer(self: Any, show_loading_state: typing.Optional[bool]) -> <class 'inspect._empty'>
+def defer(self: Any, show_loading_state: Any) -> None
 
-def delete_followup(self: Any) -> <class 'inspect._empty'>
+def delete_followup(self: Any) -> None
 
-def delete_original_response(self: Any) -> <class 'inspect._empty'>
+def delete_original_response(self: Any) -> None
 
-def edit_followup(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def edit_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def edit_original_response(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def edit_original_response(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def fetch_original_response(self: Any, skip_cache: typing.Optional[bool]) -> <class 'inspect._empty'>
+def fetch_original_response(self: Any, skip_cache: Any) -> None
 
-def is_application_command(self: Any) -> <class 'inspect._empty'>
+def is_application_command(self: Any) -> None
 
-def is_autocomplete(self: Any) -> <class 'inspect._empty'>
+def is_autocomplete(self: Any) -> None
 
-def is_message_component(self: Any) -> <class 'inspect._empty'>
+def is_message_component(self: Any) -> None
 
-def is_modal_submit(self: Any) -> <class 'inspect._empty'>
+def is_modal_submit(self: Any) -> None
 
-def is_ping(self: Any) -> <class 'inspect._empty'>
+def is_ping(self: Any) -> None
 
-def reply(self: Any, tts: <class 'bool'>, content: typing.Optional[str], embeds: typing.Optional[typing.List[EpikCord.Embed]], allowed_mentions: Any, components: typing.Optional[typing.List[typing.Union[EpikCord.components.Button, EpikCord.components.SelectMenu, EpikCord.components.TextInput]]], attachments: typing.Optional[typing.List[EpikCord.Attachment]], suppress_embeds: typing.Optional[bool], ephemeral: typing.Optional[bool]) -> None
+def reply(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
-def send_modal(self: Any, modal: <class 'EpikCord.Modal'>) -> <class 'inspect._empty'>
+def send_modal(self: Any, modal: Modal) -> None
 
 
 UserOption
 ----------
 
-def to_dict(self: Any) -> <class 'inspect._empty'>
+def to_dict(self: Any) -> None
 
 
 Utils
@@ -1475,25 +1517,25 @@ Utils
 
 def cancel_tasks(self: Any, loop: Any) -> None
 
-def channel_from_type(self: Any, channel_data: <class 'dict'>) -> <class 'inspect._empty'>
+def channel_from_type(self: Any, channel_data: dict) -> None
 
 def cleanup_loop(self: Any, loop: Any) -> None
 
-def component_from_type(self: Any, component_data: <class 'dict'>) -> <class 'inspect._empty'>
+def component_from_type(self: Any, component_data: dict) -> None
 
-def compute_timedelta(self: Any, dt: <class 'datetime.datetime'>) -> <class 'inspect._empty'>
+def compute_timedelta(self: Any, dt: datetime) -> None
 
-def escape_markdown(self: Any, text: <class 'str'>, as_needed: <class 'bool'>, ignore_links: <class 'bool'>) -> <class 'str'>
+def escape_markdown(self: Any, text: str, as_needed: bool, ignore_links: bool) -> <class 'str'>
 
-def escape_mentions(self: Any, text: <class 'str'>) -> <class 'str'>
+def escape_mentions(self: Any, text: str) -> <class 'str'>
 
-def get_mime_type_for_image(self: Any, data: <class 'bytes'>) -> <class 'inspect._empty'>
+def get_mime_type_for_image(self: Any, data: bytes) -> None
 
-def interaction_from_type(self: Any, data: Any) -> <class 'inspect._empty'>
+def interaction_from_type(self: Any, data: Any) -> None
 
-def remove_markdown(self: Any, text: <class 'str'>, ignore_links: <class 'bool'>) -> <class 'str'>
+def remove_markdown(self: Any, text: str, ignore_links: bool) -> <class 'str'>
 
-def sleep_until(self: Any, when: typing.Union[datetime.datetime, int, float], result: typing.Optional[~T]) -> typing.Optional[~T]
+def sleep_until(self: Any, when: Any, result: Any) -> typing.Optional[~T]
 
 def utcnow(self: Any) -> <class 'datetime.datetime'>
 
@@ -1501,13 +1543,13 @@ def utcnow(self: Any) -> <class 'datetime.datetime'>
 VoiceChannel
 ------------
 
-def create_invite(self: Any, max_age: typing.Optional[int], max_uses: typing.Optional[int], temporary: typing.Optional[bool], unique: typing.Optional[bool], target_type: typing.Optional[int], target_user_id: typing.Optional[str], target_application_id: typing.Optional[str]) -> <class 'inspect._empty'>
+def create_invite(self: Any, max_age: Any, max_uses: Any, temporary: Any, unique: Any, target_type: Any, target_user_id: Any, target_application_id: Any) -> None
 
-def delete(self: Any, reason: typing.Optional[str]) -> None
+def delete(self: Any, reason: Any) -> None
 
-def delete_overwrite(self: Any, overwrites: <class 'EpikCord.Overwrite'>) -> None
+def delete_overwrite(self: Any, overwrites: Overwrite) -> None
 
-def fetch_invites(self: Any) -> <class 'inspect._empty'>
+def fetch_invites(self: Any) -> None
 
 def fetch_pinned_messages(self: Any) -> typing.List[EpikCord.Message]
 
@@ -1519,7 +1561,7 @@ VoiceState
 VoiceWebsocketClient
 --------------------
 
-def connect(self: Any, muted: typing.Optional[bool], deafened: typing.Optional[bool]) -> <class 'inspect._empty'>
+def connect(self: Any, muted: Any, deafened: Any) -> None
 
 
 Webhook
@@ -1533,59 +1575,59 @@ WebhookUser
 WebsocketClient
 ---------------
 
-def change_presence(self: Any, presence: typing.Optional[EpikCord.Presence]) -> <class 'inspect._empty'>
+def change_presence(self: Any, presence: Any) -> None
 
-def channel_create(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
+def channel_create(self: Any, data: dict) -> None
 
 def close(self: Any) -> None
 
-def component(self: Any, custom_id: <class 'str'>) -> <class 'inspect._empty'>Execute this function when a component with the `custom_id` is interacted with.
+def component(self: Any, custom_id: str) -> NoneExecute this function when a component with the `custom_id` is interacted with.
 
 
-def connect(self: Any) -> <class 'inspect._empty'>
+def connect(self: Any) -> None
 
-def event(self: Any, func: Any) -> <class 'inspect._empty'>
+def event(self: Any, func: Any) -> None
 
-def get_event_callback(self: Any, event_name: <class 'str'>, internal: Any) -> <class 'inspect._empty'>
+def get_event_callback(self: Any, event_name: str, internal: Any) -> None
 
-def guild_create(self: Any, data: Any) -> <class 'inspect._empty'>
+def guild_create(self: Any, data: Any) -> None
 
-def guild_delete(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
+def guild_delete(self: Any, data: dict) -> None
 
-def guild_member_update(self: Any, data: Any) -> <class 'inspect._empty'>
+def guild_member_update(self: Any, data: Any) -> None
 
-def guild_members_chunk(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
+def guild_members_chunk(self: Any, data: dict) -> None
 
-def handle_close(self: Any) -> <class 'inspect._empty'>
+def handle_close(self: Any) -> None
 
-def handle_event(self: Any, event_name: typing.Optional[str], data: <class 'dict'>) -> <class 'inspect._empty'>
+def handle_event(self: Any, event_name: Any, data: dict) -> None
 
-def handle_events(self: Any) -> <class 'inspect._empty'>
+def handle_events(self: Any) -> None
 
-def heartbeat(self: Any, forced: typing.Optional[bool]) -> <class 'inspect._empty'>
+def heartbeat(self: Any, forced: Any) -> None
 
-def identify(self: Any) -> <class 'inspect._empty'>
+def identify(self: Any) -> None
 
-def interaction_create(self: Any, data: Any) -> <class 'inspect._empty'>
+def interaction_create(self: Any, data: Any) -> None
 
-def login(self: Any) -> <class 'inspect._empty'>
+def login(self: Any) -> None
 
-def message_create(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>Event fired when messages are created
+def message_create(self: Any, data: dict) -> NoneEvent fired when messages are created
 
 
-def ready(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
+def ready(self: Any, data: dict) -> None
 
-def reconnect(self: Any) -> <class 'inspect._empty'>
+def reconnect(self: Any) -> None
 
-def request_guild_members(self: Any, guild_id: <class 'int'>, query: typing.Optional[str], limit: typing.Optional[int], presences: typing.Optional[bool], user_ids: typing.Optional[typing.List[str]], nonce: typing.Optional[str]) -> <class 'inspect._empty'>
+def request_guild_members(self: Any, guild_id: int, query: Any, limit: Any, presences: Any, user_ids: Any, nonce: Any) -> None
 
-def resume(self: Any) -> <class 'inspect._empty'>
+def resume(self: Any) -> None
 
-def send_json(self: Any, json: <class 'dict'>) -> <class 'inspect._empty'>
+def send_json(self: Any, json: dict) -> None
 
-def voice_server_update(self: Any, data: <class 'dict'>) -> <class 'inspect._empty'>
+def voice_server_update(self: Any, data: dict) -> None
 
-def wait_for(self: Any, event_name: <class 'str'>, check: typing.Optional[<built-in function callable>], timeout: typing.Union[float, int, NoneType]) -> <class 'inspect._empty'>
+def wait_for(self: Any, event_name: str, check: Any, timeout: Any) -> None
 
 
 WelcomeScreen
