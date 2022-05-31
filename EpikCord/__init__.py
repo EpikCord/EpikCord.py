@@ -3961,24 +3961,6 @@ class Intents(Flag):
     message_content = 1 << 15
     scheduled_event = 1 << 16
 
-    """
-    @classmethod
-    def example_intent_preset(cls):
-        i = cls.all()
-        
-        i.presences = False 
-        i.message_content = False
-
-        return i
-        # what this does is, i get all intents other than presences and message contents
-        # you can do i.presences to see if its turned on and stuff
-        # iirc you can do Intents.presences to get value of that flag
-        # but you can do Intents.presences to see if its turned on if it is instance
-     """
-
-    # TODO: Add some presets such as "Moderation", "Logging" etc.
-
-
 class Permissions(Flag):
     create_instant_invite = 1 << 0
     kick_members = 1 << 1
