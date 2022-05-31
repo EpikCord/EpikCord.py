@@ -9,6 +9,7 @@ dist/
 
 # Other
 bin
+*.rst
 _build
 testing.py
 

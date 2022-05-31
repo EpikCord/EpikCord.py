@@ -4099,7 +4099,7 @@ class Utils:
     A utility class, used to make difficult things easy.
 
     Attributes:
-    ----------
+    -----------
     client: Client
         The client that this utility class is attached to.
 
