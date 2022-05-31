@@ -352,20 +352,6 @@ def message_command(name: Optional[str] = None) -> "ClientMessageCommand":
     return register_message_command
 
 
-class CommandsSection:
-    """
-    The CommandsSection class which you should inherit from to create a Section which handles commands.
-
-    Attributes
-    ----------
-    commands : List[Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]]
-        A list of commands which the section has.
-    """
-
-    def __init__(self):
-        self.commands = []
-
-
 class Status:
     """The class which represents a Status.
 
@@ -1145,7 +1131,7 @@ class EventHandler:
 
             command_sorter = {"global": []}
 
-            for command in self.commands:
+            for command in self.commands.values():
                 command_payload = {"name": command.name, "type": command.type}
 
                 if command_payload["type"] == 1:
@@ -2308,13 +2294,12 @@ class Client(WebsocketClient):
     ):
         super().__init__(token, intents)
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
-        self.commands: List[
+        self.commands: Dict[str, 
             Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]
-        ] = []  # TODO: Need to change this to a Class Later
+        ] = {}
         self.guilds: GuildManager = GuildManager(self)
         self.channels: ChannelManager = ChannelManager(self)
         self.presence: Presence = Presence(status=status, activity=activity)
-        self._checks: List[Callable] = []
         self._components = {}
 
         self.http: HTTPClient = HTTPClient(
@@ -2340,60 +2325,54 @@ class Client(WebsocketClient):
         options: Optional[AnyOption] = [],
     ):
         def register_slash_command(func):
-            if not description and not func.__doc__:
+            name = name or func.__name__
+            description = description or func.__doc__
+
+            if not description:
                 raise TypeError(f"Missing description for command {func.__name__}.")
-            desc = description or func.__doc__
-            self.commands.append(
-                ClientSlashCommand(
+
+            res = ClientSlashCommand(
                     **{
                         "callback": func,
                         "name": name or func.__name__,
-                        "description": desc,
+                        "description": description,
                         "guild_ids": guild_ids,
                         "options": options,
                     }
                 )
-            )  # Cheat method.
-            return ClientSlashCommand(
-                **{
-                    "callback": func,
-                    "name": name or func.__name__,
-                    "description": desc,
-                    "guild_ids": guild_ids,
-                    "options": options,
-                }
-            )
+
+            self.commands[name] = res # Cheat method.
+            return res
 
         return register_slash_command
 
     def user_command(self, name: Optional[str] = None):
         def register_slash_command(func):
+            name = name or func.__name__
             result = ClientUserCommand(
                 **{
                     "callback": func,
-                    "name": name or func.__name__,
+                    "name": name,
                 }
             )
-            self.commands.append(result)
+            self.commands[name](result)
             return result
 
         return register_slash_command
 
     def message_command(self, name: Optional[str] = None):
         def register_slash_command(func):
-            self.commands.append(
-                ClientMessageCommand(
+            name = name or func.__name__
+            self.commands[name] = ClientMessageCommand(
                     **{
                         "callback": func,
-                        "name": name or func.__name__,
+                        "name": name,
                     }
                 )
-            )
         return register_slash_command
 
     def add_check(self, check):
-        def wrapper(func):
-            self._checks.append()
+        ...
 
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
