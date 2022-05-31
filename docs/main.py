@@ -29,7 +29,7 @@ def document_method(method):
 def document_class(cls):
     m = ""
 
-    m += f"\n\n{cls.__name__}\n{''.join(['-' for _ in range(len(cls.__name__))]) }\n"
+    m += f"\n\n{cls.__name__}\n{''.join(['=' for _ in range(len(cls.__name__))]) }\n"
 
     try:
         to_append += f"Is a subclass of {cls.__bases__[-1].__name__}\n"
