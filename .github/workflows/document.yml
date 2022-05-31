@@ -1,11 +1,22 @@
-name: document
-on: [pull_request, push]
+name: Generate Documentation
+
+on: push
+
+env:
+  DEVOPS_DIR: devops
+
 jobs:
-  document_code:
+  generate-docs:
+    name: Generate Documentation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-      - run: git clone https://github.com/EpikCord/EpikCord.py
-      - run: cd EpikCord.py/docs
-      - run: python main.py
+    - name: Check-out devops repository
+      uses: actions/checkout@v2
+      with:
+        repository: EpikCord/EpikCord.py
+        token: ${{ secrets.GITHUB_TOKEN }}
+        path: ${{ env.DEVOPS_DIR }}
+
+    - name: Hello World
+      run: python ${{ env.DEVOPS_DIR }}/hello_world.py
+      shell: sh

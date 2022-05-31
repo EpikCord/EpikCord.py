@@ -1,4 +1,4 @@
-from inspect import isclass, isfunction, iscoroutine, signature, _empty, getdoc
+from inspect import isawaitable, isclass, isfunction, iscoroutinefunction, signature, _empty, getdoc
 import EpikCord
 
 
@@ -6,7 +6,7 @@ def document_method(method):
     method_name = method.__name__
     to_append = "\n"
 
-    if iscoroutine(method):
+    if iscoroutinefunction(method):
         to_append += "async "
 
     def type_of(annotation):
