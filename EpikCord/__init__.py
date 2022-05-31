@@ -50,7 +50,6 @@ __slots__ = __all__ = (
     "Emoji",
     "EpikCordException",
     "EventHandler",
-    "EventsSection",
     "FailedCheck",
     "FailedToConnectToVoice",
     "File",
@@ -230,126 +229,6 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
-
-
-class EventsSection:
-    """The class which you should inherit from to create a Section which handles events.
-    Attributes
-    ----------
-    events : dict
-        A dictionary of events and their functions.
-    """
-
-    def __init__(self):
-        self.events = {}
-
-        class _:
-            client = ...
-            events = ...
-
-        temp = _()
-        for event in dir(self):
-            if event not in dir(temp):
-                self.events[event] = getattr(self, event)
-
-
-def command(
-    *,
-    name: Optional[str] = None,
-    description: Optional[str] = None,
-    guild_ids: Optional[List[str]] = [],
-    options: Optional[AnyOption] = [],
-):
-    """A decorator which registers a command to a ``CommandsSection``.
-
-    Arguments
-    ---------
-    name : Optional[str]
-        The name of the command. Defaults to the name of the function.
-    description : Optional[str]
-        The description of the command. Defaults to the docstring of the function.
-    guild_ids : Optional[List[str]]
-        A list of guild IDs which the command is available in. By default has no guild_ids and is registered globally.
-    options : Optional[AnyOption]
-        A list of options which the command has. This will be rendered to the Discord Client for users.
-
-    Returns
-    -------
-    ClientSlashCommand
-        The command which was registered.
-    """
-
-    def register_slash_command(func) -> ClientSlashCommand:
-        if not description and not func.__doc__:
-            raise TypeError(f"Missing description for command {func.__name__}.")
-        desc = description or func.__doc__
-        result = ClientSlashCommand(
-            **{
-                "callback": func,
-                "name": name or func.__name__,
-                "description": desc,
-                "guild_ids": guild_ids,
-                "options": options,
-            }
-        )  # Cheat method.
-        func.__self__.commands.append(result)
-        return result
-
-    return register_slash_command
-
-
-def user_command(name: Optional[str] = None) -> "ClientUserCommand":
-    """Registers a user command to a CommandsSection.
-
-    Arguments
-    ---------
-    name : Optional[str]
-        The name of the command. Defaults to the name of the function.
-
-    Returns
-    -------
-    ClientUserCommand
-        The command which was registered.
-    """
-
-    def register_user_command(func):
-        result = ClientUserCommand(
-            **{
-                "callback": func,
-                "name": name or func.__name__,
-            }
-        )
-        func.__self__.commands.append(result)
-        return result
-
-    return register_user_command
-
-
-def message_command(name: Optional[str] = None) -> "ClientMessageCommand":
-    """Registers a message command to a CommandsSection.
-
-    Arguments
-    ---------
-    name : Optional[str]
-        The name of the command. Defaults to the name of the function.
-
-    Returns
-    -------
-    ClientMessageCommand
-        The command which was registered.
-    """
-
-    def register_message_command(func):
-        result = ClientMessageCommand(
-            **{
-                "callback": func,
-                "name": name or func.__name__,
-            }
-        )
-        func.__self__.commands.append(result)
-        return result
-
-    return register_message_command
 
 
 class Status:
@@ -2314,7 +2193,7 @@ class Client(WebsocketClient):
 
         self.user: ClientUser = None
         self.application: Optional[ClientApplication] = None
-        self.sections: List[Union[CommandsSection, EventsSection]] = []
+        self.sections: List[Union[Any]] = []
 
     def command(
         self,
@@ -4382,5 +4261,6 @@ class Check:
 
 
 class CommandUtils:
+    
     def check(self, callback):
         return Check(callback)
