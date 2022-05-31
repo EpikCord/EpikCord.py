@@ -62,5 +62,5 @@ def recursive_document(cls):
 
 message = recursive_document(EpikCord)
 
-with open("docs.rst", "w") as f:
+with open("index.rst", "w") as f:
     f.write(message)
