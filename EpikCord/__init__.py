@@ -2193,7 +2193,7 @@ class Client(WebsocketClient):
 
         self.user: ClientUser = None
         self.application: Optional[ClientApplication] = None
-        self.sections: List[Union[Any]] = []
+        self.sections: List[Any] = []
 
     def command(
         self,
@@ -2250,8 +2250,11 @@ class Client(WebsocketClient):
                 )
         return register_slash_command
 
-    def add_check(self, check):
-        ...
+    def add_check(self, check: "Check"):
+        def wrapper(command_callback):
+            command = list(filter(lambda c: c.callback == command_callback, self.command.values()))
+            command[0].checks.append(check)
+        return wrapper
 
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
