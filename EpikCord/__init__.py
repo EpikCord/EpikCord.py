@@ -1141,36 +1141,38 @@ class EventHandler:
         application_data = await application_response.json()
         self.application: ClientApplication = ClientApplication(self, application_data)
 
-        command_sorter = {"global": []}
+        if self.overwrite_commands_on_ready:
 
-        for command in self.commands:
-            command_payload = {"name": command.name, "type": command.type}
+            command_sorter = {"global": []}
 
-            if command_payload["type"] == 1:
-                command_payload["description"] = command.description
-                command_payload["options"] = [
-                    option.to_dict() for option in getattr(command, "options", [])
-                ]
+            for command in self.commands:
+                command_payload = {"name": command.name, "type": command.type}
 
-            if hasattr(command, "guild_ids"):
-                for guild_id in command.guild_ids:
-                    try:
-                        command_sorter[guild_id].append(command_payload)
-                    except KeyError:
-                        command_sorter[guild_id] = [command_payload]
-            else:
-                command_sorter["global"].append(command_payload)
+                if command_payload["type"] == 1:
+                    command_payload["description"] = command.description
+                    command_payload["options"] = [
+                        option.to_dict() for option in getattr(command, "options", [])
+                    ]
 
-        for guild_id, commands in command_sorter.items():
+                if hasattr(command, "guild_ids"):
+                    for guild_id in command.guild_ids:
+                        try:
+                            command_sorter[guild_id].append(command_payload)
+                        except KeyError:
+                            command_sorter[guild_id] = [command_payload]
+                else:
+                    command_sorter["global"].append(command_payload)
 
-            if guild_id == "global":
-                await self.application.bulk_overwrite_global_application_commands(
-                    commands
-                )
-            else:
-                await self.application.bulk_overwrite_guild_application_commands(
-                    guild_id, commands
-                )
+            for guild_id, commands in command_sorter.items():
+
+                if guild_id == "global":
+                    await self.application.bulk_overwrite_global_application_commands(
+                        commands
+                    )
+                else:
+                    await self.application.bulk_overwrite_guild_application_commands(
+                        guild_id, commands
+                    )
 
 
 class WebsocketClient(EventHandler):
@@ -1447,7 +1449,7 @@ class ClientUserCommand(BaseCommand):
 
     def __init__(
         self, *, name: str, callback: callable
-    ):  # TODO: Check if you can make GuildUserCommands etc
+    ):
         super().__init__()
         self.name: str = name
         self.callback: callable = callback
@@ -2302,10 +2304,10 @@ class Client(WebsocketClient):
         *,
         status: Optional[Status] = None,
         activity: Optional[Activity] = None,
-        overwrite_commands_on_ready: Optional[bool] = True,
+        overwrite_commands_on_ready: Optional[bool] = False,
     ):
         super().__init__(token, intents)
-
+        self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
         self.commands: List[
             Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]
         ] = []  # TODO: Need to change this to a Class Later
