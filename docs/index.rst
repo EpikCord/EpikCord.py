@@ -1,7 +1,7 @@
 
 
 ActionRow
----------
+=========
 
 def add_components(self: Any, components: Any) -> None
 
@@ -11,7 +11,7 @@ def to_dict(self: Any) -> None
 
 
 Activity
---------
+========
 
 def to_dict(self: Any) -> None
 Returns activity class as dict
@@ -22,19 +22,19 @@ Returns:
 
 
 AllowedMention
---------------
+==============
 
 
 Application
------------
+===========
 
 
 ApplicationCommand
-------------------
+==================
 
 
 ApplicationCommandInteraction
------------------------------
+=============================
 
 async def create_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
@@ -80,33 +80,33 @@ async def send_modal(self: Any, modal: Modal) -> None
 
 
 ApplicationCommandOption
-------------------------
+========================
 
 
 ApplicationCommandPermission
-----------------------------
+============================
 
 def to_dict(self: Any) -> None
 
 
 
 ApplicationCommandSubcommandOption
-----------------------------------
+==================================
 
 
 Attachment
-----------
+==========
 
 
 AttachmentOption
-----------------
+================
 
 def to_dict(self: Any) -> None
 
 
 
 AutoCompleteInteraction
------------------------
+=======================
 
 async def create_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
@@ -152,22 +152,22 @@ async def send_modal(self: Any, modal: Modal) -> None
 
 
 BadRequest400
--------------
+=============
 
 
 BaseChannel
------------
+===========
 
 
 BaseComponent
--------------
+=============
 
 def set_custom_id(self: Any, custom_id: str) -> None
 
 
 
 BaseInteraction
----------------
+===============
 
 async def create_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
@@ -213,21 +213,21 @@ async def send_modal(self: Any, modal: Modal) -> None
 
 
 BaseSlashCommandOption
-----------------------
+======================
 
 def to_dict(self: Any) -> None
 
 
 
 BooleanOption
--------------
+=============
 
 def to_dict(self: Any) -> None
 
 
 
 Button
-------
+======
 
 def set_custom_id(self: Any, custom_id: str) -> None
 
@@ -249,7 +249,7 @@ def to_dict(self: Any) -> None
 
 
 CacheManager
-------------
+============
 
 def add_to_cache(self: Any, key: Any, value: Any) -> None
 
@@ -268,7 +268,7 @@ def remove_from_cache(self: Any, key: Any) -> None
 
 
 ChannelCategory
----------------
+===============
 
 async def create_invite(self: Any, max_age: Any, max_uses: Any, temporary: Any, unique: Any, target_type: Any, target_user_id: Any, target_application_id: Any) -> None
 
@@ -287,7 +287,7 @@ async def fetch_pinned_messages(self: Any) -> typing.List[EpikCord.Message]
 
 
 ChannelManager
---------------
+==============
 
 def add_to_cache(self: Any, key: Any, value: Any) -> None
 
@@ -312,18 +312,18 @@ def remove_from_cache(self: Any, key: Any) -> None
 
 
 ChannelOption
--------------
+=============
 
 def to_dict(self: Any) -> None
 
 
 
 ChannelOptionChannelTypes
--------------------------
+=========================
 
 
 Client
-------
+======
 
 def add_section(self: Any, section: Any) -> None
 
@@ -422,7 +422,7 @@ async def wait_for(self: Any, event_name: str, check: Any, timeout: Any) -> None
 
 
 ClientApplication
------------------
+=================
 
 async def bulk_overwrite_global_application_commands(self: Any, commands: Any) -> None
 
@@ -468,11 +468,11 @@ async def fetch_guild_application_commands(self: Any, guild_id: str) -> None
 
 
 ClientMessageCommand
---------------------
+====================
 
 
 ClientResponse
---------------
+==============
 
 def close(self: Any) -> None
 
@@ -507,7 +507,7 @@ async def wait_for_close(self: Any) -> None
 
 
 ClientSession
--------------
+=============
 
 async def close(self: Any) -> None
 Close underlying connector.
@@ -559,14 +559,14 @@ Initiate websocket connection.
 
 
 ClientSlashCommand
-------------------
+==================
 
 def option_autocomplete(self: Any, option_name: str) -> None
 
 
 
 ClientUser
-----------
+==========
 
 async def edit(self: Any, username: Any, avatar: Any) -> None
 
@@ -576,15 +576,15 @@ async def fetch(self: Any) -> None
 
 
 ClientUserCommand
------------------
+=================
 
 
 ClosedWebSocketConnection
--------------------------
+=========================
 
 
 Colour
-------
+======
 
 def to_rgb(self: Any) -> typing.Tuple[int, int, int]
 Returns an rgb color as a tuple
@@ -592,7 +592,7 @@ Returns an rgb color as a tuple
 
 
 Colour
-------
+======
 
 def to_rgb(self: Any) -> typing.Tuple[int, int, int]
 Returns an rgb color as a tuple
@@ -600,27 +600,27 @@ Returns an rgb color as a tuple
 
 
 CommandsSection
----------------
+===============
 
 
 CustomIdIsTooBig
-----------------
+================
 
 
 DMChannel
----------
+=========
 
 
 DisallowedIntents
------------------
+=================
 
 
 DiscordAPIError
----------------
+===============
 
 
 Embed
------
+=====
 
 def add_field(self: Any, name: str, value: str, inline: bool) -> None
 
@@ -666,7 +666,7 @@ def to_dict(self: Any) -> None
 
 
 Emoji
------
+=====
 
 async def delete(self: Any, reason: Any) -> None
 
@@ -676,11 +676,11 @@ async def edit(self: Any, name: Any, roles: Any, reason: Any) -> None
 
 
 EpikCordException
------------------
+=================
 
 
 EventHandler
-------------
+============
 
 async def channel_create(self: Any, data: dict) -> None
 
@@ -731,34 +731,34 @@ async def wait_for(self: Any, event_name: str, check: Any, timeout: Any) -> None
 
 
 EventsSection
--------------
+=============
 
 
 FailedToConnectToVoice
-----------------------
+======================
 
 
 File
-----
+====
 
 
 Flag
-----
+====
 
 def calculate_from_turned(self: Any) -> None
 
 
 
 Forbidden403
-------------
+============
 
 
 GateawayUnavailable502
-----------------------
+======================
 
 
 Guild
------
+=====
 
 async def create_channel(self: Any, name: str, reason: Any, type: Any, topic: Any, bitrate: Any, user_limit: Any, rate_limit_per_user: Any, position: Any, permission_overwrites: Any, parent_id: Any, nsfw: Any) -> None
 Creates a channel.
@@ -851,18 +851,18 @@ GuildPreview
 
 
 GuildApplicationCommandPermission
----------------------------------
+=================================
 
 def to_dict(self: Any) -> None
 
 
 
 GuildBan
---------
+========
 
 
 GuildChannel
-------------
+============
 
 async def create_invite(self: Any, max_age: Any, max_uses: Any, temporary: Any, unique: Any, target_type: Any, target_user_id: Any, target_application_id: Any) -> None
 
@@ -881,7 +881,7 @@ async def fetch_pinned_messages(self: Any) -> typing.List[EpikCord.Message]
 
 
 GuildManager
-------------
+============
 
 def add_to_cache(self: Any, key: Any, value: Any) -> None
 
@@ -906,7 +906,7 @@ def remove_from_cache(self: Any, key: Any) -> None
 
 
 GuildMember
------------
+===========
 
 async def fetch_message(self: Any, message_id: str) -> <class 'EpikCord.Message'>
 
@@ -919,7 +919,7 @@ async def send(self: Any, content: Any, embeds: Any, components: Any, tts: Any, 
 
 
 GuildNewsChannel
-----------------
+================
 
 async def bulk_delete(self: Any, message_ids: Any, reason: Any) -> None
 
@@ -968,7 +968,7 @@ async def start_thread(self: Any, name: str, auto_archive_duration: Any, type: A
 
 
 GuildNewsThread
----------------
+===============
 
 async def add_member(self: Any, member_id: str) -> None
 
@@ -1035,19 +1035,19 @@ async def start_thread(self: Any, name: str, auto_archive_duration: Any, type: A
 
 
 GuildPreview
-------------
+============
 
 
 GuildScheduledEvent
--------------------
+===================
 
 
 GuildStageChannel
------------------
+=================
 
 
 GuildTextChannel
-----------------
+================
 
 async def bulk_delete(self: Any, message_ids: Any, reason: Any) -> None
 
@@ -1093,15 +1093,15 @@ async def start_thread(self: Any, name: str, auto_archive_duration: Any, type: A
 
 
 GuildWidget
------------
+===========
 
 
 GuildWidgetSettings
--------------------
+===================
 
 
 HTTPClient
-----------
+==========
 
 async def close(self: Any) -> None
 Close underlying connector.
@@ -1156,88 +1156,88 @@ Initiate websocket connection.
 
 
 IntegerOption
--------------
+=============
 
 def to_dict(self: Any) -> None
 
 
 
 Integration
------------
+===========
 
 
 IntegrationAccount
-------------------
+==================
 
 
 Intents
--------
+=======
 
 def calculate_from_turned(self: Any) -> None
 
 
 
 InternalServerError5xx
-----------------------
+======================
 
 
 InvalidApplicationCommandOptionType
------------------------------------
+===================================
 
 
 InvalidApplicationCommandType
------------------------------
+=============================
 
 
 InvalidArgumentType
--------------------
+===================
 
 
 InvalidComponentStyle
----------------------
+=====================
 
 
 InvalidData
------------
+===========
 
 
 InvalidIntents
---------------
+==============
 
 
 InvalidOption
--------------
+=============
 
 
 InvalidStatus
--------------
+=============
 
 
 InvalidToken
-------------
+============
 
 
 Invite
-------
+======
 
 
 LabelIsTooBig
--------------
+=============
 
 
 MentionableOption
------------------
+=================
 
 def to_dict(self: Any) -> None
 
 
 
 MentionedChannel
-----------------
+================
 
 
 MentionedUser
--------------
+=============
 
 async def fetch_message(self: Any, message_id: str) -> <class 'EpikCord.Message'>
 
@@ -1250,7 +1250,7 @@ async def send(self: Any, content: Any, embeds: Any, components: Any, tts: Any, 
 
 
 Message
--------
+=======
 
 async def add_reaction(self: Any, emoji: str) -> None
 
@@ -1287,11 +1287,11 @@ async def unpin(self: Any, reason: Any) -> None
 
 
 MessageActivity
----------------
+===============
 
 
 MessageCommandInteraction
--------------------------
+=========================
 
 async def create_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
@@ -1337,7 +1337,7 @@ async def send_modal(self: Any, modal: Modal) -> None
 
 
 MessageComponentInteraction
----------------------------
+===========================
 
 async def create_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
@@ -1401,11 +1401,11 @@ async def update(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentio
 
 
 MessageInteraction
-------------------
+==================
 
 
 Messageable
------------
+===========
 
 async def fetch_message(self: Any, message_id: str) -> <class 'EpikCord.Message'>
 
@@ -1418,26 +1418,26 @@ async def send(self: Any, content: Any, embeds: Any, components: Any, tts: Any, 
 
 
 MethodNotAllowed405
--------------------
+===================
 
 
 MissingClientSetting
---------------------
+====================
 
 
 MissingCustomId
----------------
+===============
 
 
 Modal
------
+=====
 
 def to_dict(self: Any) -> None
 
 
 
 ModalSubmitInteraction
-----------------------
+======================
 
 async def create_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
@@ -1483,22 +1483,22 @@ async def send_modal(self: Any, args: Any, kwargs: Any) -> None
 
 
 NotFound404
------------
+===========
 
 
 NumberOption
-------------
+============
 
 def to_dict(self: Any) -> None
 
 
 
 Overwrite
----------
+=========
 
 
 Paginator
----------
+=========
 
 def add_page(self: Any, page: Embed) -> None
 
@@ -1517,36 +1517,36 @@ def remove_page(self: Any, page: Embed) -> None
 
 
 PartialEmoji
-------------
+============
 
 def to_dict(self: Any) -> None
 
 
 
 PartialGuild
-------------
+============
 
 
 PartialUser
------------
+===========
 
 
 Permissions
------------
+===========
 
 def calculate_from_turned(self: Any) -> None
 
 
 
 Presence
---------
+========
 
 def to_dict(self: Any) -> None
 
 
 
 PrivateThread
--------------
+=============
 
 async def add_member(self: Any, member_id: str) -> None
 
@@ -1571,7 +1571,7 @@ async def remove_member(self: Any, member_id: str) -> None
 
 
 RatelimitHandler
-----------------
+================
 
 def is_ratelimited(self: Any) -> <class 'bool'>
 Checks if the client is ratelimited.
@@ -1583,34 +1583,34 @@ Read the headers from a request and then digest it.
 
 
 Ratelimited429
---------------
+==============
 
 
 Reaction
---------
+========
 
 
 ResolvedDataHandler
--------------------
+===================
 
 
 Role
-----
+====
 
 
 RoleOption
-----------
+==========
 
 def to_dict(self: Any) -> None
 
 
 
 RoleTag
--------
+=======
 
 
 SelectMenu
-----------
+==========
 
 def add_options(self: Any, options: Any) -> None
 
@@ -1635,14 +1635,14 @@ def to_dict(self: Any) -> None
 
 
 SelectMenuOption
-----------------
+================
 
 def to_dict(self: Any) -> None
 
 
 
 Shard
------
+=====
 
 async def change_presence(self: Any, presence: Any) -> None
 
@@ -1726,74 +1726,74 @@ async def wait_for(self: Any, event_name: str, check: Any, timeout: Any) -> None
 
 
 ShardingRequired
-----------------
+================
 
 
 SlashCommand
-------------
+============
 
 def to_dict(self: Any) -> None
 
 
 
 SlashCommandOptionChoice
-------------------------
+========================
 
 def to_dict(self: Any) -> None
 
 
 
 SourceChannel
--------------
+=============
 
 
 Status
-------
+======
 
 
 Sticker
--------
+=======
 
 
 StickerItem
------------
+===========
 
 
 StringOption
-------------
+============
 
 def to_dict(self: Any) -> None
 
 
 
 SubCommandGroup
----------------
+===============
 
 def to_dict(self: Any) -> None
 
 
 
 Subcommand
-----------
+==========
 
 def to_dict(self: Any) -> None
 
 
 
 SystemChannelFlags
-------------------
+==================
 
 
 Team
-----
+====
 
 
 TeamMember
-----------
+==========
 
 
 TextInput
----------
+=========
 
 def set_custom_id(self: Any, custom_id: str) -> None
 
@@ -1803,7 +1803,7 @@ def to_dict(self: Any) -> None
 
 
 Thread
-------
+======
 
 async def add_member(self: Any, member_id: str) -> None
 
@@ -1828,39 +1828,39 @@ async def remove_member(self: Any, member_id: str) -> None
 
 
 ThreadArchived
---------------
+==============
 
 
 ThreadMember
-------------
+============
 
 
 TooManyComponents
------------------
+=================
 
 
 TooManySelectMenuOptions
-------------------------
+========================
 
 
 TypeVar
--------
+=======
 
 
 Unauthorized401
----------------
+===============
 
 
 UnavailableGuild
-----------------
+================
 
 
 UnhandledEpikCordException
---------------------------
+==========================
 
 
 User
-----
+====
 
 async def fetch_message(self: Any, message_id: str) -> <class 'EpikCord.Message'>
 
@@ -1873,7 +1873,7 @@ async def send(self: Any, content: Any, embeds: Any, components: Any, tts: Any, 
 
 
 UserCommandInteraction
-----------------------
+======================
 
 async def create_followup(self: Any, tts: bool, content: Any, embeds: Any, allowed_mentions: Any, components: Any, attachments: Any, suppress_embeds: Any, ephemeral: Any) -> None
 
@@ -1919,14 +1919,14 @@ async def send_modal(self: Any, modal: Modal) -> None
 
 
 UserOption
-----------
+==========
 
 def to_dict(self: Any) -> None
 
 
 
 Utils
------
+=====
 
 def cancel_tasks(self: Any, loop: Any) -> None
 
@@ -1966,7 +1966,7 @@ def utcnow(self: Any) -> <class 'datetime.datetime'>
 
 
 VoiceChannel
-------------
+============
 
 async def create_invite(self: Any, max_age: Any, max_uses: Any, temporary: Any, unique: Any, target_type: Any, target_user_id: Any, target_application_id: Any) -> None
 
@@ -1985,26 +1985,26 @@ async def fetch_pinned_messages(self: Any) -> typing.List[EpikCord.Message]
 
 
 VoiceState
-----------
+==========
 
 
 VoiceWebsocketClient
---------------------
+====================
 
 async def connect(self: Any, muted: Any, deafened: Any) -> None
 
 
 
 Webhook
--------
+=======
 
 
 WebhookUser
------------
+===========
 
 
 WebsocketClient
----------------
+===============
 
 async def change_presence(self: Any, presence: Any) -> None
 
@@ -2088,8 +2088,8 @@ async def wait_for(self: Any, event_name: str, check: Any, timeout: Any) -> None
 
 
 WelcomeScreen
--------------
+=============
 
 
 WelcomeScreenChannel
---------------------
+====================
