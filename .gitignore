@@ -8,7 +8,6 @@ __pycache__
 dist/
 
 # Other
-bin
 _build
 testing.py
 
