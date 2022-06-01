@@ -1337,6 +1337,8 @@ class ClientSlashCommand:
         super().__init__()
         self.name: str = name
         self.description: str = description
+        if not description:
+            raise TypeError(f"Missing description for command {name}.")
         self.callback: callable = callback
         self.guild_ids: Optional[List[str]] = guild_ids
         self.options: Optional[List[AnyOption]] = options
@@ -2201,20 +2203,14 @@ class Client(WebsocketClient):
         name: Optional[str] = None,
         description: Optional[str] = None,
         guild_ids: Optional[List[str]] = [],
-        options: Optional[AnyOption] = [],
+        options: Optional[AnyOption] = []
     ):
         def register_slash_command(func):
-            name = name or func.__name__
-            description = description or func.__doc__
-
-            if not description:
-                raise TypeError(f"Missing description for command {func.__name__}.")
-
             res = ClientSlashCommand(
                     **{
                         "callback": func,
                         "name": name or func.__name__,
-                        "description": description,
+                        "description": description or func.__doc__,
                         "guild_ids": guild_ids,
                         "options": options,
                     }
@@ -3168,7 +3164,7 @@ class BaseInteraction:
         content: Optional[str] = None,
         embeds: Optional[List[Embed]] = None,
         allowed_mentions=None,
-        components: Optional[List[Union[Button, SelectMenu, TextInput]]] = None,
+        components: Optional[List[ActionRow]] = None,
         attachments: Optional[List[Attachment]] = None,
         suppress_embeds: Optional[bool] = False,
         ephemeral: Optional[bool] = False,
