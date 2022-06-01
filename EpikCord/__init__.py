@@ -780,7 +780,7 @@ class EventHandler:
 
             elif event["op"] == self.EVENT:
                 self.sequence = event["s"]
-                logger.info(f"Received event {event['t']}")
+                logger.info(f"Received event {event['t']} with data {event['d']}")
 
                 results_from_event = event["d"]
 
@@ -788,25 +788,25 @@ class EventHandler:
                     results_from_event = await self.handle_event(
                         event["t"], event["d"], internal=True
                     )
+                    results_from_event = results_from_event or []
                 except Exception as e:
                     logger.exception(f"Error handling event {event['t']}: {e}")
 
-                if results_from_event is not None:
-                    try:
-                        if results_from_event != event["d"]:
+                try:
+                    if results_from_event != event["d"]:
 
-                            await self.handle_event(
-                                event["t"], *results_from_event, internal=False
-                            )
-                        else:
+                        await self.handle_event(
+                            event["t"], *results_from_event, internal=False
+                        )
+                    else:
 
-                            logger.warning(f"{event['t']} received unparsed data.")
+                        logger.warning(f"{event['t']} received unparsed data.")
 
-                            await self.handle_event(
-                                event["t"], results_from_event, internal=False
-                            )
-                    except Exception as e:
-                        logger.exception(f"Error handling event {event['t']}: {e}")
+                        await self.handle_event(
+                            event["t"], results_from_event, internal=False
+                        )
+                except Exception as e:
+                    logger.exception(f"Error handling user-defined event {event['t']}: {e}")
 
             elif event["op"] == self.HEARTBEAT:
                 # I shouldn't wait the remaining delay according to the docs.
@@ -919,30 +919,20 @@ class EventHandler:
             )
 
     async def interaction_create(self, data):
-
+        print(data)
         interaction = self.utils.interaction_from_type(data)
 
         await self.handle_interaction(interaction)
 
         return interaction
 
-    async def handle_event(self, event_name: Optional[str], data: dict, *, internal):
+    async def handle_event(self, event_name: Optional[str], *data: dict, internal):
 
-        if callbacks := self.get_event_callback(event_name.lower(), internal):
-            for callback in callbacks:
-                if not internal:
-                    await callback(*data)
+        if internal: # data is a dict of unparsed event_data
+            return await getattr(self, event_name)(data)
 
-    def get_event_callback(self, event_name: str, internal=False):
-
-        if internal:
-            event_callback = (
-                [getattr(self, event_name)] if hasattr(self, event_name) else []
-            )
-        else:
-            event_callback = self.events.get(event_name, [])
-
-        return event_callback or []
+        for callback in self.events.get(event_name, []): # Data is a list of Any...
+            await callback(*data)
 
     async def channel_create(self, data: dict):
 
@@ -4003,7 +3993,7 @@ class Utils:
             logger.warning(f"Unknown interaction type: {interaction_type}")
             return
 
-        return interaction_cls(self.client, **data)
+        return interaction_cls(self.client, data)
 
     def channel_from_type(self, channel_data: dict):
         channel_type = channel_data.get("type")
