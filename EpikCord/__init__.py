@@ -855,7 +855,7 @@ class EventHandler:
 
             options = []
 
-            if command.is_user() or command.is_message():
+            if command.is_user_command() or command.is_message_command():
                 options.append(interaction.target_id)
 
             if interaction.is_slash_command():
