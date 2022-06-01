@@ -920,6 +920,7 @@ class EventHandler:
 
     async def interaction_create(self, data):
         print(data)
+        print(self.commands)
         interaction = self.utils.interaction_from_type(data)
 
         await self.handle_interaction(interaction)
@@ -1319,7 +1320,7 @@ class ClientUserCommand(BaseCommand):
         return 2
 
 
-class ClientSlashCommand:
+class ClientSlashCommand(BaseCommand):
     def __init__(
         self,
         *,
@@ -2211,7 +2212,7 @@ class Client(WebsocketClient):
                     }
                 )
 
-            self.commands[name] = res # Cheat method.
+            self.commands[name or func.__name__] = res # Cheat method.
             return res
 
         return register_slash_command
