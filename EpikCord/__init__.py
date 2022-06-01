@@ -788,7 +788,7 @@ class EventHandler:
                     results_from_event = await self.handle_event(
                         event["t"], event["d"], internal=True
                     )
-                    results_from_event = results_from_event or []
+                    results_from_event = [results_from_event] or []
                 except Exception as e:
                     logger.exception(f"Error handling event {event['t']}: {e}")
 
@@ -928,8 +928,11 @@ class EventHandler:
 
     async def handle_event(self, event_name: Optional[str], *data: dict, internal):
 
+        async def _(*args, **kwargs):
+            return True
+
         if internal: # data is a dict of unparsed event_data
-            return await getattr(self, event_name)(data)
+            return await getattr(self, event_name.lower(), _)(data[0])
 
         for callback in self.events.get(event_name, []): # Data is a list of Any...
             await callback(*data)
