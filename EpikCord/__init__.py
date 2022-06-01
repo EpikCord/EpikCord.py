@@ -841,7 +841,7 @@ class EventHandler:
             A subclass of BaseInteraction which represents the Interaction
         """
         if interaction.is_ping():
-            await self.http.post(
+            return await self.http.post(
                 f"interactions/{interaction.id}/{interaction.token}/callback",
                 json={"type": 1},
             )
@@ -850,6 +850,7 @@ class EventHandler:
             command = self.commands.get(interaction.command_name)
 
             if not command:
+                logger.warning(f"Command {interaction.command_name} is not registered in this code, but is registered with Discord.")
                 return  # TODO Possibly add an error which people can handle?
 
             options = []
@@ -873,29 +874,30 @@ class EventHandler:
             interaction.is_message_component()
         ):  # If it's a message component interaction
 
-            if self._components.get(
+            if not self._components.get(
                 interaction.custom_id
             ):  # If it's registered with the bot
+                logger.warning(f"A user tried to interact with a component with the custom id {interaction.custom_id}, but it is not registered in this code, but is on Discord.")
+            
+            if interaction.is_button():  # If it's a button
+                return await self._components[interaction.custom_id](
+                    interaction, self.utils.interaction_from_type(component)
+                )  # Call the callback
 
-                if interaction.is_button():  # If it's a button
-                    return await self._components[interaction.custom_id](
-                        interaction, self.utils.interaction_from_type(component)
-                    )  # Call the callback
+            elif interaction.is_select_menu():
 
-                elif interaction.is_select_menu():
+                def get_select_menu():
+                    for action_row in interaction.message.components:
+                        for component in action_row["components"]:
+                            if component["custom_id"] == interaction.custom_id:
+                                component = self.utils.component_from_type(
+                                    component
+                                )
+                                return component
 
-                    def get_select_menu():
-                        for action_row in interaction.message.components:
-                            for component in action_row["components"]:
-                                if component["custom_id"] == interaction.custom_id:
-                                    component = self.utils.component_from_type(
-                                        component
-                                    )
-                                    return component
-
-                    return await self._components[interaction.custom_id](
-                        interaction, get_select_menu(), *interaction.values
-                    )
+                return await self._components[interaction.custom_id](
+                    interaction, get_select_menu(), *interaction.values
+                )
 
         if interaction.is_autocomplete():
             command = self.commands.get(interaction.command_name)
