@@ -858,7 +858,7 @@ class EventHandler:
             if command.is_user_command() or command.is_message_command():
                 options.append(interaction.target_id)
 
-            if interaction.is_slash_command():
+            if command.is_slash_command():
                 for check in command.checks:
                     if iscoroutine(check):
                         await check.callback(interaction)
