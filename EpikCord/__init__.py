@@ -1,6 +1,7 @@
 """
 NOTE: version string only in setup.cfg
 """
+from collections import defaultdict
 
 __slots__ = __all__ = (
     "ActionRow",
@@ -734,7 +735,7 @@ class EventHandler:
     # Class that'll contain all methods that'll be called when an event is triggered.
 
     def __init__(self):
-        self.events = {}
+        self.events = defaultdict(list)
         self.wait_for_events = {}
 
     async def voice_server_update(self, data: dict):
@@ -986,10 +987,7 @@ class EventHandler:
         if func_name.startswith("on_"):
             func_name = func_name[3:]
 
-        try:
-            self.events[func_name].append(func)
-        except KeyError:
-            self.events[func_name] = [func]
+        self.events[func_name].append(func)
 
     async def guild_member_update(self, data):
         guild_member = GuildMember(self, data)
