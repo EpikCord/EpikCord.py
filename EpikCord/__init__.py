@@ -173,6 +173,7 @@ __slots__ = __all__ = (
 )
 
 
+from collections import defaultdict
 from inspect import iscoroutine
 from sys import platform
 from .exceptions import *
@@ -734,7 +735,7 @@ class EventHandler:
     # Class that'll contain all methods that'll be called when an event is triggered.
 
     def __init__(self):
-        self.events = {}
+        self.events = defaultdict(list)
         self.wait_for_events = {}
 
     async def voice_server_update(self, data: dict):
@@ -788,13 +789,17 @@ class EventHandler:
                     results_from_event = await self.handle_event(
                         event["t"], event["d"], internal=True
                     )
-                    results_from_event = [results_from_event] or []
                 except Exception as e:
                     logger.exception(f"Error handling event {event['t']}: {e}")
 
                 try:
                     if results_from_event != event["d"]:
 
+                        if not results_from_event:
+                            results_from_event = list(results_from_event)
+                        else:
+                            results_from_event = [results_from_event]
+                        print(results_from_event)
                         await self.handle_event(
                             event["t"], *results_from_event, internal=False
                         )
@@ -986,10 +991,7 @@ class EventHandler:
         if func_name.startswith("on_"):
             func_name = func_name[3:]
 
-        try:
-            self.events[func_name].append(func)
-        except KeyError:
-            self.events[func_name] = [func]
+        self.events[func_name].append(func)
 
     async def guild_member_update(self, data):
         guild_member = GuildMember(self, data)
@@ -2007,59 +2009,32 @@ class GuildStageChannel(BaseChannel):
         self.privacy_level: int = data.get("privacy_level")
         self.discoverable_disabled: bool = data.get("discoverable_disabled")
 
+class Bucket:
+    """Does NOT represent a Bucket from Discord. EpikCord Exclusive.*"""
+    def __init__(self, *, channel_id: str = "FILLER", guild_id: str = "FILLER", path: str):
+        self.channel_id: str = channel_id
+        self.guild_id: str = guild_id
+        self.path: str = path
+        self.id: str = f"{guild_id}:{channel_id}:{path}"
+        self.lock: asyncio.Lock = asyncio.Lock()
+
+    async def ratelimit(self, duration: float):
+        async with self.lock():
+            await asyncio.sleep(duration)
 
 class RatelimitHandler:
     """
     A class to handle ratelimits from Discord.
     """
-
-    def __init__(self, *, avoid_ratelimits: Optional[bool] = True):
-        self.ratelimit_buckets: dict = {}
-        self.ratelimited: bool = False
-        self.avoid_ratelimits: bool = avoid_ratelimits
-
-    async def process_headers(self, headers: dict):
-        """
-        Read the headers from a request and then digest it.
-        """
-        if headers.get("X-Ratelimit-Bucket"):
-
-            self.ratelimit_buckets[headers["X-Ratelimit-Bucket"]] = {
-                "limit": headers["X-Ratelimit-Limit"],
-                "remaining": headers["X-Ratelimit-Remaining"],
-                "reset": headers["X-Ratelimit-Reset"],
-            }
-
-        if headers["X-Ratelimit-Remaining"] == 1 and self.avoid_ratelimits:
-            logger.critical(
-                "You have been nearly been ratelimited. We're now pausing requests."
-            )
-            self.ratelimited = True
-            await asyncio.sleep(headers["X-Ratelimit-Reset-After"])
-            self.ratelimited = False
-
-        if headers.get("X-Ratelimit-Global") or headers.get("X-Ratelimit-Scope"):
-            logger.critical(
-                "You have been ratelimited. You've reached a 429. We're now pausing requests."
-            )
-            self.ratelimited = True
-            await asyncio.sleep(headers["retry_after"])
-            self.ratelimited = False
-
-    def is_ratelimited(self) -> bool:
-        """
-        Checks if the client is ratelimited.
-        """
-        return self.ratelimited
-
+    def __init__(self):
+        self.locks: Dict[str, Bucket] = {}
+        self.global_lock: asyncio.Lock = asyncio.Lock()
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs, raise_for_status=True)
         self.base_uri: str = "https://discord.com/api/v9"
-        self.ratelimit_handler = RatelimitHandler(
-            avoid_ratelimits=kwargs.get("avoid_ratelimits", False)
-        )
+        self.ratelimit_handler = RatelimitHandler()
 
     async def log_request(self, res):
         message = f"Sent a {res.request_info.method} to {res.url} and got a {res.status} response. "
