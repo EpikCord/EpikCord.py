@@ -111,7 +111,6 @@ __slots__ = __all__ = (
     "Permissions",
     "Presence",
     "PrivateThread",
-    "RatelimitHandler",
     "Ratelimited429",
     "Reaction",
     "ResolvedDataHandler",
@@ -218,6 +217,11 @@ except ImportError:
     logger.warning(
         "The PyNacl library was not found, so voice is not supported. Please install it by doing ``pip install PyNaCl`` If you want voice support"
     )
+
+try:
+    import orjson as json
+except:
+    import json
 
 """
 :license:
@@ -1493,7 +1497,6 @@ class Application:
         self.owner: Optional[PartialUser] = (
             PartialUser(data.get("user")) if data.get("user") else None
         )
-        self.summary: str = data.get("summary")
         self.verify_key: str = data.get("verify_key")
         self.team: Optional[Team] = Team(data.get("team")) if data.get("get") else None
         self.cover_image: Optional[str] = data.get("cover_image")
@@ -2009,32 +2012,12 @@ class GuildStageChannel(BaseChannel):
         self.privacy_level: int = data.get("privacy_level")
         self.discoverable_disabled: bool = data.get("discoverable_disabled")
 
-class Bucket:
-    """Does NOT represent a Bucket from Discord. EpikCord Exclusive.*"""
-    def __init__(self, *, channel_id: str = "FILLER", guild_id: str = "FILLER", path: str):
-        self.channel_id: str = channel_id
-        self.guild_id: str = guild_id
-        self.path: str = path
-        self.id: str = f"{guild_id}:{channel_id}:{path}"
-        self.lock: asyncio.Lock = asyncio.Lock()
-
-    async def ratelimit(self, duration: float):
-        async with self.lock():
-            await asyncio.sleep(duration)
-
-class RatelimitHandler:
-    """
-    A class to handle ratelimits from Discord.
-    """
-    def __init__(self):
-        self.locks: Dict[str, Bucket] = {}
-        self.global_lock: asyncio.Lock = asyncio.Lock()
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs, raise_for_status=True)
-        self.base_uri: str = "https://discord.com/api/v9"
-        self.ratelimit_handler = RatelimitHandler()
+        super().__init__(*args, **kwargs, raise_for_status=True, json_serialize = json.dumps)
+        self.base_uri: str = "https://discord.com/api/v10"
+
 
     async def log_request(self, res):
         message = f"Sent a {res.request_info.method} to {res.url} and got a {res.status} response. "
@@ -2053,8 +2036,6 @@ class HTTPClient(ClientSession):
 
     async def get(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-            if self.ratelimit_handler.is_ratelimited():
-                return
 
             if url.startswith("/"):
                 url = url[1:]
@@ -2066,8 +2047,6 @@ class HTTPClient(ClientSession):
 
     async def post(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-            if self.ratelimit_handler.is_ratelimited():
-                return
 
             if url.startswith("/"):
                 url = url[1:]
@@ -2080,8 +2059,6 @@ class HTTPClient(ClientSession):
 
     async def patch(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-            if self.ratelimit_handler.is_ratelimited():
-                return
 
             if url.startswith("/"):
                 url = url[1:]
@@ -2093,8 +2070,6 @@ class HTTPClient(ClientSession):
 
     async def delete(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-            if self.ratelimit_handler.is_ratelimited():
-                return
 
             if url.startswith("/"):
                 url = url[1:]
@@ -2107,9 +2082,6 @@ class HTTPClient(ClientSession):
     async def put(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
 
-            if self.ratelimit_handler.is_ratelimited():
-                return
-
             if url.startswith("/"):
                 url = url[1:]
 
@@ -2121,8 +2093,7 @@ class HTTPClient(ClientSession):
 
     async def head(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-            if self.ratelimit_handler.is_ratelimited():
-                return
+
 
             if url.startswith("/"):
                 url = url[1:]
