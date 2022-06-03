@@ -1002,7 +1002,7 @@ class EventHandler:
 
         if self.overwrite_commands_on_ready:
 
-            command_sorter = {"global": []}
+            command_sorter = defaultdict(list)
 
             for command in self.commands.values():
                 command_payload = {"name": command.name, "type": command.type}
@@ -1015,10 +1015,7 @@ class EventHandler:
 
                 if hasattr(command, "guild_ids"):
                     for guild_id in command.guild_ids:
-                        try:
-                            command_sorter[guild_id].append(command_payload)
-                        except KeyError:
-                            command_sorter[guild_id] = [command_payload]
+                        command_sorter[guild_id].append(command_payload)
                 else:
                     command_sorter["global"].append(command_payload)
 
