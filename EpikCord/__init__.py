@@ -774,16 +774,16 @@ class EventHandler:
 
     async def voice_server_update(self, data: dict):
         voice_data = data["d"]
-        token = voice_data["token"]
-        guild_id = voice_data["guild_id"]
-        endpoint = voice_data["endpoint"]
-        if not endpoint:
-            return None # No endpoint, no voice
-        return {
-            "token": token,
-            "endpoint": endpoint,
-            "guild_id": guild_id
+        payload = {
+            "token": voice_data["token"],
+            "endpoint": voice_data["endpoint"],
+            "guild_id": voice_data["guild_id"]
         }
+
+        if voice_data["endpoint"]:
+            payload["endpoint"] = voice_data["endpoint"]
+
+        return payload
     
     async def voice_state_update(self, data: dict):
         return VoiceState(self, data) # TODO: Make this return something like (VoiceState, Member) or make VoiceState get Member from member_id
