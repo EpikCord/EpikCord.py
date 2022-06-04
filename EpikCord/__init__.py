@@ -175,6 +175,8 @@ __slots__ = __all__ = (
 
 from collections import defaultdict
 from inspect import iscoroutine
+import random
+import socket
 from sys import platform
 from .exceptions import *
 
@@ -4216,3 +4218,89 @@ class CommandUtils:
     
     def check(self, callback):
         return Check(callback)
+
+class BaseConnectable:
+    def __init__(self,client:Client):
+        self.client = client
+        self.ws = None
+        self.IDENTIFY = 0
+        self.SELECT_PROTOCOL = 1
+        self.READY = 2
+        self.HEARTBEAT = 3
+        self.HELLO = 8
+        self.connected = False
+        self.server_set = False
+        self.state_set = False
+        self.sequence = None
+        self.endpoint:str = None
+        #have to add events manually
+        self.client.events["voice_server_update"] = self.voice_server_update
+        self.client.events["voice_state_update"] = self.voice_state_update
+    async def voice_state_update(self,data):
+        if self.connected and data["channel_id"]== self.channel_id:
+            self.session_id = data["session_id"]
+            self.state_set = True
+
+
+    async def voice_server_update(self, data):
+        if self.connected and data["guild_id"] == self.guild_id:
+            self.token = data["token"]
+            self.guild_id = data["guild_id"] #ain't gonna make a difference
+            self.endpoint = data["endpoint"]
+            self.server_set = True
+    async def connect(self, guild_id:str, channel_id:str, self_mute:bool = False, self_deaf:bool = False):
+        
+        await self.client.send_json({
+            "op":4,
+            "d":{
+                "guild_id":guild_id,
+                "channel_id":channel_id,
+                "self_mute":self_mute,
+                "self_deaf": self_deaf
+            }
+
+        })
+        self.connected = True
+        self.guild_id = guild_id
+        self.channel_id = channel_id
+        if self.endpoint.startswith("wss://"):
+            self.endpoint = self.endpoint[6:]
+        self.ws = await self.client.http.ws_connect(f"wss://{self.endpoint}")
+        await self.send_json({
+            "op": self.IDENTIFY,
+            "d": {
+                "server_id": self.guild_id,
+                "user_id": self.client.user.id,
+                "session_id": self.session_id,
+                "token": self.token
+            }
+        })
+
+    async def udp_start(self):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.setblocking(False)
+        self.socket.sendto(b'', (self.ip, self.port))
+        self.final_mode = random.choice(self.modes)
+        await self.send_json({
+            "op": self.SELECT_PROTOCOL,
+            "d":{
+                "protocol":"udp",
+                "data":{
+                    "address": self.ip,
+                    "port": self.port,
+                    "mode": self.final_mode
+                }
+            }
+        })
+
+    async def handle_events(self):
+        async for event in self.ws:
+            if event["op"] == self.READY:
+                data = event["d"]
+                self.ssrc = data["ssrc"]
+                self.ip = data["ip"]
+                self.port = data["port"]
+                self.modes = data["modes"]
+
+    async def send_json(self, json:dict):
+        await self.ws.send_json(json)
