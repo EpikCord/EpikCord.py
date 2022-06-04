@@ -4037,6 +4037,15 @@ class Connectable:
         logger.info(f"Sending {json} to Voice Websocket {self.endpoint}")
         return await self.ws.send_json(json, *args, **kwargs)
 
+    async def heartbeat(self):
+        heartbeat_nonce = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
+        return await self.send_json({
+            "op": self.HEARTBEAT,
+            "d": heartbeat_nonce
+        })
+
+
+
 class VoiceChannel(GuildChannel, Messageable, Connectable):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
