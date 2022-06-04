@@ -2,8 +2,6 @@
 NOTE: version string only in setup.cfg
 """
 from collections import defaultdict
-from multiprocessing import Event
-
 __slots__ = __all__ = (
     "ActionRow",
     "Activity",
@@ -206,6 +204,7 @@ from typing import (
 from urllib.parse import quote as _quote
 import io
 import os
+import socket
 
 CT = TypeVar("CT", bound="Colour")
 T = TypeVar("T")
@@ -749,7 +748,28 @@ class EventHandler:
 
     def __init__(self):
         self.events = defaultdict(list)
-        self.wait_for_events = {}
+        self.wait_for_events = defaultdict(list)
+
+    def wait_for(self, event_name: str, *, check: Optional[callable] = None, timeout: int = None):
+        """
+        Waits for the event to be triggered.
+
+        Parameters
+        ----------
+        event_name : str
+            The name of the event to wait for.
+        check : Optional[callable]
+            A check to run on the event. If it returns ``False``, the event will be ignored.
+        timeout : int
+            The amount of time to wait for the event. If not specified, it'll wait forever.
+        """
+        future = asyncio.Future()
+        if not check:
+            def check(*a, **k):
+                return True
+        self.wait_for_events[event_name.lower()].append((future, check))
+        return asyncio.wait_for(future)
+
 
     async def voice_server_update(self, data: dict):
         voice_data = data["d"]
@@ -757,9 +777,7 @@ class EventHandler:
         guild_id = voice_data["guild_id"]
         endpoint = voice_data["endpoint"]
         if not endpoint:
-            raise FailedToConnectToVoice(
-                f"Failed to connect to voice server for guild {guild_id}"
-            )
+            return None # No endpoint, no voice
         return {
             "token": token,
             "endpoint": endpoint,
@@ -802,41 +820,7 @@ class EventHandler:
                 await self.identify()
 
             elif event["op"] == self.EVENT:
-                self.sequence = event["s"]
-                logger.info(f"Received event {event['t']} with data {event['d']}")
-
-                results_from_event = event["d"]
-
-                try:
-                    results_from_event = await self.handle_event(
-                        event["t"], event["d"], internal=True
-                    )
-                except Exception as e:
-                    logger.exception(f"Error handling event {event['t']}: {e}")
-
-                try:
-                    if results_from_event != event["d"]:
-
-                        if not results_from_event:
-                            results_from_event = list(results_from_event)
-                        else:
-                            results_from_event = [results_from_event]
-                        print(results_from_event)
-                        await self.handle_event(
-                            event["t"], *results_from_event, internal=False
-                        )
-                    else:
-
-                        logger.warning(f"{event['t']} received unparsed data.")
-
-                        await self.handle_event(
-                            event["t"], results_from_event, internal=False
-                        )
-                except Exception as e:
-                    logger.exception(
-                        f"Error handling user-defined event {event['t']}: {e}"
-                    )
-
+                await self.handle_event(event)
             elif event["op"] == self.HEARTBEAT:
                 # I shouldn't wait the remaining delay according to the docs.
                 await self.heartbeat(True)
@@ -859,6 +843,41 @@ class EventHandler:
                 logger.debug(f"Received OPCODE: {event['op']}")
 
         await self.handle_close()
+
+    async def handle_event(self, event: dict):
+        self.sequence = event["s"]
+        logger.info(f"Received event {event['t']} with data {event['d']}")
+
+        results_from_event = event["d"]
+
+        try:
+            results_from_event = await getattr(self, event["t"].lower())(results_from_event) if hasattr(self, event["t"].lower()) else None
+        except Exception as e:
+            logger.exception(f"Error handling event {event['t']}: {e}")
+
+        try:
+            if results_from_event != event["d"]:
+
+                if not results_from_event:
+                    results_from_event = []
+
+                else:
+                    results_from_event = [results_from_event]
+
+                if callbacks := self.events.get(event["t"].lower()):
+                    for callback in callbacks:
+                        await callback(*results_from_event)
+            else:
+                logger.warning(f"{event['t']} is going to receive unparsed data.")
+
+                if callbacks := self.events.get(event["t"].lower()):
+                    for callback in callbacks:
+                        await callback(results_from_event)
+        except Exception as e:
+            logger.exception(
+                f"Error handling user-defined event {event['t']}: {e}"
+            )
+
 
     async def handle_interaction(self, interaction):
         """The function which is the handler for interactions.
@@ -955,16 +974,6 @@ class EventHandler:
         await self.handle_interaction(interaction)
 
         return interaction
-
-    async def handle_event(self, event_name: Optional[str], *data: dict, internal):
-        async def _(*args, **kwargs):
-            return True
-
-        if internal:  # data is a dict of unparsed event_data
-            return await getattr(self, event_name.lower(), _)(data[0])
-
-        for callback in self.events.get(event_name, []):  # Data is a list of Any...
-            await callback(*data)
 
     async def channel_create(self, data: dict):
 
@@ -4162,7 +4171,7 @@ class VoiceWebsocketClient:
         channel_id: Optional[str] = None,
         channel: Optional[VoiceChannel] = None,
     ):
-        self.ws = None
+        self.ws: socket.socket = None
         self.client = client
         # TODO: Figure out which one I will use later in production
         if channel:
@@ -4181,7 +4190,7 @@ class VoiceWebsocketClient:
         self.token: Optional[str] = None
         self.session_id: Optional[str] = None
         self.endpoint: Optional[str] = None
-        self.received_voice_server_update: asyncio.Event = asyncio,Event()
+        self.received_voice_server_update: asyncio.Event = asyncio.Event()
         self.received_voice_state_update: asyncio.Event = asyncio.Event()
 
     async def connect(
@@ -4199,14 +4208,21 @@ class VoiceWebsocketClient:
             }
         )
         voice_state_update_coro = asyncio.create_task(self.client.wait_for("voice_state_update"))
-        if not self.client.intents.guild_voice_states
+        if not self.client.intents.voice_states:
+            raise ValueError("You must have the `voice_states` intent enabled to use this otherwise we never get the session_id.")
+
         voice_server_update_coro = asyncio.create_task(self.client.wait_for("voice_server_update"))
         events, _ = await asyncio.wait([voice_state_update_coro, voice_server_update_coro])
         for event in events:
             if isinstance(event.result(), VoiceState): # If it's the VoiceState
                 self.session_id: str = event.result().session_id
+                self.received_voice_state_update.set()
             elif isinstance(event.result(), dict): # If it's a VoiceServerUpdate
-                
+                self.token: str = event.result()["token"]
+                self.endpoint: str = event.result()["endpoint"]
+                self.received_voice_server_update.set()
+        self.ws = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
 
 class Check:
     def __init__(self, callback):
