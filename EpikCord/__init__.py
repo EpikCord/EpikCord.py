@@ -223,7 +223,7 @@ except ImportError:
 
 try:
     import orjson as json
-except:
+except ImportError:
     import json
 
 """
@@ -626,7 +626,7 @@ class File:
             and self.filename is not None
             and not self.filename.startswith("SPOILER_")
         ):
-            self.filename = "SPOILER_" + self.filename
+            self.filename = f"SPOILER_{self.filename}"
 
             self.spoiler = spoiler or (
                 self.filename is not None and self.filename.startswith("SPOILER_")
@@ -870,13 +870,7 @@ class EventHandler:
 
         try:
             if results_from_event != event["d"]:
-
-                if not results_from_event:
-                    results_from_event = []
-
-                else:
-                    results_from_event = [results_from_event]
-
+                results_from_event = [results_from_event] if results_from_event else []
                 if callbacks := self.events.get(event["t"].lower()):
                     for callback in callbacks:
                         await callback(*results_from_event)
@@ -888,7 +882,6 @@ class EventHandler:
                         await callback(results_from_event)
         except Exception as e:
             logger.exception(f"Error handling user-defined event {event['t']}: {e}")
-
         if callbacks := self.wait_for_events.get(event["t"].lower()):
             for future, check in callbacks:
                 if check(*results_from_event):
@@ -1000,8 +993,7 @@ class EventHandler:
 
     async def message_create(self, data: dict):
         """Event fired when messages are created"""
-        message = Message(self, data)
-        return message
+        return Message(self, data)
 
     async def guild_create(self, data):
         guild = (
@@ -1042,7 +1034,7 @@ class EventHandler:
 
     async def guild_member_update(self, data):
         guild_member = GuildMember(self, data)
-        return (self.members.fetch(data["id"]), guild_member)
+        return self.members.fetch(data["id"]), guild_member
 
     async def ready(self, data: dict):
         self.user: ClientUser = ClientUser(self, data.get("user"))
@@ -3988,9 +3980,8 @@ class Connectable:
         await self._connect_ws()
 
     async def _connect_ws(self):
-        self.ws = await self.client.http.ws_connect(
-            f"{'ws://' if not self.endpoint.startswith('wss://') else ''}{self.endpoint}?v=4"
-        )
+        wss = '' if self.endpoint.startswith('wss://') else 'ws://'
+        self.ws = await self.client.http.ws_connect(f"{wss}{self.endpoint}?v=4")
         return await self.handle_events()
 
     async def handle_events(self):
