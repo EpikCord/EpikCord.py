@@ -735,6 +735,13 @@ class User(Messageable):
         self.premium_type: int = data.get("premium_type")
         self.public_flags: int = data.get("public_flags")
 
+class VoiceRegion:
+    def __init__(self, data: dict):
+        self.id: str = data["id"]
+        self.name: str = data["name"]
+        self.optimal: bool = data["optimal"]
+        self.deprecated: bool = data["deprecated"]
+        self.custom: bool = data["custom"]
 
 class EventHandler:
     # Class that'll contain all methods that'll be called when an event is triggered.
@@ -751,6 +758,14 @@ class EventHandler:
             raise FailedToConnectToVoice(
                 f"Failed to connect to voice server for guild {guild_id}"
             )
+        return {
+            "token": token,
+            "endpoint": endpoint,
+            "guild_id": guild_id
+        }
+    
+    async def voice_state_update(self, data: dict):
+        return VoiceState(self, data) # TODO: Make this return something like (VoiceState, Member) or make VoiceState get Member from member_id
 
     def component(self, custom_id: str):
         """
@@ -4183,6 +4198,10 @@ class VoiceWebsocketClient:
                 },
             }
         )
+        voice_state_update_coro = asyncio.create_task(self.client.wait_for("voice_state_update"))
+        voice_server_update_coro = asyncio.create_task(self.client.wait_for("voice_server_update"))
+        done, pending = await asyncio.wait([voice_state_update_coro, voice_server_update_coro])
+        
 
 
 class Check:
