@@ -218,7 +218,9 @@ try:
     import nacl
 except ImportError:
     logger.warning(
-        "The PyNacl library was not found, so voice is not supported. Please install it by doing ``pip install PyNaCl`` If you want voice support"
+        "The PyNacl library was not found, so voice is not supported."
+        " Please install it by doing ``pip install PyNaCl``"
+        " If you want voice support"
     )
 
 try:
@@ -232,11 +234,22 @@ Some parts of the code is sourced from discord.py
 The MIT License (MIT)
 Copyright © 2015-2021 Rapptz
 Copyright © 2021-present EpikHost
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of 
+this software and associated documentation files (the “Software”), to deal in 
+the Software without restriction, including without limitation the rights to 
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
+of the Software, and to permit persons to whom the Software is furnished to do 
+so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all 
+copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPLIED,
+ INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+ PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR 
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER 
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
 
 class Status:
@@ -254,7 +267,8 @@ class Status:
         Arguments
         ---------
         status : str
-            The status of the user. Either ``online``, ``idle``, ``dnd`` or ``invisible``.
+            The status of the user.
+            Either ``online``, ``idle``, ``dnd`` or ``invisible``.
 
         Raises
         ------
@@ -277,7 +291,8 @@ class Activity:
     type : int
         The type of the activity.
     url : Optional[str]
-        The url of the activity. Only available for the streaming activity
+        The url of the activity.
+        Only available for the streaming activity
 
     """
 
@@ -291,7 +306,8 @@ class Activity:
         type : int
             The type of the activity.
         url : Optional[str]
-            The url of the activity. Only available for the streaming activity.
+            The url of the activity.
+            Only available for the streaming activity.
         """
         self.name = name
         self.type = type
@@ -373,7 +389,10 @@ class Presence:
 
 
 class UnavailableGuild:
-    """The class representation of an UnavailableGuild. The Guild object should be given to use when the guild is available."""
+    """
+    The class representation of an UnavailableGuild.
+    The Guild object should be given to use when the guild is available.
+    """
 
     def __init__(self, data):
         self.data = data
@@ -469,7 +488,8 @@ class Message:
         self.activity: Optional[MessageActivity] = (
             MessageActivity(data.get("activity")) if data.get("activity") else None
         )
-        # Despite there being a PartialApplication, Discord don't specify what attributes it has
+        # Despite there being a PartialApplication,
+        # Discord don't specify what attributes it has
         self.application: Application = (
             Application(data.get("application")) if data.get("application") else None
         )
@@ -728,7 +748,8 @@ class User(Messageable):
         self.system: Optional[bool] = data.get("system")
         self.mfa_enabled: bool = data.get("mfa_enabled")
         self.banner: Optional[str] = data.get("banner")
-        # the user's banner color encoded as an integer representation of hexadecimal color code
+        # the user's banner color encoded as an integer representation of
+        # hexadecimal color code
         self.accent_color: Optional[int] = data.get("accent_color")
         self.locale: Optional[str] = data.get("locale")
         self.verified: bool = data.get("verified")
@@ -748,7 +769,8 @@ class VoiceRegion:
 
 
 class EventHandler:
-    # Class that'll contain all methods that'll be called when an event is triggered.
+    # Class that'll contain all methods that'll be called when an event is
+    # triggered.
 
     def __init__(self):
         self.events = defaultdict(list)
@@ -765,9 +787,11 @@ class EventHandler:
         event_name : str
             The name of the event to wait for.
         check : Optional[callable]
-            A check to run on the event. If it returns ``False``, the event will be ignored.
+            A check to run on the event.
+            If it returns ``False``, the event will be ignored.
         timeout : int
-            The amount of time to wait for the event. If not specified, it'll wait forever.
+            The amount of time to wait for the event.
+            If not specified, it'll wait forever.
         """
         future = asyncio.Future()
         if not check:
@@ -908,7 +932,8 @@ class EventHandler:
 
             if not command:
                 logger.warning(
-                    f"Command {interaction.command_name} is not registered in this code, but is registered with Discord."
+                    f"Command {interaction.command_name} is not registered in "
+                    f"this code, but is registered with Discord. "
                 )
                 return  # TODO Possibly add an error which people can handle?
 
@@ -937,7 +962,9 @@ class EventHandler:
                 interaction.custom_id
             ):  # If it's registered with the bot
                 logger.warning(
-                    f"A user tried to interact with a component with the custom id {interaction.custom_id}, but it is not registered in this code, but is on Discord."
+                    f"A user tried to interact with a component with the "
+                    f"custom id {interaction.custom_id}, but it is not "
+                    f"registered in this code, but is on Discord. "
                 )
 
             if interaction.is_button():  # If it's a button
@@ -1174,7 +1201,9 @@ class WebsocketClient(EventHandler):
     async def handle_close(self):
         if self.ws.close_code == 4014:
             raise DisallowedIntents(
-                "You cannot use privellaged intents with this token, go to the developer portal and allow the privellaged intents needed."
+                "You cannot use privileged intents with this token, go to "
+                "the developer portal and allow the privileged intents "
+                "needed. "
             )
         elif self.ws.close_code == 1006:
             await self.resume()
@@ -1188,7 +1217,8 @@ class WebsocketClient(EventHandler):
             raise ShardingRequired("You need to shard the bot.")
         elif self.ws.close_code == 4012:
             raise DeprecationWarning(
-                "The gateway you're connecting to is deprecated and does not work, upgrade EpikCord.py."
+                "The gateway you're connecting to is deprecated and does not "
+                "work, upgrade EpikCord.py. "
             )
         elif self.ws.close_code == 4013:
             raise InvalidIntents("The intents you provided are invalid.")
@@ -1196,27 +1226,31 @@ class WebsocketClient(EventHandler):
             await self.resume()
         elif self.ws.close_code == 4001:
             logger.critical(
-                "EpikCord.py sent an invalid OPCODE to the Gateway. Report this immediately."
+                "EpikCord.py sent an invalid OPCODE to the Gateway. "
+                "Report this immediately. "
             )
             await self.resume()
         elif self.ws.close_code == 4002:
             logger.critical(
-                "EpikCord.py sent an invalid payload to the Gateway. Report this immediately."
+                "EpikCord.py sent an invalid payload to the Gateway."
+                " Report this immediately. "
             )
             await self.resume()
         elif self.ws.close_code == 4003:
             logger.critical(
-                "EpikCord.py has sent a payload prior to identifying. Report this immediately."
+                "EpikCord.py has sent a payload prior to identifying."
+                " Report this immediately. "
             )
 
         elif self.ws.close_code == 4005:
             logger.critical(
-                "EpikCord.py tried to authenticate again. Report this immediately."
+                "EpikCord.py tried to authenticate again." " Report this immediately. "
             )
             await self.resume()
         elif self.ws.close_code == 4007:
             logger.critical(
-                "EpikCord.py sent an invalid sequence number. Report this immediately."
+                "EpikCord.py sent an invalid sequence number."
+                " Report this immediately."
             )
             await self.resume()
         elif self.ws.close_code == 4009:
@@ -1336,7 +1370,8 @@ class ClientUserCommand(BaseCommand):
     Attributes:
     -----------
         * name The name set for the User Command
-        * callback: callable The function to call for the User Command (Passed in by the library)
+        * callback: callable The function to call for the User Command
+        (Passed in by the library)
 
     Parameters:
     -----------
@@ -1445,7 +1480,7 @@ class Thread:
     async def join(self):
         if self.archived:
             raise ThreadArchived(
-                "This thread has been archived so it is no longer joinable"
+                "This thread has been archived so it is no longer joignable"
             )
         response = await self.client.http.put(f"/channels/{self.id}/thread-members/@me")
         return await response.json()
@@ -1453,7 +1488,7 @@ class Thread:
     async def add_member(self, member_id: str):
         if self.archived:
             raise ThreadArchived(
-                "This thread has been archived so it is no longer joinable"
+                "This thread has been archived so it is no longer joignable"
             )
 
         response = await self.client.http.put(
@@ -1625,7 +1660,10 @@ class ClientApplication(Application):
                 ),
             ):
                 raise InvalidApplicationCommandOptionType(
-                    f"Options must be of type Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption, not {option.__class__}."
+                    f"Options must be of type Subcommand, SubCommandGroup, "
+                    f"StringOption, IntegerOption, BooleanOption, UserOption, "
+                    f"ChannelOption, RoleOption, MentionableOption, "
+                    f"NumberOption, not {option.__class__}. "
                 )
 
         response = await self.client.http.post(
@@ -1716,7 +1754,10 @@ class ClientApplication(Application):
                 ),
             ):
                 raise InvalidApplicationCommandOptionType(
-                    f"Options must be of type Subcommand, SubCommandGroup, StringOption, IntegerOption, BooleanOption, UserOption, ChannelOption, RoleOption, MentionableOption, NumberOption, not {option.__class__}."
+                    f"Options must be of type Subcommand, SubCommandGroup, "
+                    f"StringOption, IntegerOption, BooleanOption, UserOption, "
+                    f"ChannelOption, RoleOption, MentionableOption, "
+                    f"NumberOption, not {option.__class__}. "
                 )
 
         response = await self.client.http.post(
@@ -2227,7 +2268,8 @@ class Client(WebsocketClient):
 
 
 class Colour:
-    # Some of this code is sourced from discord.py, rest assured all the colors are different from discord.py
+    # Some of this code is sourced from discord.py, rest assured all the
+    # colors are different from discord.py
     __slots__ = ("value",)
 
     def __init__(self, value: int):
@@ -2330,17 +2372,20 @@ class Colour:
 
     @classmethod
     def lightmode(cls: Type[CT]) -> CT:
-        """Returns the color of the background when the color theme in Discord is set to light mode. An alias of `white`"""
+        """Returns the color of the background when the color theme in
+        Discord is set to light mode. An alias of `white`"""
         return cls(0xFFFFFF)
 
     @classmethod
     def darkmode(cls: Type[CT]) -> CT:
-        """Returns the color of the background when the color theme in Discord is set to dark mode"""
+        """Returns the color of the background when the color theme in
+        Discord is set to dark mode"""
         return cls(0x363940)
 
     @classmethod
     def amoled(cls: Type[CT]) -> CT:
-        """Returns the color of the background when the color theme in Discord is set to amoled mode. An alias of `black`"""
+        """Returns the color of the background when the color theme in
+        Discord is set to amoled mode. An alias of `black`"""
         return cls(0x000000)
 
     @classmethod
@@ -3061,7 +3106,8 @@ class WebhookUser:
 class Webhook:
     def __init__(self, client, data: dict = None):
         """
-        Don't pass in data if you're making a webhook, the lib passes data to construct an already existing webhook
+        Don't pass in data if you're making a webhook,
+        the lib passes data to construct an already existing webhook
         """
         self.client = client
         self.data = data
@@ -3576,9 +3622,8 @@ class AllowedMention:
             "parse": allowed_mentions,
             "replied_user": replied_user,
             "roles": roles,
-            "users": users
+            "users": users,
         }
-
 
 
 class MessageInteraction:
@@ -3598,7 +3643,8 @@ class SlashCommand(ApplicationCommand):
         super().__init__(data)
         self.options: Optional[List[AnyOption]] = data.get(
             "options"
-        )  # Return the type hinted class later this will take too long and is very tedious, I'll probably get Copilot to do it for me lmao
+        )  # Return the type hinted class later this will take too long and
+        # is very tedious, I'll probably get Copilot to do it for me lmao
         for option in self.options:
             option_type = option.get("type")
             if option_type == 1:
@@ -3665,13 +3711,13 @@ class ClientUser:
         self.avatar: str = data.get("avatar")
         if not self.bot:  # if they're a user account
             logger.warning(
-                "Warning: Self botting is against Discord ToS. You can get banned."
+                "Warning: Self botting is against Discord ToS." " You can get banned. "
             )
 
     async def fetch(self):
         response = await self.client.http.get("users/@me")
         data = await response.json()
-        super().__init__(data)  # Reinitialse the class with the new data.
+        super().__init__(data)  # Reinitialize the class with the new data.
 
     async def edit(
         self, *, username: Optional[str] = None, avatar: Optional[bytes] = None
@@ -3961,7 +4007,8 @@ class Connectable:
         )
         if not self.client.intents.voice_states:
             raise ValueError(
-                "You must have the `voice_states` intent enabled to use this otherwise we never get the session_id."
+                "You must have the `voice_states` intent enabled to use this "
+                "otherwise we never get the session_id. "
             )
 
         voice_server_update_coro = asyncio.create_task(
@@ -3982,7 +4029,7 @@ class Connectable:
         await self._connect_ws()
 
     async def _connect_ws(self):
-        wss = '' if self.endpoint.startswith('wss://') else 'ws://'
+        wss = "" if self.endpoint.startswith("wss://") else "ws://"
         self.ws = await self.client.http.ws_connect(f"{wss}{self.endpoint}?v=4")
         return await self.handle_events()
 
@@ -4321,15 +4368,18 @@ class Check:
 
     async def default_success(self, interaction):
         logger.info(
-            f"{interaction.author.username} ({interaction.author.id}) passed the check {self.command_callback.__name__}."
+            f"{interaction.author.username} ({interaction.author.id}) passed "
+            f"the check {self.command_callback.__name__}. "
         )
 
     async def default_failure(self, interaction):
         logger.critical(
-            f"{interaction.author.username} ({interaction.author.id}) failed the check {self.command_callback.__name__}."
+            f"{interaction.author.username} ({interaction.author.id}) failed "
+            f"the check {self.command_callback.__name__}. "
         )
         raise FailedCheck(
-            f"{interaction.author.username} ({interaction.author.id}) failed the check {self.command_callback.__name__}."
+            f"{interaction.author.username} ({interaction.author.id}) failed "
+            f"the check {self.command_callback.__name__}. "
         )
 
 
