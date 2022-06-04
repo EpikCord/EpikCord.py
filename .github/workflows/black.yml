@@ -27,9 +27,7 @@ jobs:
 
     - name: run Formatter
       run: |
-        black EpikCord
-        black examples
-
+        black .
     - name: Push changes
       run: |
         git commit -m ":art: Format code automatically" -a || echo "No changes to commit"
