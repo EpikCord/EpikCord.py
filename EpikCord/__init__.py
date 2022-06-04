@@ -268,7 +268,7 @@ class Status:
 
 
 class Activity:
-    """Represents an Discord Activity object.
+    """Represents a Discord Activity object.
 
     Attributes
     ---------
@@ -308,7 +308,7 @@ class Activity:
         Raises
         ------
             InvalidData
-                You tried to set a url for a non-streaming activity.
+                You tried to set an url for a non-streaming activity.
         """
         payload = {
             "name": self.name,
@@ -2281,7 +2281,7 @@ class Colour:
         return self._get_byte(0)
 
     def to_rgb(self) -> Tuple[int, int, int]:
-        """Returns an rgb color as a tuple"""
+        """Returns a rgb color as a tuple"""
         return self.r, self.g, self.b
 
     @classmethod
@@ -4295,7 +4295,7 @@ class ShardClient:
             for shard_id in range(shards):
                 self.shards.append(Shard(self.token, self.intents, shard_id, shards))
 
-            current_iteration = 0  # The current shard_id we've ran
+            current_iteration = 0  # The current shard_id we've run
 
             for shard in self.shards:
                 shard.login()
