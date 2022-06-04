@@ -4262,14 +4262,16 @@ class VoiceWebsocketClient:
     async def handle_events(self):
         async for event in self.ws:
             event = event.json()
-            if event["op"] == self.READY:
+            if event["op"] == self.HELLO:
+                await self.handle_hello(event["d"])
+
+            elif event["op"] == self.READY:
                 await self.handle_ready(event["d"])
 
-            elif event["op"] == self.HELLO:
-                await self.handle_hello(event["d"])
 
     async def handle_hello(self, data: dict):
         self.heartbeat_interval: int = data["heartbeat_interval"]
+        await self.identify()
 
     async def handle_ready(self, event: dict):
         self.ssrc: int = event["ssrc"]
