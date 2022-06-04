@@ -10,6 +10,7 @@ dist/
 # Other
 _build
 testing.py
-
 config.json
 RoboEpikLogs.log
+*.mp3
+*.mp4
