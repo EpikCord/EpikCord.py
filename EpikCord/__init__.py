@@ -817,7 +817,9 @@ class EventHandler:
                             event["t"], results_from_event, internal=False
                         )
                 except Exception as e:
-                    logger.exception(f"Error handling user-defined event {event['t']}: {e}")
+                    logger.exception(
+                        f"Error handling user-defined event {event['t']}: {e}"
+                    )
 
             elif event["op"] == self.HEARTBEAT:
                 # I shouldn't wait the remaining delay according to the docs.
@@ -861,7 +863,9 @@ class EventHandler:
             command = self.commands.get(interaction.command_name)
 
             if not command:
-                logger.warning(f"Command {interaction.command_name} is not registered in this code, but is registered with Discord.")
+                logger.warning(
+                    f"Command {interaction.command_name} is not registered in this code, but is registered with Discord."
+                )
                 return  # TODO Possibly add an error which people can handle?
 
             options = []
@@ -888,8 +892,10 @@ class EventHandler:
             if not self._components.get(
                 interaction.custom_id
             ):  # If it's registered with the bot
-                logger.warning(f"A user tried to interact with a component with the custom id {interaction.custom_id}, but it is not registered in this code, but is on Discord.")
-            
+                logger.warning(
+                    f"A user tried to interact with a component with the custom id {interaction.custom_id}, but it is not registered in this code, but is on Discord."
+                )
+
             if interaction.is_button():  # If it's a button
                 return await self._components[interaction.custom_id](
                     interaction, self.utils.interaction_from_type(component)
@@ -901,9 +907,7 @@ class EventHandler:
                     for action_row in interaction.message.components:
                         for component in action_row["components"]:
                             if component["custom_id"] == interaction.custom_id:
-                                component = self.utils.component_from_type(
-                                    component
-                                )
+                                component = self.utils.component_from_type(component)
                                 return component
 
                 return await self._components[interaction.custom_id](
@@ -939,14 +943,13 @@ class EventHandler:
         return interaction
 
     async def handle_event(self, event_name: Optional[str], *data: dict, internal):
-
         async def _(*args, **kwargs):
             return True
 
-        if internal: # data is a dict of unparsed event_data
+        if internal:  # data is a dict of unparsed event_data
             return await getattr(self, event_name.lower(), _)(data[0])
 
-        for callback in self.events.get(event_name, []): # Data is a list of Any...
+        for callback in self.events.get(event_name, []):  # Data is a list of Any...
             await callback(*data)
 
     async def channel_create(self, data: dict):
@@ -1316,9 +1319,7 @@ class ClientUserCommand(BaseCommand):
         * callback
     """
 
-    def __init__(
-        self, *, name: str, callback: callable
-    ):
+    def __init__(self, *, name: str, callback: callable):
         super().__init__()
         self.name: str = name
         self.callback: callable = callback
@@ -2017,9 +2018,10 @@ class GuildStageChannel(BaseChannel):
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs, raise_for_status=True, json_serialize = json.dumps)
+        super().__init__(
+            *args, **kwargs, raise_for_status=True, json_serialize=json.dumps
+        )
         self.base_uri: str = "https://discord.com/api/v10"
-
 
     async def log_request(self, res):
         message = f"Sent a {res.request_info.method} to {res.url} and got a {res.status} response. "
@@ -2096,7 +2098,6 @@ class HTTPClient(ClientSession):
     async def head(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
 
-
             if url.startswith("/"):
                 url = url[1:]
 
@@ -2119,8 +2120,8 @@ class Client(WebsocketClient):
     ):
         super().__init__(token, intents)
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
-        self.commands: Dict[str, 
-            Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]
+        self.commands: Dict[
+            str, Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]
         ] = {}
         self.guilds: GuildManager = GuildManager(self)
         self.channels: ChannelManager = ChannelManager(self)
@@ -2147,20 +2148,20 @@ class Client(WebsocketClient):
         name: Optional[str] = None,
         description: Optional[str] = None,
         guild_ids: Optional[List[str]] = [],
-        options: Optional[AnyOption] = []
+        options: Optional[AnyOption] = [],
     ):
         def register_slash_command(func):
             res = ClientSlashCommand(
-                    **{
-                        "callback": func,
-                        "name": name or func.__name__,
-                        "description": description or func.__doc__,
-                        "guild_ids": guild_ids,
-                        "options": options,
-                    }
-                )
+                **{
+                    "callback": func,
+                    "name": name or func.__name__,
+                    "description": description or func.__doc__,
+                    "guild_ids": guild_ids,
+                    "options": options,
+                }
+            )
 
-            self.commands[name or func.__name__] = res # Cheat method.
+            self.commands[name or func.__name__] = res  # Cheat method.
             return res
 
         return register_slash_command
@@ -2183,18 +2184,23 @@ class Client(WebsocketClient):
         def register_slash_command(func):
             name = name or func.__name__
             self.commands[name] = ClientMessageCommand(
-                    **{
-                        "callback": func,
-                        "name": name,
-                    }
-                )
+                **{
+                    "callback": func,
+                    "name": name,
+                }
+            )
+
         return register_slash_command
 
     def add_check(self, check: "Check"):
         def wrapper(command_callback):
-            command = list(filter(lambda c: c.callback == command_callback, self.command.values()))
+            command = list(
+                filter(lambda c: c.callback == command_callback, self.command.values())
+            )
             command[0].checks.append(check)
+
         return wrapper
+
 
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
@@ -3762,6 +3768,7 @@ class Intents(Flag):
     message_content = 1 << 15
     scheduled_event = 1 << 16
 
+
 class Permissions(Flag):
     create_instant_invite = 1 << 0
     kick_members = 1 << 1
@@ -4186,12 +4193,12 @@ class Check:
 
 
 class CommandUtils:
-    
     def check(self, callback):
         return Check(callback)
 
+
 class BaseConnectable:
-    def __init__(self,client:Client):
+    def __init__(self, client: Client):
         self.client = client
         self.ws = None
         self.IDENTIFY = 0
@@ -4203,66 +4210,78 @@ class BaseConnectable:
         self.server_set = False
         self.state_set = False
         self.sequence = None
-        self.endpoint:str = None
-        #have to add events manually
+        self.endpoint: str = None
+        # have to add events manually
         self.client.events["voice_server_update"] = self.voice_server_update
         self.client.events["voice_state_update"] = self.voice_state_update
-    async def voice_state_update(self,data):
-        if self.connected and data["channel_id"]== self.channel_id:
+
+    async def voice_state_update(self, data):
+        if self.connected and data["channel_id"] == self.channel_id:
             self.session_id = data["session_id"]
             self.state_set = True
-
 
     async def voice_server_update(self, data):
         if self.connected and data["guild_id"] == self.guild_id:
             self.token = data["token"]
-            self.guild_id = data["guild_id"] #ain't gonna make a difference
+            self.guild_id = data["guild_id"]  # ain't gonna make a difference
             self.endpoint = data["endpoint"]
             self.server_set = True
-    async def connect(self, guild_id:str, channel_id:str, self_mute:bool = False, self_deaf:bool = False):
-        
-        await self.client.send_json({
-            "op":4,
-            "d":{
-                "guild_id":guild_id,
-                "channel_id":channel_id,
-                "self_mute":self_mute,
-                "self_deaf": self_deaf
-            }
 
-        })
+    async def connect(
+        self,
+        guild_id: str,
+        channel_id: str,
+        self_mute: bool = False,
+        self_deaf: bool = False,
+    ):
+
+        await self.client.send_json(
+            {
+                "op": 4,
+                "d": {
+                    "guild_id": guild_id,
+                    "channel_id": channel_id,
+                    "self_mute": self_mute,
+                    "self_deaf": self_deaf,
+                },
+            }
+        )
         self.connected = True
         self.guild_id = guild_id
         self.channel_id = channel_id
         if self.endpoint.startswith("wss://"):
             self.endpoint = self.endpoint[6:]
         self.ws = await self.client.http.ws_connect(f"wss://{self.endpoint}")
-        await self.send_json({
-            "op": self.IDENTIFY,
-            "d": {
-                "server_id": self.guild_id,
-                "user_id": self.client.user.id,
-                "session_id": self.session_id,
-                "token": self.token
+        await self.send_json(
+            {
+                "op": self.IDENTIFY,
+                "d": {
+                    "server_id": self.guild_id,
+                    "user_id": self.client.user.id,
+                    "session_id": self.session_id,
+                    "token": self.token,
+                },
             }
-        })
+        )
 
     async def udp_start(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.setblocking(False)
-        self.socket.sendto(b'', (self.ip, self.port))
+        self.socket.sendto(b"", (self.ip, self.port))
         self.final_mode = random.choice(self.modes)
-        await self.send_json({
-            "op": self.SELECT_PROTOCOL,
-            "d":{
-                "protocol":"udp",
-                "data":{
-                    "address": self.ip,
-                    "port": self.port,
-                    "mode": self.final_mode
-                }
+        await self.send_json(
+            {
+                "op": self.SELECT_PROTOCOL,
+                "d": {
+                    "protocol": "udp",
+                    "data": {
+                        "address": self.ip,
+                        "port": self.port,
+                        "mode": self.final_mode,
+                    },
+                },
             }
-        })
+        )
 
     async def handle_events(self):
         async for event in self.ws:
@@ -4273,5 +4292,5 @@ class BaseConnectable:
                 self.port = data["port"]
                 self.modes = data["modes"]
 
-    async def send_json(self, json:dict):
+    async def send_json(self, json: dict):
         await self.ws.send_json(json)
