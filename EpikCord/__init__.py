@@ -3,6 +3,7 @@ NOTE: version string only in setup.cfg
 """
 from collections import defaultdict
 import threading
+
 __slots__ = __all__ = (
     "ActionRow",
     "Activity",
@@ -736,6 +737,7 @@ class User(Messageable):
         self.premium_type: int = data.get("premium_type")
         self.public_flags: int = data.get("public_flags")
 
+
 class VoiceRegion:
     def __init__(self, data: dict):
         self.id: str = data["id"]
@@ -744,6 +746,7 @@ class VoiceRegion:
         self.deprecated: bool = data["deprecated"]
         self.custom: bool = data["custom"]
 
+
 class EventHandler:
     # Class that'll contain all methods that'll be called when an event is triggered.
 
@@ -751,7 +754,9 @@ class EventHandler:
         self.events = defaultdict(list)
         self.wait_for_events = defaultdict(list)
 
-    def wait_for(self, event_name: str, *, check: Optional[callable] = None, timeout: int = None):
+    def wait_for(
+        self, event_name: str, *, check: Optional[callable] = None, timeout: int = None
+    ):
         """
         Waits for the event to be triggered.
 
@@ -766,11 +771,12 @@ class EventHandler:
         """
         future = asyncio.Future()
         if not check:
+
             def check(*a, **k):
                 return True
+
         self.wait_for_events[event_name.lower()].append((future, check))
         return asyncio.wait_for(future)
-
 
     async def voice_server_update(self, data: dict):
         voice_data = data["d"]
@@ -786,7 +792,9 @@ class EventHandler:
         return payload
     
     async def voice_state_update(self, data: dict):
-        return VoiceState(self, data) # TODO: Make this return something like (VoiceState, Member) or make VoiceState get Member from member_id
+        return VoiceState(
+            self, data
+        )  # TODO: Make this return something like (VoiceState, Member) or make VoiceState get Member from member_id
 
     def component(self, custom_id: str):
         """
@@ -852,7 +860,11 @@ class EventHandler:
         results_from_event = event["d"]
 
         try:
-            results_from_event = await getattr(self, event["t"].lower())(results_from_event) if hasattr(self, event["t"].lower()) else None
+            results_from_event = (
+                await getattr(self, event["t"].lower())(results_from_event)
+                if hasattr(self, event["t"].lower())
+                else None
+            )
         except Exception as e:
             logger.exception(f"Error handling event {event['t']}: {e}")
 
@@ -875,9 +887,7 @@ class EventHandler:
                     for callback in callbacks:
                         await callback(results_from_event)
         except Exception as e:
-            logger.exception(
-                f"Error handling user-defined event {event['t']}: {e}"
-            )
+            logger.exception(f"Error handling user-defined event {event['t']}: {e}")
 
         if callbacks := self.wait_for_events.get(event["t"].lower()):
             for future, check in callbacks:
@@ -4218,23 +4228,35 @@ class VoiceWebsocketClient:
                 },
             }
         )
-        voice_state_update_coro = asyncio.create_task(self.client.wait_for("voice_state_update"))
+        voice_state_update_coro = asyncio.create_task(
+            self.client.wait_for("voice_state_update")
+        )
         if not self.client.intents.voice_states:
-            raise ValueError("You must have the `voice_states` intent enabled to use this otherwise we never get the session_id.")
+            raise ValueError(
+                "You must have the `voice_states` intent enabled to use this otherwise we never get the session_id."
+            )
 
-        voice_server_update_coro = asyncio.create_task(self.client.wait_for("voice_server_update", check = lambda data: data.get("endpoint")))
-        events, _ = await asyncio.wait([voice_state_update_coro, voice_server_update_coro])
+        voice_server_update_coro = asyncio.create_task(
+            self.client.wait_for(
+                "voice_server_update", check=lambda data: data.get("endpoint")
+            )
+        )
+        events, _ = await asyncio.wait(
+            [voice_state_update_coro, voice_server_update_coro]
+        )
         for event in events:
-            if isinstance(event.result(), VoiceState): # If it's the VoiceState
+            if isinstance(event.result(), VoiceState):  # If it's the VoiceState
                 self.session_id: str = event.result().session_id
-            elif isinstance(event.result(), dict): # If it's a VoiceServerUpdate
+            elif isinstance(event.result(), dict):  # If it's a VoiceServerUpdate
                 self.token: str = event.result()["token"]
                 self.endpoint: str = event.result()["endpoint"]
 
         await self._connect_ws()
 
     async def _connect_ws(self):
-        self.ws = await self.client.http.ws_connect(f"{'ws://' if not self.endpoint.startswith('wss://') else ''}{self.endpoint}?v=4")
+        self.ws = await self.client.http.ws_connect(
+            f"{'ws://' if not self.endpoint.startswith('wss://') else ''}{self.endpoint}?v=4"
+        )
         return await self.handle_events()
 
     async def handle_events(self):
@@ -4242,7 +4264,7 @@ class VoiceWebsocketClient:
             event = event.json()
             if event["op"] == self.READY:
                 await self.handle_ready(event["d"])
-            
+
             elif event["op"] == self.HELLO:
                 await self.handle_hello(event["d"])
 
@@ -4256,17 +4278,17 @@ class VoiceWebsocketClient:
         self.port: int = event["port"]
 
     async def identify(self):
-        return await self.send_json({
-            "op": self.IDENTIFY,
-            "d": {
-                "server_id": self.guild_id,
-                "user_id": self.client.user.id,
-                "session_id": self.session_id,
-                "token": self.token,
+        return await self.send_json(
+            {
+                "op": self.IDENTIFY,
+                "d": {
+                    "server_id": self.guild_id,
+                    "user_id": self.client.user.id,
+                    "session_id": self.session_id,
+                    "token": self.token,
+                },
             }
-        })
-
-
+        )
 
     async def send_json(self, json, *args, **kwargs):
         logger.info(f"Sending {json} to Voice Websocket {self.endpoint}")
