@@ -3578,12 +3578,13 @@ class AllowedMention:
         roles: List[str],
         users: List[str],
     ):
-        self.data = {}
-        self.data["parse"] = allowed_mentions
-        self.data["replied_user"] = replied_user
-        self.data["roles"] = roles
-        self.data["users"] = users
-        return self.data
+        self.data = {
+            "parse": allowed_mentions,
+            "replied_user": replied_user,
+            "roles": roles,
+            "users": users
+        }
+
 
 
 class MessageInteraction:
