@@ -878,6 +878,10 @@ class EventHandler:
                 f"Error handling user-defined event {event['t']}: {e}"
             )
 
+        if callbacks := self.wait_for_events.get(event["t"].lower()):
+            for future, check in callbacks:
+                if check(*results_from_event):
+                    future.set_result(results_from_event)
 
     async def handle_interaction(self, interaction):
         """The function which is the handler for interactions.
@@ -4211,7 +4215,7 @@ class VoiceWebsocketClient:
         if not self.client.intents.voice_states:
             raise ValueError("You must have the `voice_states` intent enabled to use this otherwise we never get the session_id.")
 
-        voice_server_update_coro = asyncio.create_task(self.client.wait_for("voice_server_update"))
+        voice_server_update_coro = asyncio.create_task(self.client.wait_for("voice_server_update", check = lambda data: data.get("endpoint")))
         events, _ = await asyncio.wait([voice_state_update_coro, voice_server_update_coro])
         for event in events:
             if isinstance(event.result(), VoiceState): # If it's the VoiceState
@@ -4222,6 +4226,7 @@ class VoiceWebsocketClient:
                 self.endpoint: str = event.result()["endpoint"]
                 self.received_voice_server_update.set()
         self.ws = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
 
 
 class Check:
