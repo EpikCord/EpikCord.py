@@ -290,11 +290,7 @@ class SubCommandGroup(BaseSlashCommandOption):
 
     def to_dict(self):
         usual_dict = super().to_dict()
-        payload_to_append = []
-        for option in self.options:
-            payload_to_append(option.to_dict())
-
-        usual_dict["options"] = payload_to_append
+        usual_dict["options"] = [option.to_dict() for option in self.options]
         return usual_dict
 
 

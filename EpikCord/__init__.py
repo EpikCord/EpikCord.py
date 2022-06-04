@@ -778,7 +778,8 @@ class EventHandler:
         self.wait_for_events[event_name.lower()].append((future, check))
         return asyncio.wait_for(future)
 
-    async def voice_server_update(self, data: dict):
+    @staticmethod
+    async def voice_server_update(data: dict):
         voice_data = data["d"]
         payload = {
             "token": voice_data["token"],
@@ -2040,7 +2041,8 @@ class HTTPClient(ClientSession):
         )
         self.base_uri: str = "https://discord.com/api/v10"
 
-    async def log_request(self, res):
+    @staticmethod
+    async def log_request(res):
         message = f"Sent a {res.request_info.method} to {res.url} and got a {res.status} response. "
         try:
             await res.json()
@@ -4095,7 +4097,8 @@ class Utils:
             rf"(?P<markdown>[_\\~|\*`]|{self._MARKDOWN_ESCAPE_COMMON})"
         )
 
-    def get_mime_type_for_image(self, data: bytes):
+    @staticmethod
+    def get_mime_type_for_image(data: bytes):
         if data.startswith(b"\x89\x50\x4E\x47\x0D\x0A\x1A\x0A"):
             return "image/png"
         elif data[:3] == b"\xff\xd8\xff" or data[6:10] in (b"JFIF", b"Exif"):
@@ -4144,7 +4147,8 @@ class Utils:
 
         return channel_cls(self.client, channel_data)
 
-    def compute_timedelta(self, dt: datetime.datetime):
+    @staticmethod
+    def compute_timedelta(dt: datetime.datetime):
         if dt.tzinfo is None:
             dt = dt.astimezone()
         now = datetime.datetime.now(datetime.timezone.utc)
@@ -4187,13 +4191,16 @@ class Utils:
             text = re.sub(r"\\", r"\\\\", text)
             return self._MARKDOWN_ESCAPE_REGEX.sub(r"\\\1", text)
 
-    def escape_mentions(self, text: str) -> str:
+    @staticmethod
+    def escape_mentions(text: str) -> str:
         return re.sub(r"@(everyone|here|[!&]?\d{17,20})", "@\u200b\\1", text)
 
-    def utcnow(self) -> datetime.datetime:
+    @staticmethod
+    def utcnow() -> datetime.datetime:
         return datetime.datetime.now(datetime.timezone.utc)
 
-    def cancel_tasks(self, loop) -> None:
+    @staticmethod
+    def cancel_tasks(loop) -> None:
         tasks = {t for t in asyncio.all_tasks(loop=loop) if not t.done()}
 
         if not tasks:
@@ -4327,5 +4334,6 @@ class Check:
 
 
 class CommandUtils:
-    def check(self, callback):
+    @staticmethod
+    def check(callback):
         return Check(callback)

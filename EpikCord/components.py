@@ -365,7 +365,8 @@ class ActionRow:
             components.append(component)
         return cls(components)
 
-    def check_still_valid(self, list_of_components):
+    @staticmethod
+    def check_still_valid(list_of_components):
         buttons = 0
         select_menus = 0
         text_inputs = 0
