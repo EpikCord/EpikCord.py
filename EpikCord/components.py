@@ -207,7 +207,8 @@ class Button(BaseComponent):
         if isinstance(style, str):
             if style.upper() not in valid_styles:
                 raise InvalidComponentStyle(
-                    "Invalid button style. Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS."
+                    "Invalid button style. "
+                    "Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS."
                 )
             self.style: int = valid_styles[style.upper()]
 
@@ -296,7 +297,8 @@ class Button(BaseComponent):
         if isinstance(style, str):
             if style.upper() not in valid_styles:
                 raise InvalidComponentStyle(
-                    "Invalid button style. Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS."
+                    "Invalid button style."
+                    "Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS."
                 )
             self.settings["style"] = valid_styles[style.upper()]
             return self
@@ -384,7 +386,8 @@ class ActionRow:
 
             if buttons >= 5 and text_inputs < 1 and select_menus < 1:
                 raise TooManyComponents(
-                    "You can only have 1 SelectMenu/TextInput per ActionRow or 5 Buttons per ActionRow."
+                    "You can only have 1 SelectMenu/TextInput per ActionRow"
+                    " or 5 Buttons per ActionRow."
                 )
 
             yield component

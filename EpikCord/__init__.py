@@ -1,8 +1,6 @@
 """
 NOTE: version string only in setup.cfg
 """
-from collections import defaultdict
-import threading
 
 __slots__ = __all__ = (
     "ActionRow",
@@ -174,23 +172,17 @@ __slots__ = __all__ = (
 )
 
 
+import asyncio
+import datetime
+import io
+import os
+import re
+import socket
+from base64 import b64encode
 from collections import defaultdict
 from inspect import iscoroutine
-from sys import platform
-from .exceptions import *
-
-from .managers import *
-from .options import *
-from .components import *
-from .partials import *
-from aiohttp import ClientSession, ClientResponse
-import asyncio
-from base64 import b64encode
-import datetime
-import re
-
 from logging import getLogger
-
+from sys import platform
 from typing import (
     Optional,
     List,
@@ -204,13 +196,18 @@ from typing import (
     TYPE_CHECKING,
 )
 from urllib.parse import quote as _quote
-import io
-import os
-import socket
+
+from aiohttp import ClientSession, ClientResponse
+
+from .__main__ import __version__
+from .components import *
+from .exceptions import *
+from .managers import *
+from .options import *
+from .partials import *
 
 CT = TypeVar("CT", bound="Colour")
 T = TypeVar("T")
-from .__main__ import __version__
 
 logger = getLogger(__name__)
 
@@ -795,8 +792,7 @@ class EventHandler:
         """
         future = asyncio.Future()
         if not check:
-
-            def check(*a, **k):
+            def check(*_, **__):
                 return True
 
         self.wait_for_events[event_name.lower()].append((future, check))
@@ -1722,10 +1718,13 @@ class ClientApplication(Application):
         *,
         name: str,
         description: str,
-        options: Optional[List[AnyOption]] = [],
+        options=None,
         default_permission: Optional[bool] = False,
         command_type: Optional[int] = 1,
     ):
+        if options is None:
+            options = []
+
         payload = {
             "name": name,
             "description": description,
@@ -2138,10 +2137,10 @@ class HTTPClient(ClientSession):
             if url.startswith("/"):
                 url = url[1:]
 
-            res = await super().delete(f"{self.base_uri}/{url}", *args, **kwargs)
+            res = await super().delete(f"{self.base_uri}/{url}", **kwargs)
             await self.log_request(res)
             return res
-        return await super().delete(url, *args, **kwargs)
+        return await super().delete(url, **kwargs)
 
     async def put(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
@@ -2207,9 +2206,14 @@ class Client(WebsocketClient):
         *,
         name: Optional[str] = None,
         description: Optional[str] = None,
-        guild_ids: Optional[List[str]] = [],
-        options: Optional[AnyOption] = [],
+        guild_ids=None,
+        options=None,
     ):
+        if guild_ids is None:
+            guild_ids = []
+        if options is None:
+            options = []
+
         def register_slash_command(func):
             res = ClientSlashCommand(
                 **{
@@ -3958,7 +3962,7 @@ class Connectable:
         channel_id: Optional[str] = None,
         channel: Optional[VoiceChannel] = None,
     ):
-        self.ws: socket.socket = None
+        self.ws: Optional[socket.socket] = None
         self.client = client
         # TODO: Figure out which one I will use later in production
         if channel:
@@ -3982,7 +3986,7 @@ class Connectable:
         self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.ws = None
 
-        self.heartbeat_interval: int = None
+        self.heartbeat_interval: Optional[int] = None
         self.ip: Optional[str] = None
         self.port: Optional[int] = None
         self.ssrc: Optional[int] = None
