@@ -783,14 +783,14 @@ class EventHandler:
         payload = {
             "token": voice_data["token"],
             "endpoint": voice_data["endpoint"],
-            "guild_id": voice_data["guild_id"]
+            "guild_id": voice_data["guild_id"],
         }
 
         if voice_data["endpoint"]:
             payload["endpoint"] = voice_data["endpoint"]
 
         return payload
-    
+
     async def voice_state_update(self, data: dict):
         return VoiceState(
             self, data
