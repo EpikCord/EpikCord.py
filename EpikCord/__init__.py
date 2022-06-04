@@ -2740,6 +2740,7 @@ class Guild:
         self.id: str = data.get("id")
         self.name: str = data.get("name")
         self.icon: Optional[str] = data.get("icon")
+        self.http_lock: asyncio.Lock = asyncio.Lock()
         self.icon_hash: Optional[str] = data.get("icon_hash")
         self.splash: Optional[str] = data.get("splash")
         self.discovery_splash: Optional[str] = data.get("discovery_splash")
