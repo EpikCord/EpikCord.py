@@ -2,6 +2,7 @@
 NOTE: version string only in setup.cfg
 """
 from collections import defaultdict
+import threading
 __slots__ = __all__ = (
     "ActionRow",
     "Activity",
@@ -1097,7 +1098,7 @@ class WebsocketClient(EventHandler):
             self.intents = intents
 
         self.commands = {}
-        self._closed = False
+        self._closed = True
         self.heartbeats = []
         self.average_latency = 0
 
@@ -1269,8 +1270,6 @@ class WebsocketClient(EventHandler):
     async def close(self) -> None:
         if self._closed:
             return
-
-        self._closed = True
 
         # for voice in self.voice_clients:
         #     try:
@@ -4185,6 +4184,8 @@ class VoiceWebsocketClient:
             self.guild_id = guild_id
             self.channel_id = channel_id
 
+        self._closed = True
+
         self.IDENTIFY = 0
         self.SELECT_PROTOCOL = 1
         self.READY = 2
@@ -4194,8 +4195,14 @@ class VoiceWebsocketClient:
         self.token: Optional[str] = None
         self.session_id: Optional[str] = None
         self.endpoint: Optional[str] = None
-        self.received_voice_server_update: asyncio.Event = asyncio.Event()
-        self.received_voice_state_update: asyncio.Event = asyncio.Event()
+        self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.ws = None
+
+        self.heartbeat_interval: int = None
+        self.ip: Optional[str] = None
+        self.port: Optional[int] = None
+        self.ssrc: Optional[int] = None
+        self.modes: Optional[List[str]] = None
 
     async def connect(
         self, muted: Optional[bool] = False, deafened: Optional[bool] = False
@@ -4220,13 +4227,50 @@ class VoiceWebsocketClient:
         for event in events:
             if isinstance(event.result(), VoiceState): # If it's the VoiceState
                 self.session_id: str = event.result().session_id
-                self.received_voice_state_update.set()
             elif isinstance(event.result(), dict): # If it's a VoiceServerUpdate
                 self.token: str = event.result()["token"]
                 self.endpoint: str = event.result()["endpoint"]
-                self.received_voice_server_update.set()
-        self.ws = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+        await self._connect_ws()
+
+    async def _connect_ws(self):
+        self.ws = await self.client.http.ws_connect(f"{'ws://' if not self.endpoint.startswith('wss://') else ''}{self.endpoint}?v=4")
+        return await self.handle_events()
+
+    async def handle_events(self):
+        async for event in self.ws:
+            event = event.json()
+            if event["op"] == self.READY:
+                await self.handle_ready(event["d"])
+            
+            elif event["op"] == self.HELLO:
+                await self.handle_hello(event["d"])
+
+    async def handle_hello(self, data: dict):
+        self.heartbeat_interval: int = data["heartbeat_interval"]
+
+    async def handle_ready(self, event: dict):
+        self.ssrc: int = event["ssrc"]
+        self.modes = event["modes"]
+        self.ip: str = event["ip"]
+        self.port: int = event["port"]
+
+    async def identify(self):
+        return await self.send_json({
+            "op": self.IDENTIFY,
+            "d": {
+                "server_id": self.guild_id,
+                "user_id": self.client.user.id,
+                "session_id": self.session_id,
+                "token": self.token,
+            }
+        })
+
+
+
+    async def send_json(self, json, *args, **kwargs):
+        logger.info(f"Sending {json} to Voice Websocket {self.endpoint}")
+        return await self.ws.send_json(json, *args, **kwargs)
 
 
 class Check:
