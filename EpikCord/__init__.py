@@ -4175,7 +4175,7 @@ class ShardClient:
         loop.run_until_complete(wrapper())
 
 
-class VoiceWebsocketClient:
+class Connectable:
     def __init__(
         self,
         client,
@@ -4272,6 +4272,14 @@ class VoiceWebsocketClient:
     async def handle_hello(self, data: dict):
         self.heartbeat_interval: int = data["heartbeat_interval"]
         await self.identify()
+        async def wrapper():
+            while True:
+                await self.heartbeat()
+                await asyncio.sleep(self.heartbeat_interval / 1000)
+        
+        loop = asyncio.get_event_loop()
+        loop.create_task(wrapper())
+
 
     async def handle_ready(self, event: dict):
         self.ssrc: int = event["ssrc"]
