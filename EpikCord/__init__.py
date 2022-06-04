@@ -2,6 +2,7 @@
 NOTE: version string only in setup.cfg
 """
 from collections import defaultdict
+from multiprocessing import Event
 
 __slots__ = __all__ = (
     "ActionRow",
@@ -751,9 +752,10 @@ class EventHandler:
         self.wait_for_events = {}
 
     async def voice_server_update(self, data: dict):
-        token = data["token"]
-        guild_id = data["guild_id"]
-        endpoint = data["endpoint"]
+        voice_data = data["d"]
+        token = voice_data["token"]
+        guild_id = voice_data["guild_id"]
+        endpoint = voice_data["endpoint"]
         if not endpoint:
             raise FailedToConnectToVoice(
                 f"Failed to connect to voice server for guild {guild_id}"
@@ -948,8 +950,6 @@ class EventHandler:
             )
 
     async def interaction_create(self, data):
-        print(data)
-        print(self.commands)
         interaction = self.utils.interaction_from_type(data)
 
         await self.handle_interaction(interaction)
@@ -1079,9 +1079,9 @@ class WebsocketClient(EventHandler):
             raise TypeError("Missing token.")
 
         if isinstance(intents, int):
-            self.intents = intents
+            self.intents = Intents(intents)
         elif isinstance(intents, Intents):
-            self.intents = intents.value
+            self.intents = intents
 
         self.commands = {}
         self._closed = False
@@ -4178,11 +4178,11 @@ class VoiceWebsocketClient:
         self.HEARTBEAT = 3
         self.HELLO = 8
 
-        self.connected = False
-        self.server_set = False
-        self.state_set = False
-        self.sequence = None
-        self.endpoint = None
+        self.token: Optional[str] = None
+        self.session_id: Optional[str] = None
+        self.endpoint: Optional[str] = None
+        self.received_voice_server_update: asyncio.Event = asyncio,Event()
+        self.received_voice_state_update: asyncio.Event = asyncio.Event()
 
     async def connect(
         self, muted: Optional[bool] = False, deafened: Optional[bool] = False
@@ -4199,10 +4199,15 @@ class VoiceWebsocketClient:
             }
         )
         voice_state_update_coro = asyncio.create_task(self.client.wait_for("voice_state_update"))
+        if not self.client.intents:
+            ...
         voice_server_update_coro = asyncio.create_task(self.client.wait_for("voice_server_update"))
-        done, pending = await asyncio.wait([voice_state_update_coro, voice_server_update_coro])
-        
-
+        events, _ = await asyncio.wait([voice_state_update_coro, voice_server_update_coro])
+        for event in events:
+            if isinstance(event.result(), VoiceState): # If it's the VoiceState
+                self.session_id: str = event.result().session_id
+            elif isinstance(event.result(), dict): # If it's a VoiceServerUpdate
+                self
 
 class Check:
     def __init__(self, callback):
