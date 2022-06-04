@@ -188,16 +188,18 @@ class Subcommand(BaseSlashCommandOption):
         name: str,
         description: str = None,
         required: bool = True,
-        options: list[
-            Union[
-                StringOption,
-                IntegerOption,
-                BooleanOption,
-                UserOption,
-                ChannelOption,
-                RoleOption,
-                MentionableOption,
-                NumberOption,
+        options: Optional[
+            list[
+                Union[
+                    StringOption,
+                    IntegerOption,
+                    BooleanOption,
+                    UserOption,
+                    ChannelOption,
+                    RoleOption,
+                    MentionableOption,
+                    NumberOption,
+                ]
             ]
         ] = None
     ):
@@ -248,17 +250,19 @@ class SubCommandGroup(BaseSlashCommandOption):
         name: str,
         description: str = None,
         required: bool = True,
-        options: list[
-            Union[
-                Subcommand,
-                StringOption,
-                IntegerOption,
-                BooleanOption,
-                UserOption,
-                ChannelOption,
-                RoleOption,
-                MentionableOption,
-                NumberOption,
+        options: Optional[
+            list[
+                Union[
+                    Subcommand,
+                    StringOption,
+                    IntegerOption,
+                    BooleanOption,
+                    UserOption,
+                    ChannelOption,
+                    RoleOption,
+                    MentionableOption,
+                    NumberOption,
+                ]
             ]
         ] = None
     ):
