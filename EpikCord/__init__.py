@@ -2016,7 +2016,6 @@ class GuildNewsChannel(GuildTextChannel):
         return await response.json()
 
 
-
 class DMChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
@@ -3908,6 +3907,7 @@ class Paginator:
     def remove_page(self, page: Embed):
         self.__pages = list(filter(lambda embed: embed != page, self.__pages))
 
+
 class Connectable:
     def __init__(
         self,
@@ -4001,18 +4001,17 @@ class Connectable:
             elif event["op"] == self.READY:
                 await self.handle_ready(event["d"])
 
-
     async def handle_hello(self, data: dict):
         self.heartbeat_interval: int = data["heartbeat_interval"]
         await self.identify()
+
         async def wrapper():
             while True:
                 await self.heartbeat()
                 await asyncio.sleep(self.heartbeat_interval / 1000)
-        
+
         loop = asyncio.get_event_loop()
         loop.create_task(wrapper())
-
 
     async def handle_ready(self, event: dict):
         self.ssrc: int = event["ssrc"]
@@ -4039,11 +4038,7 @@ class Connectable:
 
     async def heartbeat(self):
         heartbeat_nonce = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
-        return await self.send_json({
-            "op": self.HEARTBEAT,
-            "d": heartbeat_nonce
-        })
-
+        return await self.send_json({"op": self.HEARTBEAT, "d": heartbeat_nonce})
 
 
 class VoiceChannel(GuildChannel, Messageable, Connectable):
@@ -4052,6 +4047,7 @@ class VoiceChannel(GuildChannel, Messageable, Connectable):
         self.bitrate: int = data.get("bitrate")
         self.user_limit: int = data.get("user_limit")
         self.rtc_region: str = data.get("rtc_region")
+
 
 class Utils:
     """
@@ -4310,6 +4306,7 @@ class ShardClient:
 
         loop = asyncio.get_event_loop()
         loop.run_until_complete(wrapper())
+
 
 class Check:
     def __init__(self, callback):
