@@ -3766,7 +3766,7 @@ class Intents(Flag):
     integrations = 1 << 4
     webhooks = 1 << 5
     invites = 1 << 6
-    voice_States = 1 << 7
+    voice_states = 1 << 7
     presences = 1 << 8
 
     guild_messages = 1 << 9
@@ -4199,15 +4199,14 @@ class VoiceWebsocketClient:
             }
         )
         voice_state_update_coro = asyncio.create_task(self.client.wait_for("voice_state_update"))
-        if not self.client.intents:
-            ...
+        if not self.client.intents.guild_voice_states
         voice_server_update_coro = asyncio.create_task(self.client.wait_for("voice_server_update"))
         events, _ = await asyncio.wait([voice_state_update_coro, voice_server_update_coro])
         for event in events:
             if isinstance(event.result(), VoiceState): # If it's the VoiceState
                 self.session_id: str = event.result().session_id
             elif isinstance(event.result(), dict): # If it's a VoiceServerUpdate
-                self
+                
 
 class Check:
     def __init__(self, callback):
