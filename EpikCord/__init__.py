@@ -4203,7 +4203,7 @@ class BaseConnectable:
         self.server_set = False
         self.state_set = False
         self.sequence = None
-        self.endpoint:str = None
+        self.endpoint: Optional[str] = None
         #have to add events manually
         self.client.events["voice_server_update"] = self.voice_server_update
         self.client.events["voice_state_update"] = self.voice_state_update
