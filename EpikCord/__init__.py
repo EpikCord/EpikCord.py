@@ -792,6 +792,7 @@ class EventHandler:
         """
         future = asyncio.Future()
         if not check:
+
             def check(*_, **__):
                 return True
 
