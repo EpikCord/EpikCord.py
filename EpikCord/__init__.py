@@ -2016,13 +2016,6 @@ class GuildNewsChannel(GuildTextChannel):
         return await response.json()
 
 
-class VoiceChannel(GuildChannel, Messageable):
-    def __init__(self, client, data: dict):
-        super().__init__(client, data)
-        self.bitrate: int = data.get("bitrate")
-        self.user_limit: int = data.get("user_limit")
-        self.rtc_region: str = data.get("rtc_region")
-
 
 class DMChannel(BaseChannel):
     def __init__(self, client, data: dict):
@@ -3915,6 +3908,141 @@ class Paginator:
     def remove_page(self, page: Embed):
         self.__pages = list(filter(lambda embed: embed != page, self.__pages))
 
+class Connectable:
+    def __init__(
+        self,
+        client,
+        *,
+        guild_id: Optional[str] = None,
+        channel_id: Optional[str] = None,
+        channel: Optional[VoiceChannel] = None,
+    ):
+        self.ws: socket.socket = None
+        self.client = client
+        # TODO: Figure out which one I will use later in production
+        if channel:
+            self.guild_id = channel.guild.id
+            self.channel_id = channel.id
+        else:
+            self.guild_id = guild_id
+            self.channel_id = channel_id
+
+        self._closed = True
+
+        self.IDENTIFY = 0
+        self.SELECT_PROTOCOL = 1
+        self.READY = 2
+        self.HEARTBEAT = 3
+        self.HELLO = 8
+
+        self.token: Optional[str] = None
+        self.session_id: Optional[str] = None
+        self.endpoint: Optional[str] = None
+        self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.ws = None
+
+        self.heartbeat_interval: int = None
+        self.ip: Optional[str] = None
+        self.port: Optional[int] = None
+        self.ssrc: Optional[int] = None
+        self.modes: Optional[List[str]] = None
+
+    async def connect(
+        self, muted: Optional[bool] = False, deafened: Optional[bool] = False
+    ):
+        await self.client.send_json(
+            {
+                "op": self.client.VOICE_STATE_UPDATE,
+                "d": {
+                    "guild_id": self.guild_id,
+                    "channel_id": self.channel_id,
+                    "self_mute": muted,
+                    "self_deaf": deafened,
+                },
+            }
+        )
+        voice_state_update_coro = asyncio.create_task(
+            self.client.wait_for("voice_state_update")
+        )
+        if not self.client.intents.voice_states:
+            raise ValueError(
+                "You must have the `voice_states` intent enabled to use this otherwise we never get the session_id."
+            )
+
+        voice_server_update_coro = asyncio.create_task(
+            self.client.wait_for(
+                "voice_server_update", check=lambda data: data.get("endpoint")
+            )
+        )
+        events, _ = await asyncio.wait(
+            [voice_state_update_coro, voice_server_update_coro]
+        )
+        for event in events:
+            if isinstance(event.result(), VoiceState):  # If it's the VoiceState
+                self.session_id: str = event.result().session_id
+            elif isinstance(event.result(), dict):  # If it's a VoiceServerUpdate
+                self.token: str = event.result()["token"]
+                self.endpoint: str = event.result()["endpoint"]
+
+        await self._connect_ws()
+
+    async def _connect_ws(self):
+        self.ws = await self.client.http.ws_connect(
+            f"{'ws://' if not self.endpoint.startswith('wss://') else ''}{self.endpoint}?v=4"
+        )
+        return await self.handle_events()
+
+    async def handle_events(self):
+        async for event in self.ws:
+            event = event.json()
+            if event["op"] == self.HELLO:
+                await self.handle_hello(event["d"])
+
+            elif event["op"] == self.READY:
+                await self.handle_ready(event["d"])
+
+
+    async def handle_hello(self, data: dict):
+        self.heartbeat_interval: int = data["heartbeat_interval"]
+        await self.identify()
+        async def wrapper():
+            while True:
+                await self.heartbeat()
+                await asyncio.sleep(self.heartbeat_interval / 1000)
+        
+        loop = asyncio.get_event_loop()
+        loop.create_task(wrapper())
+
+
+    async def handle_ready(self, event: dict):
+        self.ssrc: int = event["ssrc"]
+        self.modes = event["modes"]
+        self.ip: str = event["ip"]
+        self.port: int = event["port"]
+
+    async def identify(self):
+        return await self.send_json(
+            {
+                "op": self.IDENTIFY,
+                "d": {
+                    "server_id": self.guild_id,
+                    "user_id": self.client.user.id,
+                    "session_id": self.session_id,
+                    "token": self.token,
+                },
+            }
+        )
+
+    async def send_json(self, json, *args, **kwargs):
+        logger.info(f"Sending {json} to Voice Websocket {self.endpoint}")
+        return await self.ws.send_json(json, *args, **kwargs)
+
+class VoiceChannel(GuildChannel, Messageable, Connectable):
+    def __init__(self, client, data: dict):
+        super().__init__(client, data)
+        self.bitrate: int = data.get("bitrate")
+        self.user_limit: int = data.get("user_limit")
+        self.rtc_region: str = data.get("rtc_region")
 
 class Utils:
     """
@@ -4173,137 +4301,6 @@ class ShardClient:
 
         loop = asyncio.get_event_loop()
         loop.run_until_complete(wrapper())
-
-
-class Connectable:
-    def __init__(
-        self,
-        client,
-        *,
-        guild_id: Optional[str] = None,
-        channel_id: Optional[str] = None,
-        channel: Optional[VoiceChannel] = None,
-    ):
-        self.ws: socket.socket = None
-        self.client = client
-        # TODO: Figure out which one I will use later in production
-        if channel:
-            self.guild_id = channel.guild.id
-            self.channel_id = channel.id
-        else:
-            self.guild_id = guild_id
-            self.channel_id = channel_id
-
-        self._closed = True
-
-        self.IDENTIFY = 0
-        self.SELECT_PROTOCOL = 1
-        self.READY = 2
-        self.HEARTBEAT = 3
-        self.HELLO = 8
-
-        self.token: Optional[str] = None
-        self.session_id: Optional[str] = None
-        self.endpoint: Optional[str] = None
-        self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.ws = None
-
-        self.heartbeat_interval: int = None
-        self.ip: Optional[str] = None
-        self.port: Optional[int] = None
-        self.ssrc: Optional[int] = None
-        self.modes: Optional[List[str]] = None
-
-    async def connect(
-        self, muted: Optional[bool] = False, deafened: Optional[bool] = False
-    ):
-        await self.client.send_json(
-            {
-                "op": self.client.VOICE_STATE_UPDATE,
-                "d": {
-                    "guild_id": self.guild_id,
-                    "channel_id": self.channel_id,
-                    "self_mute": muted,
-                    "self_deaf": deafened,
-                },
-            }
-        )
-        voice_state_update_coro = asyncio.create_task(
-            self.client.wait_for("voice_state_update")
-        )
-        if not self.client.intents.voice_states:
-            raise ValueError(
-                "You must have the `voice_states` intent enabled to use this otherwise we never get the session_id."
-            )
-
-        voice_server_update_coro = asyncio.create_task(
-            self.client.wait_for(
-                "voice_server_update", check=lambda data: data.get("endpoint")
-            )
-        )
-        events, _ = await asyncio.wait(
-            [voice_state_update_coro, voice_server_update_coro]
-        )
-        for event in events:
-            if isinstance(event.result(), VoiceState):  # If it's the VoiceState
-                self.session_id: str = event.result().session_id
-            elif isinstance(event.result(), dict):  # If it's a VoiceServerUpdate
-                self.token: str = event.result()["token"]
-                self.endpoint: str = event.result()["endpoint"]
-
-        await self._connect_ws()
-
-    async def _connect_ws(self):
-        self.ws = await self.client.http.ws_connect(
-            f"{'ws://' if not self.endpoint.startswith('wss://') else ''}{self.endpoint}?v=4"
-        )
-        return await self.handle_events()
-
-    async def handle_events(self):
-        async for event in self.ws:
-            event = event.json()
-            if event["op"] == self.HELLO:
-                await self.handle_hello(event["d"])
-
-            elif event["op"] == self.READY:
-                await self.handle_ready(event["d"])
-
-
-    async def handle_hello(self, data: dict):
-        self.heartbeat_interval: int = data["heartbeat_interval"]
-        await self.identify()
-        async def wrapper():
-            while True:
-                await self.heartbeat()
-                await asyncio.sleep(self.heartbeat_interval / 1000)
-        
-        loop = asyncio.get_event_loop()
-        loop.create_task(wrapper())
-
-
-    async def handle_ready(self, event: dict):
-        self.ssrc: int = event["ssrc"]
-        self.modes = event["modes"]
-        self.ip: str = event["ip"]
-        self.port: int = event["port"]
-
-    async def identify(self):
-        return await self.send_json(
-            {
-                "op": self.IDENTIFY,
-                "d": {
-                    "server_id": self.guild_id,
-                    "user_id": self.client.user.id,
-                    "session_id": self.session_id,
-                    "token": self.token,
-                },
-            }
-        )
-
-    async def send_json(self, json, *args, **kwargs):
-        logger.info(f"Sending {json} to Voice Websocket {self.endpoint}")
-        return await self.ws.send_json(json, *args, **kwargs)
-
 
 class Check:
     def __init__(self, callback):
