@@ -4329,6 +4329,14 @@ class CommandUtils:
             )
         return register_slash_command
 
+    @staticmethod
+    def event(name: Optional[str] = None):
+        def register_event(func):
+            return Event(
+                name = name or func.__name__,
+                callback = func
+            )
+        return register_event
 
 __slots__ = __all__ = (
     "ActionRow",
