@@ -4016,7 +4016,7 @@ class Connectable:
 
     async def handle_ready(self, event: dict):
         self.ssrc: int = event["ssrc"]
-        self.modes = event["modes"]
+        self.mode = event["modes"][0] # Always has one mode, and I can use any.
         self.ip: str = event["ip"]
         self.port: int = event["port"]
 
