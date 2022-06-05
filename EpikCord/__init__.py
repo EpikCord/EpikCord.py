@@ -990,18 +990,17 @@ class EventHandler:
 
         return interaction
 
-    async def guild_role_create(self,data:dict):
+    async def guild_role_create(self, data: dict):
         guild = self.guilds.fetch(data["guild_id"])
         data["role"]["guild_id"] = data["guild_id"]
-        guild.roles.append(GuildRole(self,data["role"]))
+        guild.roles.append(GuildRole(self, data["role"]))
 
         return GuildRole(self, data["role"])
 
-    async def guild_role_delete(self, data:dict):
-        ...
+    async def guild_role_delete(self, data: dict):
+        guild = self.guilds.fetch(data["guild_id"])
+        return DeletedRole(data)
 
-
-    
     async def channel_create(self, data: dict):
 
         channel = self.utils.channel_from_type(data)
@@ -2584,12 +2583,20 @@ class GuildRole:
         self.tags: RoleTag = RoleTag(self.data.get("tags"))
 
 
+class DeletedRole:
+    def __init__(self, data: dict):
+        self.guild_id = data.get("guild_id")
+        self.id = data.get("role_id")
+
+
 class Emoji:
     def __init__(self, client, data: dict, guild_id: str):
         self.client = client
         self.id: Optional[str] = data.get("id")
         self.name: Optional[str] = data.get("name")
-        self.roles: List[GuildRole] = [GuildRole(role) for role in data.get("roles", [])]
+        self.roles: List[GuildRole] = [
+            GuildRole(role) for role in data.get("roles", [])
+        ]
         self.user: Optional[User] = User(data.get("user")) if "user" in data else None
         self.requires_colons: bool = data.get("require_colons")
         self.guild_id: str = data.get("guild_id")
