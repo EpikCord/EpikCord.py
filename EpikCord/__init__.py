@@ -4,6 +4,7 @@ NOTE: version string only in setup.cfg
 from collections import defaultdict
 import threading
 
+from .close_event_codes import GatewayCECode
 from .opcodes import GatewayOpcode, VoiceOpcode
 
 __slots__ = __all__ = (
@@ -4073,27 +4074,27 @@ class Connectable:
 
     async def handle_close(self):
         self._closed = True
-        if self.ws.close_close == 4001:
+        if self.ws.close_close == GatewayCECode.UnknownOpcode:
             raise ClosedWebSocketConnection(
                 "EpikCord has sent an invalid OpCode to the Voice WebSocket. Report this at https://github.com/EpikCord/EpikCord.py/issues"
             )
-        elif self.ws.close_code == 4002:
+        elif self.ws.close_code == GatewayCECode.DecodeError:
             raise ClosedWebSocketConnection(
                 "EpikCord has sent an invalid identify to the Voice WebSocket. Report this at https://github.com/EpikCord/EpikCord.py/issues"
             )
-        elif self.ws.close_code == 4003:
+        elif self.ws.close_code == GatewayCECode.NotAuthenticated:
             raise ClosedWebSocketConnection(
                 "EpikCord has sent a payload before identifying to the Voice Websocket. Report this at https://github.com/EpikCord/EpikCord.py/issues"
             )
-        elif self.ws.close_code == 4004:
+        elif self.ws.close_code == GatewayCECode.AuthenticationFailed:
             raise ClosedWebSocketConnection(
                 "EpikCord sent an invalid token to the Voice Websocket. Report this at https://github.com/EpikCord/EpikCord.py/issues"
             )
-        elif self.ws.close_code == 4005:
+        elif self.ws.close_code == GatewayCECode.AlreadyAuthenticated:
             raise ClosedWebSocketConnection(
                 "EpikCord sent more than one identify payload. Report this at https://github.com/EpikCord/EpikCord.py/issues"
             )
-        elif self.ws.close_code == 4006:
+        elif self.ws.close_code == GatewayCECode.SessionTimedOut:
             raise ClosedWebSocketConnection("The session is no longer valid.")
 
     async def handle_hello(self, data: dict):
