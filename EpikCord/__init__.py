@@ -3942,10 +3942,14 @@ class Connectable:
         self.ws = None
 
         self.heartbeat_interval: int = None
-        self.ip: Optional[str] = None
-        self.port: Optional[int] = None
+        self.server_ip: Optional[str] = None
+        self.server_port: Optional[int] = None
         self.ssrc: Optional[int] = None
         self.mode: Optional[List[str]] = None
+
+        self.ip: str = None
+        self.port: int = None
+
 
     async def connect(
         self, muted: Optional[bool] = False, deafened: Optional[bool] = False
@@ -4016,8 +4020,8 @@ class Connectable:
     async def handle_ready(self, event: dict):
         self.ssrc: int = event["ssrc"]
         self.mode = event["modes"][0] # Always has one mode, and I can use any.
-        self.ip: str = event["ip"]
-        self.port: int = event["port"]
+        self.server_ip: str = event["ip"]
+        self.server_port: int = event["port"]
 
     async def identify(self):
         return await self.send_json(
