@@ -4301,7 +4301,7 @@ class ShardManager:
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
             }
         )
-        self.intents = intents if isinstance(intents, Intents) else Intents(intents)
+        self.intents: Intents = intents if isinstance(intents, Intents) else Intents(intents)
         self.desired_shards: Optional[int] = shards
         self.shards: List[Shard] = []
 
