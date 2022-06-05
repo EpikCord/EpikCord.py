@@ -849,7 +849,7 @@ class EventHandler:
                     "Connection successfully resumed and all proceeding events are new."
                 )
 
-            if event["op"] != GatewayOpcode.DISPATCH: # TODO: find op code
+            if event["op"] != GatewayOpcode.DISPATCH:  # TODO: find op code
                 logger.debug(f"Received OPCODE: {event['op']}")
 
         await self.handle_close()
@@ -1116,7 +1116,9 @@ class WebsocketClient(EventHandler):
             )
 
         if self.interval:
-            await self.send_json({"op": GatewayOpcode.HEARTBEAT, "d": self.sequence or "null"})
+            await self.send_json(
+                {"op": GatewayOpcode.HEARTBEAT, "d": self.sequence or "null"}
+            )
             await asyncio.sleep(self.interval / 1000)
             logger.debug("Sent a heartbeat!")
 
@@ -1130,7 +1132,10 @@ class WebsocketClient(EventHandler):
         user_ids: Optional[List[str]] = None,
         nonce: Optional[str] = None,
     ):
-        payload = {"op": GatewayOpcode.REQUEST_GUILD_MEMBERS, "d": {"guild_id": guild_id}}
+        payload = {
+            "op": GatewayOpcode.REQUEST_GUILD_MEMBERS,
+            "d": {"guild_id": guild_id},
+        }
 
         if query:
             payload["d"]["query"] = query
