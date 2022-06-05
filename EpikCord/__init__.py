@@ -4000,18 +4000,6 @@ class Connectable:
 
         self._closed = True
 
-        self.IDENTIFY = 0
-        self.SELECT_PROTOCOL = 1
-        self.READY = 2
-        self.HEARTBEAT = 3
-        self.SESSION_DESCRIPTION = 4
-        self.SPEAKING = 5
-        self.HEARTBEAT_ACK = 6
-        self.RESUME = 7
-        self.HELLO = 8
-        self.RESUMED = 9
-        self.CLIENT_DISCONNECT = 13
-
         self.token: Optional[str] = None
         self.session_id: Optional[str] = None
         self.endpoint: Optional[str] = None
