@@ -992,7 +992,7 @@ class EventHandler:
 
     async def guild_role_create(self,data:dict):
         guild = self.guilds.fetch(data["guild_id"])
-        data["role"]["guild"] = guild
+        data["role"]["guild_id"] = data["guild_id"]
         guild.roles.append(GuildRole(self,data["role"]))
 
         return GuildRole(self, data["role"])
