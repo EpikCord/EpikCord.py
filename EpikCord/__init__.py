@@ -1309,7 +1309,7 @@ class Thread:
     async def join(self):
         if self.archived:
             raise ThreadArchived(
-                "This thread has been archived so it is no longer joignable"
+                "This thread has been archived so it is no longer joinable"
             )
         response = await self.client.http.put(f"/channels/{self.id}/thread-members/@me")
         return await response.json()
@@ -1317,7 +1317,7 @@ class Thread:
     async def add_member(self, member_id: str):
         if self.archived:
             raise ThreadArchived(
-                "This thread has been archived so it is no longer joignable"
+                "This thread has been archived so it is no longer joinable"
             )
 
         response = await self.client.http.put(
