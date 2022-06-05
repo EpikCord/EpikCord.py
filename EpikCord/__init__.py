@@ -888,13 +888,15 @@ class EventHandler:
 
         # TODO: Add other attributes to cache
 
-    def event(self, func):
-        func_name = func.__name__.lower()
+    def event(self, event_name: str):
+        def register_event(func):
+            func_name = func.__name__.lower()
 
-        if func_name.startswith("on_"):
-            func_name = func_name[3:]
-
-        self.events[func_name].append(func)
+            if func_name.startswith("on_"):
+                func_name = func_name[3:]
+            self.events[func_name].append(func)
+            return Event(func)
+        return register_event
 
     async def guild_member_update(self, data):
         guild_member = GuildMember(self, data)
