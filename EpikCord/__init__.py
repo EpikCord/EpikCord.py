@@ -4290,6 +4290,17 @@ class CommandUtils:
     def check(callback):
         return Check(callback)
 
+    @staticmethod
+    def user_command(name: Optional[str] = None):
+        def register_user_command(func):
+            return ClientUserCommand(
+                name = name or func.__name__,
+                callback = func
+            )
+        return register_user_command
+
+    
+
 
 __slots__ = __all__ = (
     "ActionRow",
