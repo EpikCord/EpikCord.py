@@ -4095,6 +4095,7 @@ class Connectable:
                 "EpikCord sent more than one identify payload. Report this at https://github.com/EpikCord/EpikCord.py/issues"
             )
         elif self.ws.close_code == GatewayCECode.SessionTimedOut:
+
             raise ClosedWebSocketConnection("The session is no longer valid.")
 
     async def handle_hello(self, data: dict):
