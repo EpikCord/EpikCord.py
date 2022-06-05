@@ -2034,9 +2034,6 @@ class Event:
 
 
 class Section:
-
-    
-
     def __init_subclass__(cls, **kwargs):
         for attr_value in cls.__dict__.values():
             if isinstance(attr_value, Event):
