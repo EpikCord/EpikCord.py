@@ -4,6 +4,8 @@ NOTE: version string only in setup.cfg
 from collections import defaultdict
 import threading
 
+from .opcodes import GatewayOpcode, VoiceOpcode
+
 __slots__ = __all__ = (
     "ActionRow",
     "Activity",
@@ -817,8 +819,7 @@ class EventHandler:
             event = event.json()
             logger.debug(f"Received {event} from Discord.")
 
-            if event["op"] == self.HELLO:
-
+            if event["op"] == GatewayOpcode.HELLO:
                 self.interval = event["d"]["heartbeat_interval"]
 
                 async def wrapper():
@@ -828,27 +829,27 @@ class EventHandler:
                 asyncio.create_task(wrapper())
                 await self.identify()
 
-            elif event["op"] == self.EVENT:
+            elif event["op"] == GatewayOpcode.DISPATCH:
                 await self.handle_event(event)
-            elif event["op"] == self.HEARTBEAT:
+            elif event["op"] == GatewayOpcode.HEARTBEAT:
                 # I shouldn't wait the remaining delay according to the docs.
                 await self.heartbeat(True)
 
-            elif event["op"] == self.HEARTBEAT_ACK:
+            elif event["op"] == GatewayOpcode.HEARTBEAT_ACK:
                 try:
                     self.heartbeats.append(event["d"])
                 except AttributeError:
                     self.heartbeats = [event["d"]]
 
-            elif event["op"] == self.RECONNECT:
+            elif event["op"] == GatewayOpcode.RECONNECT:
                 await self.reconnect()
 
-            elif event["op"] == self.RESUMED:
+            elif event["op"] == GatewayOpcode.RESUMED:
                 logger.debug(
                     "Connection successfully resumed and all proceeding events are new."
                 )
 
-            if event["op"] != self.EVENT:
+            if event["op"] != GatewayOpcode.DISPATCH: # TODO: find op code
                 logger.debug(f"Received OPCODE: {event['op']}")
 
         await self.handle_close()
@@ -1084,19 +1085,7 @@ class EventHandler:
 
 class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
-
         super().__init__()
-        self.EVENT = 0
-        self.HEARTBEAT = 1
-        self.IDENTIFY = 2
-        self.PRESENCE_UPDATE = 3
-        self.VOICE_STATE_UPDATE = 4
-        self.RESUME = 6
-        self.RECONNECT = 7
-        self.REQUEST_GUILD_MEMBERS = 8
-        self.INVALID_SESSION = 9
-        self.HELLO = 10
-        self.HEARTBEAT_ACK = 11
 
         self.token = token
         if not token:
@@ -1123,11 +1112,11 @@ class WebsocketClient(EventHandler):
     async def heartbeat(self, forced: Optional[bool] = None):
         if forced:
             return await self.send_json(
-                {"op": self.HEARTBEAT, "d": self.sequence or "null"}
+                {"op": GatewayOpcode.HEARTBEAT, "d": self.sequence or "null"}
             )
 
         if self.interval:
-            await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
+            await self.send_json({"op": GatewayOpcode.HEARTBEAT, "d": self.sequence or "null"})
             await asyncio.sleep(self.interval / 1000)
             logger.debug("Sent a heartbeat!")
 
@@ -1141,7 +1130,7 @@ class WebsocketClient(EventHandler):
         user_ids: Optional[List[str]] = None,
         nonce: Optional[str] = None,
     ):
-        payload = {"op": self.REQUEST_GUILD_MEMBERS, "d": {"guild_id": guild_id}}
+        payload = {"op": GatewayOpcode.REQUEST_GUILD_MEMBERS, "d": {"guild_id": guild_id}}
 
         if query:
             payload["d"]["query"] = query
@@ -1167,7 +1156,7 @@ class WebsocketClient(EventHandler):
         )
         await self.send_json(
             {
-                "op": self.RECONNECT,
+                "op": GatewayOpcode.RECONNECT,
                 "d": {
                     "token": self.token,
                     "session_id": self.session_id,
@@ -1250,7 +1239,7 @@ class WebsocketClient(EventHandler):
         await self.connect()
         await self.send_json(
             {
-                "op": self.RESUME,
+                "op": GatewayOpcode.RESUME,
                 "d": {
                     "seq": self.sequence,
                     "session_id": self.session_id,
@@ -1262,7 +1251,7 @@ class WebsocketClient(EventHandler):
 
     async def identify(self):
         payload = {
-            "op": self.IDENTIFY,
+            "op": GatewayOpcode.IDENTIFY,
             "d": {
                 "token": self.token,
                 "intents": self.intents,
@@ -3929,12 +3918,6 @@ class Connectable:
 
         self._closed = True
 
-        self.IDENTIFY = 0
-        self.SELECT_PROTOCOL = 1
-        self.READY = 2
-        self.HEARTBEAT = 3
-        self.HELLO = 8
-
         self.token: Optional[str] = None
         self.session_id: Optional[str] = None
         self.endpoint: Optional[str] = None
@@ -3952,7 +3935,7 @@ class Connectable:
     ):
         await self.client.send_json(
             {
-                "op": self.client.VOICE_STATE_UPDATE,
+                "op": GatewayOpcode.VOICE_STATE_UPDATE,
                 "d": {
                     "guild_id": self.guild_id,
                     "channel_id": self.channel_id,
@@ -3966,7 +3949,8 @@ class Connectable:
         )
         if not self.client.intents.voice_states:
             raise ValueError(
-                "You must have the `voice_states` intent enabled to use this otherwise we never get the session_id."
+                "You must have the `voice_states` intent enabled to use "
+                "this otherwise we never get the session_id."
             )
 
         voice_server_update_coro = asyncio.create_task(
@@ -3995,10 +3979,10 @@ class Connectable:
     async def handle_events(self):
         async for event in self.ws:
             event = event.json()
-            if event["op"] == self.HELLO:
+            if event["op"] == VoiceOpcode.HELLO:
                 await self.handle_hello(event["d"])
 
-            elif event["op"] == self.READY:
+            elif event["op"] == VoiceOpcode.READY:
                 await self.handle_ready(event["d"])
 
     async def handle_hello(self, data: dict):
@@ -4022,7 +4006,7 @@ class Connectable:
     async def identify(self):
         return await self.send_json(
             {
-                "op": self.IDENTIFY,
+                "op": VoiceOpcode.IDENTIFY,
                 "d": {
                     "server_id": self.guild_id,
                     "user_id": self.client.user.id,
@@ -4038,7 +4022,7 @@ class Connectable:
 
     async def heartbeat(self):
         heartbeat_nonce = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
-        return await self.send_json({"op": self.HEARTBEAT, "d": heartbeat_nonce})
+        return await self.send_json({"op": VoiceOpcode.HEARTBEAT, "d": heartbeat_nonce})
 
 
 class VoiceChannel(GuildChannel, Messageable, Connectable):
@@ -4235,7 +4219,7 @@ class Shard(WebsocketClient):
 
     async def identify(self):
         payload = {
-            "op": self.IDENTIFY,
+            "op": GatewayOpcode.IDENTIFY,
             "d": {
                 "token": self.token,
                 "intents": self.intents,
