@@ -1,10 +1,10 @@
 """
-Before you implement this in your bot, please note that its just for testing, 
+Before you implement this in your bot, please note that it's just for testing,
 If you have a test bot and are professional with your code, you can experiment 
 with different features and report the bugs in an issue
 """
 
-from EpikCord import Client, Intents, Messageable, Embed
+from EpikCord import Client, Intents, Messageable
 
 intents = Intents().all()
 
