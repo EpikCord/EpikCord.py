@@ -1923,7 +1923,7 @@ class HTTPClient(ClientSession):
         self.locks: Dict[str, LockBucketDict]
 
     @staticmethod
-    async def log_request(self, res):
+    async def log_request( res):
         message = [
             f"Sent a {res.request_info.method} to {res.url}"
             f" and got a {res.status} response. "
@@ -3839,7 +3839,13 @@ class Connectable:
         self.SELECT_PROTOCOL = 1
         self.READY = 2
         self.HEARTBEAT = 3
+        self.SESSION_DESCRIPTION = 4
+        self.SPEAKING = 5
+        self.HEARTBEAT_ACK = 6
+        self.RESUME = 7
         self.HELLO = 8
+        self.RESUMED = 9
+        self.CLIENT_DISCONNECT = 13
 
         self.token: Optional[str] = None
         self.session_id: Optional[str] = None
@@ -3910,6 +3916,22 @@ class Connectable:
             elif event["op"] == self.READY:
                 await self.handle_ready(event["d"])
 
+        await self.handle_close()
+    
+    async def handle_close(self):
+        self._closed = True
+        if self.ws.close_close == 4001:
+            raise ClosedWebSocketConnection("EpikCord has sent an invalid OpCode to the Voice WebSocket. Report this at https://github.com/EpikCord/EpikCord.py/issues")
+        elif self.ws.close_code == 4002:
+            raise ClosedWebSocketConnection("EpikCord has sent an invalid identify to the Voice WebSocket. Report this at https://github.com/EpikCord/EpikCord.py/issues")
+        elif self.ws.close_code == 4003:
+            raise ClosedWebSocketConnection("EpikCord has sent a payload before identifying to the Voice Websocket. Report this at https://github.com/EpikCord/EpikCord.py/issues")
+        elif self.ws.close_code == 4004:
+            raise ClosedWebSocketConnection("EpikCord sent an invalid token to the Voice Websocket. Report this at https://github.com/EpikCord/EpikCord.py/issues")
+        elif self.ws.close_code == 4005:
+            raise ClosedWebSocketConnection("EpikCord sent more than one identify payload. Report this at https://github.com/EpikCord/EpikCord.py/issues")
+        elif self.ws.close_code == 4006:
+            raise ClosedWebSocketConnection("The session is no longer valid.")
     async def handle_hello(self, data: dict):
         self.heartbeat_interval = data["heartbeat_interval"]
         await self.identify()
