@@ -40,6 +40,8 @@ class HTTPCodes(StatusCode):
 
 
 class JsonErrorCodes(StatusCode):
+    GENERAL_ERROR = 0
+
     UNKNOWN_ACCOUNT = 10001
     UNKNOWN_APPLICATION = 10002
     UNKNOWN_CHANNEL = 10003
@@ -259,3 +261,7 @@ class JsonErrorCodes(StatusCode):
 
     STAGE_CREATION_ON_STAGE_EVENT_FAILED = 180002
     # I want to die :)
+
+    @classmethod
+    def _missing_(cls, value: int) -> JsonErrorCodes:
+        return cls.GENERAL_ERROR
