@@ -217,11 +217,11 @@ class Button(BaseComponent):
                 raise InvalidComponentStyle(
                     "Invalid button style. Style must be in range 1 to 5 inclusive."
                 )
-            self.style: int = style
+            self.style = style
 
         if url:
             self.url: Optional[str] = url
-            self.style: int = 5
+            self.style = 5
         if emoji:
             self.emoji: Optional[Union[PartialEmoji, dict]] = emoji
         if label:

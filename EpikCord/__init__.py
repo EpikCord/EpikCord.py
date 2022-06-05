@@ -2,175 +2,7 @@
 NOTE: version string only in setup.cfg
 """
 
-__slots__ = __all__ = (
-    "ActionRow",
-    "Activity",
-    "AllowedMention",
-    "AnyChannel",
-    "AnyOption",
-    "Application",
-    "ApplicationCommand",
-    "ApplicationCommandInteraction",
-    "ApplicationCommandOption",
-    "ApplicationCommandPermission",
-    "ApplicationCommandSubcommandOption",
-    "Attachment",
-    "AttachmentOption",
-    "AutoCompleteInteraction",
-    "BadRequest400",
-    "BaseChannel",
-    "BaseCommand",
-    "BaseComponent",
-    "BaseInteraction",
-    "BaseSlashCommandOption",
-    "BooleanOption",
-    "Button",
-    "CacheManager",
-    "ChannelCategory",
-    "ChannelManager",
-    "ChannelOption",
-    "ChannelOptionChannelTypes",
-    "Check",
-    "Client",
-    "ClientApplication",
-    "ClientMessageCommand",
-    "ClientSlashCommand",
-    "ClientUser",
-    "ClientUserCommand",
-    "ClosedWebSocketConnection",
-    "Color",
-    "Colour",
-    "CommandUtils",
-    "CommandsSection",
-    "CustomIdIsTooBig",
-    "DMChannel",
-    "DisallowedIntents",
-    "DiscordAPIError",
-    "Embed",
-    "Emoji",
-    "EpikCordException",
-    "EventHandler",
-    "FailedCheck",
-    "FailedToConnectToVoice",
-    "File",
-    "Flag",
-    "Forbidden403",
-    "GateawayUnavailable502",
-    "Guild",
-    "GuildApplicationCommandPermission",
-    "GuildBan",
-    "GuildChannel",
-    "GuildManager",
-    "GuildMember",
-    "GuildNewsChannel",
-    "GuildNewsThread",
-    "GuildPreview",
-    "GuildScheduledEvent",
-    "GuildStageChannel",
-    "GuildTextChannel",
-    "GuildWidget",
-    "GuildWidgetSettings",
-    "HTTPClient",
-    "IntegerOption",
-    "Integration",
-    "IntegrationAccount",
-    "Intents",
-    "InternalServerError5xx",
-    "InvalidApplicationCommandOptionType",
-    "InvalidApplicationCommandType",
-    "InvalidArgumentType",
-    "InvalidComponentStyle",
-    "InvalidData",
-    "InvalidIntents",
-    "InvalidOption",
-    "InvalidStatus",
-    "InvalidToken",
-    "Invite",
-    "LabelIsTooBig",
-    "MentionableOption",
-    "MentionedChannel",
-    "MentionedUser",
-    "Message",
-    "MessageActivity",
-    "MessageCommandInteraction",
-    "MessageComponentInteraction",
-    "MessageInteraction",
-    "Messageable",
-    "MethodNotAllowed405",
-    "MissingClientSetting",
-    "MissingCustomId",
-    "Modal",
-    "ModalSubmitInteraction",
-    "NotFound404",
-    "NumberOption",
-    "Overwrite",
-    "Paginator",
-    "PartialEmoji",
-    "PartialGuild",
-    "PartialUser",
-    "Permissions",
-    "Presence",
-    "PrivateThread",
-    "Ratelimited429",
-    "Reaction",
-    "ResolvedDataHandler",
-    "Role",
-    "RoleOption",
-    "RoleTag",
-    "SelectMenu",
-    "SelectMenuOption",
-    "Shard",
-    "ShardClient",
-    "ShardingRequired",
-    "SlashCommand",
-    "SlashCommandOptionChoice",
-    "SourceChannel",
-    "Status",
-    "Sticker",
-    "StickerItem",
-    "StringOption",
-    "SubCommandGroup",
-    "Subcommand",
-    "SystemChannelFlags",
-    "Team",
-    "TeamMember",
-    "TextInput",
-    "Thread",
-    "ThreadArchived",
-    "ThreadMember",
-    "TooManyComponents",
-    "TooManySelectMenuOptions",
-    "Unauthorized401",
-    "UnavailableGuild",
-    "UnhandledEpikCordException",
-    "User",
-    "UserCommandInteraction",
-    "UserOption",
-    "Utils",
-    "VoiceChannel",
-    "VoiceState",
-    "VoiceWebsocketClient",
-    "Webhook",
-    "WebhookUser",
-    "WebsocketClient",
-    "WelcomeScreen",
-    "WelcomeScreenChannel",
-    "b64encode",
-    "cache_manager",
-    "channel_manager",
-    "command",
-    "components",
-    "exceptions",
-    "guilds_manager",
-    "logger",
-    "managers",
-    "message_command",
-    "options",
-    "partials",
-    "roles_manager",
-    "user_command",
-)
-
+from __future__ import annotations
 
 import asyncio
 import datetime
@@ -774,7 +606,7 @@ class EventHandler:
         self.wait_for_events = defaultdict(list)
 
     def wait_for(
-        self, event_name: str, *, check: Optional[callable] = None, timeout: int = None
+        self, event_name: str, *, check: Optional[Callable] = None, timeout: int = None
     ):
         """
         Waits for the event to be triggered.
@@ -1377,10 +1209,10 @@ class ClientUserCommand(BaseCommand):
         * callback
     """
 
-    def __init__(self, *, name: str, callback: callable):
+    def __init__(self, *, name: str, callback: Callable):
         super().__init__()
         self.name: str = name
-        self.callback: callable = callback
+        self.callback: Callable = callback
 
     @property
     def type(self):
@@ -1393,7 +1225,7 @@ class ClientSlashCommand(BaseCommand):
         *,
         name: str,
         description: str,
-        callback: callable,
+        callback: Callable,
         guild_ids: Optional[List[str]],
         options: Optional[List[AnyOption]],
     ):
@@ -1402,7 +1234,7 @@ class ClientSlashCommand(BaseCommand):
         self.description: str = description
         if not description:
             raise TypeError(f"Missing description for command {name}.")
-        self.callback: callable = callback
+        self.callback: Callable = callback
         self.guild_ids: Optional[List[str]] = guild_ids
         self.options: Optional[List[AnyOption]] = options
         self.autocomplete_options: dict = {}
@@ -3257,7 +3089,7 @@ class BaseInteraction:
         message_data = await self.client.http.get(
             f"/webhooks/{self.application_id}/{self.token}/messages/@original"
         )
-        self.original_response: Message = Message(self.client, message_data)
+        self.original_response = Message(self.client, message_data)
         return self.original_response
 
     async def edit_original_response(
@@ -3299,7 +3131,7 @@ class BaseInteraction:
             f"/webhooks/{self.application_id}/{self.token}/messages/@original",
             json=message_data,
         )
-        self.original_response: Message = Message(self.client, new_message_data)
+        self.original_response = Message(self.client, new_message_data)
         return self.original_response
 
     async def delete_original_response(self):
@@ -3346,7 +3178,7 @@ class BaseInteraction:
             f"/webhooks/{self.application_id}/{self.token}", json=message_data
         )
         new_message_data = await response.json()
-        self.followup_response: Message = Message(self.client, new_message_data)
+        self.followup_response = Message(self.client, new_message_data)
         return self.followup_response
 
     async def edit_followup(
@@ -3640,7 +3472,7 @@ class MessageInteraction:
         self.member: Optional[GuildMember] = (
             GuildMember(client, data.get("member")) if data.get("member") else None
         )
-        self.user: User = User(client, data.get("user"))
+        self.user = User(client, data.get("user"))
 
 
 class SlashCommand(ApplicationCommand):
@@ -4026,10 +3858,10 @@ class Connectable:
         )
         for event in events:
             if isinstance(event.result(), VoiceState):  # If it's the VoiceState
-                self.session_id: str = event.result().session_id
+                self.session_id = event.result().session_id
             elif isinstance(event.result(), dict):  # If it's a VoiceServerUpdate
-                self.token: str = event.result()["token"]
-                self.endpoint: str = event.result()["endpoint"]
+                self.token = event.result()["token"]
+                self.endpoint = event.result()["endpoint"]
 
         await self._connect_ws()
 
@@ -4048,7 +3880,7 @@ class Connectable:
                 await self.handle_ready(event["d"])
 
     async def handle_hello(self, data: dict):
-        self.heartbeat_interval: int = data["heartbeat_interval"]
+        self.heartbeat_interval = data["heartbeat_interval"]
         await self.identify()
 
         async def wrapper():
@@ -4060,10 +3892,10 @@ class Connectable:
         loop.create_task(wrapper())
 
     async def handle_ready(self, event: dict):
-        self.ssrc: int = event["ssrc"]
+        self.ssrc = event["ssrc"]
         self.modes = event["modes"]
-        self.ip: str = event["ip"]
-        self.port: int = event["port"]
+        self.ip = event["ip"]
+        self.port = event["port"]
 
     async def identify(self):
         return await self.send_json(
@@ -4392,3 +4224,173 @@ class CommandUtils:
     @staticmethod
     def check(callback):
         return Check(callback)
+
+
+__slots__ = __all__ = (
+    "ActionRow",
+    "Activity",
+    "AllowedMention",
+    "AnyChannel",
+    "AnyOption",
+    "Application",
+    "ApplicationCommand",
+    "ApplicationCommandInteraction",
+    "ApplicationCommandOption",
+    "ApplicationCommandPermission",
+    "ApplicationCommandSubcommandOption",
+    "Attachment",
+    "AttachmentOption",
+    "AutoCompleteInteraction",
+    "BadRequest400",
+    "BaseChannel",
+    "BaseCommand",
+    "BaseComponent",
+    "BaseInteraction",
+    "BaseSlashCommandOption",
+    "BooleanOption",
+    "Button",
+    "CacheManager",
+    "ChannelCategory",
+    "ChannelManager",
+    "ChannelOption",
+    "ChannelOptionChannelTypes",
+    "Check",
+    "Client",
+    "ClientApplication",
+    "ClientMessageCommand",
+    "ClientSlashCommand",
+    "ClientUser",
+    "ClientUserCommand",
+    "ClosedWebSocketConnection",
+    "Color",
+    "Colour",
+    "CommandUtils",
+    "CommandsSection",
+    "CustomIdIsTooBig",
+    "DMChannel",
+    "DisallowedIntents",
+    "DiscordAPIError",
+    "Embed",
+    "Emoji",
+    "EpikCordException",
+    "EventHandler",
+    "FailedCheck",
+    "FailedToConnectToVoice",
+    "File",
+    "Flag",
+    "Forbidden403",
+    "GateawayUnavailable502",
+    "Guild",
+    "GuildApplicationCommandPermission",
+    "GuildBan",
+    "GuildChannel",
+    "GuildManager",
+    "GuildMember",
+    "GuildNewsChannel",
+    "GuildNewsThread",
+    "GuildPreview",
+    "GuildScheduledEvent",
+    "GuildStageChannel",
+    "GuildTextChannel",
+    "GuildWidget",
+    "GuildWidgetSettings",
+    "HTTPClient",
+    "IntegerOption",
+    "Integration",
+    "IntegrationAccount",
+    "Intents",
+    "InternalServerError5xx",
+    "InvalidApplicationCommandOptionType",
+    "InvalidApplicationCommandType",
+    "InvalidArgumentType",
+    "InvalidComponentStyle",
+    "InvalidData",
+    "InvalidIntents",
+    "InvalidOption",
+    "InvalidStatus",
+    "InvalidToken",
+    "Invite",
+    "LabelIsTooBig",
+    "MentionableOption",
+    "MentionedChannel",
+    "MentionedUser",
+    "Message",
+    "MessageActivity",
+    "MessageCommandInteraction",
+    "MessageComponentInteraction",
+    "MessageInteraction",
+    "Messageable",
+    "MethodNotAllowed405",
+    "MissingClientSetting",
+    "MissingCustomId",
+    "Modal",
+    "ModalSubmitInteraction",
+    "NotFound404",
+    "NumberOption",
+    "Overwrite",
+    "Paginator",
+    "PartialEmoji",
+    "PartialGuild",
+    "PartialUser",
+    "Permissions",
+    "Presence",
+    "PrivateThread",
+    "Ratelimited429",
+    "Reaction",
+    "ResolvedDataHandler",
+    "Role",
+    "RoleOption",
+    "RoleTag",
+    "SelectMenu",
+    "SelectMenuOption",
+    "Shard",
+    "ShardClient",
+    "ShardingRequired",
+    "SlashCommand",
+    "SlashCommandOptionChoice",
+    "SourceChannel",
+    "Status",
+    "Sticker",
+    "StickerItem",
+    "StringOption",
+    "SubCommandGroup",
+    "Subcommand",
+    "SystemChannelFlags",
+    "Team",
+    "TeamMember",
+    "TextInput",
+    "Thread",
+    "ThreadArchived",
+    "ThreadMember",
+    "TooManyComponents",
+    "TooManySelectMenuOptions",
+    "Unauthorized401",
+    "UnavailableGuild",
+    "UnhandledEpikCordException",
+    "User",
+    "UserCommandInteraction",
+    "UserOption",
+    "Utils",
+    "VoiceChannel",
+    "VoiceState",
+    "VoiceWebsocketClient",
+    "Webhook",
+    "WebhookUser",
+    "WebsocketClient",
+    "WelcomeScreen",
+    "WelcomeScreenChannel",
+    "b64encode",
+    "cache_manager",
+    "channel_manager",
+    "command",
+    "components",
+    "exceptions",
+    "guilds_manager",
+    "logger",
+    "managers",
+    "message_command",
+    "options",
+    "partials",
+    "roles_manager",
+    "user_command",
+)
