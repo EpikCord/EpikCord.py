@@ -173,7 +173,7 @@ __slots__ = __all__ = (
     "user_command",
 )
 
-
+import struct
 from collections import defaultdict
 from inspect import iscoroutine
 from sys import platform
@@ -4039,8 +4039,28 @@ class Connectable:
     async def heartbeat(self):
         heartbeat_nonce = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
         return await self.send_json({"op": self.HEARTBEAT, "d": heartbeat_nonce})
+    #HAd copied encrypts from discord.py bc if we make the function ourselves, it will be the same :/ 
+    def _encrypt_xsalsa20_poly1305(self,header:bytes, data):
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+        nonce = bytearray(24)
+        nonce[:12] = header
 
+        return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext
 
+    def _encrypt_xsalsa20_poly1305_suffix(self, header: bytes, data) -> bytes:
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+        nonce = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
+
+        return header + box.encrypt(bytes(data), nonce).ciphertext + nonce
+
+    def _encrypt_xsalsa20_poly1305_lite(self, header: bytes, data) -> bytes:
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+        nonce = bytearray(24)
+
+        nonce[:4] = struct.pack('>I', self._lite_nonce)
+        self.checked_add('_lite_nonce', 1, 4294967295)
+
+        return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
 class VoiceChannel(GuildChannel, Messageable, Connectable):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
