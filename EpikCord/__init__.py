@@ -194,6 +194,7 @@ from logging import getLogger
 from typing import (
     Optional,
     List,
+    TypedDict,
     Union,
     Dict,
     TypeVar,
@@ -2040,6 +2041,9 @@ class GuildStageChannel(BaseChannel):
         self.privacy_level: int = data.get("privacy_level")
         self.discoverable_disabled: bool = data.get("discoverable_disabled")
 
+class LockBucketDict(TypedDict):
+    urls: List[str]
+    lock: asyncio.Lock
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
@@ -2047,31 +2051,41 @@ class HTTPClient(ClientSession):
             *args, **kwargs, raise_for_status=True, json_serialize=json.dumps
         )
         self.base_uri: str = "https://discord.com/api/v10"
+        self.global_lock: asyncio.Lock = asyncio.Lock()
+        self.locks: Dict[str, LockBucketDict]
 
     async def log_request(self, res):
-        message = f"Sent a {res.request_info.method} to {res.url} and got a {res.status} response. "
+        message = [
+            f"Sent a {res.request_info.method} to {res.url}"
+            f" and got a {res.status} response. "
+        ]
+
+        if h := dict(res.headers):
+            message.append(f"Received headers: {h}")
+
+        if h := dict(res.request_info.headers):
+            message.append(f"Sent headers: {h}")
+
         try:
             await res.json()
-            message += f"Received body: {await res.json()}"
-        except Exception:
-            ...
+            message.append(f"Received body: {await res.json()}")
 
-        if dict(res.headers):
-            message += f"Received headers: {dict(res.headers)} "
+        finally:
+            logger.debug("".join(message))
 
-        if dict(res.request_info.headers):
-            message += f"Sent headers: {dict(res.request_info.headers)} "
-        logger.debug(message)
-
-    async def get(self, url, *args, to_discord: bool = True, **kwargs):
+    async def get(self, url, *args, to_discord: bool = True, lock: Optional[asyncio.Lock] = None, **kwargs):
         if to_discord:
+            if not lock:
+                lock = self.locks.get(url)
+            async with self.global_lock: # I did this to avoid messy if statements
 
-            if url.startswith("/"):
-                url = url[1:]
+                if url.startswith("/"):
+                    url = url[1:]
+                res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
+                await self.log_request(res)
 
-            res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
-            await self.log_request(res)
             return res
+
         return await super().get(url, *args, **kwargs)
 
     async def post(self, url, *args, to_discord: bool = True, **kwargs):
@@ -2565,6 +2579,12 @@ class Role:
         self.hoist: bool = data.get("hoist")
         self.icon: Optional[str] = data.get("icon")
         self.unicode_emoji: Optional[str] = data.get("unicode_emoji")
+        self.guild_id: Optional[str] = data.get("guild_id")
+        self.guild: Optional[Guild] = (
+            client.guilds.fetch(self.guild_id)
+            if self.guild_id
+            else None
+        )
         self.position: int = data.get("position")
         self.permissions: str = data.get("permissions")  # TODO: Permissions
         self.managed: bool = data.get("managed")
@@ -2769,6 +2789,7 @@ class SystemChannelFlags:
 class Guild:
     def __init__(self, client: Client, data: dict):
         self.client = client
+        self.lock: asyncio.Lock = asyncio.Lock()
         self.data: dict = data
         self.id: str = data.get("id")
         self.name: str = data.get("name")
@@ -4264,7 +4285,7 @@ class Shard(WebsocketClient):
         await self.resume()
 
 
-class ShardClient:
+class ShardManager:
     def __init__(
         self,
         token: str,
@@ -4280,7 +4301,7 @@ class ShardClient:
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
             }
         )
-        self.intents = intents.value if isinstance(intents, Intents) else intents
+        self.intents = intents if isinstance(intents, Intents) else Intents(intents)
         self.desired_shards: Optional[int] = shards
         self.shards: List[Shard] = []
 
