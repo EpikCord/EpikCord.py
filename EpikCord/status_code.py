@@ -9,6 +9,7 @@ class StatusCode(IntEnum):
 
 class HTTPCodes(StatusCode):
     """HTTP response codes."""
+
     OK = 200
     CREATED = 201
 
@@ -28,10 +29,7 @@ class HTTPCodes(StatusCode):
 
     @classmethod
     def _missing_(cls, value: int) -> HTTPCodes:
-        if (
-            value > HTTPCodes.SERVER_ERROR
-            and value != HTTPCodes.GATEWAY_UNAVAILABLE
-        ):
+        if value > HTTPCodes.SERVER_ERROR and value != HTTPCodes.GATEWAY_UNAVAILABLE:
             return HTTPCodes.SERVER_ERROR
 
         raise ValueError(

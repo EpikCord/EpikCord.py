@@ -7,6 +7,7 @@ class CloseEventCode(IntEnum):
 
 class GatewayCECode(CloseEventCode):
     """Gateway close event code."""
+
     UnknownError = 4000
     UnknownOpcode = 4001
     DecodeError = 4002
@@ -29,6 +30,7 @@ class GatewayCECode(CloseEventCode):
 
 class VoiceCECode(CloseEventCode):
     """Voice close event code."""
+
     UnknownOpcode = 4001
     DecodeError = 4002
 
