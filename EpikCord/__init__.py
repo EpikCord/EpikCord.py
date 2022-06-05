@@ -4301,43 +4301,47 @@ class CommandUtils:
     @staticmethod
     def user_command(name: Optional[str] = None):
         def register_user_command(func):
-            return ClientUserCommand(
-                name = name or func.__name__,
-                callback = func
-            )
+            return ClientUserCommand(name=name or func.__name__, callback=func)
+
         return register_user_command
 
     @staticmethod
     def message_command(name: Optional[str] = None):
         def register_message_command(func):
-            return ClientMessageCommand(
-                name = name or func.__name__,
-                callback = func
-            )
+            return ClientMessageCommand(name=name or func.__name__, callback=func)
+
         return register_message_command
-    
+
     @staticmethod
-    def command(*, name: Optional[str] = None, description: str = None, guild_ids: Optional[List[str]] = None, options: Optional[List[AnyOption]] = None):
+    def command(
+        *,
+        name: Optional[str] = None,
+        description: str = None,
+        guild_ids: Optional[List[str]] = None,
+        options: Optional[List[AnyOption]] = None,
+    ):
         def register_slash_command(func):
             desc = description or func.__doc__
             if not desc:
-                raise TypeError(f"Command with {name or func.__name__} has no description. This is required.")
+                raise TypeError(
+                    f"Command with {name or func.__name__} has no description. This is required."
+                )
             return ClientSlashCommand(
-                name = name or func.__name__,
-                description = desc,
-                guild_ids = guild_ids or [],
-                options = options or [],
+                name=name or func.__name__,
+                description=desc,
+                guild_ids=guild_ids or [],
+                options=options or [],
             )
+
         return register_slash_command
 
     @staticmethod
     def event(name: Optional[str] = None):
         def register_event(func):
-            return Event(
-                name = name or func.__name__,
-                callback = func
-            )
+            return Event(name=name or func.__name__, callback=func)
+
         return register_event
+
 
 __slots__ = __all__ = (
     "ActionRow",
