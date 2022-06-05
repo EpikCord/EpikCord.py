@@ -3945,7 +3945,7 @@ class Connectable:
         self.ip: Optional[str] = None
         self.port: Optional[int] = None
         self.ssrc: Optional[int] = None
-        self.modes: Optional[List[str]] = None
+        self.mode: Optional[List[str]] = None
 
     async def connect(
         self, muted: Optional[bool] = False, deafened: Optional[bool] = False
