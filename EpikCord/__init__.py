@@ -2041,9 +2041,11 @@ class GuildStageChannel(BaseChannel):
         self.privacy_level: int = data.get("privacy_level")
         self.discoverable_disabled: bool = data.get("discoverable_disabled")
 
+
 class LockBucketDict(TypedDict):
     urls: List[str]
     lock: asyncio.Lock
+
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
@@ -2073,11 +2075,18 @@ class HTTPClient(ClientSession):
         finally:
             logger.debug("".join(message))
 
-    async def get(self, url, *args, to_discord: bool = True, lock: Optional[asyncio.Lock] = None, **kwargs):
+    async def get(
+        self,
+        url,
+        *args,
+        to_discord: bool = True,
+        lock: Optional[asyncio.Lock] = None,
+        **kwargs,
+    ):
         if to_discord:
             if not lock:
                 lock = self.locks.get(url)
-            async with self.global_lock: # I did this to avoid messy if statements
+            async with self.global_lock:  # I did this to avoid messy if statements
 
                 if url.startswith("/"):
                     url = url[1:]
@@ -2581,9 +2590,7 @@ class Role:
         self.unicode_emoji: Optional[str] = data.get("unicode_emoji")
         self.guild_id: Optional[str] = data.get("guild_id")
         self.guild: Optional[Guild] = (
-            client.guilds.fetch(self.guild_id)
-            if self.guild_id
-            else None
+            client.guilds.fetch(self.guild_id) if self.guild_id else None
         )
         self.position: int = data.get("position")
         self.permissions: str = data.get("permissions")  # TODO: Permissions
@@ -3971,7 +3978,6 @@ class Connectable:
         self.ip: Optional[str] = None
         self.port: Optional[int] = None
 
-
     async def connect(
         self, muted: Optional[bool] = False, deafened: Optional[bool] = False
     ):
@@ -4040,7 +4046,7 @@ class Connectable:
 
     async def handle_ready(self, event: dict):
         self.ssrc: int = event["ssrc"]
-        self.mode = event["modes"][0] # Always has one mode, and I can use any.
+        self.mode = event["modes"][0]  # Always has one mode, and I can use any.
         self.server_ip: str = event["ip"]
         self.server_port: int = event["port"]
 
@@ -4301,7 +4307,9 @@ class ShardManager:
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
             }
         )
-        self.intents: Intents = intents if isinstance(intents, Intents) else Intents(intents)
+        self.intents: Intents = (
+            intents if isinstance(intents, Intents) else Intents(intents)
+        )
         self.desired_shards: Optional[int] = shards
         self.shards: List[Shard] = []
 
