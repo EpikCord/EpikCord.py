@@ -898,6 +898,7 @@ class EventHandler:
             self.events[func_name].append(func)
 
             return Event(func)
+
         return register_event
 
     async def guild_member_update(self, data):
