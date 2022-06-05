@@ -2101,11 +2101,10 @@ class Client(WebsocketClient):
 
     def user_command(self, name: Optional[str] = None):
         def register_slash_command(func):
-            name = name or func.__name__
             result = ClientUserCommand(
                 **{
                     "callback": func,
-                    "name": name,
+                    "name": name or func.__name__,
                 }
             )
             self.commands[name](result)
@@ -2115,11 +2114,10 @@ class Client(WebsocketClient):
 
     def message_command(self, name: Optional[str] = None):
         def register_slash_command(func):
-            name = name or func.__name__
             self.commands[name] = ClientMessageCommand(
                 **{
                     "callback": func,
-                    "name": name,
+                    "name": name or func.__name__,
                 }
             )
 
@@ -4448,7 +4446,6 @@ __slots__ = __all__ = (
     "b64encode",
     "cache_manager",
     "channel_manager",
-    "command",
     "components",
     "exceptions",
     "guilds_manager",
@@ -4458,5 +4455,4 @@ __slots__ = __all__ = (
     "options",
     "partials",
     "roles_manager",
-    "user_command",
 )
