@@ -629,6 +629,7 @@ class EventHandler:
             The amount of time to wait for the event.
             If not specified, it'll wait forever.
         """
+        timeout = timeout or 0
         future = asyncio.Future()
         if not check:
 
@@ -636,7 +637,7 @@ class EventHandler:
                 return True
 
         self.wait_for_events[event_name.lower()].append((future, check))
-        return asyncio.wait_for(future)
+        return asyncio.wait_for(future, timeout = timeout)
 
     @staticmethod
     async def voice_server_update(data: dict):
