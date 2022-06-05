@@ -116,7 +116,7 @@ __slots__ = __all__ = (
     "Ratelimited429",
     "Reaction",
     "ResolvedDataHandler",
-    "Role",
+    "GuildRole",
     "RoleOption",
     "RoleTag",
     "SelectMenu",
@@ -990,6 +990,16 @@ class EventHandler:
 
         return interaction
 
+    async def guild_role_create(self,data:dict):
+        guild = self.guilds.fetch(data["guild_id"])
+        guild.roles.append(GuildRole(self,data["role"]))
+        return GuildRole(self, data["role"])
+
+    async def guild_role_delete(self, data:dict):
+        ...
+
+
+    
     async def channel_create(self, data: dict):
 
         channel = self.utils.channel_from_type(data)
@@ -2555,7 +2565,7 @@ class RoleTag:
         self.premium_subscriber: Optional[bool] = data.get("premium_subscriber")
 
 
-class Role:
+class GuildRole:
     def __init__(self, client, data: dict):
         self.data = data
         self.client = client
@@ -2577,7 +2587,7 @@ class Emoji:
         self.client = client
         self.id: Optional[str] = data.get("id")
         self.name: Optional[str] = data.get("name")
-        self.roles: List[Role] = [Role(role) for role in data.get("roles", [])]
+        self.roles: List[GuildRole] = [GuildRole(role) for role in data.get("roles", [])]
         self.user: Optional[User] = User(data.get("user")) if "user" in data else None
         self.requires_colons: bool = data.get("require_colons")
         self.guild_id: str = data.get("guild_id")
@@ -2590,7 +2600,7 @@ class Emoji:
         self,
         *,
         name: Optional[str] = None,
-        roles: Optional[List[Role]] = None,
+        roles: Optional[List[GuildRole]] = None,
         reason: Optional[str] = None,
     ):
         payload = {}
@@ -2802,7 +2812,7 @@ class Guild:
             if data.get("explicit_content_filter") == 1
             else "ALL_MEMBERS"
         )
-        self.roles: List[Role] = [Role(role) for role in data.get("roles")]
+        self.roles: List[GuildRole] = [GuildRole(role) for role in data.get("roles")]
         self.emojis: List[Emoji] = [Emoji(emoji) for emoji in data.get("emojis")]
         self.features: List[str] = data.get("features")
         self.mfa_level: str = "NONE" if data.get("mfa_level") == 0 else "ELEVATED"
