@@ -2020,10 +2020,12 @@ class HTTPClient(ClientSession):
             return res
         return await super().head(url, *args, **kwargs)
 
+
 class Event:
     def __init__(self, callback, *, event_name: str):
         self.callback = callback
         self.event_name = event_name or callback.__name__
+
 
 class Section:
     def __init_subclass__(cls, **kwargs):
@@ -2031,10 +2033,14 @@ class Section:
             if isinstance(attr_value, Event):
                 cls._events[cls.__name__].append(attr_value)
 
-            elif issubclass(attr_value, (ClientSlashCommand, ClientUserCommand, ClientMessageCommand)):
+            elif issubclass(
+                attr_value,
+                (ClientSlashCommand, ClientUserCommand, ClientMessageCommand),
+            ):
                 cls._commands[cls.__name__].append(attr_value)
 
         super().__init_subclass__(**kwargs)
+
 
 class Client(WebsocketClient):
     def __init__(
@@ -2131,6 +2137,7 @@ class Client(WebsocketClient):
             command[0].checks.append(check)
 
         return wrapper
+
 
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
