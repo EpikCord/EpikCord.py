@@ -1195,7 +1195,7 @@ class WebsocketClient(EventHandler):
         await self.handle_events()
 
     async def handle_close(self):
-        if self.ws.close_code == 4014:
+        if self.ws.close_code == GatewayCECode.DisallowedIntents:
             raise DisallowedIntents(
                 "You cannot use privileged intents with this token, go to "
                 "the developer portal and allow the privileged intents "
@@ -1203,53 +1203,53 @@ class WebsocketClient(EventHandler):
             )
         elif self.ws.close_code == 1006:
             await self.resume()
-        elif self.ws.close_code == 4004:
+        elif self.ws.close_code == GatewayCECode.AuthenticationFailed:
             raise InvalidToken("The token you provided is invalid.")
-        elif self.ws.close_code == 4008:
+        elif self.ws.close_code == GatewayCECode.RateLimited:
             raise Ratelimited429(
                 "You've been rate limited. Try again in a few minutes."
             )
-        elif self.ws.close_code == 4011:
+        elif self.ws.close_code == GatewayCECode.ShardingRequired:
             raise ShardingRequired("You need to shard the bot.")
-        elif self.ws.close_code == 4012:
+        elif self.ws.close_code == GatewayCECode.InvalidAPIVersion:
             raise DeprecationWarning(
                 "The gateway you're connecting to is deprecated and does not "
                 "work, upgrade EpikCord.py. "
             )
-        elif self.ws.close_code == 4013:
+        elif self.ws.close_code == GatewayCECode.InvalidIntents:
             raise InvalidIntents("The intents you provided are invalid.")
-        elif self.ws.close_code == 4000:
+        elif self.ws.close_code == GatewayCECode.UnknownError:
             await self.resume()
-        elif self.ws.close_code == 4001:
+        elif self.ws.close_code == GatewayCECode.UnknownOpcode:
             logger.critical(
                 "EpikCord.py sent an invalid OPCODE to the Gateway. "
                 "Report this immediately. "
             )
             await self.resume()
-        elif self.ws.close_code == 4002:
+        elif self.ws.close_code == GatewayCECode.DecodeError:
             logger.critical(
                 "EpikCord.py sent an invalid payload to the Gateway."
                 " Report this immediately. "
             )
             await self.resume()
-        elif self.ws.close_code == 4003:
+        elif self.ws.close_code == GatewayCECode.NotAuthenticated:
             logger.critical(
                 "EpikCord.py has sent a payload prior to identifying."
                 " Report this immediately. "
             )
 
-        elif self.ws.close_code == 4005:
+        elif self.ws.close_code == GatewayCECode.AlreadyAuthenticated:
             logger.critical(
                 "EpikCord.py tried to authenticate again." " Report this immediately. "
             )
             await self.resume()
-        elif self.ws.close_code == 4007:
+        elif self.ws.close_code == GatewayCECode.InvalidSequence:
             logger.critical(
                 "EpikCord.py sent an invalid sequence number."
                 " Report this immediately."
             )
             await self.resume()
-        elif self.ws.close_code == 4009:
+        elif self.ws.close_code == GatewayCECode.SessionTimeout:
             logger.critical("Session timed out.")
             await self.resume()
         else:
