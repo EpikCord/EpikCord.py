@@ -637,7 +637,7 @@ class EventHandler:
                 return True
 
         self.wait_for_events[event_name.lower()].append((future, check))
-        return asyncio.wait_for(future, timeout = timeout)
+        return asyncio.wait_for(future, timeout=timeout)
 
     @staticmethod
     async def voice_server_update(data: dict):
