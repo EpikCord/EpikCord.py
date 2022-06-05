@@ -1,6 +1,180 @@
 """
 NOTE: version string only in setup.cfg
 """
+from collections import defaultdict
+import threading
+
+from .close_event_codes import GatewayCECode
+from .opcodes import GatewayOpcode, VoiceOpcode
+
+__slots__ = __all__ = (
+    "ActionRow",
+    "Activity",
+    "AllowedMention",
+    "AnyChannel",
+    "AnyOption",
+    "Application",
+    "ApplicationCommand",
+    "ApplicationCommandInteraction",
+    "ApplicationCommandOption",
+    "ApplicationCommandPermission",
+    "ApplicationCommandSubcommandOption",
+    "Attachment",
+    "AttachmentOption",
+    "AutoCompleteInteraction",
+    "BadRequest400",
+    "BaseChannel",
+    "BaseCommand",
+    "BaseComponent",
+    "BaseInteraction",
+    "BaseSlashCommandOption",
+    "BooleanOption",
+    "Button",
+    "CacheManager",
+    "ChannelCategory",
+    "ChannelManager",
+    "ChannelOption",
+    "ChannelOptionChannelTypes",
+    "Check",
+    "Client",
+    "ClientApplication",
+    "ClientMessageCommand",
+    "ClientSlashCommand",
+    "ClientUser",
+    "ClientUserCommand",
+    "ClosedWebSocketConnection",
+    "Color",
+    "Colour",
+    "CommandUtils",
+    "CommandsSection",
+    "CustomIdIsTooBig",
+    "DMChannel",
+    "DisallowedIntents",
+    "DiscordAPIError",
+    "Embed",
+    "Emoji",
+    "EpikCordException",
+    "EventHandler",
+    "FailedCheck",
+    "FailedToConnectToVoice",
+    "File",
+    "Flag",
+    "Forbidden403",
+    "GateawayUnavailable502",
+    "Guild",
+    "GuildApplicationCommandPermission",
+    "GuildBan",
+    "GuildChannel",
+    "GuildManager",
+    "GuildMember",
+    "GuildNewsChannel",
+    "GuildNewsThread",
+    "GuildPreview",
+    "GuildScheduledEvent",
+    "GuildStageChannel",
+    "GuildTextChannel",
+    "GuildWidget",
+    "GuildWidgetSettings",
+    "HTTPClient",
+    "IntegerOption",
+    "Integration",
+    "IntegrationAccount",
+    "Intents",
+    "InternalServerError5xx",
+    "InvalidApplicationCommandOptionType",
+    "InvalidApplicationCommandType",
+    "InvalidArgumentType",
+    "InvalidComponentStyle",
+    "InvalidData",
+    "InvalidIntents",
+    "InvalidOption",
+    "InvalidStatus",
+    "InvalidToken",
+    "Invite",
+    "LabelIsTooBig",
+    "MentionableOption",
+    "MentionedChannel",
+    "MentionedUser",
+    "Message",
+    "MessageActivity",
+    "MessageCommandInteraction",
+    "MessageComponentInteraction",
+    "MessageInteraction",
+    "Messageable",
+    "MethodNotAllowed405",
+    "MissingClientSetting",
+    "MissingCustomId",
+    "Modal",
+    "ModalSubmitInteraction",
+    "NotFound404",
+    "NumberOption",
+    "Overwrite",
+    "Paginator",
+    "PartialEmoji",
+    "PartialGuild",
+    "PartialUser",
+    "Permissions",
+    "Presence",
+    "PrivateThread",
+    "Ratelimited429",
+    "Reaction",
+    "ResolvedDataHandler",
+    "Role",
+    "RoleOption",
+    "RoleTag",
+    "SelectMenu",
+    "SelectMenuOption",
+    "Shard",
+    "ShardClient",
+    "ShardingRequired",
+    "SlashCommand",
+    "SlashCommandOptionChoice",
+    "SourceChannel",
+    "Status",
+    "Sticker",
+    "StickerItem",
+    "StringOption",
+    "SubCommandGroup",
+    "Subcommand",
+    "SystemChannelFlags",
+    "Team",
+    "TeamMember",
+    "TextInput",
+    "Thread",
+    "ThreadArchived",
+    "ThreadMember",
+    "TooManyComponents",
+    "TooManySelectMenuOptions",
+    "Unauthorized401",
+    "UnavailableGuild",
+    "UnhandledEpikCordException",
+    "User",
+    "UserCommandInteraction",
+    "UserOption",
+    "Utils",
+    "VoiceChannel",
+    "VoiceState",
+    "VoiceWebsocketClient",
+    "Webhook",
+    "WebhookUser",
+    "WebsocketClient",
+    "WelcomeScreen",
+    "WelcomeScreenChannel",
+    "b64encode",
+    "cache_manager",
+    "channel_manager",
+    "command",
+    "components",
+    "exceptions",
+    "guilds_manager",
+    "logger",
+    "managers",
+    "message_command",
+    "options",
+    "partials",
+    "roles_manager",
+    "user_command",
+)
 
 from __future__ import annotations
 
@@ -672,8 +846,7 @@ class EventHandler:
             event = event.json()
             logger.debug(f"Received {event} from Discord.")
 
-            if event["op"] == self.HELLO:
-
+            if event["op"] == GatewayOpcode.HELLO:
                 self.interval = event["d"]["heartbeat_interval"]
 
                 async def wrapper():
@@ -683,27 +856,27 @@ class EventHandler:
                 asyncio.create_task(wrapper())
                 await self.identify()
 
-            elif event["op"] == self.EVENT:
+            elif event["op"] == GatewayOpcode.DISPATCH:
                 await self.handle_event(event)
-            elif event["op"] == self.HEARTBEAT:
+            elif event["op"] == GatewayOpcode.HEARTBEAT:
                 # I shouldn't wait the remaining delay according to the docs.
                 await self.heartbeat(True)
 
-            elif event["op"] == self.HEARTBEAT_ACK:
+            elif event["op"] == GatewayOpcode.HEARTBEAT_ACK:
                 try:
                     self.heartbeats.append(event["d"])
                 except AttributeError:
                     self.heartbeats = [event["d"]]
 
-            elif event["op"] == self.RECONNECT:
+            elif event["op"] == GatewayOpcode.RECONNECT:
                 await self.reconnect()
 
-            elif event["op"] == self.RESUMED:
+            elif event["op"] == GatewayOpcode.RESUMED:
                 logger.debug(
                     "Connection successfully resumed and all proceeding events are new."
                 )
 
-            if event["op"] != self.EVENT:
+            if event["op"] != GatewayOpcode.DISPATCH:  # TODO: find op code
                 logger.debug(f"Received OPCODE: {event['op']}")
 
         await self.handle_close()
@@ -934,19 +1107,7 @@ class EventHandler:
 
 class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
-
         super().__init__()
-        self.EVENT = 0
-        self.HEARTBEAT = 1
-        self.IDENTIFY = 2
-        self.PRESENCE_UPDATE = 3
-        self.VOICE_STATE_UPDATE = 4
-        self.RESUME = 6
-        self.RECONNECT = 7
-        self.REQUEST_GUILD_MEMBERS = 8
-        self.INVALID_SESSION = 9
-        self.HELLO = 10
-        self.HEARTBEAT_ACK = 11
 
         self.token = token
         if not token:
@@ -973,11 +1134,13 @@ class WebsocketClient(EventHandler):
     async def heartbeat(self, forced: Optional[bool] = None):
         if forced:
             return await self.send_json(
-                {"op": self.HEARTBEAT, "d": self.sequence or "null"}
+                {"op": GatewayOpcode.HEARTBEAT, "d": self.sequence or "null"}
             )
 
         if self.interval:
-            await self.send_json({"op": self.HEARTBEAT, "d": self.sequence or "null"})
+            await self.send_json(
+                {"op": GatewayOpcode.HEARTBEAT, "d": self.sequence or "null"}
+            )
             await asyncio.sleep(self.interval / 1000)
             logger.debug("Sent a heartbeat!")
 
@@ -991,7 +1154,10 @@ class WebsocketClient(EventHandler):
         user_ids: Optional[List[str]] = None,
         nonce: Optional[str] = None,
     ):
-        payload = {"op": self.REQUEST_GUILD_MEMBERS, "d": {"guild_id": guild_id}}
+        payload = {
+            "op": GatewayOpcode.REQUEST_GUILD_MEMBERS,
+            "d": {"guild_id": guild_id},
+        }
 
         if query:
             payload["d"]["query"] = query
@@ -1017,7 +1183,7 @@ class WebsocketClient(EventHandler):
         )
         await self.send_json(
             {
-                "op": self.RECONNECT,
+                "op": GatewayOpcode.RECONNECT,
                 "d": {
                     "token": self.token,
                     "session_id": self.session_id,
@@ -1029,7 +1195,7 @@ class WebsocketClient(EventHandler):
         await self.handle_events()
 
     async def handle_close(self):
-        if self.ws.close_code == 4014:
+        if self.ws.close_code == GatewayCECode.DisallowedIntents:
             raise DisallowedIntents(
                 "You cannot use privileged intents with this token, go to "
                 "the developer portal and allow the privileged intents "
@@ -1037,53 +1203,53 @@ class WebsocketClient(EventHandler):
             )
         elif self.ws.close_code == 1006:
             await self.resume()
-        elif self.ws.close_code == 4004:
+        elif self.ws.close_code == GatewayCECode.AuthenticationFailed:
             raise InvalidToken("The token you provided is invalid.")
-        elif self.ws.close_code == 4008:
+        elif self.ws.close_code == GatewayCECode.RateLimited:
             raise Ratelimited429(
                 "You've been rate limited. Try again in a few minutes."
             )
-        elif self.ws.close_code == 4011:
+        elif self.ws.close_code == GatewayCECode.ShardingRequired:
             raise ShardingRequired("You need to shard the bot.")
-        elif self.ws.close_code == 4012:
+        elif self.ws.close_code == GatewayCECode.InvalidAPIVersion:
             raise DeprecationWarning(
                 "The gateway you're connecting to is deprecated and does not "
                 "work, upgrade EpikCord.py. "
             )
-        elif self.ws.close_code == 4013:
+        elif self.ws.close_code == GatewayCECode.InvalidIntents:
             raise InvalidIntents("The intents you provided are invalid.")
-        elif self.ws.close_code == 4000:
+        elif self.ws.close_code == GatewayCECode.UnknownError:
             await self.resume()
-        elif self.ws.close_code == 4001:
+        elif self.ws.close_code == GatewayCECode.UnknownOpcode:
             logger.critical(
                 "EpikCord.py sent an invalid OPCODE to the Gateway. "
                 "Report this immediately. "
             )
             await self.resume()
-        elif self.ws.close_code == 4002:
+        elif self.ws.close_code == GatewayCECode.DecodeError:
             logger.critical(
                 "EpikCord.py sent an invalid payload to the Gateway."
                 " Report this immediately. "
             )
             await self.resume()
-        elif self.ws.close_code == 4003:
+        elif self.ws.close_code == GatewayCECode.NotAuthenticated:
             logger.critical(
                 "EpikCord.py has sent a payload prior to identifying."
                 " Report this immediately. "
             )
 
-        elif self.ws.close_code == 4005:
+        elif self.ws.close_code == GatewayCECode.AlreadyAuthenticated:
             logger.critical(
                 "EpikCord.py tried to authenticate again." " Report this immediately. "
             )
             await self.resume()
-        elif self.ws.close_code == 4007:
+        elif self.ws.close_code == GatewayCECode.InvalidSequence:
             logger.critical(
                 "EpikCord.py sent an invalid sequence number."
                 " Report this immediately."
             )
             await self.resume()
-        elif self.ws.close_code == 4009:
+        elif self.ws.close_code == GatewayCECode.SessionTimeout:
             logger.critical("Session timed out.")
             await self.resume()
         else:
@@ -1107,7 +1273,7 @@ class WebsocketClient(EventHandler):
         await self.connect()
         await self.send_json(
             {
-                "op": self.RESUME,
+                "op": GatewayOpcode.RESUME,
                 "d": {
                     "seq": self.sequence,
                     "session_id": self.session_id,
@@ -1119,7 +1285,7 @@ class WebsocketClient(EventHandler):
 
     async def identify(self):
         payload = {
-            "op": self.IDENTIFY,
+            "op": GatewayOpcode.IDENTIFY,
             "d": {
                 "token": self.token,
                 "intents": self.intents,
@@ -3835,18 +4001,6 @@ class Connectable:
 
         self._closed = True
 
-        self.IDENTIFY = 0
-        self.SELECT_PROTOCOL = 1
-        self.READY = 2
-        self.HEARTBEAT = 3
-        self.SESSION_DESCRIPTION = 4
-        self.SPEAKING = 5
-        self.HEARTBEAT_ACK = 6
-        self.RESUME = 7
-        self.HELLO = 8
-        self.RESUMED = 9
-        self.CLIENT_DISCONNECT = 13
-
         self.token: Optional[str] = None
         self.session_id: Optional[str] = None
         self.endpoint: Optional[str] = None
@@ -3867,7 +4021,7 @@ class Connectable:
     ):
         await self.client.send_json(
             {
-                "op": self.client.VOICE_STATE_UPDATE,
+                "op": GatewayOpcode.VOICE_STATE_UPDATE,
                 "d": {
                     "guild_id": self.guild_id,
                     "channel_id": self.channel_id,
@@ -3881,8 +4035,8 @@ class Connectable:
         )
         if not self.client.intents.voice_states:
             raise ValueError(
-                "You must have the `voice_states` intent enabled to use this "
-                "otherwise we never get the session_id. "
+                "You must have the `voice_states` intent enabled to use "
+                "this otherwise we never get the session_id."
             )
 
         voice_server_update_coro = asyncio.create_task(
@@ -3910,37 +4064,38 @@ class Connectable:
     async def handle_events(self):
         async for event in self.ws:
             event = event.json()
-            if event["op"] == self.HELLO:
+            if event["op"] == VoiceOpcode.HELLO:
                 await self.handle_hello(event["d"])
 
-            elif event["op"] == self.READY:
+            elif event["op"] == VoiceOpcode.READY:
                 await self.handle_ready(event["d"])
 
         await self.handle_close()
 
     async def handle_close(self):
         self._closed = True
-        if self.ws.close_close == 4001:
+        if self.ws.close_close == GatewayCECode.UnknownOpcode:
             raise ClosedWebSocketConnection(
                 "EpikCord has sent an invalid OpCode to the Voice WebSocket. Report this at https://github.com/EpikCord/EpikCord.py/issues"
             )
-        elif self.ws.close_code == 4002:
+        elif self.ws.close_code == GatewayCECode.DecodeError:
             raise ClosedWebSocketConnection(
                 "EpikCord has sent an invalid identify to the Voice WebSocket. Report this at https://github.com/EpikCord/EpikCord.py/issues"
             )
-        elif self.ws.close_code == 4003:
+        elif self.ws.close_code == GatewayCECode.NotAuthenticated:
             raise ClosedWebSocketConnection(
                 "EpikCord has sent a payload before identifying to the Voice Websocket. Report this at https://github.com/EpikCord/EpikCord.py/issues"
             )
-        elif self.ws.close_code == 4004:
+        elif self.ws.close_code == GatewayCECode.AuthenticationFailed:
             raise ClosedWebSocketConnection(
                 "EpikCord sent an invalid token to the Voice Websocket. Report this at https://github.com/EpikCord/EpikCord.py/issues"
             )
-        elif self.ws.close_code == 4005:
+        elif self.ws.close_code == GatewayCECode.AlreadyAuthenticated:
             raise ClosedWebSocketConnection(
                 "EpikCord sent more than one identify payload. Report this at https://github.com/EpikCord/EpikCord.py/issues"
             )
-        elif self.ws.close_code == 4006:
+        elif self.ws.close_code == GatewayCECode.SessionTimedOut:
+
             raise ClosedWebSocketConnection("The session is no longer valid.")
 
     async def handle_hello(self, data: dict):
@@ -3964,7 +4119,7 @@ class Connectable:
     async def identify(self):
         return await self.send_json(
             {
-                "op": self.IDENTIFY,
+                "op": VoiceOpcode.IDENTIFY,
                 "d": {
                     "server_id": self.guild_id,
                     "user_id": self.client.user.id,
@@ -3980,7 +4135,7 @@ class Connectable:
 
     async def heartbeat(self):
         heartbeat_nonce = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
-        return await self.send_json({"op": self.HEARTBEAT, "d": heartbeat_nonce})
+        return await self.send_json({"op": VoiceOpcode.HEARTBEAT, "d": heartbeat_nonce})
 
 
 class VoiceChannel(GuildChannel, Messageable, Connectable):
@@ -4182,7 +4337,7 @@ class Shard(WebsocketClient):
 
     async def identify(self):
         payload = {
-            "op": self.IDENTIFY,
+            "op": GatewayOpcode.IDENTIFY,
             "d": {
                 "token": self.token,
                 "intents": self.intents,
