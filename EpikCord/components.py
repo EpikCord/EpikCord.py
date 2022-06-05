@@ -207,7 +207,8 @@ class Button(BaseComponent):
         if isinstance(style, str):
             if style.upper() not in valid_styles:
                 raise InvalidComponentStyle(
-                    "Invalid button style. Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS."
+                    "Invalid button style. "
+                    "Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS."
                 )
             self.style: int = valid_styles[style.upper()]
 
@@ -216,11 +217,11 @@ class Button(BaseComponent):
                 raise InvalidComponentStyle(
                     "Invalid button style. Style must be in range 1 to 5 inclusive."
                 )
-            self.style: int = style
+            self.style = style
 
         if url:
             self.url: Optional[str] = url
-            self.style: int = 5
+            self.style = 5
         if emoji:
             self.emoji: Optional[Union[PartialEmoji, dict]] = emoji
         if label:
@@ -296,7 +297,8 @@ class Button(BaseComponent):
         if isinstance(style, str):
             if style.upper() not in valid_styles:
                 raise InvalidComponentStyle(
-                    "Invalid button style. Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS."
+                    "Invalid button style."
+                    "Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS."
                 )
             self.settings["style"] = valid_styles[style.upper()]
             return self
@@ -365,7 +367,8 @@ class ActionRow:
             components.append(component)
         return cls(components)
 
-    def check_still_valid(self, list_of_components):
+    @staticmethod
+    def check_still_valid(list_of_components):
         buttons = 0
         select_menus = 0
         text_inputs = 0
@@ -383,7 +386,8 @@ class ActionRow:
 
             if buttons >= 5 and text_inputs < 1 and select_menus < 1:
                 raise TooManyComponents(
-                    "You can only have 1 SelectMenu/TextInput per ActionRow or 5 Buttons per ActionRow."
+                    "You can only have 1 SelectMenu/TextInput per ActionRow"
+                    " or 5 Buttons per ActionRow."
                 )
 
             yield component

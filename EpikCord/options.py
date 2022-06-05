@@ -21,8 +21,9 @@ class BaseSlashCommandOption:
         self.name: str = name
         self.description: str = description
         self.required: bool = required
-        self.type: int = None  # Needs to be set by the subclass
-        # People shouldn't use this class, this is just a base class for other options, but they can use this for other options we are yet to account for.
+        self.type: Optional[int] = None  # Needs to be set by the subclass
+        # People shouldn't use this class, this is just a base class for other
+        # options, but they can use this for other options we are yet to account for.
 
     def to_dict(self):
         return {
@@ -290,11 +291,7 @@ class SubCommandGroup(BaseSlashCommandOption):
 
     def to_dict(self):
         usual_dict = super().to_dict()
-        payload_to_append = []
-        for option in self.options:
-            payload_to_append(option.to_dict())
-
-        usual_dict["options"] = payload_to_append
+        usual_dict["options"] = [option.to_dict() for option in self.options]
         return usual_dict
 
 
