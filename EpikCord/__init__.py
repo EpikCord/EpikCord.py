@@ -2034,7 +2034,9 @@ class Event:
 
 
 class Section:
-    _commands: Dict[str, Union[ClientUserCommand, ClientSlashCommand, ClientMessageCommand]] = defaultdict(list)
+    _commands: Dict[
+        str, Union[ClientUserCommand, ClientSlashCommand, ClientMessageCommand]
+    ] = defaultdict(list)
     _commands: Dict[str, Event] = defaultdict(list)
 
     def __init_subclass__(cls, **kwargs):
@@ -2154,7 +2156,7 @@ class Client(WebsocketClient):
 
         for command in section._commands.values():
             self.commands[command.name] = command
-        
+
         logger.info(f"Loaded Section {section.__name__}")
 
 
