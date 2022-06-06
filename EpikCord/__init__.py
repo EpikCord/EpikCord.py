@@ -9,7 +9,7 @@ import threading
 from .close_event_codes import GatewayCECode
 from .opcodes import GatewayOpcode, VoiceOpcode
 
-
+from importlib import import_module
 import asyncio
 import datetime
 import io
@@ -2034,6 +2034,8 @@ class Event:
 
 
 class Section:
+    _commands: Dict[str, Union[ClientUserCommand, ClientSlashCommand, ClientMessageCommand]] = defaultdict(list)
+    _commands: Dict[str, Event] = defaultdict(list)
 
     def __init_subclass__(cls, **kwargs):
         for attr_value in cls.__dict__.values():
@@ -2144,6 +2146,23 @@ class Client(WebsocketClient):
             command[0].checks.append(check)
 
         return wrapper
+
+    def load_section(self, section: Section):
+
+        if isinstance(section, str):
+            sections = import_module(section)
+
+            for possible_section in sections.__dict__.values():
+                if issubclass(possible_section, Section):
+                    self.load_section(possible_section)
+
+        for event in section._events.values():
+            self.events[event.name] = event.callback
+
+        for command in section._commands.values():
+            self.commands[command.name] = command
+        
+        logger.info(f"Loaded Section {section.__name__}")
 
 
 # class ClientGuildMember(Member):
