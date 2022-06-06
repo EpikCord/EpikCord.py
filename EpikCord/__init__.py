@@ -2149,13 +2149,6 @@ class Client(WebsocketClient):
 
     def load_section(self, section: Section):
 
-        if isinstance(section, str):
-            sections = import_module(section)
-
-            for possible_section in sections.__dict__.values():
-                if issubclass(possible_section, Section):
-                    self.load_section(possible_section)
-
         for event in section._events.values():
             self.events[event.name] = event.callback
 
@@ -2163,6 +2156,14 @@ class Client(WebsocketClient):
             self.commands[command.name] = command
         
         logger.info(f"Loaded Section {section.__name__}")
+
+
+    def load_sections_from_file(self, filename: str):
+        sections = import_module(filename)
+
+        for possible_section in sections.__dict__.values():
+            if issubclass(possible_section, Section):
+                self.load_section(possible_section)
 
 
 # class ClientGuildMember(Member):
