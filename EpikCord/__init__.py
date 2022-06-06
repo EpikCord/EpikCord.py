@@ -2159,7 +2159,6 @@ class Client(WebsocketClient):
 
         logger.info(f"Loaded Section {section.__name__}")
 
-
     def load_sections_from_file(self, filename: str):
         sections = import_module(filename)
 
