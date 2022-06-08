@@ -11,7 +11,7 @@ intents = Intents().all()
 client = Client("your_token", intents)
 
 
-@client.event
+@client.event()
 async def message_create(message):
     if message.author.id == client.user.id:
         return
