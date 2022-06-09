@@ -700,8 +700,10 @@ class EventHandler:
 
             elif event["op"] == GatewayOpcode.HEARTBEAT_ACK:
                 heartbeat_ack_time = time_ns()
-                self.latency = heartbeat_ack_time - self.heartbeat_time
-                self.latencies.append(self.latency)
+                self.discord_latency:int = heartbeat_ack_time - self.heartbeat_time
+                if len(self.latencies) > 10:
+                    self.latencies.pop(0) # pop the first latency
+                self.latencies.append(self.discord_latency)
                 try:
                     self.heartbeats.append(event["d"])
                 except AttributeError:
@@ -2096,16 +2098,19 @@ class Client(WebsocketClient):
 
     @property
     def latency(self):
-        latency = self.latency
+        latency = self.discord_latency
         return latency
     
     @property
     def average_latency(self):
-        avg = 0
-        for latency in self.latencies:
-            avg += latency
-        avg = avg / len(self.latencies)
-        return avg 
+        if len(self.latencies) >= 10 :
+            avg = 0
+            for latency in self.latencies:
+                avg += latency
+            avg = avg / len(self.latencies)
+            return avg 
+        else:
+            return self.latency
     
     
 
