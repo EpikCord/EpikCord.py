@@ -5,6 +5,8 @@ from __future__ import annotations
 
 from collections import defaultdict
 import threading
+from time import time_ns
+
 
 from .close_event_codes import GatewayCECode
 from .opcodes import GatewayOpcode, VoiceOpcode
@@ -611,6 +613,7 @@ class EventHandler:
     def __init__(self):
         self.events = defaultdict(list)
         self.wait_for_events = defaultdict(list)
+        self.latencies = []
 
     def wait_for(
         self, event_name: str, *, check: Optional[Callable] = None, timeout: int = None
@@ -696,6 +699,9 @@ class EventHandler:
                 await self.heartbeat(True)
 
             elif event["op"] == GatewayOpcode.HEARTBEAT_ACK:
+                heartbeat_ack_time = time_ns()
+                self.latency = heartbeat_ack_time - self.heartbeat_time
+                self.latencies.append(self.latency)
                 try:
                     self.heartbeats.append(event["d"])
                 except AttributeError:
@@ -979,6 +985,7 @@ class WebsocketClient(EventHandler):
             await self.send_json(
                 {"op": GatewayOpcode.HEARTBEAT, "d": self.sequence or "null"}
             )
+            self.heartbeat_time = time_ns()
             await asyncio.sleep(self.interval / 1000)
             logger.debug("Sent a heartbeat!")
 
@@ -2082,10 +2089,25 @@ class Client(WebsocketClient):
         )
 
         self.utils = Utils(self)
-
+        self.latencies = []
         self.user: ClientUser = None
         self.application: Optional[ClientApplication] = None
         self.sections: List[Any] = []
+
+    @property
+    def latency(self):
+        latency = self.latency
+        return latency
+    
+    @property
+    def average_latency(self):
+        avg = 0
+        for latency in self.latencies:
+            avg += latency
+        avg = avg / len(self.latencies)
+        return avg 
+    
+    
 
     def command(
         self,
@@ -2165,7 +2187,6 @@ class Client(WebsocketClient):
         for possible_section in sections.__dict__.values():
             if issubclass(possible_section, Section):
                 self.load_section(possible_section)
-
 
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
@@ -2473,7 +2494,7 @@ class Embed:  # Always wanted to make this class :D
         if hasattr(self, "timestamp"):
             final_product["timestamp"] = self.timestamp
         if hasattr(self, "color"):
-            final_product["color"] = self.color
+            final_product["color"] = self.color.value
         if hasattr(self, "footer"):
             final_product["footer"] = self.footer
         if hasattr(self, "image"):
