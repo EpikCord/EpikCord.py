@@ -2103,14 +2103,10 @@ class Client(WebsocketClient):
     
     @property
     def average_latency(self):
-        if len(self.latencies) >= 10 :
-            avg = 0
-            for latency in self.latencies:
-                avg += latency
-            avg = avg / len(self.latencies)
-            return avg 
-        else:
+        if len(self.latencies) < 10:
             return self.latency
+
+        return sum(self.latencies) / len(self.latencies) 
     
     
 
