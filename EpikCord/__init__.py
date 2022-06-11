@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 import threading
-from time import time_ns
+from time import perf_counter_ns
 
 
 from .close_event_codes import GatewayCECode
@@ -699,7 +699,7 @@ class EventHandler:
                 await self.heartbeat(True)
 
             elif event["op"] == GatewayOpcode.HEARTBEAT_ACK:
-                heartbeat_ack_time = time_ns()
+                heartbeat_ack_time = perf_counter_ns()
                 self.discord_latency:int = heartbeat_ack_time - self.heartbeat_time
                 if len(self.latencies) > 10:
                     self.latencies.pop(0) # pop the first latency
@@ -987,7 +987,7 @@ class WebsocketClient(EventHandler):
             await self.send_json(
                 {"op": GatewayOpcode.HEARTBEAT, "d": self.sequence or "null"}
             )
-            self.heartbeat_time = time_ns()
+            self.heartbeat_time = perf_counter_ns()
             await asyncio.sleep(self.interval / 1000)
             logger.debug("Sent a heartbeat!")
 
