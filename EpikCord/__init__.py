@@ -1912,10 +1912,10 @@ class GuildStageChannel(BaseChannel):
         self.discoverable_disabled: bool = data.get("discoverable_disabled")
 
 
-class LockBucketDict(TypedDict):
-    urls: List[str]
-    lock: asyncio.Lock
-
+class Bucket:
+    def __init__(self, *, urls: List[str] = [], bucket_hash: str):
+        self.urls = urls
+        self.bucket_hash = bucket_hash
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
@@ -1924,7 +1924,7 @@ class HTTPClient(ClientSession):
         )
         self.base_uri: str = "https://discord.com/api/v10"
         self.global_lock: asyncio.Lock = asyncio.Lock()
-        self.locks: Dict[str, LockBucketDict]
+        self.locks: List[Bucket] = []
 
     @staticmethod
     async def log_request(res):
@@ -1946,6 +1946,7 @@ class HTTPClient(ClientSession):
         finally:
             logger.debug("".join(message))
 
+
     async def get(
         self,
         url,
@@ -1955,14 +1956,10 @@ class HTTPClient(ClientSession):
         **kwargs,
     ):
         if to_discord:
-            if not lock:
-                lock = self.locks.get(url)
-            async with self.global_lock:  # I did this to avoid messy if statements
-
-                if url.startswith("/"):
-                    url = url[1:]
-                res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
-                await self.log_request(res)
+            if url.startswith("/"):
+                url = url[1:]
+            res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
+            await self.log_request(res)
 
             return res
 
@@ -2013,18 +2010,6 @@ class HTTPClient(ClientSession):
 
             return res
         return await super().put(url, *args, **kwargs)
-
-    async def head(self, url, *args, to_discord: bool = True, **kwargs):
-        if to_discord:
-
-            if url.startswith("/"):
-                url = url[1:]
-
-            res = await super().head(f"{self.base_uri}/{url}", *args, **kwargs)
-            await self.log_request(res)
-
-            return res
-        return await super().head(url, *args, **kwargs)
 
 
 class Event:
