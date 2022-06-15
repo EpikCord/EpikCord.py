@@ -3469,7 +3469,6 @@ class GuildMember(User):
         super().__init__(client, data.get("user"))
         self.data = data
         self.client = client
-        # self.user: Optional[User] = User(data["user"]) or None
         self.nick: Optional[str] = data.get("nick")
         self.avatar: Optional[str] = data.get("avatar")
         self.role_ids: Optional[List[str]] = list(data.get("roles", []))
