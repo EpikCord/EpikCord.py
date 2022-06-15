@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, List
 
 
 class ChannelOptionChannelTypes:
@@ -102,7 +102,7 @@ class ChannelOption(BaseSlashCommandOption):
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 7
-        self.channel_types: list[ChannelOptionChannelTypes] = []
+        self.channel_types: List[ChannelOptionChannelTypes] = []
 
     def to_dict(self):
         usual_dict: dict = super().to_dict()
@@ -190,7 +190,7 @@ class Subcommand(BaseSlashCommandOption):
         description: str = None,
         required: bool = True,
         options: Optional[
-            list[
+            List[
                 Union[
                     StringOption,
                     IntegerOption,
@@ -252,7 +252,7 @@ class SubCommandGroup(BaseSlashCommandOption):
         description: str = None,
         required: bool = True,
         options: Optional[
-            list[
+            List[
                 Union[
                     Subcommand,
                     StringOption,
