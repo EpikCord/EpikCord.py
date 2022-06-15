@@ -730,7 +730,7 @@ class EventHandler:
             logger.exception(f"Error handling event {event['t']}: {e}")
 
         if isinstance(results_from_event, UnavailableGuild):
-            return # This is their lazy backfil which I dislike.
+            return  # This is their lazy backfil which I dislike.
 
         try:
             if results_from_event != event["d"]:
@@ -900,7 +900,7 @@ class EventHandler:
 
             self.events[func_name].append(func)
 
-            return Event(func, event_name = func_name)
+            return Event(func, event_name=func_name)
 
         return register_event
 
@@ -1891,7 +1891,9 @@ class GuildNewsChannel(GuildTextChannel):
 class DMChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.recipient: Optional[List[PartialUser]] = PartialUser(data.get("recipient")) if data.get("recipient") else None
+        self.recipient: Optional[List[PartialUser]] = (
+            PartialUser(data.get("recipient")) if data.get("recipient") else None
+        )
 
 
 class ChannelCategory(GuildChannel):
@@ -1917,6 +1919,7 @@ class Bucket:
     def __init__(self, *, urls: List[str] = [], bucket_hash: str):
         self.urls = urls
         self.bucket_hash = bucket_hash
+
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
@@ -1947,7 +1950,7 @@ class HTTPClient(ClientSession):
         finally:
             logger.debug("".join(message))
 
-    async def request(self, method, url, *args , **kwargs):
+    async def request(self, method, url, *args, **kwargs):
         return await super().request(method, url, *args, **kwargs)
 
     async def get(
@@ -2740,7 +2743,9 @@ class Guild:
             else "ALL_MEMBERS"
         )
         self.roles: List[Role] = [Role(client, role) for role in data.get("roles")]
-        self.emojis: List[Emoji] = [Emoji(client, emoji, self.id) for emoji in data.get("emojis")]
+        self.emojis: List[Emoji] = [
+            Emoji(client, emoji, self.id) for emoji in data.get("emojis")
+        ]
         self.features: List[str] = data.get("features")
         self.mfa_level: str = "NONE" if data.get("mfa_level") == 0 else "ELEVATED"
         self.application_id: Optional[str] = data.get("application_id")
@@ -2755,7 +2760,9 @@ class Guild:
         self.members: List[GuildMember] = [
             GuildMember(client, member) for member in data.get("members")
         ]
-        self.channels: List[GuildChannel] = [client.utils.channel_from_type(channel) for channel in data.get("channels")]
+        self.channels: List[GuildChannel] = [
+            client.utils.channel_from_type(channel) for channel in data.get("channels")
+        ]
         self.threads: List[Thread] = [Thread(thread) for thread in data.get("threads")]
         self.presences: List[dict] = data.get("presences")
         self.max_presences: int = data.get("max_presences")
@@ -2785,7 +2792,8 @@ class Guild:
         )
         self.nsfw_level: int = data.get("nsfw_level")
         self.stage_instances: List[GuildStageChannel] = [
-            GuildStageChannel(client, channel) for channel in data.get("stage_instances")
+            GuildStageChannel(client, channel)
+            for channel in data.get("stage_instances")
         ]
         self.stickers: Optional[StickerItem] = (
             StickerItem(data.get("stickers")) if data.get("stickers") else None
