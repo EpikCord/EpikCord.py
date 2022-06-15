@@ -1126,7 +1126,7 @@ class WebsocketClient(EventHandler):
             "op": GatewayOpcode.IDENTIFY,
             "d": {
                 "token": self.token,
-                "intents": self.intents,
+                "intents": self.intents.value,
                 "properties": {
                     "$os": platform,
                     "$browser": "EpikCord.py",
@@ -4206,7 +4206,7 @@ class Shard(WebsocketClient):
             "op": GatewayOpcode.IDENTIFY,
             "d": {
                 "token": self.token,
-                "intents": self.intents,
+                "intents": self.intents.value,
                 "properties": {
                     "$os": platform,
                     "$browser": "EpikCord.py",
