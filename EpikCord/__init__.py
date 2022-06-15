@@ -900,7 +900,7 @@ class EventHandler:
 
             self.events[func_name].append(func)
 
-            return Event(func)
+            return Event(func, event_name = func_name)
 
         return register_event
 
