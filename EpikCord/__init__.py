@@ -1946,6 +1946,8 @@ class HTTPClient(ClientSession):
         finally:
             logger.debug("".join(message))
 
+    async def request(self, method, url, *args , **kwargs):
+        return await super().request(method, url, *args, **kwargs)
 
     async def get(
         self,
@@ -2128,7 +2130,7 @@ class Client(WebsocketClient):
     def add_check(self, check: "Check"):
         def wrapper(command_callback):
             command = list(
-                filter(lambda c: c.callback == command_callback, self.command.values())
+                filter(lambda c: c.callback == command_callback, self.commands.values())
             )
             command[0].checks.append(check)
 
