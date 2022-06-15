@@ -3923,7 +3923,7 @@ class Connectable:
         await self._connect_ws()
 
     async def _connect_ws(self):
-        wss = "" if self.endpoint.startswith("wss://") else "ws://"
+        wss = "" if self.endpoint.startswith("wss://") else "wss://"
         self.ws = await self.client.http.ws_connect(f"{wss}{self.endpoint}?v=4")
         return await self.handle_events()
 
