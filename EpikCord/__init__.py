@@ -866,7 +866,7 @@ class EventHandler:
         guild = (
             UnavailableGuild(data)
             if data.get("unavailable") is True
-            else Guild(data)
+            else Guild(self, data)
             if data.get("unavailable") is False
             else None
         )
@@ -1893,7 +1893,7 @@ class GuildNewsChannel(GuildTextChannel):
 class DMChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.recipient: List[PartialUser] = PartialUser(data.get("recipient"))
+        self.recipient: Optional[List[PartialUser]] = PartialUser(data.get("recipient")) if data.get("recipient") else None
 
 
 class ChannelCategory(GuildChannel):
@@ -2741,8 +2741,8 @@ class Guild:
             if data.get("explicit_content_filter") == 1
             else "ALL_MEMBERS"
         )
-        self.roles: List[Role] = [Role(role) for role in data.get("roles")]
-        self.emojis: List[Emoji] = [Emoji(emoji) for emoji in data.get("emojis")]
+        self.roles: List[Role] = [Role(client, role) for role in data.get("roles")]
+        self.emojis: List[Emoji] = [Emoji(client, emoji, self.id) for emoji in data.get("emojis")]
         self.features: List[str] = data.get("features")
         self.mfa_level: str = "NONE" if data.get("mfa_level") == 0 else "ELEVATED"
         self.application_id: Optional[str] = data.get("application_id")
@@ -2755,11 +2755,9 @@ class Guild:
         self.member_count: int = data.get("member_count")
         # self.voice_states: List[dict] = data["voice_states"]
         self.members: List[GuildMember] = [
-            GuildMember(member) for member in data.get("members")
+            GuildMember(client, member) for member in data.get("members")
         ]
-        self.channels: List[GuildChannel] = [
-            GuildChannel(channel) for channel in data.get("channels")
-        ]
+        self.channels: List[GuildChannel] = [client.utils.channel_from_type(channel) for channel in data.get("channels")]
         self.threads: List[Thread] = [Thread(thread) for thread in data.get("threads")]
         self.presences: List[dict] = data.get("presences")
         self.max_presences: int = data.get("max_presences")
@@ -2789,13 +2787,13 @@ class Guild:
         )
         self.nsfw_level: int = data.get("nsfw_level")
         self.stage_instances: List[GuildStageChannel] = [
-            GuildStageChannel(channel) for channel in data.get("stage_instances")
+            GuildStageChannel(client, channel) for channel in data.get("stage_instances")
         ]
         self.stickers: Optional[StickerItem] = (
             StickerItem(data.get("stickers")) if data.get("stickers") else None
         )
         self.guild_schedulded_events: List[GuildScheduledEvent] = [
-            GuildScheduledEvent(event)
+            GuildScheduledEvent(client, event)
             for event in data.get("guild_schedulded_events", [])
         ]
 
@@ -4027,9 +4025,9 @@ class Utils:
     """
 
     channels_types = {
-        1: GuildTextChannel,
-        2: DMChannel,
-        3: VoiceChannel,
+        0: GuildTextChannel,
+        1: DMChannel,
+        2: VoiceChannel,
         4: ChannelCategory,
         5: GuildNewsChannel,
         10: GuildNewsThread,
