@@ -1697,8 +1697,6 @@ class BaseChannel:
 class GuildChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        if data["type"] == 0:
-            return self.client.utils.channel_from_type(data)
         self.guild_id: str = data.get("guild_id")
         self.position: int = data.get("position")
         self.nsfw: bool = data.get("nsfw")
