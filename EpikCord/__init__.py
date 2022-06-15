@@ -729,6 +729,9 @@ class EventHandler:
         except Exception as e:
             logger.exception(f"Error handling event {event['t']}: {e}")
 
+        if isinstance(results_from_event, UnavailableGuild):
+            return # This is their lazy backfil which I dislike.
+
         try:
             if results_from_event != event["d"]:
                 results_from_event = [results_from_event] if results_from_event else []
