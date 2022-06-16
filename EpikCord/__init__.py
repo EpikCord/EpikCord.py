@@ -729,6 +729,9 @@ class EventHandler:
         except Exception as e:
             logger.exception(f"Error handling event {event['t']}: {e}")
 
+        if isinstance(results_from_event, UnavailableGuild):
+            return  # This is their lazy backfil which I dislike.
+
         try:
             if results_from_event != event["d"]:
                 results_from_event = [results_from_event] if results_from_event else []
@@ -863,7 +866,7 @@ class EventHandler:
         guild = (
             UnavailableGuild(data)
             if data.get("unavailable") is True
-            else Guild(data)
+            else Guild(self, data)
             if data.get("unavailable") is False
             else None
         )
@@ -897,7 +900,7 @@ class EventHandler:
 
             self.events[func_name].append(func)
 
-            return Event(func)
+            return Event(func, event_name=func_name)
 
         return register_event
 
@@ -1126,7 +1129,7 @@ class WebsocketClient(EventHandler):
             "op": GatewayOpcode.IDENTIFY,
             "d": {
                 "token": self.token,
-                "intents": self.intents,
+                "intents": self.intents.value,
                 "properties": {
                     "$os": platform,
                     "$browser": "EpikCord.py",
@@ -1694,8 +1697,6 @@ class BaseChannel:
 class GuildChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        if data["type"] == 0:
-            return self.client.utils.channel_from_type(data)
         self.guild_id: str = data.get("guild_id")
         self.position: int = data.get("position")
         self.nsfw: bool = data.get("nsfw")
@@ -1890,7 +1891,9 @@ class GuildNewsChannel(GuildTextChannel):
 class DMChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.recipient: List[PartialUser] = PartialUser(data.get("recipient"))
+        self.recipient: Optional[List[PartialUser]] = (
+            PartialUser(data.get("recipient")) if data.get("recipient") else None
+        )
 
 
 class ChannelCategory(GuildChannel):
@@ -1912,9 +1915,10 @@ class GuildStageChannel(BaseChannel):
         self.discoverable_disabled: bool = data.get("discoverable_disabled")
 
 
-class LockBucketDict(TypedDict):
-    urls: List[str]
-    lock: asyncio.Lock
+class Bucket:
+    def __init__(self, *, urls: List[str] = [], bucket_hash: str):
+        self.urls = urls
+        self.bucket_hash = bucket_hash
 
 
 class HTTPClient(ClientSession):
@@ -1924,7 +1928,7 @@ class HTTPClient(ClientSession):
         )
         self.base_uri: str = "https://discord.com/api/v10"
         self.global_lock: asyncio.Lock = asyncio.Lock()
-        self.locks: Dict[str, LockBucketDict]
+        self.locks: List[Bucket] = []
 
     @staticmethod
     async def log_request(res):
@@ -1946,6 +1950,9 @@ class HTTPClient(ClientSession):
         finally:
             logger.debug("".join(message))
 
+    async def request(self, method, url, *args, **kwargs):
+        return await super().request(method, url, *args, **kwargs)
+
     async def get(
         self,
         url,
@@ -1955,14 +1962,10 @@ class HTTPClient(ClientSession):
         **kwargs,
     ):
         if to_discord:
-            if not lock:
-                lock = self.locks.get(url)
-            async with self.global_lock:  # I did this to avoid messy if statements
-
-                if url.startswith("/"):
-                    url = url[1:]
-                res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
-                await self.log_request(res)
+            if url.startswith("/"):
+                url = url[1:]
+            res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
+            await self.log_request(res)
 
             return res
 
@@ -2013,18 +2016,6 @@ class HTTPClient(ClientSession):
 
             return res
         return await super().put(url, *args, **kwargs)
-
-    async def head(self, url, *args, to_discord: bool = True, **kwargs):
-        if to_discord:
-
-            if url.startswith("/"):
-                url = url[1:]
-
-            res = await super().head(f"{self.base_uri}/{url}", *args, **kwargs)
-            await self.log_request(res)
-
-            return res
-        return await super().head(url, *args, **kwargs)
 
 
 class Event:
@@ -2143,7 +2134,7 @@ class Client(WebsocketClient):
     def add_check(self, check: "Check"):
         def wrapper(command_callback):
             command = list(
-                filter(lambda c: c.callback == command_callback, self.command.values())
+                filter(lambda c: c.callback == command_callback, self.commands.values())
             )
             command[0].checks.append(check)
 
@@ -2751,8 +2742,10 @@ class Guild:
             if data.get("explicit_content_filter") == 1
             else "ALL_MEMBERS"
         )
-        self.roles: List[Role] = [Role(role) for role in data.get("roles")]
-        self.emojis: List[Emoji] = [Emoji(emoji) for emoji in data.get("emojis")]
+        self.roles: List[Role] = [Role(client, role) for role in data.get("roles")]
+        self.emojis: List[Emoji] = [
+            Emoji(client, emoji, self.id) for emoji in data.get("emojis")
+        ]
         self.features: List[str] = data.get("features")
         self.mfa_level: str = "NONE" if data.get("mfa_level") == 0 else "ELEVATED"
         self.application_id: Optional[str] = data.get("application_id")
@@ -2765,10 +2758,10 @@ class Guild:
         self.member_count: int = data.get("member_count")
         # self.voice_states: List[dict] = data["voice_states"]
         self.members: List[GuildMember] = [
-            GuildMember(member) for member in data.get("members")
+            GuildMember(client, member) for member in data.get("members")
         ]
         self.channels: List[GuildChannel] = [
-            GuildChannel(channel) for channel in data.get("channels")
+            client.utils.channel_from_type(channel) for channel in data.get("channels")
         ]
         self.threads: List[Thread] = [Thread(thread) for thread in data.get("threads")]
         self.presences: List[dict] = data.get("presences")
@@ -2799,13 +2792,14 @@ class Guild:
         )
         self.nsfw_level: int = data.get("nsfw_level")
         self.stage_instances: List[GuildStageChannel] = [
-            GuildStageChannel(channel) for channel in data.get("stage_instances")
+            GuildStageChannel(client, channel)
+            for channel in data.get("stage_instances")
         ]
         self.stickers: Optional[StickerItem] = (
             StickerItem(data.get("stickers")) if data.get("stickers") else None
         )
         self.guild_schedulded_events: List[GuildScheduledEvent] = [
-            GuildScheduledEvent(event)
+            GuildScheduledEvent(client, event)
             for event in data.get("guild_schedulded_events", [])
         ]
 
@@ -3483,7 +3477,6 @@ class GuildMember(User):
         super().__init__(client, data.get("user"))
         self.data = data
         self.client = client
-        # self.user: Optional[User] = User(data["user"]) or None
         self.nick: Optional[str] = data.get("nick")
         self.avatar: Optional[str] = data.get("avatar")
         self.role_ids: Optional[List[str]] = list(data.get("roles", []))
@@ -3936,7 +3929,7 @@ class Connectable:
         await self._connect_ws()
 
     async def _connect_ws(self):
-        wss = "" if self.endpoint.startswith("wss://") else "ws://"
+        wss = "" if self.endpoint.startswith("wss://") else "wss://"
         self.ws = await self.client.http.ws_connect(f"{wss}{self.endpoint}?v=4")
         return await self.handle_events()
 
@@ -4037,9 +4030,9 @@ class Utils:
     """
 
     channels_types = {
-        1: GuildTextChannel,
-        2: DMChannel,
-        3: VoiceChannel,
+        0: GuildTextChannel,
+        1: DMChannel,
+        2: VoiceChannel,
         4: ChannelCategory,
         5: GuildNewsChannel,
         10: GuildNewsThread,
@@ -4219,7 +4212,7 @@ class Shard(WebsocketClient):
             "op": GatewayOpcode.IDENTIFY,
             "d": {
                 "token": self.token,
-                "intents": self.intents,
+                "intents": self.intents.value,
                 "properties": {
                     "$os": platform,
                     "$browser": "EpikCord.py",
