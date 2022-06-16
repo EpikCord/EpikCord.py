@@ -2098,8 +2098,7 @@ class Client(WebsocketClient):
 
     @property
     def latency(self):
-        latency = self.discord_latency
-        return latency
+        return self.discord_latency
     
     @property
     def average_latency(self):
