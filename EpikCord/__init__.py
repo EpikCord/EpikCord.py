@@ -3062,12 +3062,8 @@ class BaseInteraction:
         self.version: int = data.get("version")
         self.locale: Optional[str] = data.get("locale")
         self.guild_locale: Optional[str] = data.get("guild_locale")
-        self.original_response: Optional[
-            Message
-        ] = None  # Can't be set on construction.
-        self.followup_response: Optional[
-            Message
-        ] = None  # Can't be set on construction.
+        self.original_response: Optional[Message] = None  # Can't be set on construction.
+        self.followup_response: Optional[Message] = None  # Can't be set on construction.
 
     async def reply(
         self,
@@ -3127,18 +3123,23 @@ class BaseInteraction:
             f"/interactions/{self.id}/{self.token}/callback", json=payload
         )
 
+    @property
     def is_ping(self):
         return self.type == 1
 
+    @property
     def is_application_command(self):
         return self.type == 2
 
+    @property
     def is_message_component(self):
         return self.type == 3
 
+    @property
     def is_autocomplete(self):
         return self.type == 4
 
+    @property
     def is_modal_submit(self):
         return self.type == 5
 
