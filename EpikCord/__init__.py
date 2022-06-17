@@ -3057,8 +3057,12 @@ class BaseInteraction:
         self.version: int = data.get("version")
         self.locale: Optional[str] = data.get("locale")
         self.guild_locale: Optional[str] = data.get("guild_locale")
-        self.original_response: Optional[Message] = None  # Can't be set on construction.
-        self.followup_response: Optional[Message] = None  # Can't be set on construction.
+        self.original_response: Optional[
+            Message
+        ] = None  # Can't be set on construction.
+        self.followup_response: Optional[
+            Message
+        ] = None  # Can't be set on construction.
 
     async def reply(
         self,
