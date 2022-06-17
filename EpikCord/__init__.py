@@ -2713,17 +2713,12 @@ class Guild:
         self.permissions: str = data.get("permissions")
         self.afk_channel_id: str = data.get("afk_channel_id")
         self.afk_timeout: int = data.get("afk_timeout")
-        self.verification_level: str = (
-            "NONE"
-            if data.get("verification_level") == 0
-            else "LOW"
-            if data.get("verification_level") == 1
-            else "MEDIUM"
-            if data.get("verification_level") == 2
-            else "HIGH"
-            if data.get("verification_level") == 3
-            else "VERY_HIGH"
-        )
+
+        levels = ["None", "Low", "Medium", "High", "Very High"]
+
+        _lvl = min(data.get("verification_level"), len(levels) - 1)
+        self.verification_level: str = levels[_lvl].upper()
+
         self.default_message_notifications: str = (
             "ALL" if data.get("default_message_notifications") == 0 else "MENTIONS"
         )
