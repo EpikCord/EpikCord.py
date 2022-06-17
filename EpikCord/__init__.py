@@ -4358,7 +4358,7 @@ class CommandUtils:
     @staticmethod
     def event(name: Optional[str] = None):
         def register_event(func):
-            return Event(name=name or func.__name__, callback=func)
+            return Event(callback=func, event_name=name or func.__name__)
 
         return register_event
 
