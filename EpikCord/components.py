@@ -360,12 +360,7 @@ class ActionRow:
 
     @classmethod
     def from_dict(cls, data):
-        # Data right now is an ActionRow.
-        components = []
-        for component in data.get("components"):  # List[Dict]
-            component = component_from_type(component)
-            components.append(component)
-        return cls(components)
+        return cls([component_from_type(component) for component in data.get("components")])
 
     @staticmethod
     def check_still_valid(list_of_components):

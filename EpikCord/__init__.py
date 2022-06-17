@@ -846,11 +846,8 @@ class EventHandler:
         return interaction
 
     async def channel_create(self, data: dict):
-
         channel = self.utils.channel_from_type(data)
-
         self.channels.add_to_cache(channel.id, channel)
-
         return channel
 
     async def message_create(self, data: dict):
