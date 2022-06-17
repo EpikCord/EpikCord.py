@@ -230,7 +230,7 @@ class Button(BaseComponent):
 
         raise InvalidComponentStyle(
             "Invalid button style. Style must be one of the following: "
-            + ', '.join(btn_style.name for btn_style in ButtonStyle)
+            + ", ".join(btn_style.name for btn_style in ButtonStyle)
         )
 
     def to_dict(self):
@@ -310,7 +310,9 @@ class ActionRow:
 
     @classmethod
     def from_dict(cls, data):
-        return cls([component_from_type(component) for component in data.get("components")])
+        return cls(
+            [component_from_type(component) for component in data.get("components")]
+        )
 
     @staticmethod
     def check_still_valid(list_of_components):

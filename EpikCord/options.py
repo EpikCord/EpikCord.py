@@ -42,7 +42,7 @@ class StringOption(BaseSlashCommandOption):
         name: str,
         description: Optional[str] = None,
         required: bool = True,
-        autocomplete: Optional[bool] = False
+        autocomplete: Optional[bool] = False,
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 3
@@ -63,7 +63,7 @@ class IntegerOption(BaseSlashCommandOption):
         required: bool = True,
         autocomplete: Optional[bool] = False,
         min_value: Optional[int] = None,
-        max_value: Optional[int] = None
+        max_value: Optional[int] = None,
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 4
@@ -136,7 +136,7 @@ class NumberOption(BaseSlashCommandOption):
         required: bool = True,
         autocomplete: Optional[bool] = False,
         min_value: Optional[int] = None,
-        max_value: Optional[int] = None
+        max_value: Optional[int] = None,
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 10
@@ -190,7 +190,7 @@ class Subcommand(BaseSlashCommandOption):
         name: str,
         description: str = None,
         required: bool = True,
-        options: Optional[List[AnyOption]] = None
+        options: Optional[List[AnyOption]] = None,
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 1
@@ -228,7 +228,7 @@ class SubCommandGroup(BaseSlashCommandOption):
         name: str,
         description: str = None,
         required: bool = True,
-        options: Optional[List[AnyOption]] = None
+        options: Optional[List[AnyOption]] = None,
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 2
