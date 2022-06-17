@@ -3,13 +3,6 @@ NOTE: version string only in setup.cfg
 """
 from __future__ import annotations
 
-from collections import defaultdict
-import threading
-
-from .close_event_codes import GatewayCECode
-from .opcodes import GatewayOpcode, VoiceOpcode
-
-from importlib import import_module
 import asyncio
 import datetime
 import io
@@ -18,13 +11,13 @@ import re
 import socket
 from base64 import b64encode
 from collections import defaultdict
+from importlib import import_module
 from inspect import iscoroutine
 from logging import getLogger
 from sys import platform
 from typing import (
     Optional,
     List,
-    TypedDict,
     Union,
     Dict,
     TypeVar,
@@ -39,9 +32,11 @@ from urllib.parse import quote as _quote
 from aiohttp import ClientSession, ClientResponse
 
 from .__main__ import __version__
+from .close_event_codes import GatewayCECode
 from .components import *
 from .exceptions import *
 from .managers import *
+from .opcodes import GatewayOpcode, VoiceOpcode
 from .options import *
 from .partials import *
 
