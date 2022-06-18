@@ -755,13 +755,14 @@ class EventHandler:
         interaction: Union[ApplicationCommandInteraction, MessageComponentInteraction, AutoCompleteInteraction, ModalSubmitInteraction]
             A subclass of BaseInteraction which represents the Interaction
         """
-        if interaction.is_ping():
+
+        if interaction.is_ping:
             return await self.http.post(
                 f"interactions/{interaction.id}/{interaction.token}/callback",
                 json={"type": 1},
             )
 
-        elif interaction.is_application_command():
+        elif interaction.is_application_command:
             command = self.commands.get(interaction.command_name)
 
             if not command:
@@ -789,7 +790,7 @@ class EventHandler:
             return await command.callback(interaction, *options)
 
         if (
-            interaction.is_message_component()
+            interaction.is_message_component
         ):  # If it's a message component interaction
 
             if not self._components.get(
@@ -819,13 +820,13 @@ class EventHandler:
                     interaction, get_select_menu(), *interaction.values
                 )
 
-        if interaction.is_autocomplete():
+        if interaction.is_autocomplete:
             command = self.commands.get(interaction.command_name)
             if not command:
                 return
             ...  # TODO: Implement autocomplete
 
-        if interaction.is_modal_submit():
+        if interaction.is_modal_submit:
             action_rows = interaction._components
             component_object_list = []
             for action_row in action_rows:
