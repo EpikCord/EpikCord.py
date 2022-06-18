@@ -789,9 +789,7 @@ class EventHandler:
 
             return await command.callback(interaction, *options)
 
-        if (
-            interaction.is_message_component
-        ):  # If it's a message component interaction
+        if interaction.is_message_component:  # If it's a message component interaction
 
             if not self._components.get(
                 interaction.custom_id
