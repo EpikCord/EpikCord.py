@@ -3,13 +3,6 @@ NOTE: version string only in setup.cfg
 """
 from __future__ import annotations
 
-from collections import defaultdict
-import threading
-
-from .close_event_codes import GatewayCECode
-from .opcodes import GatewayOpcode, VoiceOpcode
-
-from importlib import import_module
 import asyncio
 import datetime
 import io
@@ -18,13 +11,13 @@ import re
 import socket
 from base64 import b64encode
 from collections import defaultdict
+from importlib import import_module
 from inspect import iscoroutine
 from logging import getLogger
 from sys import platform
 from typing import (
     Optional,
     List,
-    TypedDict,
     Union,
     Dict,
     TypeVar,
@@ -39,9 +32,11 @@ from urllib.parse import quote as _quote
 from aiohttp import ClientSession, ClientResponse
 
 from .__main__ import __version__
+from .close_event_codes import GatewayCECode
 from .components import *
 from .exceptions import *
 from .managers import *
+from .opcodes import GatewayOpcode, VoiceOpcode
 from .options import *
 from .partials import *
 
@@ -760,13 +755,14 @@ class EventHandler:
         interaction: Union[ApplicationCommandInteraction, MessageComponentInteraction, AutoCompleteInteraction, ModalSubmitInteraction]
             A subclass of BaseInteraction which represents the Interaction
         """
-        if interaction.is_ping():
+
+        if interaction.is_ping:
             return await self.http.post(
                 f"interactions/{interaction.id}/{interaction.token}/callback",
                 json={"type": 1},
             )
 
-        elif interaction.is_application_command():
+        elif interaction.is_application_command:
             command = self.commands.get(interaction.command_name)
 
             if not command:
@@ -793,9 +789,7 @@ class EventHandler:
 
             return await command.callback(interaction, *options)
 
-        if (
-            interaction.is_message_component()
-        ):  # If it's a message component interaction
+        if interaction.is_message_component:  # If it's a message component interaction
 
             if not self._components.get(
                 interaction.custom_id
@@ -824,13 +818,13 @@ class EventHandler:
                     interaction, get_select_menu(), *interaction.values
                 )
 
-        if interaction.is_autocomplete():
+        if interaction.is_autocomplete:
             command = self.commands.get(interaction.command_name)
             if not command:
                 return
             ...  # TODO: Implement autocomplete
 
-        if interaction.is_modal_submit():
+        if interaction.is_modal_submit:
             action_rows = interaction._components
             component_object_list = []
             for action_row in action_rows:
@@ -851,11 +845,8 @@ class EventHandler:
         return interaction
 
     async def channel_create(self, data: dict):
-
         channel = self.utils.channel_from_type(data)
-
         self.channels.add_to_cache(channel.id, channel)
-
         return channel
 
     async def message_create(self, data: dict):
@@ -2721,17 +2712,12 @@ class Guild:
         self.permissions: str = data.get("permissions")
         self.afk_channel_id: str = data.get("afk_channel_id")
         self.afk_timeout: int = data.get("afk_timeout")
-        self.verification_level: str = (
-            "NONE"
-            if data.get("verification_level") == 0
-            else "LOW"
-            if data.get("verification_level") == 1
-            else "MEDIUM"
-            if data.get("verification_level") == 2
-            else "HIGH"
-            if data.get("verification_level") == 3
-            else "VERY_HIGH"
-        )
+
+        levels = ["None", "Low", "Medium", "High", "Very High"]
+
+        _lvl = min(data.get("verification_level"), len(levels) - 1)
+        self.verification_level: str = levels[_lvl].upper()
+
         self.default_message_notifications: str = (
             "ALL" if data.get("default_message_notifications") == 0 else "MENTIONS"
         )
@@ -3135,18 +3121,23 @@ class BaseInteraction:
             f"/interactions/{self.id}/{self.token}/callback", json=payload
         )
 
+    @property
     def is_ping(self):
         return self.type == 1
 
+    @property
     def is_application_command(self):
         return self.type == 2
 
+    @property
     def is_message_component(self):
         return self.type == 3
 
+    @property
     def is_autocomplete(self):
         return self.type == 4
 
+    @property
     def is_modal_submit(self):
         return self.type == 5
 
