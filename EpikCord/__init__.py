@@ -1,49 +1,7 @@
 """
 NOTE: version string only in setup.cfg
 """
-from __future__ import annotations
-
-from collections import defaultdict
-import threading
-
-from .close_event_codes import GatewayCECode
-from .opcodes import GatewayOpcode, VoiceOpcode
-
-from importlib import import_module
-import asyncio
-import datetime
-import io
-import os
-import re
-import socket
-from base64 import b64encode
-from collections import defaultdict
-from inspect import iscoroutine
-from logging import getLogger
-from sys import platform
-from typing import (
-    Optional,
-    List,
-    TypedDict,
-    Union,
-    Dict,
-    TypeVar,
-    Callable,
-    Tuple,
-    Any,
-    Type,
-    TYPE_CHECKING,
-)
-from urllib.parse import quote as _quote
-
-from aiohttp import ClientSession, ClientResponse
-
-from .__main__ import __version__
-from .components import *
-from .exceptions import *
-from .managers import *
-from .options import *
-from .partials import *
+from __future__ import annotations;from collections import defaultdict;import threading;from .close_event_codes import GatewayCECode;from .opcodes import GatewayOpcode, VoiceOpcode;from importlib import import_module;import asyncio;import datetime;import io;import os;import re;import socket;from base64 import b64encode;from collections import defaultdict;from inspect import iscoroutine;from logging import getLogger;from sys import platform;from typing import (Optional,List,Union,Dict,TypeVar,Callable,Tuple,Any,Type,TYPE_CHECKING);from urllib.parse import quote as _quote;from aiohttp import ClientSession, ClientResponse;from .__main__ import __version__;from .components import *;from .exceptions import *;from .managers import *;from .options import *;from .partials import *
 
 CT = TypeVar("CT", bound="Colour")
 T = TypeVar("T")
@@ -59,10 +17,10 @@ except ImportError:
         " If you want voice support"
     )
 
-try:
-    import orjson as json
-except ImportError:
-    import json
+# try:
+    # import orjson as json
+# except ImportError:
+import json
 
 """
 :license:
@@ -283,16 +241,27 @@ class Message:
         self.channel = client.channels.get_from_cache(self.channel_id)
         self.guild_id: Optional[str] = data.get("guild_id")
         self.webhook_id: Optional[str] = data.get("webhook_id")
-        self.author: Optional[Union[WebhookUser, User]] = (
-            WebhookUser(data.get("author"))
-            if data.get("webhook_id")
-            else User(client, data.get("author"))
-            if data.get("author")
-            else None
-        )
-        self.member: GuildMember = (
-            GuildMember(client, data.get("member")) if data.get("member") else None
-        )
+        self.author: Optional[Union[WebhookUser, GuildMember, User]] = None
+        if self.webhook_id:
+            self.author = WebhookUser(data.get("author"))
+        if data.get("member"):
+            member_data = data["member"]
+            if data.get("author"):
+                member_data["user"] = data["author"]
+            self.author = GuildMember(self, member_data)
+        else:
+            self.author = User(self, data.get("author")) if data.get("author") else None
+
+        # member_data = data.get("member") if data.get("member") else data.get("000")
+        # self.author: Optional[Union[WebhookUser, User]] = (
+        #     WebhookUser(data.get("author"))
+        #     if data.get("webhook_id")
+        #     else GuildMember(client, member_data)
+        #     if data.get("member")
+        #     else User(client, data.get("author"))
+        #     if data.get("author")
+        #     else None
+        # )
         # I forgot Message Intents are gonna stop this.
         self.content: Optional[str] = data.get("content")
         self.timestamp: datetime.datetime = datetime.datetime.fromisoformat(
@@ -726,6 +695,8 @@ class EventHandler:
                 if hasattr(self, event["t"].lower())
                 else None
             )
+            if not results_from_event:
+                results_from_event = []
         except Exception as e:
             logger.exception(f"Error handling event {event['t']}: {e}")
 
@@ -1131,9 +1102,9 @@ class WebsocketClient(EventHandler):
                 "token": self.token,
                 "intents": self.intents.value,
                 "properties": {
-                    "$os": platform,
-                    "$browser": "EpikCord.py",
-                    "$device": "EpikCord.py",
+                    "os": platform,
+                    "browser": "EpikCord.py",
+                    "device": "EpikCord.py",
                 },
             },
         }
@@ -1645,7 +1616,7 @@ class ClientApplication(Application):
         self, guild_id: str, commands: List[ApplicationCommand]
     ):
         await self.client.http.put(
-            f"/applications/{self.id}/guilds/{guild_id}/commands", json=list(commands)
+            f"/applications/{self.id}/guilds/{guild_id}/commands", json=commands
         )
 
     async def fetch_guild_application_command_permissions(
@@ -1916,10 +1887,17 @@ class GuildStageChannel(BaseChannel):
 
 
 class Bucket:
-    def __init__(self, *, urls: List[str] = [], bucket_hash: str):
-        self.urls = urls
-        self.bucket_hash = bucket_hash
+    def __init__(self, *, discord_hash: str, real_hash: str):
+        self.bucket_hash = real_hash
+        self.discord_hash = discord_hash
+        self.lock: asyncio.Lock = asyncio.Lock()
 
+    def __eq__(self, other):
+        return self.bucket_hash == other.bucket_hash
+
+class UnknownBucket:
+    def __init__(self):
+        self.lock = asyncio.Lock()
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
@@ -1927,8 +1905,41 @@ class HTTPClient(ClientSession):
             *args, **kwargs, raise_for_status=True, json_serialize=json.dumps
         )
         self.base_uri: str = "https://discord.com/api/v10"
-        self.global_lock: asyncio.Lock = asyncio.Lock()
-        self.locks: List[Bucket] = []
+        self.global_ratelimit: asyncio.Event = asyncio.Event()
+        self.global_ratelimit.set()
+        self.buckets: Dict[str, Bucket] = {}
+
+    def get_bucket(self, *, discord_hash: str, real_hash: str) -> Union[UnknownBucket, Bucket]:
+        possible_bucket = self.buckets.get(discord_hash)
+        if not possible_bucket:
+            guild_id, channel_id, _ = real_hash.split(":")
+
+    async def request(self, method, url, *args, **kwargs):
+        await self.global_ratelimit.wait()
+        self.guild_id: Optional[str] = kwargs.get("guild_id", 0)
+        self.channel_id: Optional[str] = kwargs.get("channel_id", 0)
+
+        bucket_hash = f"{self.guild_id}:{self.channel_id}:{url}"
+        
+        bucket = self.buckets.get(bucket_hash)
+
+        if not bucket:
+            bucket = UnknownBucket()
+
+        await bucket.lock.acquire()
+
+        res = await super().request(method, url, *args, **kwargs)
+        body = await res.json()
+
+        if res.status == 429:
+            self.global_ratelimit.clear()
+            time_to_sleep_for = (
+                res.headers["X-RateLimit-Retry-After"] / 1000
+                if res.headers["X-RateLimit-Retry-After"] > body["retry_after"]
+                else body["retry_after"]
+            )
+            await asyncio.sleep(time_to_sleep_for)
+            self.global_ratelimit.set()
 
     @staticmethod
     async def log_request(res):
@@ -1950,8 +1961,6 @@ class HTTPClient(ClientSession):
         finally:
             logger.debug("".join(message))
 
-    async def request(self, method, url, *args, **kwargs):
-        return await super().request(method, url, *args, **kwargs)
 
     async def get(
         self,
@@ -2075,7 +2084,7 @@ class Client(WebsocketClient):
         self.utils = Utils(self)
 
         self.user: ClientUser = None
-        self.application: Optional[ClientApplication] = None
+        self.applicgation: Optional[ClientApplication] = None
         self.sections: List[Any] = []
 
     def command(
@@ -3474,7 +3483,7 @@ class Invite:
 
 class GuildMember(User):
     def __init__(self, client, data: dict):
-        super().__init__(client, data.get("user"))
+        super().__init__(client, data.get("author"))
         self.data = data
         self.client = client
         self.nick: Optional[str] = data.get("nick")
@@ -4214,9 +4223,9 @@ class Shard(WebsocketClient):
                 "token": self.token,
                 "intents": self.intents.value,
                 "properties": {
-                    "$os": platform,
-                    "$browser": "EpikCord.py",
-                    "$device": "EpikCord.py",
+                    "os": platform,
+                    "browser": "EpikCord.py",
+                    "device": "EpikCord.py",
                 },
                 "shard": self.shard_id,
             },
