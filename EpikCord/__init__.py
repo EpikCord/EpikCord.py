@@ -2010,11 +2010,12 @@ class HTTPClient(ClientSession):
             int(res.headers.get("X-RateLimit-Remaining", 1)) == 0
             and res.status != GatewayCECode.RateLimited
         ):  # We've exhausted the bucket.
+            logger.critical(f"Exhausted {res.headers['X-RateLimit-Bucket']}. Reset in {res.headers['X-RateLimit-Reset-After']} seconds")
             await asyncio.sleep(res.headers["X-RateLimit-Reset-After"])
             await bucket.lock.release()
 
         if res.status == GatewayCECode.RateLimited:  # Body is always present here.
-
+            logger.critical("Rate limited. Reset in {body['retry_after']} seconds")
             time_to_sleep = (
                 body.get("retry_after")
                 if body.get("retry_after") > res.headers["X-RateLimit-Reset-After"]
