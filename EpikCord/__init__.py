@@ -1330,7 +1330,9 @@ class Thread:
             raise ThreadArchived(
                 "This thread has been archived so it is no longer joinable"
             )
-        response = await self.client.http.put(f"/channels/{self.id}/thread-members/@me", channel_id = self.id)
+        response = await self.client.http.put(
+            f"/channels/{self.id}/thread-members/@me", channel_id=self.id
+        )
         return await response.json()
 
     async def add_member(self, member_id: str):
@@ -1340,8 +1342,7 @@ class Thread:
             )
 
         response = await self.client.http.put(
-            f"/channels/{self.id}/thread-members/{member_id}",
-            channel_id = self.id
+            f"/channels/{self.id}/thread-members/{member_id}", channel_id=self.id
         )
         return await response.json()
 
@@ -1351,8 +1352,7 @@ class Thread:
                 "This thread has been archived so it is no longer leaveable"
             )
         response = await self.client.http.delete(
-            f"/channels/{self.id}/thread-members/@me",
-            channel_id = self.id
+            f"/channels/{self.id}/thread-members/@me", channel_id=self.id
         )
         return await response.json()
 
@@ -1363,22 +1363,22 @@ class Thread:
             )
 
         response = await self.client.http.delete(
-            f"/channels/{self.id}/thread-members/{member_id}",
-            channel_id = self.id
+            f"/channels/{self.id}/thread-members/{member_id}", channel_id=self.id
         )
         return await response.json()
 
     async def fetch_member(self, member_id: str) -> ThreadMember:
         response = await self.client.http.get(
-            f"/channels/{self.id}/thread-members/{member_id}",
-            channel_id = self.id
+            f"/channels/{self.id}/thread-members/{member_id}", channel_id=self.id
         )
         if response.status == 404:
             raise NotFound404("The member you are trying to fetch does not exist")
         return ThreadMember(await response.json())
 
     async def list_members(self) -> List[ThreadMember]:
-        response = await self.client.http.get(f"/channels/{self.id}/thread-members", channel_id = self.id)
+        response = await self.client.http.get(
+            f"/channels/{self.id}/thread-members", channel_id=self.id
+        )
         return [ThreadMember(member) for member in await response.json()]
 
     async def bulk_delete(self, message_ids: List[str], reason: Optional[str]) -> None:
@@ -1391,7 +1391,7 @@ class Thread:
             f"channels/{self.id}/messages/bulk-delete",
             data={"messages": message_ids},
             headers=headers,
-            channel_id = self.id
+            channel_id=self.id,
         )
         return await response.json()
 
@@ -1727,12 +1727,14 @@ class GuildChannel(BaseChannel):
             headers["reason"] = reason
 
         response = await self.client.http.delete(
-            f"/channels/{self.id}", headers=headers, channel_id = self.id
+            f"/channels/{self.id}", headers=headers, channel_id=self.id
         )
         return await response.json()
 
     async def fetch_invites(self):
-        response = await self.client.http.get(f"/channels/{self.id}/invites", channel_id = self.id)
+        response = await self.client.http.get(
+            f"/channels/{self.id}/invites", channel_id=self.id
+        )
         return await response.json()
 
     async def create_invite(
@@ -1756,16 +1758,20 @@ class GuildChannel(BaseChannel):
             "target_application_id": target_application_id or None,
         }
 
-        await self.client.http.post(f"/channels/{self.id}/invites", json=data, channel_id = self.id)
+        await self.client.http.post(
+            f"/channels/{self.id}/invites", json=data, channel_id=self.id
+        )
 
     async def delete_overwrite(self, overwrites: Overwrite) -> None:
         response = await self.client.http.delete(
-            f"/channels/{self.id}/permissions/{overwrites.id}", channel_id = self.id
+            f"/channels/{self.id}/permissions/{overwrites.id}", channel_id=self.id
         )
         return await response.json()
 
     async def fetch_pinned_messages(self) -> List[Message]:
-        response = await self.client.http.get(f"/channels/{self.id}/pins", channel_id = self.id)
+        response = await self.client.http.get(
+            f"/channels/{self.id}/pins", channel_id=self.id
+        )
         data = await response.json()
         return [Message(self.client, message) for message in data]
 
@@ -1816,14 +1822,16 @@ class GuildTextChannel(GuildChannel, Messageable):
         if rate_limit_per_user:
             data["rate_limit_per_user"] = rate_limit_per_user
 
-
         headers = self.client.http.headers.copy()
 
         if reason:
             headers["X-Audit-Log-Reason"] = reason
 
         response = await self.client.http.post(
-            f"/channels/{self.id}/threads", data=data, headers=headers, channel_id = self.id
+            f"/channels/{self.id}/threads",
+            data=data,
+            headers=headers,
+            channel_id=self.id,
         )
         self.client.guilds[self.guild_id].append(Thread(await response.json()))
 
@@ -1837,7 +1845,7 @@ class GuildTextChannel(GuildChannel, Messageable):
             f"channels/{self.id}/messages/bulk-delete",
             data={"messages": message_ids},
             headers=headers,
-            channel_id = self.id
+            channel_id=self.id,
         )
         return await response.json()
 
@@ -1850,14 +1858,14 @@ class GuildTextChannel(GuildChannel, Messageable):
 
         if before:
             params["before"] = before
-        
+
         if limit is not None:
             params["limit"] = limit
 
         response = await self.client.http.get(
             f"/channels/{self.id}/threads/archived/public",
             params=params,
-            channel_id = self.id
+            channel_id=self.id,
         )
         return await response.json()
 
@@ -1869,14 +1877,14 @@ class GuildTextChannel(GuildChannel, Messageable):
 
         if before:
             params["before"] = before
-        
+
         if limit is not None:
             params["limit"] = limit
 
         response = await self.client.http.get(
             f"/channels/{self.id}/threads/archived/private",
             params=params,
-            channel_id = self.id
+            channel_id=self.id,
         )
         return await response.json()
 
@@ -1887,14 +1895,14 @@ class GuildTextChannel(GuildChannel, Messageable):
 
         if before:
             params["before"] = before
-        
+
         if limit is not None:
             params["limit"] = limit
 
         response = await self.client.http.get(
             f"/channels/{self.id}/threads/archived/private",
-            params = params,
-            channel_id = self.id
+            params=params,
+            channel_id=self.id,
         )
         return await response.json()
 
@@ -1925,7 +1933,7 @@ class GuildNewsChannel(GuildTextChannel):
         response = await self.client.http.post(
             f"/channels/{self.id}/followers",
             json={"webhook_channel_id": webhook_channel_id},
-            channel_id = self.id
+            channel_id=self.id,
         )
         return await response.json()
 
@@ -3014,7 +3022,7 @@ class Guild:
             headers["X-Audit-Log-Reason"] = reason
         return Guild(
             await self.client.http.patch(
-                f"/guilds/{self.id}", json=data, headers=headers, guild_id = self.id
+                f"/guilds/{self.id}", json=data, headers=headers, guild_id=self.id
             )
         )
 
@@ -3029,14 +3037,14 @@ class Guild:
         if getattr(self, "preview"):
             return self.preview
 
-        res = await self.client.http.get(f"/guilds/{self.id}/preview", guild_id = self.id)
+        res = await self.client.http.get(f"/guilds/{self.id}/preview", guild_id=self.id)
 
         data = await res.json()
 
         return GuildPreview(data)
 
     async def delete(self):
-        await self.client.http.delete(f"/guilds/{self.id}", guild_id = self.id)
+        await self.client.http.delete(f"/guilds/{self.id}", guild_id=self.id)
 
     async def fetch_channels(self) -> List[GuildChannel]:
         """Fetches the guild channels.
@@ -3046,7 +3054,9 @@ class Guild:
         List[GuildChannel]
             The guild channels.
         """
-        channels = await self.client.http.get(f"/guilds/{self.id}/channels", guild_id = self.id)
+        channels = await self.client.http.get(
+            f"/guilds/{self.id}/channels", guild_id=self.id
+        )
         return [self.client.utils.channel_from_type(channel) for channel in channels]
 
     async def create_channel(
@@ -3118,10 +3128,16 @@ class Guild:
             headers["X-Audit-Log-Reason"] = reason
 
         return self.client.utils.channel_from_type(
-            await (await self.client.http.post(
-                f"/guilds/{self.id}/channels", json=data, headers=headers, guild_id = self.id
-            )).json()
+            await (
+                await self.client.http.post(
+                    f"/guilds/{self.id}/channels",
+                    json=data,
+                    headers=headers,
+                    guild_id=self.id,
+                )
+            ).json()
         )
+
 
 class WebhookUser:
     def __init__(self, data: dict):
