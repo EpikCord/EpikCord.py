@@ -1113,7 +1113,6 @@ class WebsocketClient(EventHandler):
         logger.debug(f"Sent {json} to the Websocket Connection to Discord.")
 
     async def connect(self):
-        
         self.ws = await self.http.ws_connect(
             "wss://gateway.discord.gg/?v=9&encoding=json"
         )
@@ -1949,7 +1948,8 @@ class HTTPClient(ClientSession):
         self.buckets: Dict[str, Bucket] = {}
 
     async def request(self, method, url, *args, **kwargs):
-
+        if not url.startswith("http"):
+            return await super().request(method, url, *args, **kwargs)
         await self.global_ratelimit.wait()
 
         guild_id: Union[str, int] = kwargs.get("guild_id", 0)
@@ -1992,6 +1992,10 @@ class HTTPClient(ClientSession):
             await bucket.lock.release()
             return await self.request(method, url, *args, **kwargs) # Retry the request
 
+        if bucket.lock.locked():
+            await bucket.lock.release()
+        return res
+
     @staticmethod
     async def log_request(res):
         message = [
@@ -2018,13 +2022,12 @@ class HTTPClient(ClientSession):
         url,
         *args,
         to_discord: bool = True,
-        lock: Optional[asyncio.Lock] = None,
         **kwargs,
     ):
         if to_discord:
             if url.startswith("/"):
                 url = url[1:]
-            res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
+            res = await super().get(f"{self.base_uri}/{url}", *args, from_epikcord = True, **kwargs)
             await self.log_request(res)
 
             return res
@@ -2037,11 +2040,11 @@ class HTTPClient(ClientSession):
             if url.startswith("/"):
                 url = url[1:]
 
-            res = await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
+            res = await super().post(f"{self.base_uri}/{url}", *args, from_epikcord = True, **kwargs)
             await self.log_request(res)
             return res
 
-        return await super().post(url, *args, **kwargs)
+        return await super().post(url, *args, from_epikcord = True, **kwargs)
 
     async def patch(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
@@ -2049,7 +2052,7 @@ class HTTPClient(ClientSession):
             if url.startswith("/"):
                 url = url[1:]
 
-            res = await super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
+            res = await super().patch(f"{self.base_uri}/{url}", *args, from_epikcord = True, **kwargs)
             await self.log_request(res)
             return res
         return await super().patch(url, *args, **kwargs)
@@ -2060,7 +2063,7 @@ class HTTPClient(ClientSession):
             if url.startswith("/"):
                 url = url[1:]
 
-            res = await super().delete(f"{self.base_uri}/{url}", **kwargs)
+            res = await super().delete(f"{self.base_uri}/{url}", from_epikcord = True, **kwargs)
             await self.log_request(res)
             return res
         return await super().delete(url, **kwargs)
@@ -2071,7 +2074,7 @@ class HTTPClient(ClientSession):
             if url.startswith("/"):
                 url = url[1:]
 
-            res = await super().put(f"{self.base_uri}/{url}", *args, **kwargs)
+            res = await super().put(f"{self.base_uri}/{url}", *args, from_epikcord = True, **kwargs)
             await self.log_request(res)
 
             return res
