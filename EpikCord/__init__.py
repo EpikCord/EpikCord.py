@@ -2116,7 +2116,7 @@ class Client(WebsocketClient):
         overwrite_commands_on_ready: Optional[bool] = False,
         discord_endpoint: str = "https://discord.com/api/v10"
     ):
-        super().__init__(token, intents, discord_endpoint = discord_endpoint)
+        super().__init__(token, intents)
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
         self.commands: Dict[
             str, Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]
@@ -2131,7 +2131,8 @@ class Client(WebsocketClient):
             headers={
                 "Authorization": f"Bot {token}",
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
-            }
+            },
+            discord_endpoint = discord_endpoint,
         )
 
         self.utils = Utils(self)
