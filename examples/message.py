@@ -6,7 +6,7 @@ with different features and report the bugs in an issue
 
 from EpikCord import Client, Intents, Messageable
 
-intents = Intents().all()
+intents = Intents.all()
 
 client = Client("your_token", intents)
 
