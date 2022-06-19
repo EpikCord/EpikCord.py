@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Optional, Union, List
 
 
@@ -41,7 +42,7 @@ class StringOption(BaseSlashCommandOption):
         name: str,
         description: Optional[str] = None,
         required: bool = True,
-        autocomplete: Optional[bool] = False
+        autocomplete: Optional[bool] = False,
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 3
@@ -62,7 +63,7 @@ class IntegerOption(BaseSlashCommandOption):
         required: bool = True,
         autocomplete: Optional[bool] = False,
         min_value: Optional[int] = None,
-        max_value: Optional[int] = None
+        max_value: Optional[int] = None,
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 4
@@ -135,7 +136,7 @@ class NumberOption(BaseSlashCommandOption):
         required: bool = True,
         autocomplete: Optional[bool] = False,
         min_value: Optional[int] = None,
-        max_value: Optional[int] = None
+        max_value: Optional[int] = None,
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 10
@@ -189,20 +190,7 @@ class Subcommand(BaseSlashCommandOption):
         name: str,
         description: str = None,
         required: bool = True,
-        options: Optional[
-            List[
-                Union[
-                    StringOption,
-                    IntegerOption,
-                    BooleanOption,
-                    UserOption,
-                    ChannelOption,
-                    RoleOption,
-                    MentionableOption,
-                    NumberOption,
-                ]
-            ]
-        ] = None
+        options: Optional[List[AnyOption]] = None,
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 1
@@ -217,18 +205,7 @@ class Subcommand(BaseSlashCommandOption):
             else:
                 converted_options.append(self.conversion_type[option["type"]](**option))
 
-        self.options: Union[
-            Subcommand,
-            SubCommandGroup,
-            StringOption,
-            IntegerOption,
-            BooleanOption,
-            UserOption,
-            ChannelOption,
-            RoleOption,
-            MentionableOption,
-            NumberOption,
-        ] = converted_options
+        self.options: List[AnyOption] = converted_options
 
 
 class SubCommandGroup(BaseSlashCommandOption):
@@ -251,21 +228,7 @@ class SubCommandGroup(BaseSlashCommandOption):
         name: str,
         description: str = None,
         required: bool = True,
-        options: Optional[
-            List[
-                Union[
-                    Subcommand,
-                    StringOption,
-                    IntegerOption,
-                    BooleanOption,
-                    UserOption,
-                    ChannelOption,
-                    RoleOption,
-                    MentionableOption,
-                    NumberOption,
-                ]
-            ]
-        ] = None
+        options: Optional[List[AnyOption]] = None,
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 2
@@ -276,18 +239,7 @@ class SubCommandGroup(BaseSlashCommandOption):
             else:
                 converted_options.append(self.conversion_type[option["type"]](**option))
 
-        self.options: Union[
-            Subcommand,
-            SubCommandGroup,
-            StringOption,
-            IntegerOption,
-            BooleanOption,
-            UserOption,
-            ChannelOption,
-            RoleOption,
-            MentionableOption,
-            NumberOption,
-        ] = converted_options
+        self.options: List[AnyOption] = converted_options
 
     def to_dict(self):
         usual_dict = super().to_dict()
