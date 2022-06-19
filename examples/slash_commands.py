@@ -2,7 +2,6 @@ import asyncio
 import datetime
 import time
 
-import humanize
 
 from EpikCord import Client, Intents, StringOption, NumberOption
 

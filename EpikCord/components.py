@@ -1,3 +1,4 @@
+from enum import IntEnum
 from typing import Union, Optional, List
 
 from .exceptions import (
@@ -182,6 +183,14 @@ class TextInput(BaseComponent):
         return payload
 
 
+class ButtonStyle(IntEnum):
+    PRIMARY = 1
+    SECONDARY = 2
+    SUCCESS = GREEN = 3
+    DANGER = RED = 4
+    LINK = 5
+
+
 class Button(BaseComponent):
     def __init__(
         self,
@@ -196,28 +205,9 @@ class Button(BaseComponent):
         super().__init__(custom_id=custom_id)
         self.type: int = 2
         self.disabled = disabled
-        valid_styles = {
-            "PRIMARY": 1,
-            "SECONDARY": 2,
-            "SUCCESS": 3,
-            "DANGER": 4,
-            "LINK": 5,
-        }
 
-        if isinstance(style, str):
-            if style.upper() not in valid_styles:
-                raise InvalidComponentStyle(
-                    "Invalid button style. "
-                    "Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS."
-                )
-            self.style: int = valid_styles[style.upper()]
-
-        elif isinstance(style, int):
-            if style not in valid_styles.values():
-                raise InvalidComponentStyle(
-                    "Invalid button style. Style must be in range 1 to 5 inclusive."
-                )
-            self.style = style
+        if style is not None:
+            self.set_style(style)
 
         if url:
             self.url: Optional[str] = url
@@ -227,34 +217,21 @@ class Button(BaseComponent):
         if label:
             self.label: Optional[str] = label
 
-    @property
-    def PRIMARY(self):
-        self.style = 1
-        return self
+    def set_style(self, style: Union[int, str]):
+        # check from ButtonStyle IntEnum
+        for btn_style in ButtonStyle:
+            if isinstance(style, int) and btn_style.value == style:
+                self.style = style
+                return self
 
-    @property
-    def SECONDARY(self):
-        self.style = 2
-        return self
+            elif isinstance(style, str) and btn_style.name.upper() == style.upper():
+                self.style = style
+                return self
 
-    @property
-    def SUCCESS(self):
-        self.style = 3
-        return self
-
-    GREEN = SUCCESS
-
-    @property
-    def DANGER(self):
-        self.style = 4
-        return self
-
-    RED = DANGER
-
-    @property
-    def LINK(self):
-        self.style = 5
-        return self
+        raise InvalidComponentStyle(
+            "Invalid button style. Style must be one of the following: "
+            + ", ".join(btn_style.name for btn_style in ButtonStyle)
+        )
 
     def to_dict(self):
         settings = {
@@ -276,7 +253,6 @@ class Button(BaseComponent):
         return settings
 
     def set_label(self, label: str):
-
         if not isinstance(label, str):
             raise InvalidArgumentType("Label must be a string.")
 
@@ -286,33 +262,7 @@ class Button(BaseComponent):
         self.settings["label"] = label
         return self
 
-    def set_style(self, style: Union[int, str]):
-        valid_styles = {
-            "PRIMARY": 1,
-            "SECONDARY": 2,
-            "SUCCESS": 3,
-            "DANGER": 4,
-            "LINK": 5,
-        }
-        if isinstance(style, str):
-            if style.upper() not in valid_styles:
-                raise InvalidComponentStyle(
-                    "Invalid button style."
-                    "Style must be one of PRIMARY, SECONDARY, LINK, DANGER, or SUCCESS."
-                )
-            self.settings["style"] = valid_styles[style.upper()]
-            return self
-
-        elif isinstance(style, int):
-            if style not in valid_styles.values():
-                raise InvalidComponentStyle(
-                    "Invalid button style. Style must be in range 1 to 5 inclusive."
-                )
-            self.settings["style"] = style
-            return self
-
     def set_emoji(self, emoji: Union[PartialEmoji, dict]):
-
         if isinstance(emoji, dict):
             self.settings["emoji"] = emoji
             return self
@@ -360,12 +310,9 @@ class ActionRow:
 
     @classmethod
     def from_dict(cls, data):
-        # Data right now is an ActionRow.
-        components = []
-        for component in data.get("components"):  # List[Dict]
-            component = component_from_type(component)
-            components.append(component)
-        return cls(components)
+        return cls(
+            [component_from_type(component) for component in data.get("components")]
+        )
 
     @staticmethod
     def check_still_valid(list_of_components):

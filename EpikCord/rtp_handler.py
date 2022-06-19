@@ -1,14 +1,14 @@
 """
 I have taken this directly from https://github.com/nickvsnetworking/pyrtp/.
 If you're Nick reading this, I would like to thank you for this.
-I have no idea how to andle RPT Packets/headers and for me to find something like this is very helpful.
+I have no idea how to handle RPT Packets/headers and for me to find something like this is very helpful.
 Check out Nick's website @ https://nickvsnetworking.com.
 Again, not at all my code, this is all Nicks.
 I do realise that there is no License in his repository,
 """
 
 
-def GenerateRTPpacket(packet_vars):
+def generate_rtp_packet(rtp_params, packet_vars):
 
     ##Example Usage:
     # payload = 'd5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5'
@@ -57,7 +57,7 @@ def GenerateRTPpacket(packet_vars):
     return packet
 
 
-def DecodeRTPpacket(packet_bytes):
+def decode_rtp_packet(packet_bytes):
     ##Example Usage:
     # packet_bytes = '8008d4340000303c0b12671ad5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5'
     # rtp_params = DecodeRTPpacket(packet_bytes)
@@ -86,7 +86,3 @@ def DecodeRTPpacket(packet_bytes):
 
     packet_vars["payload"] = str(packet_bytes[24:])
     return packet_vars
-
-
-packet_bytes = "8008d4340000303c0b12671ad5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5"
-rtp_params = DecodeRTPpacket(packet_bytes)
