@@ -4511,8 +4511,10 @@ class CommandUtils:
 
         return register_event
 
+
 class AutoModerationEventType(IntEnum):
     MESSAGE_SEND = 1
+
 
 class AutoModerationTriggerType(IntEnum):
     KEYWORD = 1
@@ -4520,18 +4522,24 @@ class AutoModerationTriggerType(IntEnum):
     SPAM = 3
     KEYWORD_PRESENT = 4
 
+
 class AutoModerationKeywordPresetTypes(IntEnum):
     PROFANITY = 1
     SEXUAL_CONTENT = 2
     SLURS = 3
 
+
 class AutoModerationTriggerMetaData:
     def __init__(self, data: dict):
         self.keyword_filter: List[str] = data.get("keyword_filter")
-        self.presets: List[AutoModerationKeywordPresetTypes] = AutoModerationKeywordPresetTypes(data.get("presets"))
+        self.presets: List[
+            AutoModerationKeywordPresetTypes
+        ] = AutoModerationKeywordPresetTypes(data.get("presets"))
+
 
 class AutoModerationAction:
     ...
+
 
 class AutoModerationRule:
     def __init__(self, client, data: dict):
@@ -4540,10 +4548,18 @@ class AutoModerationRule:
         self.guild_id: str = data["guild_id"]
         self.name: str = data["name"]
         self.creator_id: str = data["creator_id"]
-        self.event_type: AutoModerationEventType = AutoModerationEventType(data["event_type"])
-        self.trigger_type: AutoModerationTriggerType = AutoModerationTriggerType(data["trigger_type"])
-        self.trigger_metadata: AutoModerationTriggerMetaData = [AutoModerationTriggerMetaData(data) for data in data["trigger_metadata"]]
-        self.actions: List[AutoModerationAction] = [AutoModerationAction(data) for data in data.get("actions")]
+        self.event_type: AutoModerationEventType = AutoModerationEventType(
+            data["event_type"]
+        )
+        self.trigger_type: AutoModerationTriggerType = AutoModerationTriggerType(
+            data["trigger_type"]
+        )
+        self.trigger_metadata: AutoModerationTriggerMetaData = [
+            AutoModerationTriggerMetaData(data) for data in data["trigger_metadata"]
+        ]
+        self.actions: List[AutoModerationAction] = [
+            AutoModerationAction(data) for data in data.get("actions")
+        ]
         self.enabled: bool = data["enabled"]
         self.except_roles_ids: List[str] = data["except_roles"]
         self.except_channels_ids: List[str] = data["except_channels"]
