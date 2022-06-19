@@ -15,7 +15,7 @@ from collections import defaultdict
 from importlib import import_module
 from inspect import iscoroutine
 from logging import getLogger
-from time import perf_counter_ns 
+from time import perf_counter_ns
 from sys import platform
 from typing import (
     Optional,
@@ -695,9 +695,9 @@ class EventHandler:
 
             elif event["op"] == GatewayOpcode.HEARTBEAT_ACK:
                 heartbeat_ack_time = perf_counter_ns()
-                self.discord_latency:int = heartbeat_ack_time - self.heartbeat_time
+                self.discord_latency: int = heartbeat_ack_time - self.heartbeat_time
                 if len(self.latencies) > 10:
-                    self.latencies.pop(0) # pop the first latency
+                    self.latencies.pop(0)  # pop the first latency
                 self.latencies.append(self.discord_latency)
                 try:
                     self.heartbeats.append(event["d"])
@@ -2081,15 +2081,13 @@ class Client(WebsocketClient):
     @property
     def latency(self):
         return self.discord_latency
-    
+
     @property
     def average_latency(self):
         if len(self.latencies) < 10:
             return self.latency
 
-        return sum(self.latencies) / len(self.latencies) 
-    
-    
+        return sum(self.latencies) / len(self.latencies)
 
     def command(
         self,
@@ -2169,6 +2167,7 @@ class Client(WebsocketClient):
         for possible_section in sections.__dict__.values():
             if issubclass(possible_section, Section):
                 self.load_section(possible_section)
+
 
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
