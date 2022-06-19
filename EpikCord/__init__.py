@@ -1887,9 +1887,8 @@ class GuildStageChannel(BaseChannel):
 
 
 class Bucket:
-    def __init__(self, *, discord_hash: str, real_hash: str):
-        self.bucket_hash = real_hash
-        self.discord_hash = discord_hash
+    def __init__(self, *, discord_hash: str):
+        self.bucket_hash = discord_hash
         self.lock: asyncio.Lock = asyncio.Lock()
 
     def __eq__(self, other):
@@ -1909,18 +1908,13 @@ class HTTPClient(ClientSession):
         self.global_ratelimit.set()
         self.buckets: Dict[str, Bucket] = {}
 
-    def get_bucket(self, *, discord_hash: str, real_hash: str) -> Union[UnknownBucket, Bucket]:
-        possible_bucket = self.buckets.get(discord_hash)
-        if not possible_bucket:
-            guild_id, channel_id, _ = real_hash.split(":")
-
     async def request(self, method, url, *args, **kwargs):
-        await self.global_ratelimit.wait()
-        self.guild_id: Optional[str] = kwargs.get("guild_id", 0)
-        self.channel_id: Optional[str] = kwargs.get("channel_id", 0)
 
-        bucket_hash = f"{self.guild_id}:{self.channel_id}:{url}"
-        
+        await self.global_ratelimit.wait()
+
+        guild_id: Union[str, int] = kwargs.get("guild_id", 0)
+        channel_id: Union[str, int] = kwargs.get("channel_id", 0)
+        bucket_hash = f"{guild_id}:{channel_id}:{url}"
         bucket = self.buckets.get(bucket_hash)
 
         if not bucket:
@@ -1929,17 +1923,34 @@ class HTTPClient(ClientSession):
         await bucket.lock.acquire()
 
         res = await super().request(method, url, *args, **kwargs)
-        body = await res.json()
 
-        if res.status == 429:
-            self.global_ratelimit.clear()
-            time_to_sleep_for = (
-                res.headers["X-RateLimit-Retry-After"] / 1000
-                if res.headers["X-RateLimit-Retry-After"] > body["retry_after"]
-                else body["retry_after"]
+        body = {}
+        try:
+            body = await res.json()
+        except:
+            ...
+
+        if int(res.headers.get("X-RateLimit-Remaining", 1)) == 0 and res.status != 429: # We've exhausted the bucket.
+            await asyncio.sleep(res.headers["X-RateLimit-Reset-After"])
+            await bucket.lock.release()
+
+
+        if res.status == 429: # Body is always present here.
+
+            time_to_sleep = (
+                body.get("retry_after")
+                if body.get("retry_after") > res.headers["X-RateLimit-Reset-After"]
+                else res.headers["X-RateLimit-Reset-After"]
             )
-            await asyncio.sleep(time_to_sleep_for)
-            self.global_ratelimit.set()
+                
+            if res.headers["X-RateLimit-Scope"] == "global":
+                await self.global_ratelimit.clear()
+
+            await asyncio.sleep(time_to_sleep)
+
+            await self.global_ratelimit.set()
+            await bucket.lock.release()
+            return await self.request(method, url, *args, **kwargs) # Retry the request
 
     @staticmethod
     async def log_request(res):
