@@ -619,7 +619,7 @@ class EventHandler:
     def __init__(self):
         self.events = defaultdict(list)
         self.wait_for_events = defaultdict(list)
-        self.latencies = deque(maxlen=10)
+        self.latencies = deque(maxlen=5)
 
     def wait_for(
         self, event_name: str, *, check: Optional[Callable] = None, timeout: int = None
