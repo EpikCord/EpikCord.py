@@ -1940,10 +1940,10 @@ class UnknownBucket:
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
+        self.base_uri: str = kwargs.pop("endpoint", "https://discord.com/api/v10")
         super().__init__(
             *args, **kwargs, raise_for_status=True, json_serialize=json.dumps
         )
-        self.base_uri: str = kwargs.get("endpoint", "https://discord.com/api/v10")
         self.global_ratelimit: asyncio.Event = asyncio.Event()
         self.global_ratelimit.set()
         self.buckets: Dict[str, Bucket] = {}
