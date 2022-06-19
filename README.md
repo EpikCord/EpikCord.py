@@ -15,7 +15,8 @@ We love contributions that help us, so feel free to! You won't be rewarded for t
 See the [Contributing](./CONTRIBUTING.md) page for more information.
 
 ## Where are your docs?
-Have functions and attributes you not sure about? Check our docs [here](https://epikcord-guide.vercel.app/)
+[![Documentation Status](https://readthedocs.org/projects/epikcordpy/badge/?version=latest)](https://epikcordpy.readthedocs.io/en/latest/?badge=latest)
+Have functions and attributes you not sure about? Check our docs [here](https://epikcordpy.readthedocs.io)
 
 ## I need help!
 If you need help, you can join our [EpikCord.py Discord Server](https://discord.gg/4R473R73kQ) and ask for help there.
