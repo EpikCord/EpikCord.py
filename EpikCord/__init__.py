@@ -15,6 +15,7 @@ from collections import defaultdict
 from importlib import import_module
 from inspect import iscoroutine
 from logging import getLogger
+from time import perf_counter_ns 
 from sys import platform
 from typing import (
     Optional,
