@@ -1,7 +1,46 @@
 """
 NOTE: version string only in setup.cfg
 """
-from __future__ import annotations;from collections import defaultdict;import threading;from .close_event_codes import GatewayCECode;from .opcodes import GatewayOpcode, VoiceOpcode;from importlib import import_module;import asyncio;import datetime;import io;import os;import re;import socket;from base64 import b64encode;from collections import defaultdict;from inspect import iscoroutine;from logging import getLogger;from sys import platform;from typing import (Optional,List,Union,Dict,TypeVar,Callable,Tuple,Any,Type,TYPE_CHECKING);from urllib.parse import quote as _quote;from aiohttp import ClientSession, ClientResponse;from .__main__ import __version__;from .components import *;from .exceptions import *;from .managers import *;from .options import *;from .partials import *
+from __future__ import annotations
+
+
+import asyncio
+import datetime
+import io
+import os
+import re
+import socket
+from base64 import b64encode
+from collections import defaultdict
+from importlib import import_module
+from inspect import iscoroutine
+from logging import getLogger
+from time import perf_counter_ns
+from sys import platform
+from typing import (
+    Optional,
+    List,
+    Union,
+    Dict,
+    TypeVar,
+    Callable,
+    Tuple,
+    Any,
+    Type,
+    TYPE_CHECKING,
+)
+from urllib.parse import quote as _quote
+
+from aiohttp import ClientSession, ClientResponse
+
+from .__main__ import __version__
+from .close_event_codes import GatewayCECode
+from .components import *
+from .exceptions import *
+from .managers import *
+from .opcodes import GatewayOpcode, VoiceOpcode
+from .options import *
+from .partials import *
 
 CT = TypeVar("CT", bound="Colour")
 T = TypeVar("T")
@@ -580,6 +619,7 @@ class EventHandler:
     def __init__(self):
         self.events = defaultdict(list)
         self.wait_for_events = defaultdict(list)
+        self.latencies = []
 
     def wait_for(
         self, event_name: str, *, check: Optional[Callable] = None, timeout: int = None
@@ -665,6 +705,11 @@ class EventHandler:
                 await self.heartbeat(True)
 
             elif event["op"] == GatewayOpcode.HEARTBEAT_ACK:
+                heartbeat_ack_time = perf_counter_ns()
+                self.discord_latency: int = heartbeat_ack_time - self.heartbeat_time
+                if len(self.latencies) > 10:
+                    self.latencies.pop(0)  # pop the first latency
+                self.latencies.append(self.discord_latency)
                 try:
                     self.heartbeats.append(event["d"])
                 except AttributeError:
@@ -731,13 +776,14 @@ class EventHandler:
         interaction: Union[ApplicationCommandInteraction, MessageComponentInteraction, AutoCompleteInteraction, ModalSubmitInteraction]
             A subclass of BaseInteraction which represents the Interaction
         """
-        if interaction.is_ping():
+
+        if interaction.is_ping:
             return await self.http.post(
                 f"interactions/{interaction.id}/{interaction.token}/callback",
                 json={"type": 1},
             )
 
-        elif interaction.is_application_command():
+        elif interaction.is_application_command:
             command = self.commands.get(interaction.command_name)
 
             if not command:
@@ -764,9 +810,7 @@ class EventHandler:
 
             return await command.callback(interaction, *options)
 
-        if (
-            interaction.is_message_component()
-        ):  # If it's a message component interaction
+        if interaction.is_message_component:  # If it's a message component interaction
 
             if not self._components.get(
                 interaction.custom_id
@@ -795,13 +839,13 @@ class EventHandler:
                     interaction, get_select_menu(), *interaction.values
                 )
 
-        if interaction.is_autocomplete():
+        if interaction.is_autocomplete:
             command = self.commands.get(interaction.command_name)
             if not command:
                 return
             ...  # TODO: Implement autocomplete
 
-        if interaction.is_modal_submit():
+        if interaction.is_modal_submit:
             action_rows = interaction._components
             component_object_list = []
             for action_row in action_rows:
@@ -822,11 +866,8 @@ class EventHandler:
         return interaction
 
     async def channel_create(self, data: dict):
-
         channel = self.utils.channel_from_type(data)
-
         self.channels.add_to_cache(channel.id, channel)
-
         return channel
 
     async def message_create(self, data: dict):
@@ -953,6 +994,7 @@ class WebsocketClient(EventHandler):
             await self.send_json(
                 {"op": GatewayOpcode.HEARTBEAT, "d": self.sequence or "null"}
             )
+            self.heartbeat_time = perf_counter_ns()
             await asyncio.sleep(self.interval / 1000)
             logger.debug("Sent a heartbeat!")
 
@@ -2095,10 +2137,21 @@ class Client(WebsocketClient):
         )
 
         self.utils = Utils(self)
-
+        self.latencies = []
         self.user: ClientUser = None
         self.applicgation: Optional[ClientApplication] = None
         self.sections: List[Any] = []
+
+    @property
+    def latency(self):
+        return self.discord_latency
+
+    @property
+    def average_latency(self):
+        if len(self.latencies) < 10:
+            return self.latency
+
+        return sum(self.latencies) / len(self.latencies)
 
     def command(
         self,
@@ -2486,7 +2539,7 @@ class Embed:  # Always wanted to make this class :D
         if hasattr(self, "timestamp"):
             final_product["timestamp"] = self.timestamp
         if hasattr(self, "color"):
-            final_product["color"] = self.color
+            final_product["color"] = self.color.value
         if hasattr(self, "footer"):
             final_product["footer"] = self.footer
         if hasattr(self, "image"):
@@ -2743,17 +2796,12 @@ class Guild:
         self.permissions: str = data.get("permissions")
         self.afk_channel_id: str = data.get("afk_channel_id")
         self.afk_timeout: int = data.get("afk_timeout")
-        self.verification_level: str = (
-            "NONE"
-            if data.get("verification_level") == 0
-            else "LOW"
-            if data.get("verification_level") == 1
-            else "MEDIUM"
-            if data.get("verification_level") == 2
-            else "HIGH"
-            if data.get("verification_level") == 3
-            else "VERY_HIGH"
-        )
+
+        levels = ["None", "Low", "Medium", "High", "Very High"]
+
+        _lvl = min(data.get("verification_level"), len(levels) - 1)
+        self.verification_level: str = levels[_lvl].upper()
+
         self.default_message_notifications: str = (
             "ALL" if data.get("default_message_notifications") == 0 else "MENTIONS"
         )
@@ -3157,18 +3205,23 @@ class BaseInteraction:
             f"/interactions/{self.id}/{self.token}/callback", json=payload
         )
 
+    @property
     def is_ping(self):
         return self.type == 1
 
+    @property
     def is_application_command(self):
         return self.type == 2
 
+    @property
     def is_message_component(self):
         return self.type == 3
 
+    @property
     def is_autocomplete(self):
         return self.type == 4
 
+    @property
     def is_modal_submit(self):
         return self.type == 5
 
@@ -4380,7 +4433,7 @@ class CommandUtils:
     @staticmethod
     def event(name: Optional[str] = None):
         def register_event(func):
-            return Event(name=name or func.__name__, callback=func)
+            return Event(callback=func, event_name=name or func.__name__)
 
         return register_event
 
