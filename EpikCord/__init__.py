@@ -3,6 +3,7 @@ NOTE: version string only in setup.cfg
 """
 from __future__ import annotations
 
+
 import asyncio
 import datetime
 import io
@@ -14,6 +15,7 @@ from collections import defaultdict
 from importlib import import_module
 from inspect import iscoroutine
 from logging import getLogger
+from time import perf_counter_ns 
 from sys import platform
 from typing import (
     Optional,
@@ -606,6 +608,7 @@ class EventHandler:
     def __init__(self):
         self.events = defaultdict(list)
         self.wait_for_events = defaultdict(list)
+        self.latencies = []
 
     def wait_for(
         self, event_name: str, *, check: Optional[Callable] = None, timeout: int = None
@@ -691,6 +694,11 @@ class EventHandler:
                 await self.heartbeat(True)
 
             elif event["op"] == GatewayOpcode.HEARTBEAT_ACK:
+                heartbeat_ack_time = perf_counter_ns()
+                self.discord_latency:int = heartbeat_ack_time - self.heartbeat_time
+                if len(self.latencies) > 10:
+                    self.latencies.pop(0) # pop the first latency
+                self.latencies.append(self.discord_latency)
                 try:
                     self.heartbeats.append(event["d"])
                 except AttributeError:
@@ -973,6 +981,7 @@ class WebsocketClient(EventHandler):
             await self.send_json(
                 {"op": GatewayOpcode.HEARTBEAT, "d": self.sequence or "null"}
             )
+            self.heartbeat_time = perf_counter_ns()
             await asyncio.sleep(self.interval / 1000)
             logger.debug("Sent a heartbeat!")
 
@@ -2064,10 +2073,23 @@ class Client(WebsocketClient):
         )
 
         self.utils = Utils(self)
-
+        self.latencies = []
         self.user: ClientUser = None
         self.application: Optional[ClientApplication] = None
         self.sections: List[Any] = []
+
+    @property
+    def latency(self):
+        return self.discord_latency
+    
+    @property
+    def average_latency(self):
+        if len(self.latencies) < 10:
+            return self.latency
+
+        return sum(self.latencies) / len(self.latencies) 
+    
+    
 
     def command(
         self,
@@ -2147,7 +2169,6 @@ class Client(WebsocketClient):
         for possible_section in sections.__dict__.values():
             if issubclass(possible_section, Section):
                 self.load_section(possible_section)
-
 
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
@@ -2455,7 +2476,7 @@ class Embed:  # Always wanted to make this class :D
         if hasattr(self, "timestamp"):
             final_product["timestamp"] = self.timestamp
         if hasattr(self, "color"):
-            final_product["color"] = self.color
+            final_product["color"] = self.color.value
         if hasattr(self, "footer"):
             final_product["footer"] = self.footer
         if hasattr(self, "image"):
