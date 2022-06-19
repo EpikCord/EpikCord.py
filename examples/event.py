@@ -16,12 +16,15 @@ async def message_create(message):
         message.channel = Messageable(client, message.channel_id)
 
         await message.channel.send(content="Did i hear Example test?")
-#or
-#if you want another way of making events
 
-@client.event("guild_member_leave") #Any event name
+
+# or
+# if you want another way of making events
+
+
+@client.event("guild_member_leave")  # Any event name
 async def sad_to_see_you_go(guild_id, user):
-    channel = Messageable(client, 2333232)# a message channel id
+    channel = Messageable(client, 2333232)  # a message channel id
     await channel.send(content="Saaaaaaaaad to see u go ;(")
 
 

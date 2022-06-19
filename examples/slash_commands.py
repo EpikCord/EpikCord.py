@@ -3,7 +3,6 @@ import datetime
 import time
 
 
-
 from EpikCord import Client, Intents, StringOption, NumberOption
 
 intents = Intents().all()
