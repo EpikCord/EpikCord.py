@@ -1940,7 +1940,7 @@ class UnknownBucket:
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
-        self.base_uri: str = kwargs.pop("endpoint", "https://discord.com/api/v10")
+        self.base_uri: str = kwargs.pop("discord_endpoint", "https://discord.com/api/v10")
         super().__init__(
             *args, **kwargs, raise_for_status=True, json_serialize=json.dumps
         )
