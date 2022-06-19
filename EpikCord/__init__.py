@@ -57,7 +57,7 @@ except ImportError:
     )
 
 # try:
-    # import orjson as json
+# import orjson as json
 # except ImportError:
 import json
 
@@ -1114,7 +1114,7 @@ class WebsocketClient(EventHandler):
         logger.debug(f"Sent {json} to the Websocket Connection to Discord.")
 
     async def connect(self):
-        
+
         self.ws = await self.http.ws_connect(
             "wss://gateway.discord.gg/?v=9&encoding=json"
         )
@@ -1935,9 +1935,11 @@ class Bucket:
     def __eq__(self, other):
         return self.bucket_hash == other.bucket_hash
 
+
 class UnknownBucket:
     def __init__(self):
         self.lock = asyncio.Lock()
+
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
@@ -1971,19 +1973,21 @@ class HTTPClient(ClientSession):
         except:
             ...
 
-        if int(res.headers.get("X-RateLimit-Remaining", 1)) == 0 and res.status != GatewayCECode.RateLimited: # We've exhausted the bucket.
+        if (
+            int(res.headers.get("X-RateLimit-Remaining", 1)) == 0
+            and res.status != GatewayCECode.RateLimited
+        ):  # We've exhausted the bucket.
             await asyncio.sleep(res.headers["X-RateLimit-Reset-After"])
             await bucket.lock.release()
 
-
-        if res.status == GatewayCECode.RateLimited: # Body is always present here.
+        if res.status == GatewayCECode.RateLimited:  # Body is always present here.
 
             time_to_sleep = (
                 body.get("retry_after")
                 if body.get("retry_after") > res.headers["X-RateLimit-Reset-After"]
                 else res.headers["X-RateLimit-Reset-After"]
             )
-                
+
             if res.headers["X-RateLimit-Scope"] == "global":
                 await self.global_ratelimit.clear()
 
@@ -1991,7 +1995,7 @@ class HTTPClient(ClientSession):
 
             await self.global_ratelimit.set()
             await bucket.lock.release()
-            return await self.request(method, url, *args, **kwargs) # Retry the request
+            return await self.request(method, url, *args, **kwargs)  # Retry the request
 
     @staticmethod
     async def log_request(res):
@@ -2012,7 +2016,6 @@ class HTTPClient(ClientSession):
 
         finally:
             logger.debug("".join(message))
-
 
     async def get(
         self,
@@ -2114,9 +2117,9 @@ class Client(WebsocketClient):
         status: Optional[Status] = None,
         activity: Optional[Activity] = None,
         overwrite_commands_on_ready: Optional[bool] = False,
-        discord_endpoint: str = "https://discord.com/api/v10"
+        discord_endpoint: str = "https://discord.com/api/v10",
     ):
-        super().__init__(token, intents, discord_endpoint = discord_endpoint)
+        super().__init__(token, intents, discord_endpoint=discord_endpoint)
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
         self.commands: Dict[
             str, Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]
@@ -4431,7 +4434,6 @@ class CommandUtils:
             return Event(callback=func, event_name=name or func.__name__)
 
         return register_event
-
 
 
 __slots__ = __all__ = (
