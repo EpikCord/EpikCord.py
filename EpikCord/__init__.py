@@ -1956,11 +1956,16 @@ class GuildStageChannel(BaseChannel):
         self.privacy_level: int = data.get("privacy_level")
         self.discoverable_disabled: bool = data.get("discoverable_disabled")
 
+class _FakeTask:
+    def cancel(self):
+        return True
 
 class Bucket:
     def __init__(self, *, discord_hash: str):
         self.bucket_hash = discord_hash
         self.lock: asyncio.Lock = asyncio.Lock()
+
+        self.close_task = _FakeTask
 
     def __eq__(self, other):
         return self.bucket_hash == other.bucket_hash
@@ -2033,6 +2038,15 @@ class HTTPClient(ClientSession):
 
         if bucket.lock.locked():
             await bucket.lock.release()
+
+        async def dispose(): # After waiting 5 minutes without any interaction, the bucket will be disposed.
+            await asyncio.sleep(300)
+            del self.buckets[bucket_hash]
+
+        bucket.close_task.cancel()
+
+        bucket.close_task = asyncio.get_event_loop().create_task(dispose())
+
         return res
 
     @staticmethod
