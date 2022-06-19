@@ -954,7 +954,7 @@ class EventHandler:
                     await self.application.bulk_overwrite_guild_application_commands(
                         guild_id, commands
                     )
-
+        return None
 
 class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
@@ -2027,7 +2027,7 @@ class HTTPClient(ClientSession):
         if to_discord:
             if url.startswith("/"):
                 url = url[1:]
-            res = await super().get(f"{self.base_uri}/{url}", *args, from_epikcord = True, **kwargs)
+            res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
 
             return res
@@ -2040,11 +2040,11 @@ class HTTPClient(ClientSession):
             if url.startswith("/"):
                 url = url[1:]
 
-            res = await super().post(f"{self.base_uri}/{url}", *args, from_epikcord = True, **kwargs)
+            res = await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
             return res
 
-        return await super().post(url, *args, from_epikcord = True, **kwargs)
+        return await super().post(url, *args, **kwargs)
 
     async def patch(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
@@ -2052,7 +2052,7 @@ class HTTPClient(ClientSession):
             if url.startswith("/"):
                 url = url[1:]
 
-            res = await super().patch(f"{self.base_uri}/{url}", *args, from_epikcord = True, **kwargs)
+            res = await super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
             return res
         return await super().patch(url, *args, **kwargs)
@@ -2063,7 +2063,7 @@ class HTTPClient(ClientSession):
             if url.startswith("/"):
                 url = url[1:]
 
-            res = await super().delete(f"{self.base_uri}/{url}", from_epikcord = True, **kwargs)
+            res = await super().delete(f"{self.base_uri}/{url}", **kwargs)
             await self.log_request(res)
             return res
         return await super().delete(url, **kwargs)
@@ -2074,7 +2074,7 @@ class HTTPClient(ClientSession):
             if url.startswith("/"):
                 url = url[1:]
 
-            res = await super().put(f"{self.base_uri}/{url}", *args, from_epikcord = True, **kwargs)
+            res = await super().put(f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
 
             return res
