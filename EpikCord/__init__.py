@@ -972,7 +972,6 @@ class WebsocketClient(EventHandler):
         self.commands = {}
         self._closed = True
         self.heartbeats = []
-        self.average_latency = 0
 
         self.interval = None  # How frequently to heartbeat
         self.session_id = None
@@ -2138,7 +2137,7 @@ class Client(WebsocketClient):
         self.utils = Utils(self)
         self.latencies = deque(maxlen=5)
         self.user: ClientUser = None
-        self.applicgation: Optional[ClientApplication] = None
+        self.application: Optional[ClientApplication] = None
         self.sections: List[Any] = []
 
     @property
