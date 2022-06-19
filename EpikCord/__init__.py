@@ -1965,9 +1965,11 @@ class GuildStageChannel(BaseChannel):
         self.privacy_level: int = data.get("privacy_level")
         self.discoverable_disabled: bool = data.get("discoverable_disabled")
 
+
 class _FakeTask:
     def cancel(self):
         return True
+
 
 class Bucket:
     def __init__(self, *, discord_hash: str):
@@ -2024,7 +2026,9 @@ class HTTPClient(ClientSession):
             int(res.headers.get("X-RateLimit-Remaining", 1)) == 0
             and res.status != GatewayCECode.RateLimited
         ):  # We've exhausted the bucket.
-            logger.critical(f"Exhausted {res.headers['X-RateLimit-Bucket']}. Reset in {res.headers['X-RateLimit-Reset-After']} seconds")
+            logger.critical(
+                f"Exhausted {res.headers['X-RateLimit-Bucket']}. Reset in {res.headers['X-RateLimit-Reset-After']} seconds"
+            )
             await asyncio.sleep(res.headers["X-RateLimit-Reset-After"])
             await bucket.lock.release()
 
@@ -2048,7 +2052,7 @@ class HTTPClient(ClientSession):
         if bucket.lock.locked():
             await bucket.lock.release()
 
-        async def dispose(): # After waiting 5 minutes without any interaction, the bucket will be disposed.
+        async def dispose():  # After waiting 5 minutes without any interaction, the bucket will be disposed.
             await asyncio.sleep(300)
             del self.buckets[bucket_hash]
 
