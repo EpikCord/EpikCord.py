@@ -4536,10 +4536,20 @@ class AutoModerationTriggerMetaData:
             AutoModerationKeywordPresetTypes
         ] = AutoModerationKeywordPresetTypes(data.get("presets"))
 
+class AutoModerationActionMetaData:
+    def __init__(self, data: dict):
+        self.channel_id: str = data.get("channel_id")
+        self.duration_seconds: int = data.get("duration_seconds")
+
+class AutoModerationActionType(IntEnum):
+    BLOCK_MESSAGE = 1
+    SEND_ALERT_MESSAGE = 2
+    TIMEOUT = 3
 
 class AutoModerationAction:
-    ...
-
+    def __init__(self, data: dict):
+        self.type: int = AutoModerationActionType(data["type"])
+        self.metadata: AutoModerationActionMetaData(data["metadata"])
 
 class AutoModerationRule:
     def __init__(self, client, data: dict):
@@ -4564,6 +4574,27 @@ class AutoModerationRule:
         self.except_roles_ids: List[str] = data["except_roles"]
         self.except_channels_ids: List[str] = data["except_channels"]
 
+    async def edit(self, *, name: Optional[str] = None, event_type: Optional[int] = None, trigger_metadata: Optional[AutoModerationTriggerMetaData] = None, actions: Optional[List[AutoModerationAction]] = None, enabled: Optional[bool] = None, exempt_roles: Optional[List[str]] = None, exempt_channels: Optional[List[str]] = None):
+        payload = {}
+
+        if name:
+            payload["name"] = name
+
+        if event_type:
+            payload["event_type"] = int(event_type)
+
+        if enabled is not None:
+            payload["enabled"] = enabled
+
+        if exempt_channels:
+            payload["exempt_channels"] = exempt_channels
+
+        if exempt_roles:
+            payload["exempt_roles"] = exempt_roles
+
+    async def delete(self):
+        await self.client.http.delete(f"guilds/{self.guild_id}/auto-moderation/rules/{self.id}")
+        return
 
 __slots__ = __all__ = (
     "ActionRow",
