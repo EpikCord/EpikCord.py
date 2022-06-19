@@ -2094,7 +2094,7 @@ class Section:
     _commands: Dict[
         str, Union[ClientUserCommand, ClientSlashCommand, ClientMessageCommand]
     ] = defaultdict(list)
-    _commands: Dict[str, Event] = defaultdict(list)
+    _events: Dict[str, Event] = defaultdict(list)
 
     def __init_subclass__(cls, **kwargs):
         for attr_value in cls.__dict__.values():
