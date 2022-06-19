@@ -956,6 +956,7 @@ class EventHandler:
                     )
         return None
 
+
 class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
         super().__init__()
@@ -1941,7 +1942,9 @@ class UnknownBucket:
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
-        self.base_uri: str = kwargs.pop("discord_endpoint", "https://discord.com/api/v10")
+        self.base_uri: str = kwargs.pop(
+            "discord_endpoint", "https://discord.com/api/v10"
+        )
         super().__init__(
             *args, **kwargs, raise_for_status=True, json_serialize=json.dumps
         )
@@ -2137,7 +2140,7 @@ class Client(WebsocketClient):
                 "Authorization": f"Bot {token}",
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
             },
-            discord_endpoint = discord_endpoint,
+            discord_endpoint=discord_endpoint,
         )
 
         self.utils = Utils(self)
