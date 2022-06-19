@@ -1074,6 +1074,7 @@ class WebsocketClient(EventHandler):
         logger.debug(f"Sent {json} to the Websocket Connection to Discord.")
 
     async def connect(self):
+        
         self.ws = await self.http.ws_connect(
             "wss://gateway.discord.gg/?v=9&encoding=json"
         )
@@ -1903,7 +1904,7 @@ class HTTPClient(ClientSession):
         super().__init__(
             *args, **kwargs, raise_for_status=True, json_serialize=json.dumps
         )
-        self.base_uri: str = "https://discord.com/api/v10"
+        self.base_uri: str = kwargs.get("endpoint", "https://discord.com/api/v10")
         self.global_ratelimit: asyncio.Event = asyncio.Event()
         self.global_ratelimit.set()
         self.buckets: Dict[str, Bucket] = {}
@@ -1930,12 +1931,12 @@ class HTTPClient(ClientSession):
         except:
             ...
 
-        if int(res.headers.get("X-RateLimit-Remaining", 1)) == 0 and res.status != 429: # We've exhausted the bucket.
+        if int(res.headers.get("X-RateLimit-Remaining", 1)) == 0 and res.status != GatewayCECode.RateLimited: # We've exhausted the bucket.
             await asyncio.sleep(res.headers["X-RateLimit-Reset-After"])
             await bucket.lock.release()
 
 
-        if res.status == 429: # Body is always present here.
+        if res.status == GatewayCECode.RateLimited: # Body is always present here.
 
             time_to_sleep = (
                 body.get("retry_after")
@@ -2073,8 +2074,9 @@ class Client(WebsocketClient):
         status: Optional[Status] = None,
         activity: Optional[Activity] = None,
         overwrite_commands_on_ready: Optional[bool] = False,
+        discord_endpoint: str = "https://discord.com/api/v10"
     ):
-        super().__init__(token, intents)
+        super().__init__(token, intents, discord_endpoint = discord_endpoint)
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
         self.commands: Dict[
             str, Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]
