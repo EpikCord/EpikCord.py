@@ -4532,9 +4532,9 @@ class AutoModerationKeywordPresetTypes(IntEnum):
 class AutoModerationTriggerMetaData:
     def __init__(self, data: dict):
         self.keyword_filter: List[str] = data.get("keyword_filter")
-        self.presets: List[
-            AutoModerationKeywordPresetTypes
-        ] = [AutoModerationKeywordPresetTypes(x) for x in data.get("presets")]
+        self.presets: List[AutoModerationKeywordPresetTypes] = [
+            AutoModerationKeywordPresetTypes(x) for x in data.get("presets")
+        ]
 
     def to_dict(self):
         return {
@@ -4551,7 +4551,7 @@ class AutoModerationActionMetaData:
     def to_dict(self):
         return {
             "channel_id": self.channel_id,
-            "duration_seconds": self.duration_seconds
+            "duration_seconds": self.duration_seconds,
         }
 
 
@@ -4564,7 +4564,9 @@ class AutoModerationActionType(IntEnum):
 class AutoModerationAction:
     def __init__(self, data: dict):
         self.type: int = AutoModerationActionType(data["type"])
-        self.metadata: AutoModerationActionMetaData = AutoModerationActionMetaData(data["metadata"]) 
+        self.metadata: AutoModerationActionMetaData = AutoModerationActionMetaData(
+            data["metadata"]
+        )
 
     def to_dict(self):
         return {
@@ -4630,7 +4632,9 @@ class AutoModerationRule:
         if actions:
             payload["actions"] = [action.to_dict() for action in actions]
 
-        await self.client.http.patch(f"/guilds/{self.guild_id}/auto-moderation/rules/{self.id}", json = payload)
+        await self.client.http.patch(
+            f"/guilds/{self.guild_id}/auto-moderation/rules/{self.id}", json=payload
+        )
 
     async def delete(self):
         await self.client.http.delete(
