@@ -4534,13 +4534,25 @@ class AutoModerationTriggerMetaData:
         self.keyword_filter: List[str] = data.get("keyword_filter")
         self.presets: List[
             AutoModerationKeywordPresetTypes
-        ] = AutoModerationKeywordPresetTypes(data.get("presets"))
+        ] = [AutoModerationKeywordPresetTypes(x) for x in data.get("presets")]
+
+    def to_dict(self):
+        return {
+            "keyword_filter": self.keyword_filter,
+            "presets": [int(preset) for preset in self.presets],
+        }
 
 
 class AutoModerationActionMetaData:
     def __init__(self, data: dict):
         self.channel_id: str = data.get("channel_id")
         self.duration_seconds: int = data.get("duration_seconds")
+
+    def to_dict(self):
+        return {
+            "channel_id": self.channel_id,
+            "duration_seconds": self.duration_seconds
+        }
 
 
 class AutoModerationActionType(IntEnum):
@@ -4552,7 +4564,13 @@ class AutoModerationActionType(IntEnum):
 class AutoModerationAction:
     def __init__(self, data: dict):
         self.type: int = AutoModerationActionType(data["type"])
-        self.metadata: AutoModerationActionMetaData(data["metadata"])
+        self.metadata: AutoModerationActionMetaData = AutoModerationActionMetaData(data["metadata"]) 
+
+    def to_dict(self):
+        return {
+            "type": int(self.type),
+            "metadata": self.metadata.to_dict(),
+        }
 
 
 class AutoModerationRule:
@@ -4605,6 +4623,14 @@ class AutoModerationRule:
 
         if exempt_roles:
             payload["exempt_roles"] = exempt_roles
+
+        if trigger_metadata is not None:
+            payload["trigger_metadata"] = trigger_metadata.to_dict()
+
+        if actions:
+            payload["actions"] = [action.to_dict() for action in actions]
+
+        await self.client.http.patch(f"/guilds/{self.guild_id}/auto-moderation/rules/{self.id}", json = payload)
 
     async def delete(self):
         await self.client.http.delete(
