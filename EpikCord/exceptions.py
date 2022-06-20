@@ -58,7 +58,7 @@ class DisallowedIntents(EpikCordException):
     ...
 
 
-class BadRequest400(EpikCordException):
+class t(EpikCordException):
     ...
 
 
