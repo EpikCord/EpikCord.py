@@ -49,10 +49,7 @@ class DiscordAPIError(EpikCordException):
         self.errors_list = self.extract_errors(self.errors)
 
         super().__init__(
-            "\n".join(
-                f"{e.path} - {e.code} - {e.message}"
-                for e in self.errors_list
-            )
+            "\n".join(f"{e.path} - {e.code} - {e.message}" for e in self.errors_list)
         )
 
     def extract_errors(self, d, key_path=None):
@@ -62,12 +59,14 @@ class DiscordAPIError(EpikCordException):
 
         if "_errors" in d:
             return [
-                LocatedError(**error, path='.'.join(key_path[1:]))
+                LocatedError(**error, path=".".join(key_path[1:]))
                 for error in d["_errors"]
             ]
 
         return [
-            x for k, v in d.items() if isinstance(v, dict)
+            x
+            for k, v in d.items()
+            if isinstance(v, dict)
             for x in self.extract_errors(v, key_path + [k])
         ]
 
