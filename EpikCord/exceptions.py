@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+
+
 class EpikCordException(Exception):
     ...
 
@@ -30,17 +33,24 @@ class MissingCustomId(EpikCordException):
     ...
 
 
+@dataclass
+class LocatedError:
+    code: str
+    message: str
+    path: str
+
+
 class DiscordAPIError(EpikCordException):
     def __init__(self, body):
         self.body = body
-        self.code = body["code"]
-        self.message = body["message"]
+        self.code = body.get("code")
+        self.message = body.get("message")
         self.errors = body.get("errors")
         self.errors_list = self.extract_errors(self.errors)
-        final_message = ""
-        for error in self.errors_list:
-            final_message += f"{error['path']} - {error['code']} - {error['message']}\n"
-        super().__init__(final_message)
+
+        super().__init__(
+            "\n".join(f"{e.path} - {e.code} - {e.message}" for e in self.errors_list)
+        )
 
     def extract_errors(self, d, key_path=None):
         """Get _errors key from the given dictionary."""
@@ -48,11 +58,10 @@ class DiscordAPIError(EpikCordException):
             key_path = []
 
         if "_errors" in d:
-            errors = []
-            for error in d["_errors"]:
-                error["path"] = ".".join(key_path[1:])
-                errors.append(error)
-            return errors
+            return [
+                LocatedError(**error, path=".".join(key_path[1:]))
+                for error in d["_errors"]
+            ]
 
         return [
             x
