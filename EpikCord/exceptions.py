@@ -50,15 +50,16 @@ class DiscordAPIError(EpikCordException):
         if "_errors" in d:
             errors = []
             for error in d["_errors"]:
-                error["path"] = '.'.join(key_path[1:])
+                error["path"] = ".".join(key_path[1:])
                 errors.append(error)
             return errors
 
         return [
-            x for k, v in d.items() if isinstance(v, dict)
+            x
+            for k, v in d.items()
+            if isinstance(v, dict)
             for x in self.extract_errors(v, key_path + [k])
         ]
-
 
 
 class InvalidData(EpikCordException):
