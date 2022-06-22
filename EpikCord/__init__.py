@@ -2033,7 +2033,7 @@ class HTTPClient(ClientSession):
             await bucket.lock.release()
 
         if res.status == GatewayCECode.RateLimited:  # Body is always present here.
-            logger.critical("Rate limited. Reset in {body['retry_after']} seconds")
+            logger.critical(f"Rate limited. Reset in {body['retry_after']} seconds")
             time_to_sleep = (
                 body.get("retry_after")
                 if body.get("retry_after") > res.headers["X-RateLimit-Reset-After"]
