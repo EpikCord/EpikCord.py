@@ -95,31 +95,27 @@ class DisallowedIntents(EpikCordException):
     ...
 
 
-class t(EpikCordException):
+class Unauthorized401(DiscordAPIError):
     ...
 
 
-class Unauthorized401(EpikCordException):
+class Forbidden403(DiscordAPIError):
     ...
 
 
-class Forbidden403(EpikCordException):
+class NotFound404(DiscordAPIError):
     ...
 
 
-class NotFound404(EpikCordException):
+class MethodNotAllowed405(DiscordAPIError):
     ...
 
 
-class MethodNotAllowed405(EpikCordException):
+class Ratelimited429(DiscordAPIError):
     ...
 
 
-class Ratelimited429(EpikCordException):
-    ...
-
-
-class GateawayUnavailable502(EpikCordException):
+class GateawayUnavailable502(DiscordAPIError):
     ...
 
 

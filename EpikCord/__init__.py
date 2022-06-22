@@ -2015,7 +2015,14 @@ class HTTPClient(ClientSession):
         await bucket.lock.acquire()
 
         res = await super().request(method, url, *args, **kwargs)
-
+        if isinstance(bucket, UnknownBucket) and res.headers.get("X-RateLimit-Bucket"):
+            bucket = Bucket(discord_hash=res.headers.get("X-RateLimit-Bucket"))
+            if bucket in self.buckets.values():
+                self.buckets[bucket_hash] = {v: k for k, v in self.buckets.items()}[
+                    bucket
+                ]
+            else:
+                self.buckets[bucket_hash] = bucket
         body = {}
         try:
             body = await res.json()
@@ -2033,13 +2040,13 @@ class HTTPClient(ClientSession):
             await bucket.lock.release()
 
         if res.status == GatewayCECode.RateLimited:  # Body is always present here.
-            logger.critical("Rate limited. Reset in {body['retry_after']} seconds")
             time_to_sleep = (
                 body.get("retry_after")
                 if body.get("retry_after") > res.headers["X-RateLimit-Reset-After"]
                 else res.headers["X-RateLimit-Reset-After"]
             )
 
+            logger.critical(f"Rate limited. Reset in {time_to_sleep} seconds")
             if res.headers["X-RateLimit-Scope"] == "global":
                 await self.global_ratelimit.clear()
 
