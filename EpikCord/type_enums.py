@@ -1,5 +1,6 @@
 from enum import IntEnum
 
+
 class AutoModerationActionType(IntEnum):
     BLOCK_MESSAGE = 1
     SEND_ALERT_MESSAGE = 2
