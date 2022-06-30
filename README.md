@@ -3,6 +3,8 @@
 </p>
 
 # EpikCord.py
+[![wakatime](https://wakatime.com/badge/user/5d75e632-c454-421e-a620-b81fd468ce46/project/a8d1b3c9-d4ac-4df3-aed9-c443b1e9d680.svg)](https://wakatime.com/badge/user/5d75e632-c454-421e-a620-b81fd468ce46/project/a8d1b3c9-d4ac-4df3-aed9-c443b1e9d680)
+
 Welcome to EpikCord.py!
 This is an API Wrapper for Discord's API for Python!
 We've decided not to fork discord.py and start completely from scratch for a new, better structuring system!
@@ -25,13 +27,13 @@ If you need help, you can join our [EpikCord.py Discord Server](https://discord.
     <img src="https://img.shields.io/discord/937364424208039957?color=9cf&logo=discord&label=discord" alt="Discord server">
 </a>
 
-# Installing Epikcord.py
+## Installing Epikcord.py
 
-## Requirements
+### Requirements
 
 The minimal requirements for EpikCord.py is `Python>=3.8`. Python 3.7 and lower and Python 2 family are not supported
 
-## Install
+### Install
 **Warning!**<Br>
 This Library is in preview and hasn't been released yet. Some features may not work properly.
 
@@ -41,12 +43,12 @@ Get the library from the Python Package Index (PyPI)
 pip install EpikCord.py
 ```
 
-### Install in an Virtual Environment (venv)
+#### Install in an Virtual Environment (venv)
 
 Sometimes you might want to keep this library from conflicting with other libraries or use a different version of libs than the ones in the system. You also might not have permissions for installing libraries. Luckily Virtual Environments are here to save you. From Python3.3, there is a concept called Virtual Environment to help maintain these libs
 
 
-#### For the quick and dirty:
+##### For the quick and dirty:
 
 1. Go to your project's working directory:
 

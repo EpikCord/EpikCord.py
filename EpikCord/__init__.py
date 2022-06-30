@@ -3,7 +3,6 @@ NOTE: version string only in setup.cfg
 """
 from __future__ import annotations
 
-
 import asyncio
 import datetime
 import io
@@ -16,11 +15,11 @@ from importlib import import_module
 from inspect import iscoroutine
 from logging import getLogger
 from time import perf_counter_ns
+from .type_enums import *
 from sys import platform
 from typing import (
     Optional,
     List,
-    TypedDict,
     Union,
     Dict,
     TypeVar,
@@ -980,7 +979,7 @@ class WebsocketClient(EventHandler):
         self.sequence = None
 
     async def change_presence(self, *, presence: Optional[Presence]):
-        payload = {"op": 3, "d": presence.to_dict()}
+        payload = {"op": GatewayOpcode.PRESENCE_UPDATE, "d": presence.to_dict()}
         await self.send_json(payload)
 
     async def heartbeat(self, forced: Optional[bool] = None):
@@ -1031,21 +1030,9 @@ class WebsocketClient(EventHandler):
 
     async def reconnect(self):
         await self.close()
-        self.ws = await self.http.ws_connect(
-            "wss://gateway.discord.gg/?v=9&encoding=json"
-        )
-        await self.send_json(
-            {
-                "op": GatewayOpcode.RECONNECT,
-                "d": {
-                    "token": self.token,
-                    "session_id": self.session_id,
-                    "seq": self.sequence,
-                },
-            }
-        )
-        self._closed = False
-        await self.handle_events()
+        await self.connect()
+        await self.identify()
+        await self.resume()
 
     async def handle_close(self):
         if self.ws.close_code == GatewayCECode.DisallowedIntents:
@@ -1115,9 +1102,8 @@ class WebsocketClient(EventHandler):
         logger.debug(f"Sent {json} to the Websocket Connection to Discord.")
 
     async def connect(self):
-        self.ws = await self.http.ws_connect(
-            "wss://gateway.discord.gg/?v=9&encoding=json"
-        )
+        url = await (await self.http.client.get("/gateway/")).json()["url"]
+        self.ws = await self.http.ws_connect(f"{url}?v=10&encoding=json")
         self._closed = False
         await self.handle_events()
 
@@ -1986,7 +1972,6 @@ class UnknownBucket:
     def __init__(self):
         self.lock = asyncio.Lock()
 
-
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
         self.base_uri: str = kwargs.pop(
@@ -2646,15 +2631,15 @@ class Role:
         self.icon: Optional[str] = data.get("icon")
         self.unicode_emoji: Optional[str] = data.get("unicode_emoji")
         self.guild_id: Optional[str] = data.get("guild_id")
-        self.guild: Optional[Guild] = (
-            client.guilds.fetch(self.guild_id) if self.guild_id else None
-        )
+        if guild := self.client.guilds.get(self.guild_id):
+            self.guild: Guild = guild
+        else:
+            self.guild: Optional[Guild] = asyncio.get_event_loop().run_until_complete(self.client.guilds.fetch(self.guild_id)) or None
         self.position: int = data.get("position")
         self.permissions: str = data.get("permissions")  # TODO: Permissions
         self.managed: bool = data.get("managed")
         self.mentionable: bool = data.get("mentionable")
         self.tags: RoleTag = RoleTag(self.data.get("tags"))
-
 
 class Emoji:
     def __init__(self, client, data: dict, guild_id: str):
@@ -2678,9 +2663,9 @@ class Emoji:
         reason: Optional[str] = None,
     ):
         payload = {}
-
+        headers = self.client.http.headers.copy()
         if reason:
-            payload["X-Audit-Log-Reason"] = reason
+            headers["X-Audit-Log-Reason"] = reason
 
         if name:
             payload["name"] = name
@@ -2689,18 +2674,16 @@ class Emoji:
             payload["roles"] = [role.id for role in roles]
 
         emoji = await self.client.http.patch(
-            f"/guilds/{self.guild_id}/emojis/{self.id}", json=payload
+            f"/guilds/{self.guild_id}/emojis/{self.id}", json=payload, headers = headers
         )
         return Emoji(self.client, emoji, self.guild_id)
 
     async def delete(self, *, reason: Optional[str] = None):
-        payload = {}
-
+        headers = self.client.http.headers.copy()
         if reason:
-            payload["X-Audit-Log-Reason"] = reason
-
+            headers["X-Audit-Log-Reason"] = reason
         await self.client.http.delete(
-            f"/guilds/{self.guild_id}/emojis/{self.id}", json=payload
+            f"/guilds/{self.guild_id}/emojis/{self.id}", headers = headers
         )
 
 
@@ -4374,7 +4357,7 @@ class Shard(WebsocketClient):
                     "browser": "EpikCord.py",
                     "device": "EpikCord.py",
                 },
-                "shard": self.shard_id,
+                "shard": str(self.shard_id),
             },
         }
 
@@ -4388,7 +4371,6 @@ class Shard(WebsocketClient):
         await self.connect()
         await self.identify()
         await self.resume()
-
 
 class ShardManager:
     def __init__(
@@ -4518,24 +4500,6 @@ class CommandUtils:
 
         return register_event
 
-
-class AutoModerationEventType(IntEnum):
-    MESSAGE_SEND = 1
-
-
-class AutoModerationTriggerType(IntEnum):
-    KEYWORD = 1
-    HARMFUL_LINK = 2
-    SPAM = 3
-    KEYWORD_PRESENT = 4
-
-
-class AutoModerationKeywordPresetTypes(IntEnum):
-    PROFANITY = 1
-    SEXUAL_CONTENT = 2
-    SLURS = 3
-
-
 class AutoModerationTriggerMetaData:
     def __init__(self, data: dict):
         self.keyword_filter: List[str] = data.get("keyword_filter")
@@ -4560,13 +4524,6 @@ class AutoModerationActionMetaData:
             "channel_id": self.channel_id,
             "duration_seconds": self.duration_seconds,
         }
-
-
-class AutoModerationActionType(IntEnum):
-    BLOCK_MESSAGE = 1
-    SEND_ALERT_MESSAGE = 2
-    TIMEOUT = 3
-
 
 class AutoModerationAction:
     def __init__(self, data: dict):
