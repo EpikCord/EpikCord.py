@@ -1103,7 +1103,7 @@ class WebsocketClient(EventHandler):
         logger.debug(f"Sent {json} to the Websocket Connection to Discord.")
 
     async def connect(self):
-        url = await (await self.http.client.get("/gateway/")).json()["url"]
+        url = await (await self.http.get("/gateway/")).json()["url"]
         self.ws = await self.http.ws_connect(f"{url}?v=10&encoding=json")
         self._closed = False
         await self.handle_events()
@@ -2005,6 +2005,13 @@ class HTTPClient(ClientSession):
     async def request(self, method, url, *args, **kwargs):
         if not url.startswith("http"):
             return await super().request(method, url, *args, **kwargs)
+
+        if url.startswith("/"):
+            url = url[1:]
+            
+        if url.endswith("/"):
+            url = url[:len(url)-1]
+
         await self.global_ratelimit.wait()
 
         guild_id: Union[str, int] = kwargs.get("guild_id", 0)
@@ -2100,8 +2107,6 @@ class HTTPClient(ClientSession):
         **kwargs,
     ):
         if to_discord:
-            if url.startswith("/"):
-                url = url[1:]
             res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
 
@@ -2111,10 +2116,6 @@ class HTTPClient(ClientSession):
 
     async def post(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-
-            if url.startswith("/"):
-                url = url[1:]
-
             res = await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
             return res
@@ -2123,10 +2124,6 @@ class HTTPClient(ClientSession):
 
     async def patch(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-
-            if url.startswith("/"):
-                url = url[1:]
-
             res = await super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
             return res
@@ -2134,10 +2131,6 @@ class HTTPClient(ClientSession):
 
     async def delete(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-
-            if url.startswith("/"):
-                url = url[1:]
-
             res = await super().delete(f"{self.base_uri}/{url}", **kwargs)
             await self.log_request(res)
             return res
@@ -2145,10 +2138,6 @@ class HTTPClient(ClientSession):
 
     async def put(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-
-            if url.startswith("/"):
-                url = url[1:]
-
             res = await super().put(f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
 
