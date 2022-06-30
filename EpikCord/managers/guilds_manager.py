@@ -1,7 +1,7 @@
 from typing import List, Union, Optional
 
 from .cache_manager import CacheManager
-from ..__init__ import Guild, UnavailableGuild
+from ..__init__ import UnavailableGuild, Guild
 
 
 class GuildManager(CacheManager):
@@ -11,36 +11,27 @@ class GuildManager(CacheManager):
         if guilds is None:
             guilds = []
 
-        super().__init__("guilds_cache")
+        super().__init__()
         self.client = client
-        self.available_guilds = [
-            guild for guild in guilds if not isinstance(guild, UnavailableGuild)
-        ]
-        self.unavailable_guilds = [
-            guild for guild in guilds if isinstance(guild, UnavailableGuild)
-        ]
-        self.guilds = guilds
-
-    def format_cache(self):
-        for guild in self.guilds:
-            self.guilds_cache[guild.id] = guild
-        return self.guilds_cache
+        self.available_guilds = {
+            guild.id: guild for guild in guilds if not isinstance(guild, UnavailableGuild)
+        }
+        self.unavailable_guilds = {
+            guild.id: guild for guild in guilds if isinstance(guild, UnavailableGuild)
+        }
+        self.cache = {**self.available_guilds, **self.unavailable_guilds}
 
     async def fetch(
         self,
         guild_id: str,
         *,
-        skip_cache: Optional[bool] = False,
         with_counts: Optional[bool] = False,
     ):
-
-        if guild_id in self.cache and not skip_cache:
-            return self.cache[guild_id]
 
         if with_counts:
             return Guild(
                 self.client,
                 await self.client.http.get(f"/guilds/{guild_id}?with_counts=true"),
             )
+
         return Guild(self.client, await self.client.http.get(f"/guilds/{guild_id}"))
-        # TODO: This might not work...
