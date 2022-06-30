@@ -2641,12 +2641,18 @@ class Role:
         if guild := self.client.guilds.get(self.guild_id):
             self.guild: Guild = guild
         else:
-            self.guild: Optional[Guild] = asyncio.get_event_loop().run_until_complete(self.client.guilds.fetch(self.guild_id)) or None
+            self.guild: Optional[Guild] = (
+                asyncio.get_event_loop().run_until_complete(
+                    self.client.guilds.fetch(self.guild_id)
+                )
+                or None
+            )
         self.position: int = data.get("position")
         self.permissions: str = data.get("permissions")  # TODO: Permissions
         self.managed: bool = data.get("managed")
         self.mentionable: bool = data.get("mentionable")
         self.tags: RoleTag = RoleTag(self.data.get("tags"))
+
 
 class Emoji:
     def __init__(self, client, data: dict, guild_id: str):
@@ -2681,7 +2687,7 @@ class Emoji:
             payload["roles"] = [role.id for role in roles]
 
         emoji = await self.client.http.patch(
-            f"/guilds/{self.guild_id}/emojis/{self.id}", json=payload, headers = headers
+            f"/guilds/{self.guild_id}/emojis/{self.id}", json=payload, headers=headers
         )
         return Emoji(self.client, emoji, self.guild_id)
 
@@ -2690,7 +2696,7 @@ class Emoji:
         if reason:
             headers["X-Audit-Log-Reason"] = reason
         await self.client.http.delete(
-            f"/guilds/{self.guild_id}/emojis/{self.id}", headers = headers
+            f"/guilds/{self.guild_id}/emojis/{self.id}", headers=headers
         )
 
 
@@ -4379,6 +4385,7 @@ class Shard(WebsocketClient):
         await self.identify()
         await self.resume()
 
+
 class ShardManager:
     def __init__(
         self,
@@ -4507,6 +4514,7 @@ class CommandUtils:
 
         return register_event
 
+
 class AutoModerationTriggerMetaData:
     def __init__(self, data: dict):
         self.keyword_filter: List[str] = data.get("keyword_filter")
@@ -4531,6 +4539,7 @@ class AutoModerationActionMetaData:
             "channel_id": self.channel_id,
             "duration_seconds": self.duration_seconds,
         }
+
 
 class AutoModerationAction:
     def __init__(self, data: dict):
