@@ -4,6 +4,7 @@ NOTE: version string only in setup.cfg
 from __future__ import annotations
 
 import asyncio
+import zlib
 import datetime
 import io
 import os
@@ -31,7 +32,7 @@ from typing import (
 )
 from urllib.parse import quote as _quote
 
-from aiohttp import ClientSession, ClientResponse
+from aiohttp import ClientSession, ClientResponse, ClientWebSocketResponse
 
 from .__main__ import __version__
 from .close_event_codes import GatewayCECode
@@ -1972,13 +1973,30 @@ class UnknownBucket:
     def __init__(self):
         self.lock = asyncio.Lock()
 
+class DiscordGatewayWebsocket(ClientWebSocketResponse):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.buffer: bytearray = bytearray()
+        self.inflator = zlib.decompressobj()
+
+    async def receive(self, *args, **kwargs):
+        message = await super().receive(*args, **kwargs)
+        self.buffer.extend(message.data)
+        if len(message.data) < 4 or message.data[-4:] != b'\x00\x00\xff\xff':
+            return
+        message = self.inflator.decompress(self.buffer)
+        self.buffer: bytearray = bytearray()
+        return message
+
+
+
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
         self.base_uri: str = kwargs.pop(
             "discord_endpoint", "https://discord.com/api/v10"
         )
         super().__init__(
-            *args, **kwargs, raise_for_status=True, json_serialize=json.dumps
+            *args, **kwargs, raise_for_status=True, json_serialize=json.dumps, ws_response_class=DiscordGatewayWebsocket
         )
         self.global_ratelimit: asyncio.Event = asyncio.Event()
         self.global_ratelimit.set()
