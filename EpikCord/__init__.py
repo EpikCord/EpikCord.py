@@ -1973,6 +1973,7 @@ class UnknownBucket:
     def __init__(self):
         self.lock = asyncio.Lock()
 
+
 class DiscordGatewayWebsocket(ClientWebSocketResponse):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1982,12 +1983,11 @@ class DiscordGatewayWebsocket(ClientWebSocketResponse):
     async def receive(self, *args, **kwargs):
         message = await super().receive(*args, **kwargs)
         self.buffer.extend(message.data)
-        if len(message.data) < 4 or message.data[-4:] != b'\x00\x00\xff\xff':
+        if len(message.data) < 4 or message.data[-4:] != b"\x00\x00\xff\xff":
             return
         message = self.inflator.decompress(self.buffer)
         self.buffer: bytearray = bytearray()
         return message
-
 
 
 class HTTPClient(ClientSession):
@@ -1996,7 +1996,11 @@ class HTTPClient(ClientSession):
             "discord_endpoint", "https://discord.com/api/v10"
         )
         super().__init__(
-            *args, **kwargs, raise_for_status=True, json_serialize=json.dumps, ws_response_class=DiscordGatewayWebsocket
+            *args,
+            **kwargs,
+            raise_for_status=True,
+            json_serialize=json.dumps,
+            ws_response_class=DiscordGatewayWebsocket,
         )
         self.global_ratelimit: asyncio.Event = asyncio.Event()
         self.global_ratelimit.set()
@@ -2008,9 +2012,9 @@ class HTTPClient(ClientSession):
 
         if url.startswith("/"):
             url = url[1:]
-            
+
         if url.endswith("/"):
-            url = url[:len(url)-1]
+            url = url[: len(url) - 1]
 
         await self.global_ratelimit.wait()
 
