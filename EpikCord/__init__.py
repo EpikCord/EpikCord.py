@@ -1103,7 +1103,7 @@ class WebsocketClient(EventHandler):
         logger.debug(f"Sent {json} to the Websocket Connection to Discord.")
 
     async def connect(self):
-        url = await (await self.http.get("/gateway/")).json()["url"]
+        url = await (await self.http.get("/gateway")).json()["url"]
         self.ws = await self.http.ws_connect(f"{url}?v=10&encoding=json")
         self._closed = False
         await self.handle_events()
