@@ -2031,7 +2031,9 @@ class HTTPClient(ClientSession):
         res = await super().request(method, url, *args, **kwargs)
         if isinstance(bucket, UnknownBucket) and res.headers.get("X-RateLimit-Bucket"):
             if not (guild_id, channel_id):
-                self.buckets[res.headers.get("X-RateLimit-Bucket")] = Bucket(discord_hash=res.headers.get("X-RateLimit-Bucket"))
+                self.buckets[res.headers.get("X-RateLimit-Bucket")] = Bucket(
+                    discord_hash=res.headers.get("X-RateLimit-Bucket")
+                )
             else:
                 bucket = Bucket(discord_hash=res.headers.get("X-RateLimit-Bucket"))
                 if bucket in self.buckets.values():
