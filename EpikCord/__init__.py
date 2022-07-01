@@ -3,8 +3,8 @@ NOTE: version string only in setup.cfg
 """
 from __future__ import annotations
 
-
 import asyncio
+import zlib
 import datetime
 import io
 import os
@@ -16,11 +16,11 @@ from importlib import import_module
 from inspect import iscoroutine
 from logging import getLogger
 from time import perf_counter_ns
+from .type_enums import *
 from sys import platform
 from typing import (
     Optional,
     List,
-    TypedDict,
     Union,
     Dict,
     TypeVar,
@@ -32,7 +32,7 @@ from typing import (
 )
 from urllib.parse import quote as _quote
 
-from aiohttp import ClientSession, ClientResponse
+from aiohttp import ClientSession, ClientResponse, ClientWebSocketResponse
 
 from .__main__ import __version__
 from .close_event_codes import GatewayCECode
@@ -980,7 +980,7 @@ class WebsocketClient(EventHandler):
         self.sequence = None
 
     async def change_presence(self, *, presence: Optional[Presence]):
-        payload = {"op": 3, "d": presence.to_dict()}
+        payload = {"op": GatewayOpcode.PRESENCE_UPDATE, "d": presence.to_dict()}
         await self.send_json(payload)
 
     async def heartbeat(self, forced: Optional[bool] = None):
@@ -1031,21 +1031,9 @@ class WebsocketClient(EventHandler):
 
     async def reconnect(self):
         await self.close()
-        self.ws = await self.http.ws_connect(
-            "wss://gateway.discord.gg/?v=9&encoding=json"
-        )
-        await self.send_json(
-            {
-                "op": GatewayOpcode.RECONNECT,
-                "d": {
-                    "token": self.token,
-                    "session_id": self.session_id,
-                    "seq": self.sequence,
-                },
-            }
-        )
-        self._closed = False
-        await self.handle_events()
+        await self.connect()
+        await self.identify()
+        await self.resume()
 
     async def handle_close(self):
         if self.ws.close_code == GatewayCECode.DisallowedIntents:
@@ -1115,9 +1103,8 @@ class WebsocketClient(EventHandler):
         logger.debug(f"Sent {json} to the Websocket Connection to Discord.")
 
     async def connect(self):
-        self.ws = await self.http.ws_connect(
-            "wss://gateway.discord.gg/?v=9&encoding=json"
-        )
+        url = await (await self.http.get("/gateway/")).json()["url"]
+        self.ws = await self.http.ws_connect(f"{url}?v=10&encoding=json")
         self._closed = False
         await self.handle_events()
 
@@ -1987,13 +1974,33 @@ class UnknownBucket:
         self.lock = asyncio.Lock()
 
 
+class DiscordGatewayWebsocket(ClientWebSocketResponse):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.buffer: bytearray = bytearray()
+        self.inflator = zlib.decompressobj()
+
+    async def receive(self, *args, **kwargs):
+        message = await super().receive(*args, **kwargs)
+        self.buffer.extend(message.data)
+        if len(message.data) < 4 or message.data[-4:] != b"\x00\x00\xff\xff":
+            return
+        message = self.inflator.decompress(self.buffer)
+        self.buffer: bytearray = bytearray()
+        return message
+
+
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
         self.base_uri: str = kwargs.pop(
             "discord_endpoint", "https://discord.com/api/v10"
         )
         super().__init__(
-            *args, **kwargs, raise_for_status=True, json_serialize=json.dumps
+            *args,
+            **kwargs,
+            raise_for_status=True,
+            json_serialize=json.dumps,
+            ws_response_class=DiscordGatewayWebsocket,
         )
         self.global_ratelimit: asyncio.Event = asyncio.Event()
         self.global_ratelimit.set()
@@ -2002,6 +2009,13 @@ class HTTPClient(ClientSession):
     async def request(self, method, url, *args, **kwargs):
         if not url.startswith("http"):
             return await super().request(method, url, *args, **kwargs)
+
+        if url.startswith("/"):
+            url = url[1:]
+
+        if url.endswith("/"):
+            url = url[: len(url) - 1]
+
         await self.global_ratelimit.wait()
 
         guild_id: Union[str, int] = kwargs.get("guild_id", 0)
@@ -2100,8 +2114,6 @@ class HTTPClient(ClientSession):
         **kwargs,
     ):
         if to_discord:
-            if url.startswith("/"):
-                url = url[1:]
             res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
 
@@ -2111,10 +2123,6 @@ class HTTPClient(ClientSession):
 
     async def post(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-
-            if url.startswith("/"):
-                url = url[1:]
-
             res = await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
             return res
@@ -2123,10 +2131,6 @@ class HTTPClient(ClientSession):
 
     async def patch(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-
-            if url.startswith("/"):
-                url = url[1:]
-
             res = await super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
             return res
@@ -2134,10 +2138,6 @@ class HTTPClient(ClientSession):
 
     async def delete(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-
-            if url.startswith("/"):
-                url = url[1:]
-
             res = await super().delete(f"{self.base_uri}/{url}", **kwargs)
             await self.log_request(res)
             return res
@@ -2145,10 +2145,6 @@ class HTTPClient(ClientSession):
 
     async def put(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-
-            if url.startswith("/"):
-                url = url[1:]
-
             res = await super().put(f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
 
@@ -2649,9 +2645,15 @@ class Role:
         self.icon: Optional[str] = data.get("icon")
         self.unicode_emoji: Optional[str] = data.get("unicode_emoji")
         self.guild_id: Optional[str] = data.get("guild_id")
-        self.guild: Optional[Guild] = (
-            client.guilds.fetch(self.guild_id) if self.guild_id else None
-        )
+        if guild := self.client.guilds.get(self.guild_id):
+            self.guild: Guild = guild
+        else:
+            self.guild: Optional[Guild] = (
+                asyncio.get_event_loop().run_until_complete(
+                    self.client.guilds.fetch(self.guild_id)
+                )
+                or None
+            )
         self.position: int = data.get("position")
         self.permissions: str = data.get("permissions")  # TODO: Permissions
         self.managed: bool = data.get("managed")
@@ -2681,9 +2683,9 @@ class Emoji:
         reason: Optional[str] = None,
     ):
         payload = {}
-
+        headers = self.client.http.headers.copy()
         if reason:
-            payload["X-Audit-Log-Reason"] = reason
+            headers["X-Audit-Log-Reason"] = reason
 
         if name:
             payload["name"] = name
@@ -2692,18 +2694,16 @@ class Emoji:
             payload["roles"] = [role.id for role in roles]
 
         emoji = await self.client.http.patch(
-            f"/guilds/{self.guild_id}/emojis/{self.id}", json=payload
+            f"/guilds/{self.guild_id}/emojis/{self.id}", json=payload, headers=headers
         )
         return Emoji(self.client, emoji, self.guild_id)
 
     async def delete(self, *, reason: Optional[str] = None):
-        payload = {}
-
+        headers = self.client.http.headers.copy()
         if reason:
-            payload["X-Audit-Log-Reason"] = reason
-
+            headers["X-Audit-Log-Reason"] = reason
         await self.client.http.delete(
-            f"/guilds/{self.guild_id}/emojis/{self.id}", json=payload
+            f"/guilds/{self.guild_id}/emojis/{self.id}", headers=headers
         )
 
 
@@ -4377,7 +4377,7 @@ class Shard(WebsocketClient):
                     "browser": "EpikCord.py",
                     "device": "EpikCord.py",
                 },
-                "shard": self.shard_id,
+                "shard": str(self.shard_id),
             },
         }
 
@@ -4522,23 +4522,6 @@ class CommandUtils:
         return register_event
 
 
-class AutoModerationEventType(IntEnum):
-    MESSAGE_SEND = 1
-
-
-class AutoModerationTriggerType(IntEnum):
-    KEYWORD = 1
-    HARMFUL_LINK = 2
-    SPAM = 3
-    KEYWORD_PRESENT = 4
-
-
-class AutoModerationKeywordPresetTypes(IntEnum):
-    PROFANITY = 1
-    SEXUAL_CONTENT = 2
-    SLURS = 3
-
-
 class AutoModerationTriggerMetaData:
     def __init__(self, data: dict):
         self.keyword_filter: List[str] = data.get("keyword_filter")
@@ -4563,12 +4546,6 @@ class AutoModerationActionMetaData:
             "channel_id": self.channel_id,
             "duration_seconds": self.duration_seconds,
         }
-
-
-class AutoModerationActionType(IntEnum):
-    BLOCK_MESSAGE = 1
-    SEND_ALERT_MESSAGE = 2
-    TIMEOUT = 3
 
 
 class AutoModerationAction:
