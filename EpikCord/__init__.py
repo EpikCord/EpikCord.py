@@ -2016,13 +2016,16 @@ class HTTPClient(ClientSession):
 
         res = await super().request(method, url, *args, **kwargs)
         if isinstance(bucket, UnknownBucket) and res.headers.get("X-RateLimit-Bucket"):
-            bucket = Bucket(discord_hash=res.headers.get("X-RateLimit-Bucket"))
-            if bucket in self.buckets.values():
-                self.buckets[bucket_hash] = {v: k for k, v in self.buckets.items()}[
-                    bucket
-                ]
+            if not (guild_id, channel_id):
+                self.buckets[res.headers.get("X-RateLimit-Bucket")] = Bucket(discord_hash=res.headers.get("X-RateLimit-Bucket"))
             else:
-                self.buckets[bucket_hash] = bucket
+                bucket = Bucket(discord_hash=res.headers.get("X-RateLimit-Bucket"))
+                if bucket in self.buckets.values():
+                    self.buckets[bucket_hash] = {v: k for k, v in self.buckets.items()}[
+                        bucket
+                    ]
+                else:
+                    self.buckets[bucket_hash] = bucket
         body = {}
         try:
             body = await res.json()
