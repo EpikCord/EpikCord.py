@@ -1801,6 +1801,7 @@ class TypingContextManager:
     async def __aexit__(self):
         self.typing.cancel()
 
+
 class GuildTextChannel(GuildChannel, Messageable):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
@@ -4173,8 +4174,6 @@ class Connectable:
 
             raise ClosedWebSocketConnection("The session is no longer valid.")
 
-    
-
     async def handle_hello(self, data: dict):
         self.heartbeat_interval = data["heartbeat_interval"]
         await self.identify()
@@ -4210,17 +4209,15 @@ class Connectable:
         )
 
     async def select_protocol(self):
-        await self.send_json({
-            "op": VoiceOpcode.SELECT_PROTOCOL,
-            "d": {
-                "protocol": "udp", # I don't understand UDP tbh
-                "data": {
-                    "address": self.ip,
-                    "port": self.port,
-                    "mode": self.mode
-                }
+        await self.send_json(
+            {
+                "op": VoiceOpcode.SELECT_PROTOCOL,
+                "d": {
+                    "protocol": "udp",  # I don't understand UDP tbh
+                    "data": {"address": self.ip, "port": self.port, "mode": self.mode},
+                },
             }
-        })
+        )
 
     async def send_json(self, json, *args, **kwargs):
         logger.info(f"Sending {json} to Voice Websocket {self.endpoint}")
@@ -4232,16 +4229,17 @@ class Connectable:
 
     async def discover_ip(self):
         udp_packet: bytearray = bytearray(70)
-        struct.pack_into(">H", udp_packet, 0, 1) # Request. At the 0th Index, write 0x1
-        struct.pack_into(">H", udp_packet, 2, 70) # Length of the packet.
+        struct.pack_into(">H", udp_packet, 0, 1)  # Request. At the 0th Index, write 0x1
+        struct.pack_into(">H", udp_packet, 2, 70)  # Length of the packet.
         struct.pack_into(">I", udp_packet, 4, self.ssrc)
         self.socket.sendto(udp_packet, (self.server_ip, self.server_port))
         ip_data = await asyncio.get_event_loop().sock_recv(self.socket, 70)
         # type + length = 4
         # We need to start at index 4 to get the address and ignore the type and length
         ip_end = ip_data.index(0, 4)
-        self.ip = ip_data[4:ip_end].decode('ascii')
+        self.ip = ip_data[4:ip_end].decode("ascii")
         self.port = struct.unpack_from(">H", ip_data, len(ip_data) - 2)[0]
+
 
 class VoiceChannel(GuildChannel, Messageable, Connectable):
     def __init__(self, client, data: dict):
