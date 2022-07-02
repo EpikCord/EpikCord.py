@@ -11,7 +11,7 @@ class CacheManager:
     def remove_from_cache(self, key):
         self.cache.pop(key, None)
 
-    def get(self, key, default: Optional[Any]) -> Any:
+    def get(self, key, default: Optional[Any] = None) -> Any:
         return self.cache.get(key, default)
 
     def is_in_cache(self, key):

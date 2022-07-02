@@ -278,7 +278,7 @@ class Message:
         self.client = client
         self.id: str = data.get("id")
         self.channel_id: str = data.get("channel_id")
-        self.channel = client.channels.get_from_cache(self.channel_id)
+        self.channel = client.channels.get(self.channel_id)
         self.guild_id: Optional[str] = data.get("guild_id")
         self.webhook_id: Optional[str] = data.get("webhook_id")
         self.author: Optional[Union[WebhookUser, GuildMember, User]] = None
@@ -682,7 +682,7 @@ class EventHandler:
         ...
 
     async def guild_delete(self, data: dict):
-        return self.guilds.fetch(data["id"])
+        return self.guilds.get(data["id"])
 
     async def handle_events(self):
         async for event in self.ws:
@@ -1103,7 +1103,9 @@ class WebsocketClient(EventHandler):
         logger.debug(f"Sent {json} to the Websocket Connection to Discord.")
 
     async def connect(self):
-        url = await (await self.http.get("/gateway")).json()["url"]
+        res = await self.http.get("/gateway")
+        data = await res.json()
+        url = data["url"]
         self.ws = await self.http.ws_connect(f"{url}?v=10&encoding=json")
         self._closed = False
         await self.handle_events()
@@ -1978,7 +1980,7 @@ class Bucket:
         self.bucket_hash = discord_hash
         self.lock: asyncio.Lock = asyncio.Lock()
 
-        self.close_task = _FakeTask
+        self.close_task = _FakeTask()
 
     def __eq__(self, other):
         return self.bucket_hash == other.bucket_hash
@@ -1987,6 +1989,7 @@ class Bucket:
 class UnknownBucket:
     def __init__(self):
         self.lock = asyncio.Lock()
+        self.close_task: _FakeTask = _FakeTask()
 
 
 class DiscordGatewayWebsocket(ClientWebSocketResponse):
@@ -1996,13 +1999,22 @@ class DiscordGatewayWebsocket(ClientWebSocketResponse):
         self.inflator = zlib.decompressobj()
 
     async def receive(self, *args, **kwargs):
-        message = await super().receive(*args, **kwargs)
-        self.buffer.extend(message.data)
-        if len(message.data) < 4 or message.data[-4:] != b"\x00\x00\xff\xff":
-            return
-        message = self.inflator.decompress(self.buffer)
-        self.buffer: bytearray = bytearray()
-        return message
+        ws_message = await super().receive(*args, **kwargs)
+        message = ws_message.data
+
+        if type(message) is bytes:
+
+            self.buffer.extend(message.data)
+
+            if len(message.data) < 4 or message.data[-4:] != b"\x00\x00\xff\xff":
+                return
+
+            message = self.inflator.decompress(self.buffer)
+
+            message = message.decode('utf-8')
+            self.buffer: bytearray = bytearray()
+
+        return ws_message
 
 
 class HTTPClient(ClientSession):
@@ -2070,8 +2082,8 @@ class HTTPClient(ClientSession):
             logger.critical(
                 f"Exhausted {res.headers['X-RateLimit-Bucket']}. Reset in {res.headers['X-RateLimit-Reset-After']} seconds"
             )
-            await asyncio.sleep(res.headers["X-RateLimit-Reset-After"])
-            await bucket.lock.release()
+            await asyncio.sleep(int(res.headers["X-RateLimit-Reset-After"]))
+            bucket.lock.release()
 
         if res.status == GatewayCECode.RateLimited:  # Body is always present here.
             time_to_sleep = (
@@ -2087,15 +2099,21 @@ class HTTPClient(ClientSession):
             await asyncio.sleep(time_to_sleep)
 
             await self.global_ratelimit.set()
-            await bucket.lock.release()
+            bucket.lock.release()
             return await self.request(method, url, *args, **kwargs)  # Retry the request
 
         if bucket.lock.locked():
-            await bucket.lock.release()
+            try:
+                bucket.lock.release()
+            except Exception as e:
+                logger.exception(e)
 
         async def dispose():  # After waiting 5 minutes without any interaction, the bucket will be disposed.
             await asyncio.sleep(300)
-            del self.buckets[bucket_hash]
+            try:
+                del self.buckets[bucket_hash]
+            except KeyError:
+                ...
 
         bucket.close_task.cancel()
 
@@ -2663,16 +2681,6 @@ class Role:
         self.hoist: bool = data.get("hoist")
         self.icon: Optional[str] = data.get("icon")
         self.unicode_emoji: Optional[str] = data.get("unicode_emoji")
-        self.guild_id: Optional[str] = data.get("guild_id")
-        if guild := self.client.guilds.get(self.guild_id):
-            self.guild: Guild = guild
-        else:
-            self.guild: Optional[Guild] = (
-                asyncio.get_event_loop().run_until_complete(
-                    self.client.guilds.fetch(self.guild_id)
-                )
-                or None
-            )
         self.position: int = data.get("position")
         self.permissions: str = data.get("permissions")  # TODO: Permissions
         self.managed: bool = data.get("managed")
@@ -2685,7 +2693,7 @@ class Emoji:
         self.client = client
         self.id: Optional[str] = data.get("id")
         self.name: Optional[str] = data.get("name")
-        self.roles: List[Role] = [Role(role) for role in data.get("roles", [])]
+        self.roles: List[Role] = [Role(client, role) for role in [{**role_data, "guild": self} for role_data in data.get("roles")]]
         self.user: Optional[User] = User(data.get("user")) if "user" in data else None
         self.requires_colons: bool = data.get("require_colons")
         self.guild_id: str = data.get("guild_id")
@@ -2904,7 +2912,7 @@ class Guild:
             if data.get("explicit_content_filter") == 1
             else "ALL_MEMBERS"
         )
-        self.roles: List[Role] = [Role(client, role) for role in data.get("roles")]
+        self.roles: List[Role] = [Role(client, role) for role in [{**role_data, "guild": self} for role_data in data.get("roles")]]
         self.emojis: List[Emoji] = [
             Emoji(client, emoji, self.id) for emoji in data.get("emojis")
         ]
