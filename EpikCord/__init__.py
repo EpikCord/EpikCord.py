@@ -2686,6 +2686,7 @@ class Role:
         self.managed: bool = data.get("managed")
         self.mentionable: bool = data.get("mentionable")
         self.tags: RoleTag = RoleTag(self.data.get("tags"))
+        self.guild: Guild = data.get("guild")
 
 
 class Emoji:
