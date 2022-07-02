@@ -1779,6 +1779,7 @@ class GuildChannel(BaseChannel):
     #     data = await response.json()
     #     return GuildChannel(self.client, data)
 
+
 class TypingContextManager:
     def __init__(self, client, channel_id):
         self.typing: asyncio.Task = None
@@ -1793,7 +1794,6 @@ class TypingContextManager:
     async def __aenter__(self):
         self.typing = asyncio.create_task(self.start_typing())
 
-    
 
 class GuildTextChannel(GuildChannel, Messageable):
     def __init__(self, client, data: dict):
@@ -2004,6 +2004,7 @@ class DiscordGatewayWebsocket(ClientWebSocketResponse):
         self.buffer: bytearray = bytearray()
         return message
 
+
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
         self.base_uri: str = kwargs.pop(
@@ -2154,7 +2155,9 @@ class HTTPClient(ClientSession):
 
     async def delete(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-            res = await self.request("DELETE", f"{self.base_uri}/{url}", *args, **kwargs)
+            res = await self.request(
+                "DELETE", f"{self.base_uri}/{url}", *args, **kwargs
+            )
             await self.log_request(res)
             return res
         return await super().delete(url, **kwargs)
