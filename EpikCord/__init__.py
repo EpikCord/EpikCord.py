@@ -1103,8 +1103,8 @@ class WebsocketClient(EventHandler):
         logger.debug(f"Sent {json} to the Websocket Connection to Discord.")
 
     async def connect(self):
-        url = await (await self.http.get("/gateway/")).json()["url"]
-        self.ws = await self.http.ws_connect(f"{url}?v=10&encoding=json&compress=zlib-stream")
+        url = await (await self.http.get("/gateway")).json()["url"]
+        self.ws = await self.http.ws_connect(f"{url}?v=10&encoding=json")
         self._closed = False
         await self.handle_events()
 
@@ -1988,6 +1988,7 @@ class UnknownBucket:
     def __init__(self):
         self.lock = asyncio.Lock()
 
+
 class DiscordGatewayWebsocket(ClientWebSocketResponse):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1997,7 +1998,7 @@ class DiscordGatewayWebsocket(ClientWebSocketResponse):
     async def receive(self, *args, **kwargs):
         message = await super().receive(*args, **kwargs)
         self.buffer.extend(message.data)
-        if len(message.data) < 4 or message.data[-4:] != b'\x00\x00\xff\xff':
+        if len(message.data) < 4 or message.data[-4:] != b"\x00\x00\xff\xff":
             return
         message = self.inflator.decompress(self.buffer)
         self.buffer: bytearray = bytearray()
@@ -2009,7 +2010,11 @@ class HTTPClient(ClientSession):
             "discord_endpoint", "https://discord.com/api/v10"
         )
         super().__init__(
-            *args, **kwargs, raise_for_status=True, json_serialize=json.dumps, ws_response_class=DiscordGatewayWebsocket
+            *args,
+            **kwargs,
+            raise_for_status=True,
+            json_serialize=json.dumps,
+            ws_response_class=DiscordGatewayWebsocket,
         )
         self.global_ratelimit: asyncio.Event = asyncio.Event()
         self.global_ratelimit.set()
@@ -2021,9 +2026,9 @@ class HTTPClient(ClientSession):
 
         if url.startswith("/"):
             url = url[1:]
-            
+
         if url.endswith("/"):
-            url = url[:len(url)-1]
+            url = url[: len(url) - 1]
 
         await self.global_ratelimit.wait()
 
@@ -2038,10 +2043,14 @@ class HTTPClient(ClientSession):
         await bucket.lock.acquire()
 
         res = await super().request(method, url, *args, **kwargs)
-        if isinstance(bucket, UnknownBucket):
-            if real_bucket_hash := res.headers.get("X-RateLimit-Bucket"):
-                bucket = Bucket(discord_hash=real_bucket_hash)
-                if bucket in self.buckets.values() and not guild_id and not channel_id:
+        if isinstance(bucket, UnknownBucket) and res.headers.get("X-RateLimit-Bucket"):
+            if not (guild_id, channel_id):
+                self.buckets[res.headers.get("X-RateLimit-Bucket")] = Bucket(
+                    discord_hash=res.headers.get("X-RateLimit-Bucket")
+                )
+            else:
+                bucket = Bucket(discord_hash=res.headers.get("X-RateLimit-Bucket"))
+                if bucket in self.buckets.values():
                     self.buckets[bucket_hash] = {v: k for k, v in self.buckets.items()}[
                         bucket
                     ]

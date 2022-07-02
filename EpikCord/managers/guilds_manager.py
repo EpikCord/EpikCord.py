@@ -14,7 +14,9 @@ class GuildManager(CacheManager):
         super().__init__()
         self.client = client
         self.available_guilds = {
-            guild.id: guild for guild in guilds if not isinstance(guild, UnavailableGuild)
+            guild.id: guild
+            for guild in guilds
+            if not isinstance(guild, UnavailableGuild)
         }
         self.unavailable_guilds = {
             guild.id: guild for guild in guilds if isinstance(guild, UnavailableGuild)
