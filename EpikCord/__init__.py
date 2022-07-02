@@ -1798,6 +1798,8 @@ class TypingContextManager:
     async def __aenter__(self):
         self.typing = asyncio.create_task(self.start_typing())
 
+    async def __aexit__(self):
+        self.typing.cancel()
 
 class GuildTextChannel(GuildChannel, Messageable):
     def __init__(self, client, data: dict):
