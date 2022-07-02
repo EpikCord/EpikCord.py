@@ -1779,6 +1779,21 @@ class GuildChannel(BaseChannel):
     #     data = await response.json()
     #     return GuildChannel(self.client, data)
 
+class TypingContextManager:
+    def __init__(self, client, channel_id):
+        self.typing: asyncio.Task = None
+        self.client = client
+        self.channel_id: str = channel_id
+
+    async def start_typing(self):
+
+        await self.client.http.post(f"/channels/{self.channel_id}/typing")
+        asyncio.get_event_loop().call_later(10, self.start_typing)
+
+    async def __aenter__(self):
+        self.typing = asyncio.create_task(self.start_typing())
+
+    
 
 class GuildTextChannel(GuildChannel, Messageable):
     def __init__(self, client, data: dict):
@@ -2107,7 +2122,7 @@ class HTTPClient(ClientSession):
         **kwargs,
     ):
         if to_discord:
-            res = await super().get(f"{self.base_uri}/{url}", *args, **kwargs)
+            res = await self.request("GET", f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
 
             return res
@@ -2116,29 +2131,29 @@ class HTTPClient(ClientSession):
 
     async def post(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-            res = await super().post(f"{self.base_uri}/{url}", *args, **kwargs)
+            res = await self.request("POST", f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
             return res
 
-        return await super().post(url, *args, **kwargs)
+        return await self.post(url, *args, **kwargs)
 
     async def patch(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-            res = await super().patch(f"{self.base_uri}/{url}", *args, **kwargs)
+            res = await self.request("PATCH", f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
             return res
         return await super().patch(url, *args, **kwargs)
 
     async def delete(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-            res = await super().delete(f"{self.base_uri}/{url}", **kwargs)
+            res = await self.request("DELETE", f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
             return res
         return await super().delete(url, **kwargs)
 
     async def put(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-            res = await super().put(f"{self.base_uri}/{url}", *args, **kwargs)
+            res = await self.request("PUT", f"{self.base_uri}/{url}", *args, **kwargs)
             await self.log_request(res)
 
             return res
