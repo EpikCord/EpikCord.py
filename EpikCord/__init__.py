@@ -2011,7 +2011,7 @@ class DiscordGatewayWebsocket(ClientWebSocketResponse):
 
             message = self.inflator.decompress(self.buffer)
 
-            message = message.decode('utf-8')
+            message = message.decode("utf-8")
             self.buffer: bytearray = bytearray()
 
         return ws_message
@@ -2693,7 +2693,12 @@ class Emoji:
         self.client = client
         self.id: Optional[str] = data.get("id")
         self.name: Optional[str] = data.get("name")
-        self.roles: List[Role] = [Role(client, role) for role in [{**role_data, "guild": self} for role_data in data.get("roles")]]
+        self.roles: List[Role] = [
+            Role(client, role)
+            for role in [
+                {**role_data, "guild": self} for role_data in data.get("roles")
+            ]
+        ]
         self.user: Optional[User] = User(data.get("user")) if "user" in data else None
         self.requires_colons: bool = data.get("require_colons")
         self.guild_id: str = data.get("guild_id")
@@ -2912,7 +2917,12 @@ class Guild:
             if data.get("explicit_content_filter") == 1
             else "ALL_MEMBERS"
         )
-        self.roles: List[Role] = [Role(client, role) for role in [{**role_data, "guild": self} for role_data in data.get("roles")]]
+        self.roles: List[Role] = [
+            Role(client, role)
+            for role in [
+                {**role_data, "guild": self} for role_data in data.get("roles")
+            ]
+        ]
         self.emojis: List[Emoji] = [
             Emoji(client, emoji, self.id) for emoji in data.get("emojis")
         ]
