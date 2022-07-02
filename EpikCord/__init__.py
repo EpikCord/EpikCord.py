@@ -1104,7 +1104,7 @@ class WebsocketClient(EventHandler):
 
     async def connect(self):
         url = await (await self.http.get("/gateway/")).json()["url"]
-        self.ws = await self.http.ws_connect(f"{url}?v=10&encoding=json")
+        self.ws = await self.http.ws_connect(f"{url}?v=10&encoding=json&compress=zlib-stream")
         self._closed = False
         await self.handle_events()
 
@@ -2003,8 +2003,6 @@ class DiscordGatewayWebsocket(ClientWebSocketResponse):
         self.buffer: bytearray = bytearray()
         return message
 
-
-
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
         self.base_uri: str = kwargs.pop(
@@ -2040,14 +2038,15 @@ class HTTPClient(ClientSession):
         await bucket.lock.acquire()
 
         res = await super().request(method, url, *args, **kwargs)
-        if isinstance(bucket, UnknownBucket) and res.headers.get("X-RateLimit-Bucket"):
-            bucket = Bucket(discord_hash=res.headers.get("X-RateLimit-Bucket"))
-            if bucket in self.buckets.values():
-                self.buckets[bucket_hash] = {v: k for k, v in self.buckets.items()}[
-                    bucket
-                ]
-            else:
-                self.buckets[bucket_hash] = bucket
+        if isinstance(bucket, UnknownBucket):
+            if real_bucket_hash := res.headers.get("X-RateLimit-Bucket"):
+                bucket = Bucket(discord_hash=real_bucket_hash)
+                if bucket in self.buckets.values() and not guild_id and not channel_id:
+                    self.buckets[bucket_hash] = {v: k for k, v in self.buckets.items()}[
+                        bucket
+                    ]
+                else:
+                    self.buckets[bucket_hash] = bucket
         body = {}
         try:
             body = await res.json()
