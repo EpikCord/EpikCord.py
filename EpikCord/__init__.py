@@ -4,7 +4,9 @@ NOTE: version string only in setup.cfg
 from __future__ import annotations
 
 import asyncio
+import struct
 import zlib
+from .rtp_handler import *
 import datetime
 import io
 import os
@@ -4074,6 +4076,7 @@ class Connectable:
         self.session_id: Optional[str] = None
         self.endpoint: Optional[str] = None
         self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.setblocking(False)
         self.ws = None
 
         self.heartbeat_interval: Optional[int] = None
@@ -4081,6 +4084,7 @@ class Connectable:
         self.server_port: Optional[int] = None
         self.ssrc: Optional[int] = None
         self.mode: Optional[List[str]] = None
+        self.secret_key: Optional[str] = None
 
         self.ip: Optional[str] = None
         self.port: Optional[int] = None
@@ -4167,6 +4171,8 @@ class Connectable:
 
             raise ClosedWebSocketConnection("The session is no longer valid.")
 
+    
+
     async def handle_hello(self, data: dict):
         self.heartbeat_interval = data["heartbeat_interval"]
         await self.identify()
@@ -4185,6 +4191,9 @@ class Connectable:
         self.server_ip: str = event["ip"]
         self.server_port: int = event["port"]
 
+    async def handle_session_description(self, event: dict):
+        self.secret_key: str = event["d"]["secret_key"]
+
     async def identify(self):
         return await self.send_json(
             {
@@ -4198,6 +4207,19 @@ class Connectable:
             }
         )
 
+    async def select_protocol(self):
+        await self.send_json({
+            "op": VoiceOpcode.SELECT_PROTOCOL,
+            "d": {
+                "protocol": "udp", # I don't understand UDP tbh
+                "data": {
+                    "address": self.ip,
+                    "port": self.port,
+                    "mode": self.mode
+                }
+            }
+        })
+
     async def send_json(self, json, *args, **kwargs):
         logger.info(f"Sending {json} to Voice Websocket {self.endpoint}")
         return await self.ws.send_json(json, *args, **kwargs)
@@ -4206,6 +4228,18 @@ class Connectable:
         heartbeat_nonce = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
         return await self.send_json({"op": VoiceOpcode.HEARTBEAT, "d": heartbeat_nonce})
 
+    async def discover_ip(self):
+        udp_packet: bytearray = bytearray(70)
+        struct.pack_into(">H", udp_packet, 0, 1) # Request. At the 0th Index, write 0x1
+        struct.pack_into(">H", udp_packet, 2, 70) # Length of the packet.
+        struct.pack_into(">I", udp_packet, 4, self.ssrc)
+        self.socket.sendto(udp_packet, (self.server_ip, self.server_port))
+        ip_data = await asyncio.get_event_loop().sock_recv(self.socket, 70)
+        # type + length = 4
+        # We need to start at index 4 to get the address and ignore the type and length
+        ip_end = ip_data.index(0, 4)
+        self.ip = ip_data[4:ip_end].decode('ascii')
+        self.port = struct.unpack_from(">H", ip_data, len(ip_data) - 2)[0]
 
 class VoiceChannel(GuildChannel, Messageable, Connectable):
     def __init__(self, client, data: dict):
