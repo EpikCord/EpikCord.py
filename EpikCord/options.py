@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Optional, Union, List
 from .type_enums import ChannelTypes
 
+
 class BaseSlashCommandOption:
     def __init__(
         self, *, name: str, description: str, required: Optional[bool] = False
@@ -232,6 +233,7 @@ class SubCommandGroup(BaseSlashCommandOption):
         usual_dict = super().to_dict()
         usual_dict["options"] = [option.to_dict() for option in self.options]
         return usual_dict
+
 
 AnyOption = Union[
     Subcommand,
