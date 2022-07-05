@@ -1,19 +1,6 @@
 from __future__ import annotations
 from typing import Optional, Union, List
-
-
-class ChannelOptionChannelTypes:
-    GUILD_TEXT = 0
-    DM = 1
-    GUILD_VOICE = 2
-    GUILD_CATEGORY = 4
-    GUILD_NEWS = 5
-    GUILD_STORE = 6
-    GUILD_NEWS_THREAD = 10
-    GUILD_PUBLIC_THREAD = 11
-    GUILD_PRIVATE_THREAD = 12
-    GUILD_STAGE_VOICE = 13
-
+from .type_enums import ChannelTypes
 
 class BaseSlashCommandOption:
     def __init__(
@@ -103,7 +90,7 @@ class ChannelOption(BaseSlashCommandOption):
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 7
-        self.channel_types: List[ChannelOptionChannelTypes] = []
+        self.channel_types: List[ChannelTypes] = []
 
     def to_dict(self):
         usual_dict: dict = super().to_dict()
@@ -245,7 +232,6 @@ class SubCommandGroup(BaseSlashCommandOption):
         usual_dict = super().to_dict()
         usual_dict["options"] = [option.to_dict() for option in self.options]
         return usual_dict
-
 
 AnyOption = Union[
     Subcommand,

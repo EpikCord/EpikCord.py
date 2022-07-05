@@ -1801,7 +1801,6 @@ class TypingContextManager:
     async def __aexit__(self):
         self.typing.cancel()
 
-
 class GuildTextChannel(GuildChannel, Messageable):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
