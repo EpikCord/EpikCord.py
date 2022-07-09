@@ -316,8 +316,8 @@ class Message:
         )
         self.tts: bool = data.get("tts")
         self.mention_everyone: bool = data.get("mention_everyone")
-        self.mentions: Optional[List[MentionedUser]] = [
-            MentionedUser(client, mention) for mention in data.get("mentions", [])
+        self.mentions: Optional[List[User]] = [
+            User(client, user) for user in data.get("mentions", [])
         ]
         self.mention_roles: Optional[List[int]] = data.get("mention_roles")
         self.mention_channels: Optional[List[MentionedChannel]] = [
