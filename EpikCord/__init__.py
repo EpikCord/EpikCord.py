@@ -3211,7 +3211,7 @@ class Webhook:
             )
             self.guild_id: Optional[str] = data.get("guild_id")
             self.channel_id: Optional[str] = data.get("channel_id")
-            self.user: Optional[User] = User(client, data.get("user"))
+            self.user: Optional[User] = User(client, data.get("user")) if data.get("user") else None
             self.name: Optional[str] = data.get("name")
             self.avatar: Optional[str] = data.get("avatar")
             self.token: Optional[str] = data.get("token")
@@ -3694,7 +3694,7 @@ class MentionedChannel:
 class MentionedUser(User):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.member = (
+        self.member: Optional[GuildMember] = (
             GuildMember(client, data.get("member")) if data.get("member") else None
         )
 
