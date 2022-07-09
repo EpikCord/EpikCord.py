@@ -31,14 +31,24 @@ class StringOption(BaseSlashCommandOption):
         description: Optional[str] = None,
         required: bool = True,
         autocomplete: Optional[bool] = False,
+        min_length: Optional[int] = None,
+        max_length: Optional[int] = None
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 3
+        self.min_length = min_length
+        self.max_length = max_length
         self.autocomplete = autocomplete
 
     def to_dict(self):
         usual_dict = super().to_dict()
         usual_dict["autocomplete"] = self.autocomplete
+   
+        if self.min_length:
+            usual_dict["min_length"] = self.min_length
+        if self.max_value:
+            usual_dict["max_length"] = self.max_length
+   
         return usual_dict
 
 
@@ -233,7 +243,6 @@ class SubCommandGroup(BaseSlashCommandOption):
         usual_dict = super().to_dict()
         usual_dict["options"] = [option.to_dict() for option in self.options]
         return usual_dict
-
 
 AnyOption = Union[
     Subcommand,
