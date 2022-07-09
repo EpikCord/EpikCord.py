@@ -753,6 +753,7 @@ class EventHandler:
             if results_from_event != event["d"]:
                 results_from_event = [results_from_event] if results_from_event else []
                 if callbacks := self.events.get(event["t"].lower()):
+                    logger.info(f"Calling {len(callbacks)} callbacks for {event['t']} with data {results_from_event}")
                     for callback in callbacks:
                         await callback(*results_from_event)
             else:
@@ -1999,7 +2000,7 @@ class UnknownBucket:
 
 class DiscordGatewayWebsocket(ClientWebSocketResponse):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, autoclose = False, **kwargs)
         self.buffer: bytearray = bytearray()
         self.inflator = zlib.decompressobj()
 
@@ -2077,7 +2078,6 @@ class HTTPClient(ClientSession):
                 else:
                     self.buckets[bucket_hash] = b
         body = {}
-
         if res.headers["Content-Type"] == "application/json":
             body = await res.json()
         else:
@@ -2087,7 +2087,7 @@ class HTTPClient(ClientSession):
             and res.status != GatewayCECode.RateLimited
         ):  # We've exhausted the bucket.
             logger.critical(
-                f"Exhausted {res.headers['X-RateLimit-Bucket']}. Reset in {res.headers['X-RateLimit-Reset-After']} seconds"
+                f"Exhausted {res.headers['X-RateLimit-Bucket']} ({res.url}). Reset in {res.headers['X-RateLimit-Reset-After']} seconds"
             )
             await asyncio.sleep(float(res.headers["X-RateLimit-Reset-After"]))
             bucket.lock.release()
@@ -2131,19 +2131,20 @@ class HTTPClient(ClientSession):
     @staticmethod
     async def log_request(res):
         message = [
-            f"Sent a {res.request_info.method} to {res.url}"
-            f" and got a {res.status} response. "
+            f"Sent a {res.request_info.method} to {res.url} "
+            f"and got a {res.status} response. ",
+            f"Content-Type: {res.headers['Content-Type']} "
         ]
 
         if h := dict(res.headers):
-            message.append(f"Received headers: {h}")
+            message.append(f"Received headers: {h} ")
 
         if h := dict(res.request_info.headers):
-            message.append(f"Sent headers: {h}")
+            message.append(f"Sent headers: {h} ")
 
         try:
             await res.json()
-            message.append(f"Received body: {await res.json()}")
+            message.append(f"Received body: {await res.json()} ")
 
         finally:
             logger.debug("".join(message))
