@@ -2060,26 +2060,28 @@ class HTTPClient(ClientSession):
         await bucket.lock.acquire()
 
         res = await super().request(method, url, *args, **kwargs)
+
         await self.log_request(res)
+
         if isinstance(bucket, UnknownBucket) and res.headers.get("X-RateLimit-Bucket"):
-            if not (guild_id, channel_id):
+            if guild_id and channel_id:
                 self.buckets[res.headers.get("X-RateLimit-Bucket")] = Bucket(
                     discord_hash=res.headers.get("X-RateLimit-Bucket")
                 )
             else:
-                bucket = Bucket(discord_hash=res.headers.get("X-RateLimit-Bucket"))
-                if bucket in self.buckets.values():
+                b = Bucket(discord_hash=res.headers.get("X-RateLimit-Bucket"))
+                if b in self.buckets.values():
                     self.buckets[bucket_hash] = {v: k for k, v in self.buckets.items()}[
-                        bucket
+                        b
                     ]
                 else:
-                    self.buckets[bucket_hash] = bucket
+                    self.buckets[bucket_hash] = b
         body = {}
-        try:
-            body = await res.json()
-        except:
-            ...
 
+        if res.headers["Content-Type"] == "application/json":
+            body = await res.json()
+        else:
+            body = await res.text()
         if (
             int(res.headers.get("X-RateLimit-Remaining", 1)) == 0
             and res.status != GatewayCECode.RateLimited
@@ -2087,7 +2089,7 @@ class HTTPClient(ClientSession):
             logger.critical(
                 f"Exhausted {res.headers['X-RateLimit-Bucket']}. Reset in {res.headers['X-RateLimit-Reset-After']} seconds"
             )
-            await asyncio.sleep(int(res.headers["X-RateLimit-Reset-After"]))
+            await asyncio.sleep(float(res.headers["X-RateLimit-Reset-After"]))
             bucket.lock.release()
 
         if res.status == GatewayCECode.RateLimited:  # Body is always present here.
@@ -3727,8 +3729,16 @@ class MessageInteraction:
         self.type: int = data.get("type")
         self.name: str = data.get("name")
         self.user: User = User(client, data.get("user"))
+        payload = {}
+        if data.get("user"):
+            payload.update(data.get("user"))
+        if data.get("member"):
+            payload.update(data.get("member"))
+        if data.get("user") and not data.get("member"):
+            payload = {**data.get("user")}
+        
         self.member: Optional[GuildMember] = (
-            GuildMember(client, data.get("member")) if data.get("member") else None
+            GuildMember(client, payload) if data.get("member") else None
         )
         self.user = User(client, data.get("user"))
 
@@ -4210,8 +4220,8 @@ class Connectable:
         )
 
     async def send_json(self, json, *args, **kwargs):
-        logger.info(f"Sending {json} to Voice Websocket {self.endpoint}")
-        return await self.ws.send_json(json, *args, **kwargs)
+        await self.ws.send_json(json, *args, **kwargs)
+        logger.info(f"Sent {json} to Voice Websocket {self.endpoint}")
 
     async def heartbeat(self):
         heartbeat_nonce = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
