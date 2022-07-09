@@ -1109,7 +1109,7 @@ class WebsocketClient(EventHandler):
         res = await self.http.get("/gateway")
         data = await res.json()
         url = data["url"]
-        self.ws = await self.http.ws_connect(f"{url}?v=10&encoding=json")
+        self.ws = await self.http.ws_connect(f"{url}?v=10&encoding=json&compress=zlib-stream")
         self._closed = False
         await self.handle_events()
 
@@ -2000,7 +2000,7 @@ class UnknownBucket:
 
 class DiscordGatewayWebsocket(ClientWebSocketResponse):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, autoclose = False, **kwargs)
+        super().__init__(*args, **kwargs)
         self.buffer: bytearray = bytearray()
         self.inflator = zlib.decompressobj()
 
@@ -2008,11 +2008,11 @@ class DiscordGatewayWebsocket(ClientWebSocketResponse):
         ws_message = await super().receive(*args, **kwargs)
         message = ws_message.data
 
-        if type(message) is bytes:
+        if isinstance(message, bytes):
 
-            self.buffer.extend(message.data)
+            self.buffer.extend(message)
 
-            if len(message.data) < 4 or message.data[-4:] != b"\x00\x00\xff\xff":
+            if len(message) < 4 or message[-4:] != b"\x00\x00\xff\xff":
                 return
 
             message = self.inflator.decompress(self.buffer)
@@ -2020,7 +2020,13 @@ class DiscordGatewayWebsocket(ClientWebSocketResponse):
             message = message.decode("utf-8")
             self.buffer: bytearray = bytearray()
 
-        return ws_message
+        return ws_message 
+
+    async def receive_json(self, *args, **kwargs):
+        usual = super().receive_json(*args, **kwargs)
+        if isinstance(usual, bytes):
+            return usual.decode("utf-8")
+        return usual
 
 
 class HTTPClient(ClientSession):
@@ -2038,8 +2044,11 @@ class HTTPClient(ClientSession):
         self.global_ratelimit.set()
         self.buckets: Dict[str, Bucket] = {}
 
+
     async def request(self, method, url, *args, **kwargs):
-        if not url.startswith("http"):
+
+
+        if url.startswith("ws"):
             return await super().request(method, url, *args, **kwargs)
 
         if url.startswith("/"):
@@ -2047,6 +2056,9 @@ class HTTPClient(ClientSession):
 
         if url.endswith("/"):
             url = url[: len(url) - 1]
+
+
+        url = f"{self.base_uri}/{url}"
 
         await self.global_ratelimit.wait()
 
@@ -2157,35 +2169,35 @@ class HTTPClient(ClientSession):
         **kwargs,
     ):
         if to_discord:
-            res = await self.request("GET", f"{self.base_uri}/{url}", *args, **kwargs)
+            res = await self.request("GET", url, *args, **kwargs)
             return res
 
         return await super().get(url, *args, **kwargs)
 
     async def post(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-            res = await self.request("POST", f"{self.base_uri}/{url}", *args, **kwargs)
+            res = await self.request("POST", url, *args, **kwargs)
             return res
 
         return await self.post(url, *args, **kwargs)
 
     async def patch(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-            res = await self.request("PATCH", f"{self.base_uri}/{url}", *args, **kwargs)
+            res = await self.request("PATCH", url, *args, **kwargs)
             return res
         return await super().patch(url, *args, **kwargs)
 
     async def delete(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
             res = await self.request(
-                "DELETE", f"{self.base_uri}/{url}", *args, **kwargs
+                "DELETE", url, *args, **kwargs
             )
             return res
         return await super().delete(url, **kwargs)
 
     async def put(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-            res = await self.request("PUT", f"{self.base_uri}/{url}", *args, **kwargs)
+            res = await self.request("PUT", url, *args, **kwargs)
             return res
         return await super().put(url, *args, **kwargs)
 
