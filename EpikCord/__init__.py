@@ -2030,7 +2030,6 @@ class HTTPClient(ClientSession):
         super().__init__(
             *args,
             **kwargs,
-            raise_for_status=True,
             json_serialize=json.dumps,
             ws_response_class=DiscordGatewayWebsocket,
         )
@@ -2061,6 +2060,7 @@ class HTTPClient(ClientSession):
         await bucket.lock.acquire()
 
         res = await super().request(method, url, *args, **kwargs)
+        await self.log_request(res)
         if isinstance(bucket, UnknownBucket) and res.headers.get("X-RateLimit-Bucket"):
             if not (guild_id, channel_id):
                 self.buckets[res.headers.get("X-RateLimit-Bucket")] = Bucket(
@@ -2155,8 +2155,6 @@ class HTTPClient(ClientSession):
     ):
         if to_discord:
             res = await self.request("GET", f"{self.base_uri}/{url}", *args, **kwargs)
-            await self.log_request(res)
-
             return res
 
         return await super().get(url, *args, **kwargs)
@@ -2164,7 +2162,6 @@ class HTTPClient(ClientSession):
     async def post(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
             res = await self.request("POST", f"{self.base_uri}/{url}", *args, **kwargs)
-            await self.log_request(res)
             return res
 
         return await self.post(url, *args, **kwargs)
@@ -2172,7 +2169,6 @@ class HTTPClient(ClientSession):
     async def patch(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
             res = await self.request("PATCH", f"{self.base_uri}/{url}", *args, **kwargs)
-            await self.log_request(res)
             return res
         return await super().patch(url, *args, **kwargs)
 
@@ -2181,15 +2177,12 @@ class HTTPClient(ClientSession):
             res = await self.request(
                 "DELETE", f"{self.base_uri}/{url}", *args, **kwargs
             )
-            await self.log_request(res)
             return res
         return await super().delete(url, **kwargs)
 
     async def put(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
             res = await self.request("PUT", f"{self.base_uri}/{url}", *args, **kwargs)
-            await self.log_request(res)
-
             return res
         return await super().put(url, *args, **kwargs)
 
@@ -2242,7 +2235,6 @@ class Client(WebsocketClient):
         self._components = {}
 
         self.http: HTTPClient = HTTPClient(
-            # raise_for_status = True,
             headers={
                 "Authorization": f"Bot {token}",
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
@@ -2705,7 +2697,7 @@ class Emoji:
                 {**role_data, "guild": self} for role_data in data.get("roles")
             ]
         ]
-        self.user: Optional[User] = User(data.get("user")) if "user" in data else None
+        self.user: Optional[User] = User(data.get("user")) if data.get("user") else None
         self.requires_colons: bool = data.get("require_colons")
         self.guild_id: str = data.get("guild_id")
         self.managed: bool = data.get("managed")
@@ -3205,11 +3197,7 @@ class WebhookUser:
 
 
 class Webhook:
-    def __init__(self, client, data: dict = None):
-        """
-        Don't pass in data if you're making a webhook,
-        the lib passes data to construct an already existing webhook
-        """
+    def __init__(self, client, data: dict):
         self.client = client
         self.data = data
         if data:
@@ -3258,10 +3246,12 @@ class BaseInteraction:
         self.interaction_data: Optional[dict] = data.get("data")
         self.guild_id: Optional[str] = data.get("guild_id")
         self.channel_id: Optional[str] = data.get("channel_id")
-        self.author: Union[User, GuildMember] = (
+        self.author: Optional[Union[User, GuildMember]] = (
             GuildMember(client, data.get("member"))
             if data.get("member")
             else User(client, data.get("user"))
+            if data.get("user")
+            else None
         )
         self.token: str = data.get("token")
         self.version: int = data.get("version")
@@ -3676,7 +3666,7 @@ class Invite:
 
 class GuildMember(User):
     def __init__(self, client, data: dict):
-        super().__init__(client, data.get("author"))
+        super().__init__(client, data.get("user"))
         self.data = data
         self.client = client
         self.nick: Optional[str] = data.get("nick")
@@ -4475,7 +4465,6 @@ class ShardManager:
     ):
         self.token: str = token
         self.http: HTTPClient = HTTPClient(
-            # raise_for_status = True,
             headers={
                 "Authorization": f"Bot {token}",
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
