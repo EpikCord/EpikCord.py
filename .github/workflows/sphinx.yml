@@ -1,27 +1,22 @@
-# Why Sphinx Check?
-# it is to check if documentation can be rendered properly 
-name: "Sphinx Autodoc Check"
+name: Sphinx build
 
-on:
-  push:
-  pull_request:
+on: push
 
 jobs:
-  setup_sphinx:
+  build:
     runs-on: ubuntu-latest
     steps:
-     - uses: actions/checkout@v2
-     - name: "Set up Python"
-       uses: actions/setup-python@v2
-       with: 
-        python-version: '3.8'
-     - name: "Install Sphinx"
-       run: pip install -U sphinx
-     - name: "Run Sphinx Render"
-       run: |
-          cd ./docs/
-          make html
-        
-          
-
-
+    - uses: actions/checkout@v3
+    - name: Build HTML
+      uses: ammaraskar/sphinx-action@0.4
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: html-docs
+        path: docs/build/html/
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: docs/build/html
