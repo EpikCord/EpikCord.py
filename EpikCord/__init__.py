@@ -753,7 +753,9 @@ class EventHandler:
             if results_from_event != event["d"]:
                 results_from_event = [results_from_event] if results_from_event else []
                 if callbacks := self.events.get(event["t"].lower()):
-                    logger.info(f"Calling {len(callbacks)} callbacks for {event['t']} with data {results_from_event}")
+                    logger.info(
+                        f"Calling {len(callbacks)} callbacks for {event['t']} with data {results_from_event}"
+                    )
                     for callback in callbacks:
                         await callback(*results_from_event)
             else:
@@ -1109,7 +1111,9 @@ class WebsocketClient(EventHandler):
         res = await self.http.get("/gateway")
         data = await res.json()
         url = data["url"]
-        self.ws = await self.http.ws_connect(f"{url}?v=10&encoding=json&compress=zlib-stream")
+        self.ws = await self.http.ws_connect(
+            f"{url}?v=10&encoding=json&compress=zlib-stream"
+        )
         self._closed = False
         await self.handle_events()
 
@@ -2050,9 +2054,7 @@ class HTTPClient(ClientSession):
         self.global_ratelimit.set()
         self.buckets: Dict[str, Bucket] = {}
 
-
     async def request(self, method, url, *args, **kwargs):
-
 
         if url.startswith("ws"):
             return await super().request(method, url, *args, **kwargs)
@@ -2062,7 +2064,6 @@ class HTTPClient(ClientSession):
 
         if url.endswith("/"):
             url = url[: len(url) - 1]
-
 
         url = f"{self.base_uri}/{url}"
 
@@ -2151,7 +2152,7 @@ class HTTPClient(ClientSession):
         message = [
             f"Sent a {res.request_info.method} to {res.url} "
             f"and got a {res.status} response. ",
-            f"Content-Type: {res.headers['Content-Type']} "
+            f"Content-Type: {res.headers['Content-Type']} ",
         ]
 
         if h := dict(res.headers):
@@ -2195,9 +2196,7 @@ class HTTPClient(ClientSession):
 
     async def delete(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-            res = await self.request(
-                "DELETE", url, *args, **kwargs
-            )
+            res = await self.request("DELETE", url, *args, **kwargs)
             return res
         return await super().delete(url, **kwargs)
 
@@ -3232,7 +3231,9 @@ class Webhook:
             )
             self.guild_id: Optional[str] = data.get("guild_id")
             self.channel_id: Optional[str] = data.get("channel_id")
-            self.user: Optional[User] = User(client, data.get("user")) if data.get("user") else None
+            self.user: Optional[User] = (
+                User(client, data.get("user")) if data.get("user") else None
+            )
             self.name: Optional[str] = data.get("name")
             self.avatar: Optional[str] = data.get("avatar")
             self.token: Optional[str] = data.get("token")
@@ -3755,7 +3756,7 @@ class MessageInteraction:
             payload.update(data.get("member"))
         if data.get("user") and not data.get("member"):
             payload = {**data.get("user")}
-        
+
         self.member: Optional[GuildMember] = (
             GuildMember(client, payload) if data.get("member") else None
         )
