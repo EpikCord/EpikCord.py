@@ -1,6 +1,7 @@
 __all__ = ("__version__", "info")
 from ..EpikCord import __version__
 
+
 def info():
     print(
         f"Version {__version__} of EpikCord.py, written by EpikHost. "
