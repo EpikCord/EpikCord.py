@@ -1,20 +1,53 @@
-.. EpikCord.py documentation master file, created by
-   sphinx-quickstart on Wed Jun  8 20:06:03 2022.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+EpikCord package
+================
 
-Welcome to EpikCord.py's documentation!
-=======================================
+Subpackages
+-----------
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 4
 
+   EpikCord.managers
 
+Submodules
+----------
 
-Indices and tables
-==================
+EpikCord.components module
+--------------------------
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. automodule:: EpikCord.components
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+EpikCord.exceptions module
+--------------------------
+
+.. automodule:: EpikCord.exceptions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+EpikCord.options module
+-----------------------
+
+.. automodule:: EpikCord.options
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+EpikCord.partials module
+------------------------
+
+.. automodule:: EpikCord.partials
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: EpikCord
+   :members:
+   :undoc-members:
+   :show-inheritance:
