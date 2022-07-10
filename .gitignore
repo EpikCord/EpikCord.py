@@ -1,8 +1,16 @@
-.DS_Store
-node_modules
-/build
-/.svelte-kit
-/package
-.env
-.env.*
-!.env.example
+# IDE Configuration folders
+.idea
+.vscode/
+
+# Python environment
+__pycache__
+.py[cod]
+dist/
+
+# Other
+_build
+testing.py
+config.json
+RoboEpikLogs.log
+*.mp3
+*.mp4
