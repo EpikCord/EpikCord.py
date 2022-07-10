@@ -26,6 +26,7 @@ author = "EpikCord"
 # The full version, including alpha/beta/rc tags
 
 from ...EpikCord import __version__
+
 release = __version__
 
 
