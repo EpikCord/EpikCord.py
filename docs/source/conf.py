@@ -25,7 +25,8 @@ author = "EpikCord"
 
 # The full version, including alpha/beta/rc tags
 
-from ...EpikCord import __version__ as release
+from ...EpikCord import __version__
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------
