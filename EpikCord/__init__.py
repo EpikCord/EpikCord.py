@@ -2001,6 +2001,7 @@ class UnknownBucket:
         self.lock = asyncio.Lock()
         self.close_task: _FakeTask = _FakeTask()
 
+
 class DiscordWSMessage:
     def __init__(self, *, data, type, extra):
         self.data = data
@@ -2032,12 +2033,14 @@ class DiscordGatewayWebsocket(ClientWebSocketResponse):
 
             message = message.decode("utf-8")
             self.buffer: bytearray = bytearray()
-        
-        return DiscordWSMessage(data=message, type=ws_message.type, extra=ws_message.extra)
+
+        return DiscordWSMessage(
+            data=message, type=ws_message.type, extra=ws_message.extra
+        )
 
     async def __anext__(self) -> dict:
         return await super().__anext__()
-        
+
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
