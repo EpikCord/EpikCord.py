@@ -3,8 +3,6 @@
 </p>
 
 # EpikCord.py
-[![wakatime](https://wakatime.com/badge/user/5d75e632-c454-421e-a620-b81fd468ce46/project/a8d1b3c9-d4ac-4df3-aed9-c443b1e9d680.svg)](https://wakatime.com/badge/user/5d75e632-c454-421e-a620-b81fd468ce46/project/a8d1b3c9-d4ac-4df3-aed9-c443b1e9d680)
-
 Welcome to EpikCord.py!
 This is an API Wrapper for Discord's API for Python!
 We've decided not to fork discord.py and start completely from scratch for a new, better structuring system!
@@ -17,7 +15,7 @@ We love contributions that help us, so feel free to! You won't be rewarded for t
 See the [Contributing](./CONTRIBUTING.md) page for more information.
 
 ## Where are your docs?
-[![Documentation Status](https://readthedocs.org/projects/epikcordpy/badge/?version=latest)](https://epikcordpy.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/epikcord/badge/?version=latest)](https://epikcord.readthedocs.io/en/latest/?badge=latest)
 Have functions and attributes you not sure about? Check our docs [here](https://epikcordpy.readthedocs.io)
 
 ## I need help!
