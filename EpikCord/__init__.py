@@ -34,7 +34,7 @@ from typing import (
 )
 from urllib.parse import quote as _quote
 
-from aiohttp import ClientSession, ClientResponse, ClientWebSocketResponse
+from aiohttp import ClientSession, ClientResponse, ClientWebSocketResponse, WSMessage
 
 from .__main__ import __version__
 from .close_event_codes import GatewayCECode
@@ -1997,6 +1997,15 @@ class UnknownBucket:
         self.lock = asyncio.Lock()
         self.close_task: _FakeTask = _FakeTask()
 
+class DiscordWSMessage:
+    def __init__(self, *, data, type, extra):
+        self.data = data
+        self.type = type
+        self.extra = extra
+
+    def json(self, *, loads: Callable[[Any], Any] = json.loads) -> Any:
+        return loads(self.data)
+
 
 class DiscordGatewayWebsocket(ClientWebSocketResponse):
     def __init__(self, *args, **kwargs):
@@ -2019,15 +2028,12 @@ class DiscordGatewayWebsocket(ClientWebSocketResponse):
 
             message = message.decode("utf-8")
             self.buffer: bytearray = bytearray()
+        
+        return DiscordWSMessage(data=message, type=ws_message.type, extra=ws_message.extra)
 
-        return ws_message 
-
-    async def receive_json(self, *args, **kwargs):
-        usual = super().receive_json(*args, **kwargs)
-        if isinstance(usual, bytes):
-            return usual.decode("utf-8")
-        return usual
-
+    async def __anext__(self) -> dict:
+        return await super().__anext__()
+        
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
