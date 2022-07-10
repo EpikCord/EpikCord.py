@@ -47,7 +47,7 @@ from .partials import *
 
 CT = TypeVar("CT", bound="Colour")
 T = TypeVar("T")
-
+__version__ = "0.5.1"
 logger = getLogger(__name__)
 
 try:
