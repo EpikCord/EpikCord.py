@@ -34,7 +34,7 @@ from typing import (
 )
 from urllib.parse import quote as _quote
 
-from aiohttp import ClientSession, ClientResponse, ClientWebSocketResponse, WSMessage
+from aiohttp import ClientSession, ClientResponse, ClientWebSocketResponse
 
 from .__main__ import __version__
 from .close_event_codes import GatewayCECode
