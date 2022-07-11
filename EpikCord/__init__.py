@@ -87,17 +87,18 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPL
  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
+
 class Localization:
     def __init__(self, locale: Locale, value: str):
         self.locale: Locale = str(locale)
         self.value: str = value
 
     def to_dict(self):
-        return {
-            self.locale: self.value
-        }
+        return {self.locale: self.value}
+
 
 Localisation = Localization
+
 
 class Status:
     """The class which represents a Status.
@@ -954,7 +955,6 @@ class EventHandler:
                     command_payload["options"] = [
                         option.to_dict() for option in getattr(command, "options", [])
                     ]
-                        
 
                 if hasattr(command, "guild_ids"):
                     for guild_id in command.guild_ids:
@@ -2327,8 +2327,6 @@ class Client(WebsocketClient):
             description_localization = (
                 description_localizations or description_localisations
             )
-
-
 
         def register_slash_command(func):
             desc = description or func.__doc__
@@ -4604,6 +4602,7 @@ class Check:
             f"{interaction.author.username} ({interaction.author.id}) failed "
             f"the check {self.command_callback.__name__}. "
         )
+
 
 class CommandUtils:
     @staticmethod

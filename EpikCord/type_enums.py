@@ -1,5 +1,6 @@
 from enum import IntEnum, StrEnum
 
+
 class Locale(StrEnum):
     DANISH = "da"
     GERMAN = "de"
@@ -16,7 +17,7 @@ class Locale(StrEnum):
     POLISH = "pl"
     PORTUGUESE_BR = "pt-BR"
     ROMANIAN = "ro"
-    FINNISH =  "fi"
+    FINNISH = "fi"
     SWEDISH_SE = "sv-SE"
     VIETNAMESE = "vi"
     TURKISH = "tr"
@@ -31,6 +32,7 @@ class Locale(StrEnum):
     JAPANESE = "ja"
     CHINESE_TW = "zh-TW"
     KOREAN = "ko"
+
 
 class AutoModerationActionType(IntEnum):
     BLOCK_MESSAGE = 1
