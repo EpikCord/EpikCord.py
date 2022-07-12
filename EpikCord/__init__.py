@@ -963,7 +963,7 @@ class EventHandler:
                         guild_id, commands
                     )
         return None
-    async def command_error(self, error, **kwargs):
+    async def command_error(self, error:Exception, **kwargs):
         raise error
 
 class WebsocketClient(EventHandler):
