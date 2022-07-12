@@ -2345,7 +2345,7 @@ class Client(WebsocketClient):
             elif kwargs.get("instances"):
                 instances = int(kwargs.get("instances"))
                 finished_instances = 0
-                while instances < finished_instances:
+                while instances > finished_instances:
                     try:
                         await task()
                     except Exception as e:
