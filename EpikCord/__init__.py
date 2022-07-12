@@ -957,15 +957,19 @@ class EventHandler:
                     if command.name_localizations:
                         command_payload["name_localizations"] = {}
                         for name_localization in command.name_localizations:
-                            command_payload["name_localizations"][name_localization] = command.name_localizations[
-                                name_localization.to_dict()
-                            ]
+                            command_payload["name_localizations"][
+                                name_localization
+                            ] = command.name_localizations[name_localization.to_dict()]
                     if command.description_localizations:
                         command_payload["description_localizations"] = {}
-                        for description_localization in command.description_localizations:
+                        for (
+                            description_localization
+                        ) in command.description_localizations:
                             command_payload["description_localizations"][
                                 description_localization.to_dict()
-                            ] = command.description_localizations[description_localization]
+                            ] = command.description_localizations[
+                                description_localization
+                            ]
 
                 if hasattr(command, "guild_ids"):
                     for guild_id in command.guild_ids:
@@ -2328,8 +2332,12 @@ class Client(WebsocketClient):
         name_localisations: Optional[List[Localisation]] = None,
         description_localisations: Optional[List[Localisation]] = None,
     ):
-        name_localization = self.utils.match_mixed(name_localizations, name_localisations)
-        description_localization = self.utils.match_mixed(description_localizations, description_localisations)
+        name_localization = self.utils.match_mixed(
+            name_localizations, name_localisations
+        )
+        description_localization = self.utils.match_mixed(
+            description_localizations, description_localisations
+        )
 
         def register_slash_command(func):
             desc = description or func.__doc__
@@ -4786,19 +4794,28 @@ __slots__ = __all__ = (
     "Attachment",
     "AttachmentOption",
     "AutoCompleteInteraction",
-    "BadRequest400",
+    "AutoModerationAction",
+    "AutoModerationActionMetaData",
+    "AutoModerationActionType",
+    "AutoModerationEventType",
+    "AutoModerationKeywordPresetTypes",
+    "AutoModerationRule",
+    "AutoModerationTriggerMetaData",
+    "AutoModerationTriggerType",
     "BaseChannel",
     "BaseCommand",
     "BaseComponent",
     "BaseInteraction",
     "BaseSlashCommandOption",
     "BooleanOption",
+    "Bucket",
     "Button",
+    "ButtonStyle",
     "CacheManager",
     "ChannelCategory",
     "ChannelManager",
     "ChannelOption",
-    "ChannelOptionChannelTypes",
+    "ChannelTypes",
     "Check",
     "Client",
     "ClientApplication",
@@ -4806,17 +4823,20 @@ __slots__ = __all__ = (
     "ClientSlashCommand",
     "ClientUser",
     "ClientUserCommand",
-    "ClosedWebSocketConnection",
     "Color",
     "Colour",
     "CommandUtils",
+    "Connectable",
     "CustomIdIsTooBig",
     "DMChannel",
     "DisallowedIntents",
     "DiscordAPIError",
+    "DiscordGatewayWebsocket",
+    "DiscordWSMessage",
     "Embed",
     "Emoji",
     "EpikCordException",
+    "Event",
     "EventHandler",
     "FailedCheck",
     "FailedToConnectToVoice",
@@ -4824,6 +4844,8 @@ __slots__ = __all__ = (
     "Flag",
     "Forbidden403",
     "GateawayUnavailable502",
+    "GatewayCECode",
+    "GatewayOpcode",
     "Guild",
     "GuildApplicationCommandPermission",
     "GuildBan",
@@ -4855,6 +4877,11 @@ __slots__ = __all__ = (
     "InvalidToken",
     "Invite",
     "LabelIsTooBig",
+    "List",
+    "Locale",
+    "Localisation",
+    "Localization",
+    "LocatedError",
     "MentionableOption",
     "MentionedChannel",
     "MentionedUser",
@@ -4885,10 +4912,11 @@ __slots__ = __all__ = (
     "Role",
     "RoleOption",
     "RoleTag",
+    "Section",
     "SelectMenu",
     "SelectMenuOption",
     "Shard",
-    "ShardClient",
+    "ShardManager",
     "ShardingRequired",
     "SlashCommand",
     "SlashCommandOptionChoice",
@@ -4908,16 +4936,20 @@ __slots__ = __all__ = (
     "ThreadMember",
     "TooManyComponents",
     "TooManySelectMenuOptions",
+    "TypingContextManager",
     "Unauthorized401",
     "UnavailableGuild",
     "UnhandledEpikCordException",
+    "Union",
+    "UnknownBucket",
     "User",
     "UserCommandInteraction",
     "UserOption",
     "Utils",
     "VoiceChannel",
+    "VoiceOpcode",
+    "VoiceRegion",
     "VoiceState",
-    "VoiceWebsocketClient",
     "Webhook",
     "WebhookUser",
     "WebsocketClient",
@@ -4926,13 +4958,22 @@ __slots__ = __all__ = (
     "b64encode",
     "cache_manager",
     "channel_manager",
+    "close_event_codes",
+    "component_from_type",
     "components",
+    "decode_rtp_packet",
     "exceptions",
+    "generate_rtp_packet",
     "guilds_manager",
     "logger",
     "managers",
-    "message_command",
+    "nacl",
+    "opcodes",
     "options",
+    "os",
     "partials",
+    "perf_counter_ns",
     "roles_manager",
+    "rtp_handler",
+    "type_enums",
 )
