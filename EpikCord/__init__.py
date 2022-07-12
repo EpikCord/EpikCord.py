@@ -2306,10 +2306,29 @@ class Client(WebsocketClient):
         return sum(self.latencies) / len(self.latencies)
 
     def add_task(self, task: Callable, interval: Optional[int] = None, **kwargs):
-        
-        async def full_task(task, interval=5, **kwargs):
+        """Adds a background task (Tasks that run silently in the background)
+
+        This task can be used to monitor the bot's performance, change and send stuff routinely
+        through webhooks, etc
+
+        You can set the time of when it starts, stops and  add which arguments to give to the task
+
+        You may also define whether to run once or run indefinitely
+
+        Args:
+            task (Callable): The function to run on the background
+            interval (int, optional): The interval (in seconds) for a delay between when the instance of the task stops and starts again .Defaults to 5.
+            instances (int, optional): The number of instances to start after delay. Usually unlimited
+            start (float, optional): The time to start, you may use datetime.datetime.strptime() to give the seconds since python epoch to this arg*
+            until (float, optional): The time to end, you may use datetime.datetime.strptime() to give the seconds since python epoch to this arg*
+
+        *See https://stackoverflow.com/questions/4548684/how-to-get-the-seconds-since-epoch-from-the-time-date-output-of-gmtime
+        """
+
+        async def full_task(task, **kwargs):
+            interval = int(kwargs.get("interval", 5))
             task_start = False
-            if kwargs["start"] and kwargs["until"]:  # Start when and do until
+            if kwargs.get("start") and kwargs.get("until"):  # Start when and do until
                 while True:
                     current_time = time()
 
@@ -2323,17 +2342,27 @@ class Client(WebsocketClient):
                         await asyncio.sleep(interval)
                     if current_time >= float(kwargs["until"]):
                         break
+            elif kwargs.get("instances"):
+                instances = int(kwargs.get("instances"))
+                finished_instances = 0
+                while instances < finished_instances:
+                    try:
+                        await task()
+                    except Exception as e:
+                        raise TaskFailedError(f"Task failed due to: {e}")
+
+                    await asyncio.sleep(interval)
 
             else:
                 while True:
                     try:
                         await task()
                     except Exception as e:
-                        raise TaskFailedError(f"Task failed due to {e}")
+                        raise TaskFailedError(f"Task failed due to: {e}")
 
                     await asyncio.sleep(interval)
 
-        asyncio.get_event_loop().create_task(full_task(task, interval, kwargs))
+        asyncio.get_event_loop().create_task(full_task(task, **kwargs))
 
     def command(
         self,
