@@ -34,7 +34,7 @@ from typing import (
 )
 from urllib.parse import quote as _quote
 
-from aiohttp import ClientSession, ClientResponse, ClientWebSocketResponse, WSMessage
+from aiohttp import ClientSession, ClientResponse, ClientWebSocketResponse
 
 from .__main__ import __version__
 from .close_event_codes import GatewayCECode
@@ -86,6 +86,18 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPL
  COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER 
  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
+
+
+class Localization:
+    def __init__(self, locale: Locale, value: str):
+        self.locale: Locale = str(locale)
+        self.value: str = value
+
+    def to_dict(self):
+        return {self.locale: self.value}
+
+
+Localisation = Localization
 
 
 class Status:
@@ -1244,10 +1256,14 @@ class ClientSlashCommand(BaseCommand):
         callback: Callable,
         guild_ids: Optional[List[str]],
         options: Optional[List[AnyOption]],
+        name_localization: Optional[Localization] = None,
+        description_localization: Optional[str] = None,
     ):
         super().__init__()
         self.name: str = name
         self.description: str = description
+        self.name_localization: Optional[Localization] = name_localization
+        self.description_localization: Optional[Localization] = description_localization
         if not description:
             raise TypeError(f"Missing description for command {name}.")
         self.callback: Callable = callback
@@ -1264,6 +1280,16 @@ class ClientSlashCommand(BaseCommand):
             self.autocomplete_options[option_name] = func
 
         return wrapper
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "description": self.description,
+            "type": self.type,
+            "options": [option.to_dict() for option in options],
+            "name_localization": self.name_localization,
+            "description_localization": self.description_localization,
+        }
 
 
 class ClientMessageCommand(ClientUserCommand):
@@ -2312,28 +2338,41 @@ class Client(WebsocketClient):
         self,
         *,
         name: Optional[str] = None,
-        description: Optional[str] = None,
-        guild_ids=None,
-        options=None,
+        description: str = None,
+        guild_ids: Optional[List[str]] = None,
+        options: Optional[List[AnyOption]] = None,
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
+        name_localisations: Optional[List[Localisation]] = None,
+        description_localisations: Optional[List[Localisation]] = None,
     ):
-        if guild_ids is None:
-            guild_ids = []
-        if options is None:
-            options = []
+        name_localization = None
+        description_localization = None
 
-        def register_slash_command(func):
-            res = ClientSlashCommand(
-                **{
-                    "callback": func,
-                    "name": name or func.__name__,
-                    "description": description or func.__doc__,
-                    "guild_ids": guild_ids,
-                    "options": options,
-                }
+        if name_localisations or name_localizations:
+            name_localization = name_localizations or name_localisations
+
+        if description_localisations or description_localizations:
+            description_localization = (
+                description_localizations or description_localisations
             )
 
-            self.commands[name or func.__name__] = res  # Cheat method.
-            return res
+        def register_slash_command(func):
+            desc = description or func.__doc__
+            if not desc:
+                raise TypeError(
+                    f"Command with {name or func.__name__} has no description. This is required."
+                )
+            command = ClientSlashCommand(
+                name=name or func.__name__,
+                description=desc,
+                guild_ids=guild_ids or [],
+                options=options or [],
+                name_localization=name_localization,
+                description_localization=description_localization,
+            )
+            self.commands[command.name] = command
+            return command
 
         return register_slash_command
 
@@ -4115,7 +4154,6 @@ class Connectable:
         channel_id: Optional[str] = None,
         channel: Optional[VoiceChannel] = None,
     ):
-        self.ws: Optional[socket.socket] = None
         self.client = client
         # TODO: Figure out which one I will use later in production
         if channel:
@@ -4132,7 +4170,7 @@ class Connectable:
         self.endpoint: Optional[str] = None
         self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.setblocking(False)
-        self.ws = None
+        self.ws: Optional[ClientWebSocketResponse] = None
 
         self.heartbeat_interval: Optional[int] = None
         self.server_ip: Optional[str] = None
