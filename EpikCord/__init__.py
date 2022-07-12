@@ -2312,15 +2312,14 @@ class Client(WebsocketClient):
         through webhooks, etc
 
         You can set the time of when it starts, stops and  add which arguments to give to the task
-
         You may also define whether to run once or run indefinitely
 
         Args:
             task (Callable): The function to run on the background
-            interval (int, optional): The interval (in seconds) for a delay between when the instance of the task stops and starts again .Defaults to 5.
-            instances (int, optional): The number of instances to start after delay. Usually unlimited
-            start (float, optional): The time to start, you may use datetime.datetime.strptime() to give the seconds since python epoch to this arg*
-            until (float, optional): The time to end, you may use datetime.datetime.strptime() to give the seconds since python epoch to this arg*
+            interval (Optional[int]): The interval (in seconds) for a delay between when the instance of the task stops and starts again .Defaults to 5.
+            instances (Optional[int]): The number of instances to start after delay. Usually unlimited
+            start (Optional[float]): The time to start, you may use datetime.datetime.strptime() to give the seconds since python epoch to this arg*
+            until (optional[float]): The time to end, you may use datetime.datetime.strptime() to give the seconds since python epoch to this arg*
 
         *See https://stackoverflow.com/questions/4548684/how-to-get-the-seconds-since-epoch-from-the-time-date-output-of-gmtime
         """
