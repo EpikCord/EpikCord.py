@@ -976,7 +976,7 @@ class EventHandler:
                                 description_localization
                             ]
 
-                for guild_id in (command.guild_ids or []):
+                for guild_id in command.guild_ids or []:
                     command_sorter[guild_id].append(command_payload)
                 else:
                     command_sorter["global"].append(command_payload)
@@ -1601,12 +1601,8 @@ class ClientApplication(Application):
     async def delete_global_application_command(self, command_id: str):
         await self.client.http.delete(f"/applications/{self.id}/commands/{command_id}")
 
-    async def bulk_overwrite_global_application_commands(
-        self, commands: List[Dict]
-    ):
-        await self.client.http.put(
-            f"/applications/{self.id}/commands", json = commands
-        )
+    async def bulk_overwrite_global_application_commands(self, commands: List[Dict]):
+        await self.client.http.put(f"/applications/{self.id}/commands", json=commands)
 
     async def fetch_guild_application_commands(self, guild_id: str):
         response = await self.client.http.get(
