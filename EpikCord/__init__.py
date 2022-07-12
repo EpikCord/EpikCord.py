@@ -2107,7 +2107,7 @@ class HTTPClient(ClientSession):
 
         if attempt > 5:
             logger.critical(f"Failed a {method} {url} 5 times.")
-            return # Just quit the request
+            return  # Just quit the request
 
         if url.startswith("ws"):
             return await super().request(method, url, *args, **kwargs)
@@ -2179,7 +2179,9 @@ class HTTPClient(ClientSession):
 
             await self.global_ratelimit.set()
             bucket.lock.release()
-            return await self.request(method, url, *args, **kwargs, attempt = attempt + 1)  # Retry the request
+            return await self.request(
+                method, url, *args, **kwargs, attempt=attempt + 1
+            )  # Retry the request
 
         if bucket.lock.locked():
             try:
