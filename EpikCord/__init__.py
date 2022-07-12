@@ -955,6 +955,18 @@ class EventHandler:
                     command_payload["options"] = [
                         option.to_dict() for option in getattr(command, "options", [])
                     ]
+                    if command.name_localizations:
+                        command_payload["name_localizations"] = {}
+                        for name_localization in command.name_localizations:
+                            command_payload["name_localizations"][name_localization] = command.name_localizations[
+                                name_localization.to_dict()
+                            ]
+                    if command.description_localizations:
+                        command_payload["description_localizations"] = {}
+                        for description_localization in command.description_localizations:
+                            command_payload["description_localizations"][
+                                description_localization.to_dict()
+                            ] = command.description_localizations[description_localization]
 
                 if hasattr(command, "guild_ids"):
                     for guild_id in command.guild_ids:
@@ -2317,16 +2329,8 @@ class Client(WebsocketClient):
         name_localisations: Optional[List[Localisation]] = None,
         description_localisations: Optional[List[Localisation]] = None,
     ):
-        name_localization = None
-        description_localization = None
-
-        if name_localisations or name_localizations:
-            name_localization = name_localizations or name_localisations
-
-        if description_localisations or description_localizations:
-            description_localization = (
-                description_localizations or description_localisations
-            )
+        name_localization = self.utils.match_mixed(name_localizations, name_localisations)
+        description_localization = self.utils.match_mixed(description_localizations, description_localisations)
 
         def register_slash_command(func):
             desc = description or func.__doc__
@@ -4394,6 +4398,12 @@ class Utils:
             return
 
         return component_cls(**component_data)
+
+    def match_mixed(self, variant_one: str, variant_two: str):
+        """Matches and returns a single output from two"""
+        return (
+            variant_one if not variant_two else variant_two if not variant_one else None
+        )
 
     def interaction_from_type(self, data):
         interaction_type = data["type"]
