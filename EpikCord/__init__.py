@@ -17,7 +17,7 @@ from collections import defaultdict, deque
 from importlib import import_module
 from inspect import iscoroutine
 from logging import getLogger
-from time import perf_counter_ns
+from time import perf_counter_ns, time
 from .type_enums import *
 from sys import platform
 from typing import (
@@ -2270,6 +2270,7 @@ class Client(WebsocketClient):
         self.user: ClientUser = None
         self.application: Optional[ClientApplication] = None
         self.sections: List[Any] = []
+        
 
     @property
     def latency(self):
@@ -2278,6 +2279,23 @@ class Client(WebsocketClient):
     @property
     def average_latency(self):
         return sum(self.latencies) / len(self.latencies)
+
+    def add_check(self, check:Callable, interval:Optional[int]=None, **kwargs):
+        async def full_check(check, interval=5, **kwargs):
+            task_start = False
+            if kwargs["start"] and kwargs["until"]:# Start when and do until
+                while True:
+                    if time() == kwargs["start"] or task_start == True:
+                        await check()
+                        task_start = True
+                        await asyncio.sleep(interval)
+
+
+
+
+            
+        asyncio.get_event_loop().create_task(full_check(check, interval, kwargs))
+        ...
 
     def command(
         self,
