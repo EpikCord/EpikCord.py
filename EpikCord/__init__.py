@@ -2340,8 +2340,8 @@ class Client(WebsocketClient):
                         await asyncio.sleep(interval)
                     if current_time >= float(kwargs["until"]):
                         break
-            elif kwargs.get("instances"):
-                instances = int(kwargs.get("instances"))
+            elif (nb_instances = kwargs.get("instances")):
+                instances = int(nb_instances)
                 finished_instances = 0
                 while instances > finished_instances:
                     try:
