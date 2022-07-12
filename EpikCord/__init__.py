@@ -58,10 +58,14 @@ except ImportError:
         " If you want voice support"
     )
 
-# try:
-# import orjson as json
-# except ImportError:
-import json
+_ORJSON = False
+
+try:
+    import orjson as json
+    _ORJSON = True
+    
+except ImportError:
+    import json
 
 """
 :license:
@@ -1277,8 +1281,8 @@ class ClientSlashCommand(BaseCommand):
         super().__init__()
         self.name: str = name
         self.description: str = description
-        self.name_localization: Optional[Localization] = name_localization
-        self.description_localization: Optional[Localization] = description_localization
+        self.name_localizations: Optional[Localization] = name_localization
+        self.description_localizations: Optional[Localization] = description_localization
         if not description:
             raise TypeError(f"Missing description for command {name}.")
         self.callback: Callable = callback
@@ -2049,8 +2053,9 @@ class DiscordWSMessage:
         self.type = type
         self.extra = extra
 
-    def json(self, *, loads: Callable[[Any], Any] = json.loads) -> Any:
-        return loads(self.data)
+    def json(self) -> Any:
+        return json.loads(self.data)
+
 
 
 class DiscordGatewayWebsocket(ClientWebSocketResponse):
@@ -2091,7 +2096,7 @@ class HTTPClient(ClientSession):
         super().__init__(
             *args,
             **kwargs,
-            json_serialize=json.dumps,
+            json_serialize=lambda x, *__, **___ : json.dumps(x).decode() if _ORJSON else json.dumps(x),
             ws_response_class=DiscordGatewayWebsocket,
         )
         self.global_ratelimit: asyncio.Event = asyncio.Event()
@@ -2345,14 +2350,17 @@ class Client(WebsocketClient):
                 raise TypeError(
                     f"Command with {name or func.__name__} has no description. This is required."
                 )
+
             command = ClientSlashCommand(
                 name=name or func.__name__,
                 description=desc,
                 guild_ids=guild_ids or [],
                 options=options or [],
+                callback = func,
                 name_localization=name_localization,
                 description_localization=description_localization,
             )
+
             self.commands[command.name] = command
             return command
 
