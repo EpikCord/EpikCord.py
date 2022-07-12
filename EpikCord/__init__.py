@@ -2310,7 +2310,6 @@ class Client(WebsocketClient):
 
         This task can be used to monitor the bot's performance, change and send stuff routinely
         through webhooks, etc
-
         You can set the time of when it starts, stops and  add which arguments to give to the task
         You may also define whether to run once or run indefinitely
 
