@@ -976,9 +976,8 @@ class EventHandler:
                                 description_localization
                             ]
 
-                if hasattr(command, "guild_ids"):
-                    for guild_id in command.guild_ids:
-                        command_sorter[guild_id].append(command_payload)
+                for guild_id in (command.guild_ids or []):
+                    command_sorter[guild_id].append(command_payload)
                 else:
                     command_sorter["global"].append(command_payload)
 
@@ -988,10 +987,11 @@ class EventHandler:
                     await self.application.bulk_overwrite_global_application_commands(
                         commands
                     )
-                else:
-                    await self.application.bulk_overwrite_guild_application_commands(
-                        guild_id, commands
-                    )
+                    continue
+
+                await self.application.bulk_overwrite_guild_application_commands(
+                    guild_id, commands
+                )
         return None
 
 
@@ -1703,7 +1703,7 @@ class ClientApplication(Application):
         )
 
     async def bulk_overwrite_guild_application_commands(
-        self, guild_id: str, commands: List[ApplicationCommand]
+        self, guild_id: str, commands: List[Dict]
     ):
         await self.client.http.put(
             f"/applications/{self.id}/guilds/{guild_id}/commands", json=commands
