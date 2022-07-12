@@ -9,6 +9,10 @@ class InvalidApplicationCommandType(EpikCordException):
     ...
 
 
+class TaskFailedError(EpikCordException):
+    ...
+
+
 class InvalidApplicationCommandOptionType(EpikCordException):
     ...
 

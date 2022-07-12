@@ -2270,7 +2270,6 @@ class Client(WebsocketClient):
         self.user: ClientUser = None
         self.application: Optional[ClientApplication] = None
         self.sections: List[Any] = []
-        
 
     @property
     def latency(self):
@@ -2280,22 +2279,34 @@ class Client(WebsocketClient):
     def average_latency(self):
         return sum(self.latencies) / len(self.latencies)
 
-    def add_check(self, check:Callable, interval:Optional[int]=None, **kwargs):
+    def add_check(self, check: Callable, interval: Optional[int] = None, **kwargs):
         async def full_check(check, interval=5, **kwargs):
             task_start = False
-            if kwargs["start"] and kwargs["until"]:# Start when and do until
+            if kwargs["start"] and kwargs["until"]:  # Start when and do until
                 while True:
-                    if time() == kwargs["start"] or task_start == True:
-                        await check()
+                    current_time = time()
+
+                    if current_time >= int(kwargs["start"]) or task_start == True:
+                        try:
+                            await check()
+                        except Exception as e:
+                            raise TaskFailedError(f"Task failed due to {e}")
+
                         task_start = True
                         await asyncio.sleep(interval)
+                    if current_time >= int(kwargs["until"]):
+                        break
 
+            else:
+                while True:
+                    try:
+                        await check()
+                    except Exception as e:
+                        raise TaskFailedError(f"Task failed due to {e}")
 
+                    await asyncio.sleep(interval)
 
-
-            
         asyncio.get_event_loop().create_task(full_check(check, interval, kwargs))
-        ...
 
     def command(
         self,
