@@ -1599,10 +1599,10 @@ class ClientApplication(Application):
         await self.client.http.delete(f"/applications/{self.id}/commands/{command_id}")
 
     async def bulk_overwrite_global_application_commands(
-        self, commands: List[ApplicationCommand]
+        self, commands: List[Dict]
     ):
         await self.client.http.put(
-            f"/applications/{self.id}/commands", json=list(commands)
+            f"/applications/{self.id}/commands", json = commands
         )
 
     async def fetch_guild_application_commands(self, guild_id: str):
