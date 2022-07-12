@@ -2306,13 +2306,14 @@ class Client(WebsocketClient):
         return sum(self.latencies) / len(self.latencies)
 
     def add_check(self, check: Callable, interval: Optional[int] = None, **kwargs):
+        
         async def full_check(check, interval=5, **kwargs):
             task_start = False
             if kwargs["start"] and kwargs["until"]:  # Start when and do until
                 while True:
                     current_time = time()
 
-                    if current_time >= int(kwargs["start"]) or task_start == True:
+                    if current_time >= float(kwargs["start"]) or task_start == True:
                         try:
                             await check()
                         except Exception as e:
@@ -2320,7 +2321,7 @@ class Client(WebsocketClient):
 
                         task_start = True
                         await asyncio.sleep(interval)
-                    if current_time >= int(kwargs["until"]):
+                    if current_time >= float(kwargs["until"]):
                         break
 
             else:
