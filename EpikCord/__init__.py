@@ -62,8 +62,9 @@ _ORJSON = False
 
 try:
     import orjson as json
+
     _ORJSON = True
-    
+
 except ImportError:
     import json
 
@@ -1282,7 +1283,9 @@ class ClientSlashCommand(BaseCommand):
         self.name: str = name
         self.description: str = description
         self.name_localizations: Optional[Localization] = name_localization
-        self.description_localizations: Optional[Localization] = description_localization
+        self.description_localizations: Optional[
+            Localization
+        ] = description_localization
         if not description:
             raise TypeError(f"Missing description for command {name}.")
         self.callback: Callable = callback
@@ -2057,7 +2060,6 @@ class DiscordWSMessage:
         return json.loads(self.data)
 
 
-
 class DiscordGatewayWebsocket(ClientWebSocketResponse):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -2096,7 +2098,9 @@ class HTTPClient(ClientSession):
         super().__init__(
             *args,
             **kwargs,
-            json_serialize=lambda x, *__, **___ : json.dumps(x).decode() if _ORJSON else json.dumps(x),
+            json_serialize=lambda x, *__, **___: json.dumps(x).decode()
+            if _ORJSON
+            else json.dumps(x),
             ws_response_class=DiscordGatewayWebsocket,
         )
         self.global_ratelimit: asyncio.Event = asyncio.Event()
@@ -2356,7 +2360,7 @@ class Client(WebsocketClient):
                 description=desc,
                 guild_ids=guild_ids or [],
                 options=options or [],
-                callback = func,
+                callback=func,
                 name_localization=name_localization,
                 description_localization=description_localization,
             )
