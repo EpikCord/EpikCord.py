@@ -37,11 +37,12 @@ from urllib.parse import quote as _quote
 from aiohttp import ClientSession, ClientResponse, ClientWebSocketResponse
 
 from .__main__ import __version__
-from .close_event_codes import GatewayCECode
+from .close_event_codes import *
+from .status_code import *
 from .components import *
 from .exceptions import *
 from .managers import *
-from .opcodes import GatewayOpcode, VoiceOpcode
+from .opcodes import *
 from .options import *
 from .partials import *
 
@@ -2156,7 +2157,7 @@ class HTTPClient(ClientSession):
             body = await res.text()
         if (
             int(res.headers.get("X-RateLimit-Remaining", 1)) == 0
-            and res.status != GatewayCECode.RateLimited
+            and res.status != HTTPCodes.TOO_MANY_REQUESTS
         ):  # We've exhausted the bucket.
             logger.critical(
                 f"Exhausted {res.headers['X-RateLimit-Bucket']} ({res.url}). Reset in {res.headers['X-RateLimit-Reset-After']} seconds"
@@ -2164,7 +2165,7 @@ class HTTPClient(ClientSession):
             await asyncio.sleep(float(res.headers["X-RateLimit-Reset-After"]))
             bucket.lock.release()
 
-        if res.status == GatewayCECode.RateLimited:  # Body is always present here.
+        if res.status == HTTPCodes.TOO_MANY_REQUESTS:  # Body is always present here.
             time_to_sleep = (
                 body.get("retry_after")
                 if body.get("retry_after") > res.headers["X-RateLimit-Reset-After"]
