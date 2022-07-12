@@ -1,7 +1,7 @@
-from enum import IntEnum, StrEnum
+from enum import IntEnum, Enum
 
 
-class Locale(StrEnum):
+class Locale(Enum):
     DANISH = "da"
     GERMAN = "de"
     ENGLISH_GB = "en-GB"
