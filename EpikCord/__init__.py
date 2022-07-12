@@ -2330,7 +2330,7 @@ class Client(WebsocketClient):
                 while True:
                     current_time = time()
 
-                    if current_time >= float(kwargs["start"]) or task_start == True:
+                    if current_time >= float(kwargs["start"]) or task_start:
                         try:
                             await task()
                         except Exception as e:
