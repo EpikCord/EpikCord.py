@@ -1,5 +1,6 @@
 __all__ = ("__version__", "info")
-from ..EpikCord import __version__
+
+__version__ = "0.5.1"
 
 
 def info():
