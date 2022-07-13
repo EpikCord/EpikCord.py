@@ -17,7 +17,7 @@ from collections import defaultdict, deque
 from importlib import import_module
 from inspect import iscoroutine
 from logging import getLogger
-from time import perf_counter_ns, time
+import time
 from .type_enums import *
 from sys import platform
 from typing import (
@@ -2323,42 +2323,35 @@ class Client(WebsocketClient):
         *See https://stackoverflow.com/questions/4548684/how-to-get-the-seconds-since-epoch-from-the-time-date-output-of-gmtime
         """
 
-        async def full_task(task, **kwargs):
+        async def full_task(task:Callable[...,None], **kwargs):
+            async def task_func(interval):
+                try:
+                    await task()
+                except Exception as e:
+                    raise TaskFailedError(f"Task failed due to: {e}")
+
+                await asyncio.sleep(interval)
+
             interval = int(kwargs.get("interval", 5))
             task_start = False
+            nb_instances = kwargs.get("instances")
             if kwargs.get("start") and kwargs.get("until"):  # Start when and do until
                 while True:
                     current_time = time()
 
                     if current_time >= float(kwargs["start"]) or task_start:
-                        try:
-                            await task()
-                        except Exception as e:
-                            raise TaskFailedError(f"Task failed due to {e}")
-
+                        await task_func(interval)
                         task_start = True
-                        await asyncio.sleep(interval)
                     if current_time >= float(kwargs["until"]):
                         break
-            elif (nb_instances = kwargs.get("instances")):
+            elif nb_instances:
                 instances = int(nb_instances)
                 finished_instances = 0
                 while instances > finished_instances:
-                    try:
-                        await task()
-                    except Exception as e:
-                        raise TaskFailedError(f"Task failed due to: {e}")
-
-                    await asyncio.sleep(interval)
+                    await task_func(interval)
 
             else:
-                while True:
-                    try:
-                        await task()
-                    except Exception as e:
-                        raise TaskFailedError(f"Task failed due to: {e}")
-
-                    await asyncio.sleep(interval)
+                await task_func(interval)
 
         asyncio.get_event_loop().create_task(full_task(task, **kwargs))
 
