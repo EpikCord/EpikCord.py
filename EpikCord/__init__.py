@@ -720,7 +720,7 @@ class EventHandler:
                 await self.heartbeat(True)
 
             elif event["op"] == GatewayOpcode.HEARTBEAT_ACK:
-                heartbeat_ack_time = perf_counter_ns()
+                heartbeat_ack_time = time.perf_counter_ns()
                 self.discord_latency: int = heartbeat_ack_time - self.heartbeat_time
                 self.latencies.append(self.discord_latency)
                 try:
@@ -1010,7 +1010,7 @@ class WebsocketClient(EventHandler):
             await self.send_json(
                 {"op": GatewayOpcode.HEARTBEAT, "d": self.sequence or "null"}
             )
-            self.heartbeat_time = perf_counter_ns()
+            self.heartbeat_time = time.perf_counter_ns()
             await asyncio.sleep(self.interval / 1000)
             logger.debug("Sent a heartbeat!")
 
@@ -2305,7 +2305,7 @@ class Client(WebsocketClient):
     def average_latency(self):
         return sum(self.latencies) / len(self.latencies)
 
-    def add_task(self, task: Callable, interval: Optional[int] = None, **kwargs):
+    def add_task(self, task:Callable[...,None], interval: Optional[int] = None, **kwargs):
         """Adds a background task (Tasks that run silently in the background)
 
         This task can be used to monitor the bot's performance, change and send stuff routinely
@@ -2317,13 +2317,13 @@ class Client(WebsocketClient):
             task (Callable): The function to run on the background
             interval (Optional[int]): The interval (in seconds) for a delay between when the instance of the task stops and starts again .Defaults to 5.
             instances (Optional[int]): The number of instances to start after delay. Usually unlimited
-            start (Optional[float]): The time to start, you may use datetime.datetime.strptime() to give the seconds since python epoch to this arg*
-            until (optional[float]): The time to end, you may use datetime.datetime.strptime() to give the seconds since python epoch to this arg*
+            start (Optional[float]): The time to start, you may use Client.utils.get_time_since_epoch() to give the seconds since python epoch to this arg
+            until (optional[float]): The time to end, you may use Client.utils.get_time_since_epoch() to give the seconds since python epoch to this arg
 
-        *See https://stackoverflow.com/questions/4548684/how-to-get-the-seconds-since-epoch-from-the-time-date-output-of-gmtime
+
         """
-
-        async def full_task(task:Callable[...,None], **kwargs):
+        kwargs["interval"] = interval
+        async def full_task(task, **kwargs):
             async def task_func(interval):
                 try:
                     await task()
@@ -4413,6 +4413,13 @@ class Utils:
         self._MARKDOWN_STOCK_REGEX = (
             rf"(?P<markdown>[_\\~|\*`]|{self._MARKDOWN_ESCAPE_COMMON})"
         )
+    
+    @staticmethod()
+    def get_time_since_epoch(year,month,day,hour,minute,second) -> float:
+        date = datetime.datetime(year,month,day,hour,minute,second)
+        epoch = datetime.datetime(1970, 1,1)
+        delta= (date - epoch)
+        return delta.total_seconds()
 
     @staticmethod
     def get_mime_type_for_image(data: bytes):
