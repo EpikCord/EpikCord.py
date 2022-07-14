@@ -202,6 +202,7 @@ class Subcommand(BaseSlashCommandOption):
                 converted_options.append(SubCommandGroup(**option))
 
             else:
+                option.pop("type", None)
                 converted_options.append(self.conversion_type[option["type"]](**option))
 
         self.options: List[AnyOption] = converted_options
@@ -237,10 +238,11 @@ class SubCommandGroup(BaseSlashCommandOption):
         super().__init__(name=name, description=description)
         self.type = 2
         converted_options = []
-        for option in options:
+        for option in [option.to_dict() for option in options]:
             if option["type"] == 2:
                 converted_options.append(SubCommandGroup(**option))
             else:
+                option.pop("type", None)
                 converted_options.append(self.conversion_type[option["type"]](**option))
 
         self.options: List[AnyOption] = converted_options
