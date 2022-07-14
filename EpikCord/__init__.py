@@ -2184,6 +2184,18 @@ class HTTPClient(ClientSession):
                 method, url, *args, **kwargs, attempt=attempt + 1
             )  # Retry the request
 
+        if res.status >= HTTPCodes.SERVER_ERROR:
+            raise DiscordServerError5xx(body)
+
+        elif res.status == HTTPCodes.NOT_FOUND:
+            raise NotFound404(body)
+
+        elif res.status == HTTPCodes.FORBIDDEN:
+            raise Forbidden403(body)
+
+        elif not 300 > res.status >= 200:
+            raise DiscordAPIError(body)
+
         if bucket.lock.locked():
             try:
                 bucket.lock.release()
