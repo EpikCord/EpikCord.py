@@ -46,7 +46,7 @@ class StringOption(BaseSlashCommandOption):
 
         if self.min_length:
             usual_dict["min_length"] = self.min_length
-        if self.max_value:
+        if self.max_length:
             usual_dict["max_length"] = self.max_length
 
         return usual_dict
@@ -197,7 +197,7 @@ class Subcommand(BaseSlashCommandOption):
         if not options:
             options = []
 
-        for option in options:
+        for option in [option.to_dict() for option in options]:
             if option["type"] == 1:
                 converted_options.append(StringOption(**option))
 
