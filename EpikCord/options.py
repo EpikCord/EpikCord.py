@@ -253,7 +253,6 @@ class SubCommandGroup(BaseSlashCommandOption):
         usual_dict["options"] = [option.to_dict() for option in self.options]
         return usual_dict
 
-
 AnyOption = Union[
     Subcommand,
     SubCommandGroup,
