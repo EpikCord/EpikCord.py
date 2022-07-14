@@ -5,7 +5,7 @@ from .type_enums import ChannelTypes
 
 class BaseSlashCommandOption:
     def __init__(
-        self, *, name: str, description: str, required: Optional[bool] = False
+        self, *, name: str, description: str, required: Optional[bool] = True
     ):
         self.name: str = name
         self.description: str = description
@@ -29,7 +29,7 @@ class StringOption(BaseSlashCommandOption):
         *,
         name: str,
         description: Optional[str] = None,
-        required: bool = False,
+        required: bool = True,
         autocomplete: Optional[bool] = False,
         min_length: Optional[int] = None,
         max_length: Optional[int] = None,
@@ -58,7 +58,7 @@ class IntegerOption(BaseSlashCommandOption):
         *,
         name: str,
         description: Optional[str] = None,
-        required: bool = False,
+        required: bool = True,
         autocomplete: Optional[bool] = False,
         min_value: Optional[int] = None,
         max_value: Optional[int] = None,
@@ -81,7 +81,7 @@ class IntegerOption(BaseSlashCommandOption):
 
 class BooleanOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = False
+        self, *, name: str, description: Optional[str] = None, required: bool = True
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 5
@@ -89,7 +89,7 @@ class BooleanOption(BaseSlashCommandOption):
 
 class UserOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = False
+        self, *, name: str, description: Optional[str] = None, required: bool = True
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 6
@@ -97,7 +97,7 @@ class UserOption(BaseSlashCommandOption):
 
 class ChannelOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = False
+        self, *, name: str, description: Optional[str] = None, required: bool = True
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 7
@@ -111,7 +111,7 @@ class ChannelOption(BaseSlashCommandOption):
 
 class RoleOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = False
+        self, *, name: str, description: Optional[str] = None, required: bool = True
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 8
@@ -119,7 +119,7 @@ class RoleOption(BaseSlashCommandOption):
 
 class MentionableOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = False
+        self, *, name: str, description: Optional[str] = None, required: bool = True
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 9
@@ -131,7 +131,7 @@ class NumberOption(BaseSlashCommandOption):
         *,
         name: str,
         description: Optional[str] = None,
-        required: bool = False,
+        required: bool = True,
         autocomplete: Optional[bool] = False,
         min_value: Optional[int] = None,
         max_value: Optional[int] = None,
@@ -154,14 +154,14 @@ class NumberOption(BaseSlashCommandOption):
 
 class AttachmentOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = False
+        self, *, name: str, description: Optional[str] = None, required: bool = True
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 11
 
 
 class SlashCommandOptionChoice:
-    def __init__(self, *name: str, value: Union[float, int, str]):
+    def __init__(self, *, name: str, value: Union[float, int, str]):
         self.name: str = name
         self.value: Union[float, int, str] = value
 
@@ -187,10 +187,10 @@ class Subcommand(BaseSlashCommandOption):
         *,
         name: str,
         description: str = None,
-        required: bool = False,
+
         options: Optional[List[AnyOption]] = None,
     ):
-        super().__init__(name=name, description=description, required=required)
+        super().__init__(name=name, description=description)
         self.type = 1
         converted_options = []
 
@@ -211,6 +211,7 @@ class Subcommand(BaseSlashCommandOption):
 
     def to_dict(self):
         usual_dict = super().to_dict()
+        usual_dict.pop("required", None)
         usual_dict["options"] = [option.to_dict() for option in self.options]
         return usual_dict
 
@@ -234,10 +235,9 @@ class SubCommandGroup(BaseSlashCommandOption):
         *,
         name: str,
         description: str = None,
-        required: bool = False,
         options: Optional[List[AnyOption]] = None,
     ):
-        super().__init__(name=name, description=description, required=required)
+        super().__init__(name=name, description=description)
         self.type = 2
         converted_options = []
         for option in options:
@@ -250,6 +250,7 @@ class SubCommandGroup(BaseSlashCommandOption):
 
     def to_dict(self):
         usual_dict = super().to_dict()
+        usual_dict.pop("required", None)
         usual_dict["options"] = [option.to_dict() for option in self.options]
         return usual_dict
 
