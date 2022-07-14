@@ -29,7 +29,7 @@ class StringOption(BaseSlashCommandOption):
         *,
         name: str,
         description: Optional[str] = None,
-        required: bool = True,
+        required: bool = False,
         autocomplete: Optional[bool] = False,
         min_length: Optional[int] = None,
         max_length: Optional[int] = None,
@@ -58,7 +58,7 @@ class IntegerOption(BaseSlashCommandOption):
         *,
         name: str,
         description: Optional[str] = None,
-        required: bool = True,
+        required: bool = False,
         autocomplete: Optional[bool] = False,
         min_value: Optional[int] = None,
         max_value: Optional[int] = None,
@@ -81,7 +81,7 @@ class IntegerOption(BaseSlashCommandOption):
 
 class BooleanOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = True
+        self, *, name: str, description: Optional[str] = None, required: bool = False
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 5
@@ -89,7 +89,7 @@ class BooleanOption(BaseSlashCommandOption):
 
 class UserOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = True
+        self, *, name: str, description: Optional[str] = None, required: bool = False
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 6
@@ -97,7 +97,7 @@ class UserOption(BaseSlashCommandOption):
 
 class ChannelOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = True
+        self, *, name: str, description: Optional[str] = None, required: bool = False
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 7
@@ -111,7 +111,7 @@ class ChannelOption(BaseSlashCommandOption):
 
 class RoleOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = True
+        self, *, name: str, description: Optional[str] = None, required: bool = False
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 8
@@ -119,7 +119,7 @@ class RoleOption(BaseSlashCommandOption):
 
 class MentionableOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = True
+        self, *, name: str, description: Optional[str] = None, required: bool = False
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 9
@@ -131,7 +131,7 @@ class NumberOption(BaseSlashCommandOption):
         *,
         name: str,
         description: Optional[str] = None,
-        required: bool = True,
+        required: bool = False,
         autocomplete: Optional[bool] = False,
         min_value: Optional[int] = None,
         max_value: Optional[int] = None,
@@ -154,7 +154,7 @@ class NumberOption(BaseSlashCommandOption):
 
 class AttachmentOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = True
+        self, *, name: str, description: Optional[str] = None, required: bool = False
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 11
@@ -187,7 +187,7 @@ class Subcommand(BaseSlashCommandOption):
         *,
         name: str,
         description: str = None,
-        required: bool = True,
+        required: bool = False,
         options: Optional[List[AnyOption]] = None,
     ):
         super().__init__(name=name, description=description, required=required)
@@ -234,7 +234,7 @@ class SubCommandGroup(BaseSlashCommandOption):
         *,
         name: str,
         description: str = None,
-        required: bool = True,
+        required: bool = False,
         options: Optional[List[AnyOption]] = None,
     ):
         super().__init__(name=name, description=description, required=required)
