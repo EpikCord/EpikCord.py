@@ -4,9 +4,7 @@ from .type_enums import ChannelTypes
 
 
 class BaseSlashCommandOption:
-    def __init__(
-        self, *, name: str, description: str, required: Optional[bool] = True
-    ):
+    def __init__(self, *, name: str, description: str, required: Optional[bool] = True):
         self.name: str = name
         self.description: str = description
         self.required: bool = required
@@ -187,7 +185,6 @@ class Subcommand(BaseSlashCommandOption):
         *,
         name: str,
         description: str = None,
-
         options: Optional[List[AnyOption]] = None,
     ):
         super().__init__(name=name, description=description)
