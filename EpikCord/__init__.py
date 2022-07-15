@@ -764,7 +764,7 @@ class EventHandler:
             logger.exception(f"Error handling event {event['t']}: {e}")
 
         if isinstance(results_from_event, UnavailableGuild):
-            return  # This is their lazy backfil which I dislike.
+            return  # This is their lazy backfill which I dislike.
 
         try:
             if results_from_event != event["d"]:
@@ -4402,6 +4402,50 @@ class Utils:
             rf"(?P<markdown>[_\\~|\*`]|{self._MARKDOWN_ESCAPE_COMMON})"
         )
 
+    async def override_commands(self):
+        command_sorter = defaultdict(list)
+
+        for command in self.client.commands.values():
+            command_payload = {"name": command.name, "type": command.type}
+
+            if command_payload["type"] == 1:
+                command_payload["description"] = command.description
+                command_payload["options"] = [
+                    option.to_dict() for option in getattr(command, "options", [])
+                ]
+                if command.name_localizations:
+                    command_payload["name_localizations"] = {}
+                    for name_localization in command.name_localizations:
+                        command_payload["name_localizations"][
+                            name_localization
+                        ] = command.name_localizations[name_localization.to_dict()]
+                if command.description_localizations:
+                    command_payload["description_localizations"] = {}
+                    for (
+                        description_localization
+                    ) in command.description_localizations:
+                        command_payload["description_localizations"][
+                            description_localization.to_dict()
+                        ] = command.description_localizations[
+                            description_localization
+                        ]
+
+            for guild_id in command.guild_ids or []:
+                command_sorter[guild_id].append(command_payload)
+            else:
+                command_sorter["global"].append(command_payload)
+
+        for guild_id, commands in command_sorter.items():
+            if guild_id == "global":
+                await self.client.application.bulk_overwrite_global_application_commands(
+                    commands
+                )
+                continue
+
+            await self.client.application.bulk_overwrite_guild_application_commands(
+                guild_id, commands
+            )
+
     @staticmethod
     def get_mime_type_for_image(data: bytes):
         if data.startswith(b"\x89\x50\x4E\x47\x0D\x0A\x1A\x0A"):
@@ -4538,10 +4582,18 @@ class Shard(WebsocketClient):
         intents,
         shard_id,
         number_of_shards,
-        presence: Optional[Presence] = None,
+        presence: Optional[Presence] = None
     ):
         super().__init__(token, intents, presence)
         self.shard_id = [shard_id, number_of_shards]
+
+    async def ready(self, data: dict):
+        self.user: ClientUser = ClientUser(self, data.get("user"))
+        self.session_id: str = data["session_id"]
+        application_response = await self.http.get("/oauth2/applications/@me")
+        application_data = await application_response.json()
+        self.application: ClientApplication = ClientApplication(self, application_data)
+        return None
 
     async def identify(self):
         payload = {
@@ -4570,15 +4622,18 @@ class Shard(WebsocketClient):
         await self.resume()
 
 
-class ShardManager:
+class ShardManager(EventHandler):
     def __init__(
         self,
         token: str,
-        *,
         intents: Optional[Union[Intents, int]],
+        *,
         shards: Optional[int] = None,
+        overwrite_commands_on_ready: bool = False,
     ):
+        super().__init__()
         self.token: str = token
+        self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
         self.http: HTTPClient = HTTPClient(
             headers={
                 "Authorization": f"Bot {token}",
@@ -4609,11 +4664,21 @@ class ShardManager:
             current_iteration = 0  # The current shard_id we've run
 
             for shard in self.shards:
-                shard.login()
+                shard.events = self.events
+                coro = shard.wait_for("ready")
+                await shard.login()
+                await coro()
+
                 current_iteration += 1
+
                 if current_iteration == max_concurrency:
                     await asyncio.sleep(5)
                     current_iteration = 0  # Reset it
+
+            if self.overwrite_commands_on_ready:
+                for shard in self.shards:
+                    await Utils(shard).override_commands()
+                
 
         loop = asyncio.get_event_loop()
         loop.run_until_complete(wrapper())
