@@ -4421,14 +4421,10 @@ class Utils:
                         ] = command.name_localizations[name_localization.to_dict()]
                 if command.description_localizations:
                     command_payload["description_localizations"] = {}
-                    for (
-                        description_localization
-                    ) in command.description_localizations:
+                    for description_localization in command.description_localizations:
                         command_payload["description_localizations"][
                             description_localization.to_dict()
-                        ] = command.description_localizations[
-                            description_localization
-                        ]
+                        ] = command.description_localizations[description_localization]
 
             for guild_id in command.guild_ids or []:
                 command_sorter[guild_id].append(command_payload)
@@ -4582,7 +4578,7 @@ class Shard(WebsocketClient):
         intents,
         shard_id,
         number_of_shards,
-        presence: Optional[Presence] = None
+        presence: Optional[Presence] = None,
     ):
         super().__init__(token, intents, presence)
         self.shard_id = [shard_id, number_of_shards]
@@ -4678,7 +4674,6 @@ class ShardManager(EventHandler):
             if self.overwrite_commands_on_ready:
                 for shard in self.shards:
                     await Utils(shard).override_commands()
-                
 
         loop = asyncio.get_event_loop()
         loop.run_until_complete(wrapper())
