@@ -104,7 +104,76 @@ class Localization:
 
 Localisation = Localization
 
+class CommandHandler:
+    def __init__(self):
+        self.commands: Dict[
+            str, Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]
+        ] = {}
 
+    def command(
+        self,
+        *,
+        name: Optional[str] = None,
+        description: str = None,
+        guild_ids: Optional[List[str]] = None,
+        options: Optional[List[AnyOption]] = None,
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
+        name_localisations: Optional[List[Localisation]] = None,
+        description_localisations: Optional[List[Localisation]] = None,
+    ):
+        name_localization = self.utils.match_mixed(
+            name_localizations, name_localisations
+        )
+        description_localization = self.utils.match_mixed(
+            description_localizations, description_localisations
+        )
+
+        def register_slash_command(func):
+            desc = description or func.__doc__
+            if not desc:
+                raise TypeError(
+                    f"Command with {name or func.__name__} has no description. This is required."
+                )
+
+            command = ClientSlashCommand(
+                name=name or func.__name__,
+                description=desc,
+                guild_ids=guild_ids or [],
+                options=options or [],
+                callback=func,
+                name_localization=name_localization,
+                description_localization=description_localization,
+            )
+
+            self.commands[command.name] = command
+            return command
+
+        return register_slash_command
+
+    def user_command(self, name: Optional[str] = None):
+        def register_slash_command(func):
+            result = ClientUserCommand(
+                **{
+                    "callback": func,
+                    "name": name or func.__name__,
+                }
+            )
+            self.commands[name](result)
+            return result
+
+        return register_slash_command
+
+    def message_command(self, name: Optional[str] = None):
+        def register_slash_command(func):
+            self.commands[name] = ClientMessageCommand(
+                **{
+                    "callback": func,
+                    "name": name or func.__name__,
+                }
+            )
+
+        return register_slash_command
 class Status:
     """The class which represents a Status.
 
@@ -1009,7 +1078,6 @@ class WebsocketClient(EventHandler):
         elif isinstance(intents, Intents):
             self.intents = intents
 
-        self.commands = {}
         self._closed = True
         self.heartbeats = []
 
@@ -2301,7 +2369,7 @@ class Section:
         super().__init_subclass__(**kwargs)
 
 
-class Client(WebsocketClient):
+class Client(WebsocketClient, CommandHandler):
     def __init__(
         self,
         token: str,
@@ -2314,9 +2382,6 @@ class Client(WebsocketClient):
     ):
         super().__init__(token, intents)
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
-        self.commands: Dict[
-            str, Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]
-        ] = {}
         self.guilds: GuildManager = GuildManager(self)
         self.channels: ChannelManager = ChannelManager(self)
         self.presence: Presence = Presence(status=status, activity=activity)
@@ -2343,71 +2408,6 @@ class Client(WebsocketClient):
     @property
     def average_latency(self):
         return sum(self.latencies) / len(self.latencies)
-
-    def command(
-        self,
-        *,
-        name: Optional[str] = None,
-        description: str = None,
-        guild_ids: Optional[List[str]] = None,
-        options: Optional[List[AnyOption]] = None,
-        name_localizations: Optional[List[Localization]] = None,
-        description_localizations: Optional[List[Localization]] = None,
-        name_localisations: Optional[List[Localisation]] = None,
-        description_localisations: Optional[List[Localisation]] = None,
-    ):
-        name_localization = self.utils.match_mixed(
-            name_localizations, name_localisations
-        )
-        description_localization = self.utils.match_mixed(
-            description_localizations, description_localisations
-        )
-
-        def register_slash_command(func):
-            desc = description or func.__doc__
-            if not desc:
-                raise TypeError(
-                    f"Command with {name or func.__name__} has no description. This is required."
-                )
-
-            command = ClientSlashCommand(
-                name=name or func.__name__,
-                description=desc,
-                guild_ids=guild_ids or [],
-                options=options or [],
-                callback=func,
-                name_localization=name_localization,
-                description_localization=description_localization,
-            )
-
-            self.commands[command.name] = command
-            return command
-
-        return register_slash_command
-
-    def user_command(self, name: Optional[str] = None):
-        def register_slash_command(func):
-            result = ClientUserCommand(
-                **{
-                    "callback": func,
-                    "name": name or func.__name__,
-                }
-            )
-            self.commands[name](result)
-            return result
-
-        return register_slash_command
-
-    def message_command(self, name: Optional[str] = None):
-        def register_slash_command(func):
-            self.commands[name] = ClientMessageCommand(
-                **{
-                    "callback": func,
-                    "name": name or func.__name__,
-                }
-            )
-
-        return register_slash_command
 
     def add_check(self, check: "Check"):
         def wrapper(command_callback):
@@ -4621,8 +4621,7 @@ class Shard(WebsocketClient):
         await self.identify()
         await self.resume()
 
-
-class ShardManager(EventHandler):
+class ShardManager(CommandHandler, EventHandler):
     def __init__(
         self,
         token: str,
