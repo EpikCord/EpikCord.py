@@ -17,7 +17,7 @@ from collections import defaultdict, deque
 from importlib import import_module
 from inspect import iscoroutine
 from logging import getLogger
-import time
+from time import perf_counter_ns
 from .type_enums import *
 from sys import platform
 from typing import (
@@ -720,7 +720,7 @@ class EventHandler:
                 await self.heartbeat(True)
 
             elif event["op"] == GatewayOpcode.HEARTBEAT_ACK:
-                heartbeat_ack_time = time.perf_counter_ns()
+                heartbeat_ack_time = perf_counter_ns()
                 self.discord_latency: int = heartbeat_ack_time - self.heartbeat_time
                 self.latencies.append(self.discord_latency)
                 try:
@@ -1010,7 +1010,7 @@ class WebsocketClient(EventHandler):
             await self.send_json(
                 {"op": GatewayOpcode.HEARTBEAT, "d": self.sequence or "null"}
             )
-            self.heartbeat_time = time.perf_counter_ns()
+            self.heartbeat_time = perf_counter_ns()
             await asyncio.sleep(self.interval / 1000)
             logger.debug("Sent a heartbeat!")
 
@@ -2305,55 +2305,6 @@ class Client(WebsocketClient):
     def average_latency(self):
         return sum(self.latencies) / len(self.latencies)
 
-    def add_task(self, task:Callable[...,None], interval: Optional[int] = None, **kwargs):
-        """Adds a background task (Tasks that run silently in the background)
-
-        This task can be used to monitor the bot's performance, change and send stuff routinely
-        through webhooks, etc
-        You can set the time of when it starts, stops and  add which arguments to give to the task
-        You may also define whether to run once or run indefinitely
-
-        Args:
-            task (Callable): The function to run on the background
-            interval (Optional[int]): The interval (in seconds) for a delay between when the instance of the task stops and starts again .Defaults to 5.
-            instances (Optional[int]): The number of instances to start after delay. Usually unlimited
-            start (Optional[float]): The time to start, you may use Client.utils.get_time_since_epoch() to give the seconds since python epoch to this arg
-            until (optional[float]): The time to end, you may use Client.utils.get_time_since_epoch() to give the seconds since python epoch to this arg
-
-
-        """
-        kwargs["interval"] = interval
-        async def full_task(task, **kwargs):
-            async def task_func(interval):
-                try:
-                    await task()
-                except Exception as e:
-                    raise TaskFailedError(f"Task failed due to: {e}")
-
-                await asyncio.sleep(interval)
-
-            interval = int(kwargs.get("interval", 5))
-            task_start = False
-            nb_instances = kwargs.get("instances")
-            if kwargs.get("start") and kwargs.get("until"):  # Start when and do until
-                while True:
-                    current_time = time()
-
-                    if current_time >= float(kwargs["start"]) or task_start:
-                        await task_func(interval)
-                        task_start = True
-                    if current_time >= float(kwargs["until"]):
-                        break
-            elif nb_instances:
-                instances = int(nb_instances)
-                finished_instances = 0
-                while instances > finished_instances:
-                    await task_func(interval)
-
-            else:
-                await task_func(interval)
-
-        asyncio.get_event_loop().create_task(full_task(task, **kwargs))
 
     def command(
         self,
@@ -4414,12 +4365,7 @@ class Utils:
             rf"(?P<markdown>[_\\~|\*`]|{self._MARKDOWN_ESCAPE_COMMON})"
         )
     
-    @staticmethod()
-    def get_time_since_epoch(year,month,day,hour,minute,second) -> float:
-        date = datetime.datetime(year,month,day,hour,minute,second)
-        epoch = datetime.datetime(1970, 1,1)
-        delta= (date - epoch)
-        return delta.total_seconds()
+
 
     @staticmethod
     def get_mime_type_for_image(data: bytes):
