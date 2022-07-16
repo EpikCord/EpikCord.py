@@ -154,25 +154,23 @@ class CommandHandler:
 
     def user_command(self, name: Optional[str] = None):
         def register_slash_command(func):
-            result = ClientUserCommand(
-                **{
-                    "callback": func,
-                    "name": name or func.__name__,
-                }
+            command_instance = ClientUserCommand(
+                callback=func,
+                name=name or func.__name__
             )
-            self.commands[name](result)
-            return result
+            self.commands[name] = command_instance
+            return command_instance
 
         return register_slash_command
 
     def message_command(self, name: Optional[str] = None):
         def register_slash_command(func):
-            self.commands[name] = ClientMessageCommand(
-                **{
-                    "callback": func,
-                    "name": name or func.__name__,
-                }
+            command_instance = ClientMessageCommand(
+                callback=func,
+                name=name or func.__name__
             )
+            self.commands[name] = command_instance
+            return command_instance
 
         return register_slash_command
 
