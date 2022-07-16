@@ -104,6 +104,7 @@ class Localization:
 
 Localisation = Localization
 
+
 class CommandHandler:
     def __init__(self):
         self.commands: Dict[
@@ -174,6 +175,8 @@ class CommandHandler:
             )
 
         return register_slash_command
+
+
 class Status:
     """The class which represents a Status.
 
@@ -4616,6 +4619,7 @@ class Shard(WebsocketClient):
         await self.connect()
         await self.identify()
         await self.resume()
+
 
 class ShardManager(CommandHandler, EventHandler):
     def __init__(
