@@ -1068,8 +1068,12 @@ class EventHandler:
                     guild_id, commands
                 )
         return None
-    async def command_error(self, interaction:ApplicationCommandInteraction, error:Exception):
+
+    async def command_error(
+        self, interaction: ApplicationCommandInteraction, error: Exception
+    ):
         raise error
+
 
 class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
