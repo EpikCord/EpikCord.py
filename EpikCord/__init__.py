@@ -362,13 +362,36 @@ class Message:
         ] or None
 
     async def add_reaction(self, emoji: str):
+        """Adds a reaction to the message
+
+        Args:
+            emoji (str): The name of the emoji
+            Emojis can be presented in one of the following:
+            1. Default emojis: Can be presented by ``📃`` or  ``:page_facing_up:``
+            2. Custom Emojis: Can be presented by ``<:emoji_name:emoji_id>``*
+            3. Custom Animated Emojis: Can be presented by ``<a:emoji_name:emoji_id>``*
+
+        Returns:
+            The response from the server stylized as JSON
+
+        *The id and the emoji name can be obtained by entering a backslash ahead of an emoji ``\\📃``
+        """
         emoji = _quote(emoji)
         response = await self.client.http.put(
             f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/@me"
         )
         return await response.json()
 
-    async def remove_reaction(self, emoji: str, user=None):
+    async def remove_reaction(self, emoji: str, user:User=None):
+        """_summary_
+
+        Args:
+            emoji (str): _description_
+            user (User, optional): _description_. Defaults to None.
+
+        Returns:
+            _type_: _description_
+        """
         emoji = _quote(emoji)
         response = (
             await self.client.http.delete(

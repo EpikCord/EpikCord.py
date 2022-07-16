@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 4
 
    EpikCord.managers
+   logging
 
 Submodules
 ----------

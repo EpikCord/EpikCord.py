@@ -33,5 +33,3 @@ The fifth line sets the formatter:
 *. The format given above is the most recommended format
 
 The 6th line sets the handler
-
-There is an extremely simple but not pythonic way to log items
