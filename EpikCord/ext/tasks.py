@@ -10,7 +10,12 @@ _EPOCH = datetime.datetime(1970, 1, 1)
 class TimeParser:
     @staticmethod
     def get_time_since_epoch(
-        year: int, month: int, day: int, hour: int, minute: int, seconds: float
+        year: int = 0,
+        month: int = 0,
+        day: int = 0,
+        hour: int = 0,
+        minute: int = 0,
+        seconds: float = 0,
     ) -> float:
         date = datetime.datetime(year, month, day, hour, minute, seconds)
 
