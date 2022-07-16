@@ -826,7 +826,7 @@ class EventHandler:
             try:
                 return await command.callback(interaction, *options)
             except Exception as e:
-                await self.command_error(e, interaction=interaction)
+                await self.command_error(interaction, e)
 
         if interaction.is_message_component:  # If it's a message component interaction
 
@@ -975,7 +975,7 @@ class EventHandler:
                         guild_id, commands
                     )
         return None
-    async def command_error(self, error:Exception, interaction:BaseInteraction):
+    async def command_error(self, interaction:ApplicationCommandInteraction, error:Exception):
         raise error
 
 class WebsocketClient(EventHandler):
