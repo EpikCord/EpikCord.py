@@ -155,10 +155,7 @@ class CommandHandler:
         return register_slash_command
 
     def _register_command(self, command_type, name, func):
-        command_instance = command_type(
-            callback=func,
-            name=name or func.__name__
-        )
+        command_instance = command_type(callback=func, name=name or func.__name__)
         self.commands[name] = command_instance
         return command_instance
 
