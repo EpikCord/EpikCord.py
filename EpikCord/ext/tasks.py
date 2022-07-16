@@ -1,6 +1,6 @@
 import datetime
 from typing import Callable, Optional
-from time import time as _time
+from time import time
 import asyncio
 from ..exceptions import TaskFailedError
 
@@ -20,23 +20,19 @@ class TimeParser:
         hour: int = 0,
         minute: int = 0,
         seconds: float = 0,
-    ) -> float:
+    ) -> datetime.timedelta:
         date = datetime.datetime(year, month, day, hour, minute, seconds)
 
         delta = date - _EPOCH
-        return delta.total_seconds()
+        return delta
 
     @staticmethod
     def total_seconds(
-        year: int = 0,
-        month: int = 0,
         day: int = 0,
         hour: int = 0,
         minute: int = 0,
         seconds: float = 0,
     ) -> float:
-        month += year * 365
-        day += month * 30
         hour += day * 24
         minute += hour * 60
         seconds += minute * 60
@@ -51,8 +47,8 @@ class Tasks:
         self,
         task: Callable[..., None],
         interval: Optional[int] = None,
-        start: Optional[float] = None,
-        until: Optional[float] = None,
+        start: Optional[datetime.timedelta] = None,
+        until: Optional[datetime.timedelta] = None,
         **kwargs,
     ):
         """Adds a background task (Tasks that run silently in the background)
@@ -73,11 +69,11 @@ class Tasks:
 
         """
         kwargs["interval"] = interval
-        kwargs["start"] = start
-        kwargs["until"] = until
+        kwargs["start"] = start.total_seconds()
+        kwargs["until"] = until.total_seconds()
 
         async def full_task(client, task, **kwargs):
-            async def task_func(client, interval):
+            async def task_func(interval):
                 try:
                     await task(client)
                 except Exception as e:
@@ -89,7 +85,7 @@ class Tasks:
             task_start = False
             nb_instances = kwargs.get("instances")
             if kwargs.get("start") and kwargs.get("until"):  # Start when and do until
-                current_time = _time()
+                current_time = time()
                 until = float(kwargs.get("until"))
                 if current_time >= float(kwargs.get("start")) or task_start:
                     while current_time >= until:
@@ -107,5 +103,5 @@ class Tasks:
         task = asyncio.get_event_loop().create_task(
             full_task(self.client, task, **kwargs)
         )
-        self.client.task.append(task)
+        self.client.tasks.append(task)
         return task
