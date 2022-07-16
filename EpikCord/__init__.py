@@ -6,6 +6,8 @@ from __future__ import annotations
 import asyncio
 import struct
 import zlib
+from functools import partial
+
 from .rtp_handler import *
 import datetime
 import io
@@ -152,27 +154,19 @@ class CommandHandler:
 
         return register_slash_command
 
-    def user_command(self, name: Optional[str] = None):
-        def register_slash_command(func):
-            command_instance = ClientUserCommand(
-                callback=func,
-                name=name or func.__name__
-            )
-            self.commands[name] = command_instance
-            return command_instance
+    def _register_command(self, command_type, name, func):
+        command_instance = command_type(
+            callback=func,
+            name=name or func.__name__
+        )
+        self.commands[name] = command_instance
+        return command_instance
 
-        return register_slash_command
+    def user_command(self, name: Optional[str] = None):
+        return partial(self._register_command, ClientUserCommand, name)
 
     def message_command(self, name: Optional[str] = None):
-        def register_slash_command(func):
-            command_instance = ClientMessageCommand(
-                callback=func,
-                name=name or func.__name__
-            )
-            self.commands[name] = command_instance
-            return command_instance
-
-        return register_slash_command
+        return partial(self._register_command, ClientMessageCommand, name)
 
 
 class Status:
