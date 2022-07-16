@@ -20,11 +20,11 @@ class TimeParser:
         hour: int = 0,
         minute: int = 0,
         seconds: float = 0,
-    ) -> datetime.timedelta:
+    ) -> float:
         date = datetime.datetime(year, month, day, hour, minute, seconds)
 
         delta = date - _EPOCH
-        return delta
+        return delta.total_seconds()
 
     @staticmethod
     def total_seconds(
@@ -47,8 +47,8 @@ class Tasks:
         self,
         task: Callable[..., None],
         interval: Optional[int] = None,
-        start: Optional[datetime.timedelta] = None,
-        until: Optional[datetime.timedelta] = None,
+        start: Optional[float] = None,
+        until: Optional[float] = None,
         **kwargs,
     ):
         """Adds a background task (Tasks that run silently in the background)
@@ -69,8 +69,8 @@ class Tasks:
 
         """
         kwargs["interval"] = interval
-        kwargs["start"] = start.total_seconds()
-        kwargs["until"] = until.total_seconds()
+        kwargs["start"] = start
+        kwargs["until"] = until
 
         async def full_task(client, task, **kwargs):
             async def task_func(interval):
