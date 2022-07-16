@@ -83,7 +83,7 @@ class Tasks:
 
             interval = int(kwargs.get("interval", 5))
             task_start = False
-            nb_instances = kwargs.get("instances")
+            nb_instances = kwargs.get("limit")
             if kwargs.get("start") and kwargs.get("until"):  # Start when and do until
                 current_time = time()
                 until = float(kwargs.get("until"))
