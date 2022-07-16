@@ -2305,7 +2305,6 @@ class Client(WebsocketClient):
     def average_latency(self):
         return sum(self.latencies) / len(self.latencies)
 
-
     def command(
         self,
         *,
@@ -4364,8 +4363,6 @@ class Utils:
         self._MARKDOWN_STOCK_REGEX = (
             rf"(?P<markdown>[_\\~|\*`]|{self._MARKDOWN_ESCAPE_COMMON})"
         )
-    
-
 
     @staticmethod
     def get_mime_type_for_image(data: bytes):
