@@ -28,7 +28,7 @@ class ChannelManager(CacheManager):
     def __init__(self, client, channels: Optional[List[AnyChannel]] = None):
         super().__init__()
         self.client = client
-        self.channels = (
+        self.cache = (
             {channel.id: channel for channel in channels} if channels else {}
         )
 
