@@ -1,5 +1,8 @@
 from enum import IntEnum, Enum
 
+class VisibilityType(IntEnum):
+    NONE = 0
+    EVERYONE = 1
 
 class Locale(Enum):
     DANISH = "da"
