@@ -383,14 +383,20 @@ class Message:
         return await response.json()
 
     async def remove_reaction(self, emoji: str, user:User=None):
-        """_summary_
+        """Removes reactions from a message
 
         Args:
-            emoji (str): _description_
-            user (User, optional): _description_. Defaults to None.
+            emoji (str): The name of the emoji
+            Emojis can be presented in one of the following:
+            1. Default emojis: Can be presented by ``📃`` or  ``:page_facing_up:``
+            2. Custom Emojis: Can be presented by ``<:emoji_name:emoji_id>``*
+            3. Custom Animated Emojis: Can be presented by ``<a:emoji_name:emoji_id>``*
+            user (Optional[User]): The user to remove reactions from. Defaults to the bot user
 
         Returns:
-            _type_: _description_
+            The response from the server stylized as JSON
+
+        *The id and the emoji name can be obtained by entering a backslash ahead of an emoji ``\\📃``
         """
         emoji = _quote(emoji)
         response = (
@@ -406,18 +412,52 @@ class Message:
         return await response.json()
 
     async def fetch_reactions(self, *, after, limit) -> List[Reaction]:
+        """Fetches reactions from the message
+
+        Args:
+            after (int): 
+            limit (int): The amount of reations to return
+
+        Returns:
+            List[Reaction]: A list of reactions queried
+        """
         response = await self.client.http.get(
             f"channels/{self.channel_id}/messages/{self.id}/reactions?after={after}&limit={limit}"
         )
         return await response.json()
 
     async def delete_all_reactions(self):
+        """Pretty self explanatory. Deletes all reations from a message
+
+        Returns:
+            The JSON response from the server
+        """
         response = await self.client.http.delete(
             f"channels/{self.channel_id}/messages/{self.id}/reactions"
         )
         return await response.json()
 
     async def delete_reaction_for_emoji(self, emoji: str):
+        """Deletes reactions to the respective emoji
+
+        Example
+        .. code-block:: python
+            # message : ... reactions 👍, 👎
+            await delete_reaction_for_emoji(":thumbsup:")
+            # now message: ... reaction 👎
+
+        Args:
+            emoji (str): The name of the emoji
+            Emojis can be presented in one of the following:
+            1. Default emojis: Can be presented by ``📃`` or  ``:page_facing_up:``
+            2. Custom Emojis: Can be presented by ``<:emoji_name:emoji_id>``*
+            3. Custom Animated Emojis: Can be presented by ``<a:emoji_name:emoji_id>``*
+
+        Returns:
+            The response from the server stylized as JSON
+
+        *The id and the emoji name can be obtained by entering a backslash ahead of an emoji ``\\📃``
+        """
         emoji = _quote(emoji)
         response = await self.client.http.delete(
             f"channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}"
@@ -425,18 +465,40 @@ class Message:
         return await response.json()
 
     async def edit(self, message_data: dict):
+        """Edits the message
+
+        Args:
+            message_data (dict): the message data to edit
+            
+
+        Returns:
+            Response from the server as JSON
+        """
         response = await self.client.http.patch(
             f"channels/{self.channel_id}/messages/{self.id}", data=message_data
         )
         return await response.json()
 
     async def delete(self):
+        """Deletes the whole message
+
+        Returns:
+            Response from the server in json
+        """
         response = await self.client.http.delete(
             f"channels/{self.channel_id}/messages/{self.id}"
         )
         return await response.json()
 
     async def pin(self, *, reason: Optional[str]):
+        """Pin a message to the discord channe
+
+        Args:
+            reason (Optional[str]): A reason for the audit log
+
+        Returns:
+            Response from the server as json
+        """
         headers = self.client.http.headers.copy()
         if reason:
             headers["X-Audit-Log-Reason"] = reason
@@ -448,6 +510,14 @@ class Message:
         return await response.json()
 
     async def unpin(self, *, reason: Optional[str]):
+        """Pin a message to the discord channe
+
+        Args:
+            reason (Optional[str]): A reason for the audit log
+
+        Returns:
+            Response from the server as json
+        """
         headers = self.client.http.headers.copy()
         if reason:
             headers["X-Audit-Log-Reason"] = reason
