@@ -36,7 +36,7 @@ from urllib.parse import quote as _quote
 
 from aiohttp import ClientSession, ClientResponse, ClientWebSocketResponse
 
-from .__main__ import __version__
+__version__ = "0.5.2"
 from .close_event_codes import *
 from .status_code import *
 from .components import *
@@ -1141,6 +1141,11 @@ class EventHandler:
         # TODO: Add other attributes to cache
 
     def event(self, event_name: Optional[str] = None):
+        """_summary_
+
+        Args:
+            event_name (Optional[str], optional): _description_. Defaults to None.
+        """
         def register_event(func):
             func_name = event_name or func.__name__.lower()
 
