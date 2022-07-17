@@ -491,7 +491,7 @@ class Message:
         return await response.json()
 
     async def pin(self, *, reason: Optional[str]):
-        """Pin a message to the discord channe
+        """Pin a message to the discord channel
 
         Args:
             reason (Optional[str]): A reason for the audit log
@@ -510,7 +510,7 @@ class Message:
         return await response.json()
 
     async def unpin(self, *, reason: Optional[str]):
-        """Pin a message to the discord channe
+        """Pin a message to the discord channel
 
         Args:
             reason (Optional[str]): A reason for the audit log
@@ -531,7 +531,17 @@ class Message:
         name: str,
         auto_archive_duration: Optional[int],
         rate_limit_per_user: Optional[int],
-    ):
+    )->Thread:
+        """Starts a thread from the message
+
+        Args:
+            name (str): The name of the thread
+            auto_archive_duration (Optional[int]): The duration of inactivity after which the thread will archive itself
+            rate_limit_per_user (Optional[int]): The duration for a user after which they can message again
+
+        Returns:
+            :py:class:`Thread` :A thread object
+        """
         response = await self.client.http.post(
             f"channels/{self.channel_id}/messages/{self.id}/threads",
             data={
@@ -545,6 +555,11 @@ class Message:
         return Thread(await response.json())
 
     async def crosspost(self):
+        """Crossposts the message
+
+        Returns:
+            Response from the server as JSON
+        """
         response = await self.client.http.post(
             f"channels/{self.channel_id}/messages/{self.id}/crosspost"
         )
@@ -614,6 +629,17 @@ class Messageable:
         after: Optional[str] = None,
         limit: Optional[int] = None,
     ) -> List[Message]:
+        """Fetches a list of messages from the parent channel or DM
+
+        Args:
+            around (Optional[str], optional): Get messages around this message ID (before and after the message was sent). Defaults to None.
+            before (Optional[str], optional): Get messages before this message ID. Defaults to None.
+            after (Optional[str], optional): Get messages after this message ID. Defaults to None.
+            limit (Optional[int], optional): Number of messages to return. Defaults to 50.
+
+        Returns:
+            List[Message]: A list of message objects
+        """
         response = await self.client.http.get(
             f"channels/{self.id}/messages",
             params={"around": around, "before": before, "after": after, "limit": limit},
@@ -622,6 +648,14 @@ class Messageable:
         return [Message(self.client, message) for message in data]
 
     async def fetch_message(self, *, message_id: str) -> Message:
+        """Fetch messages with respect to a message id
+
+        Args:
+            message_id (str): The message ID from which a message object is returned
+
+        Returns:
+            Message: _description_
+        """
         response = await self.client.http.get(
             f"channels/{self.id}/messages/{message_id}"
         )
@@ -632,14 +666,29 @@ class Messageable:
         self,
         content: Optional[str] = None,
         *,
-        embeds: Optional[List[dict]] = None,
-        components=None,
+        embeds: Optional[List[Embed]] = None,
+        components:List[Union[ActionRow,Button,SelectMenu,TextInput]]=None,
         tts: Optional[bool] = False,
-        allowed_mentions=None,
+        allowed_mentions:Optional[AllowedMention]=None,
         sticker_ids: Optional[List[str]] = None,
-        attachments: List[File] = None,
+        attachments: Optional[List[File]] = None,
         suppress_embeds: bool = False,
     ) -> Message:
+        """Send a message to this Channel/DM
+
+        Args:
+            content (Optional[str], optional): The actual message to send to the channel. Defaults to None.
+            embeds (Optional[List[Embed]], optional): List of Embeds to append to the message. Defaults to None.
+            components (List[Union[ActionRow,Button,SelectMenu,TextInput]], optional): The components to append to the message. Defaults to None.
+            tts (Optional[bool], optional): Whether or not to speak the message to everyone(Text to-speech). Defaults to False.
+            allowed_mentions (Optional[AllowedMention], optional): What mentions(``@everyone``,``@here`` or ``@user``) are allowed in the message. Defaults to None.
+            sticker_ids (Optional[List[str]], optional): The stickers to append to the message. Defaults to None.
+            attachments (Optional[List[File]], optional): Attachments to append to the message. Defaults to None.
+            suppress_embeds (bool, optional): Whether or not to suppress the embeds. Defaults to False.
+
+        Returns:
+            Message: A message object
+        """
         payload = {}
 
         if content:
@@ -3837,6 +3886,8 @@ class AllowedMention:
             "roles": roles,
             "users": users,
         }
+    def to_dict(self):
+        return self.data
 
 
 class MessageInteraction:
