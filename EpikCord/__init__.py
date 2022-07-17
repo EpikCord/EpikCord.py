@@ -34,20 +34,20 @@ from typing import (
 )
 from urllib.parse import quote as _quote
 
-from aiohttp import ClientSession, ClientResponse, ClientWebSocketResponse, WSMessage
+from aiohttp import ClientSession, ClientResponse, ClientWebSocketResponse
 
 from .__main__ import __version__
-from .close_event_codes import GatewayCECode
+from .close_event_codes import *
+from .status_code import *
 from .components import *
 from .exceptions import *
 from .managers import *
-from .opcodes import GatewayOpcode, VoiceOpcode
+from .opcodes import *
 from .options import *
 from .partials import *
 
 CT = TypeVar("CT", bound="Colour")
 T = TypeVar("T")
-__version__ = "0.5.1"
 logger = getLogger(__name__)
 
 try:
@@ -59,10 +59,15 @@ except ImportError:
         " If you want voice support"
     )
 
-# try:
-# import orjson as json
-# except ImportError:
-import json
+_ORJSON = False
+
+try:
+    import orjson as json
+
+    _ORJSON = True
+
+except ImportError:
+    import json
 
 """
 :license:
@@ -86,6 +91,90 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, RESS OR IMPL
  COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER 
  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
+
+
+class Localization:
+    def __init__(self, locale: Locale, value: str):
+        self.locale: Locale = str(locale)
+        self.value: str = value
+
+    def to_dict(self):
+        return {self.locale: self.value}
+
+
+Localisation = Localization
+
+
+class CommandHandler:
+    def __init__(self):
+        self.commands: Dict[
+            str, Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]
+        ] = {}
+
+    def command(
+        self,
+        *,
+        name: Optional[str] = None,
+        description: str = None,
+        guild_ids: Optional[List[str]] = None,
+        options: Optional[List[AnyOption]] = None,
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
+        name_localisations: Optional[List[Localisation]] = None,
+        description_localisations: Optional[List[Localisation]] = None,
+    ):
+        name_localization = self.utils.match_mixed(
+            name_localizations, name_localisations
+        )
+        description_localization = self.utils.match_mixed(
+            description_localizations, description_localisations
+        )
+
+        def register_slash_command(func):
+            desc = description or func.__doc__
+            if not desc:
+                raise TypeError(
+                    f"Command with {name or func.__name__} has no description. This is required."
+                )
+
+            command = ClientSlashCommand(
+                name=name or func.__name__,
+                description=desc,
+                guild_ids=guild_ids or [],
+                options=options or [],
+                callback=func,
+                name_localization=name_localization,
+                description_localization=description_localization,
+            )
+
+            self.commands[command.name] = command
+            return command
+
+        return register_slash_command
+
+    def user_command(self, name: Optional[str] = None):
+        def register_slash_command(func):
+            result = ClientUserCommand(
+                **{
+                    "callback": func,
+                    "name": name or func.__name__,
+                }
+            )
+            self.commands[name](result)
+            return result
+
+        return register_slash_command
+
+    def message_command(self, name: Optional[str] = None):
+        def register_slash_command(func):
+            self.commands[name] = ClientMessageCommand(
+                **{
+                    "callback": func,
+                    "name": name or func.__name__,
+                }
+            )
+
+        return register_slash_command
 
 
 class Status:
@@ -889,7 +978,7 @@ class EventHandler:
             logger.exception(f"Error handling event {event['t']}: {e}")
 
         if isinstance(results_from_event, UnavailableGuild):
-            return  # This is their lazy backfil which I dislike.
+            return  # This is their lazy backfill which I dislike.
 
         try:
             if results_from_event != event["d"]:
@@ -953,8 +1042,10 @@ class EventHandler:
 
                 for option in interaction.options:
                     options.append(option.get("value"))
-
-            return await command.callback(interaction, *options)
+            try:
+                return await command.callback(interaction, *options)
+            except Exception as e:
+                await self.command_error(interaction, e)
 
         if interaction.is_message_component:  # If it's a message component interaction
 
@@ -1085,10 +1176,25 @@ class EventHandler:
                     command_payload["options"] = [
                         option.to_dict() for option in getattr(command, "options", [])
                     ]
+                    if command.name_localizations:
+                        command_payload["name_localizations"] = {}
+                        for name_localization in command.name_localizations:
+                            command_payload["name_localizations"][
+                                name_localization
+                            ] = command.name_localizations[name_localization.to_dict()]
+                    if command.description_localizations:
+                        command_payload["description_localizations"] = {}
+                        for (
+                            description_localization
+                        ) in command.description_localizations:
+                            command_payload["description_localizations"][
+                                description_localization.to_dict()
+                            ] = command.description_localizations[
+                                description_localization
+                            ]
 
-                if hasattr(command, "guild_ids"):
-                    for guild_id in command.guild_ids:
-                        command_sorter[guild_id].append(command_payload)
+                for guild_id in command.guild_ids or []:
+                    command_sorter[guild_id].append(command_payload)
                 else:
                     command_sorter["global"].append(command_payload)
 
@@ -1098,11 +1204,17 @@ class EventHandler:
                     await self.application.bulk_overwrite_global_application_commands(
                         commands
                     )
-                else:
-                    await self.application.bulk_overwrite_guild_application_commands(
-                        guild_id, commands
-                    )
+                    continue
+
+                await self.application.bulk_overwrite_guild_application_commands(
+                    guild_id, commands
+                )
         return None
+
+    async def command_error(
+        self, interaction: ApplicationCommandInteraction, error: Exception
+    ):
+        raise error
 
 
 class WebsocketClient(EventHandler):
@@ -1118,7 +1230,6 @@ class WebsocketClient(EventHandler):
         elif isinstance(intents, Intents):
             self.intents = intents
 
-        self.commands = {}
         self._closed = True
         self.heartbeats = []
 
@@ -1386,10 +1497,16 @@ class ClientSlashCommand(BaseCommand):
         callback: Callable,
         guild_ids: Optional[List[str]],
         options: Optional[List[AnyOption]],
+        name_localization: Optional[Localization] = None,
+        description_localization: Optional[str] = None,
     ):
         super().__init__()
         self.name: str = name
         self.description: str = description
+        self.name_localizations: Optional[Localization] = name_localization
+        self.description_localizations: Optional[
+            Localization
+        ] = description_localization
         if not description:
             raise TypeError(f"Missing description for command {name}.")
         self.callback: Callable = callback
@@ -1406,6 +1523,16 @@ class ClientSlashCommand(BaseCommand):
             self.autocomplete_options[option_name] = func
 
         return wrapper
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "description": self.description,
+            "type": self.type,
+            "options": [option.to_dict() for option in options],
+            "name_localization": self.name_localization,
+            "description_localization": self.description_localization,
+        }
 
 
 class ClientMessageCommand(ClientUserCommand):
@@ -1695,12 +1822,8 @@ class ClientApplication(Application):
     async def delete_global_application_command(self, command_id: str):
         await self.client.http.delete(f"/applications/{self.id}/commands/{command_id}")
 
-    async def bulk_overwrite_global_application_commands(
-        self, commands: List[ApplicationCommand]
-    ):
-        await self.client.http.put(
-            f"/applications/{self.id}/commands", json=list(commands)
-        )
+    async def bulk_overwrite_global_application_commands(self, commands: List[Dict]):
+        await self.client.http.put(f"/applications/{self.id}/commands", json=commands)
 
     async def fetch_guild_application_commands(self, guild_id: str):
         response = await self.client.http.get(
@@ -1797,7 +1920,7 @@ class ClientApplication(Application):
         )
 
     async def bulk_overwrite_guild_application_commands(
-        self, guild_id: str, commands: List[ApplicationCommand]
+        self, guild_id: str, commands: List[Dict]
     ):
         await self.client.http.put(
             f"/applications/{self.id}/guilds/{guild_id}/commands", json=commands
@@ -2150,8 +2273,8 @@ class DiscordWSMessage:
         self.type = type
         self.extra = extra
 
-    def json(self, *, loads: Callable[[Any], Any] = json.loads) -> Any:
-        return loads(self.data)
+    def json(self) -> Any:
+        return json.loads(self.data)
 
 
 class DiscordGatewayWebsocket(ClientWebSocketResponse):
@@ -2192,14 +2315,20 @@ class HTTPClient(ClientSession):
         super().__init__(
             *args,
             **kwargs,
-            json_serialize=json.dumps,
+            json_serialize=lambda x, *__, **___: json.dumps(x).decode()
+            if _ORJSON
+            else json.dumps(x),
             ws_response_class=DiscordGatewayWebsocket,
         )
         self.global_ratelimit: asyncio.Event = asyncio.Event()
         self.global_ratelimit.set()
         self.buckets: Dict[str, Bucket] = {}
 
-    async def request(self, method, url, *args, **kwargs):
+    async def request(self, method, url, *args, attempt: int = 1, **kwargs):
+
+        if attempt > 5:
+            logger.critical(f"Failed a {method} {url} 5 times.")
+            return  # Just quit the request
 
         if url.startswith("ws"):
             return await super().request(method, url, *args, **kwargs)
@@ -2248,7 +2377,7 @@ class HTTPClient(ClientSession):
             body = await res.text()
         if (
             int(res.headers.get("X-RateLimit-Remaining", 1)) == 0
-            and res.status != GatewayCECode.RateLimited
+            and res.status != HTTPCodes.TOO_MANY_REQUESTS
         ):  # We've exhausted the bucket.
             logger.critical(
                 f"Exhausted {res.headers['X-RateLimit-Bucket']} ({res.url}). Reset in {res.headers['X-RateLimit-Reset-After']} seconds"
@@ -2256,7 +2385,7 @@ class HTTPClient(ClientSession):
             await asyncio.sleep(float(res.headers["X-RateLimit-Reset-After"]))
             bucket.lock.release()
 
-        if res.status == GatewayCECode.RateLimited:  # Body is always present here.
+        if res.status == HTTPCodes.TOO_MANY_REQUESTS:  # Body is always present here.
             time_to_sleep = (
                 body.get("retry_after")
                 if body.get("retry_after") > res.headers["X-RateLimit-Reset-After"]
@@ -2271,7 +2400,21 @@ class HTTPClient(ClientSession):
 
             await self.global_ratelimit.set()
             bucket.lock.release()
-            return await self.request(method, url, *args, **kwargs)  # Retry the request
+            return await self.request(
+                method, url, *args, **kwargs, attempt=attempt + 1
+            )  # Retry the request
+
+        if res.status >= HTTPCodes.SERVER_ERROR:
+            raise DiscordServerError5xx(body)
+
+        elif res.status == HTTPCodes.NOT_FOUND:
+            raise NotFound404(body)
+
+        elif res.status == HTTPCodes.FORBIDDEN:
+            raise Forbidden403(body)
+
+        elif not 300 > res.status >= 200:
+            raise DiscordAPIError(body)
 
         if bucket.lock.locked():
             try:
@@ -2378,7 +2521,7 @@ class Section:
         super().__init_subclass__(**kwargs)
 
 
-class Client(WebsocketClient):
+class Client(WebsocketClient, CommandHandler):
     def __init__(
         self,
         token: str,
@@ -2391,9 +2534,6 @@ class Client(WebsocketClient):
     ):
         super().__init__(token, intents)
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
-        self.commands: Dict[
-            str, Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]
-        ] = {}
         self.guilds: GuildManager = GuildManager(self)
         self.channels: ChannelManager = ChannelManager(self)
         self.presence: Presence = Presence(status=status, activity=activity)
@@ -2420,59 +2560,6 @@ class Client(WebsocketClient):
     @property
     def average_latency(self):
         return sum(self.latencies) / len(self.latencies)
-
-    def command(
-        self,
-        *,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-        guild_ids=None,
-        options=None,
-    ):
-        if guild_ids is None:
-            guild_ids = []
-        if options is None:
-            options = []
-
-        def register_slash_command(func):
-            res = ClientSlashCommand(
-                **{
-                    "callback": func,
-                    "name": name or func.__name__,
-                    "description": description or func.__doc__,
-                    "guild_ids": guild_ids,
-                    "options": options,
-                }
-            )
-
-            self.commands[name or func.__name__] = res  # Cheat method.
-            return res
-
-        return register_slash_command
-
-    def user_command(self, name: Optional[str] = None):
-        def register_slash_command(func):
-            result = ClientUserCommand(
-                **{
-                    "callback": func,
-                    "name": name or func.__name__,
-                }
-            )
-            self.commands[name](result)
-            return result
-
-        return register_slash_command
-
-    def message_command(self, name: Optional[str] = None):
-        def register_slash_command(func):
-            self.commands[name] = ClientMessageCommand(
-                **{
-                    "callback": func,
-                    "name": name or func.__name__,
-                }
-            )
-
-        return register_slash_command
 
     def add_check(self, check: "Check"):
         def wrapper(command_callback):
@@ -4230,7 +4317,6 @@ class Connectable:
         channel_id: Optional[str] = None,
         channel: Optional[VoiceChannel] = None,
     ):
-        self.ws: Optional[socket.socket] = None
         self.client = client
         # TODO: Figure out which one I will use later in production
         if channel:
@@ -4247,7 +4333,7 @@ class Connectable:
         self.endpoint: Optional[str] = None
         self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.setblocking(False)
-        self.ws = None
+        self.ws: Optional[ClientWebSocketResponse] = None
 
         self.heartbeat_interval: Optional[int] = None
         self.server_ip: Optional[str] = None
@@ -4470,6 +4556,46 @@ class Utils:
             rf"(?P<markdown>[_\\~|\*`]|{self._MARKDOWN_ESCAPE_COMMON})"
         )
 
+    async def override_commands(self):
+        command_sorter = defaultdict(list)
+
+        for command in self.client.commands.values():
+            command_payload = {"name": command.name, "type": command.type}
+
+            if command_payload["type"] == 1:
+                command_payload["description"] = command.description
+                command_payload["options"] = [
+                    option.to_dict() for option in getattr(command, "options", [])
+                ]
+                if command.name_localizations:
+                    command_payload["name_localizations"] = {}
+                    for name_localization in command.name_localizations:
+                        command_payload["name_localizations"][
+                            name_localization
+                        ] = command.name_localizations[name_localization.to_dict()]
+                if command.description_localizations:
+                    command_payload["description_localizations"] = {}
+                    for description_localization in command.description_localizations:
+                        command_payload["description_localizations"][
+                            description_localization.to_dict()
+                        ] = command.description_localizations[description_localization]
+
+            for guild_id in command.guild_ids or []:
+                command_sorter[guild_id].append(command_payload)
+            else:
+                command_sorter["global"].append(command_payload)
+
+        for guild_id, commands in command_sorter.items():
+            if guild_id == "global":
+                await self.client.application.bulk_overwrite_global_application_commands(
+                    commands
+                )
+                continue
+
+            await self.client.application.bulk_overwrite_guild_application_commands(
+                guild_id, commands
+            )
+
     @staticmethod
     def get_mime_type_for_image(data: bytes):
         if data.startswith(b"\x89\x50\x4E\x47\x0D\x0A\x1A\x0A"):
@@ -4500,6 +4626,12 @@ class Utils:
             return
 
         return component_cls(**component_data)
+
+    def match_mixed(self, variant_one: str, variant_two: str):
+        """Matches and returns a single output from two"""
+        return (
+            variant_one if not variant_two else variant_two if not variant_one else None
+        )
 
     def interaction_from_type(self, data):
         interaction_type = data["type"]
@@ -4605,6 +4737,14 @@ class Shard(WebsocketClient):
         super().__init__(token, intents, presence)
         self.shard_id = [shard_id, number_of_shards]
 
+    async def ready(self, data: dict):
+        self.user: ClientUser = ClientUser(self, data.get("user"))
+        self.session_id: str = data["session_id"]
+        application_response = await self.http.get("/oauth2/applications/@me")
+        application_data = await application_response.json()
+        self.application: ClientApplication = ClientApplication(self, application_data)
+        return None
+
     async def identify(self):
         payload = {
             "op": GatewayOpcode.IDENTIFY,
@@ -4632,15 +4772,18 @@ class Shard(WebsocketClient):
         await self.resume()
 
 
-class ShardManager:
+class ShardManager(CommandHandler, EventHandler):
     def __init__(
         self,
         token: str,
-        *,
         intents: Optional[Union[Intents, int]],
+        *,
         shards: Optional[int] = None,
+        overwrite_commands_on_ready: bool = False,
     ):
+        super().__init__()
         self.token: str = token
+        self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
         self.http: HTTPClient = HTTPClient(
             headers={
                 "Authorization": f"Bot {token}",
@@ -4671,11 +4814,20 @@ class ShardManager:
             current_iteration = 0  # The current shard_id we've run
 
             for shard in self.shards:
-                shard.login()
+                shard.events = self.events
+                coro = shard.wait_for("ready")
+                await shard.login()
+                await coro()
+
                 current_iteration += 1
+
                 if current_iteration == max_concurrency:
                     await asyncio.sleep(5)
                     current_iteration = 0  # Reset it
+
+            if self.overwrite_commands_on_ready:
+                for shard in self.shards:
+                    await Utils(shard).override_commands()
 
         loop = asyncio.get_event_loop()
         loop.run_until_complete(wrapper())
@@ -4883,19 +5035,28 @@ __slots__ = __all__ = (
     "Attachment",
     "AttachmentOption",
     "AutoCompleteInteraction",
-    "BadRequest400",
+    "AutoModerationAction",
+    "AutoModerationActionMetaData",
+    "AutoModerationActionType",
+    "AutoModerationEventType",
+    "AutoModerationKeywordPresetTypes",
+    "AutoModerationRule",
+    "AutoModerationTriggerMetaData",
+    "AutoModerationTriggerType",
     "BaseChannel",
     "BaseCommand",
     "BaseComponent",
     "BaseInteraction",
     "BaseSlashCommandOption",
     "BooleanOption",
+    "Bucket",
     "Button",
+    "ButtonStyle",
     "CacheManager",
     "ChannelCategory",
     "ChannelManager",
     "ChannelOption",
-    "ChannelOptionChannelTypes",
+    "ChannelTypes",
     "Check",
     "Client",
     "ClientApplication",
@@ -4903,17 +5064,20 @@ __slots__ = __all__ = (
     "ClientSlashCommand",
     "ClientUser",
     "ClientUserCommand",
-    "ClosedWebSocketConnection",
     "Color",
     "Colour",
     "CommandUtils",
+    "Connectable",
     "CustomIdIsTooBig",
     "DMChannel",
     "DisallowedIntents",
     "DiscordAPIError",
+    "DiscordGatewayWebsocket",
+    "DiscordWSMessage",
     "Embed",
     "Emoji",
     "EpikCordException",
+    "Event",
     "EventHandler",
     "FailedCheck",
     "FailedToConnectToVoice",
@@ -4921,6 +5085,8 @@ __slots__ = __all__ = (
     "Flag",
     "Forbidden403",
     "GateawayUnavailable502",
+    "GatewayCECode",
+    "GatewayOpcode",
     "Guild",
     "GuildApplicationCommandPermission",
     "GuildBan",
@@ -4952,6 +5118,11 @@ __slots__ = __all__ = (
     "InvalidToken",
     "Invite",
     "LabelIsTooBig",
+    "List",
+    "Locale",
+    "Localisation",
+    "Localization",
+    "LocatedError",
     "MentionableOption",
     "MentionedChannel",
     "MentionedUser",
@@ -4982,10 +5153,11 @@ __slots__ = __all__ = (
     "Role",
     "RoleOption",
     "RoleTag",
+    "Section",
     "SelectMenu",
     "SelectMenuOption",
     "Shard",
-    "ShardClient",
+    "ShardManager",
     "ShardingRequired",
     "SlashCommand",
     "SlashCommandOptionChoice",
@@ -5005,16 +5177,20 @@ __slots__ = __all__ = (
     "ThreadMember",
     "TooManyComponents",
     "TooManySelectMenuOptions",
+    "TypingContextManager",
     "Unauthorized401",
     "UnavailableGuild",
     "UnhandledEpikCordException",
+    "Union",
+    "UnknownBucket",
     "User",
     "UserCommandInteraction",
     "UserOption",
     "Utils",
     "VoiceChannel",
+    "VoiceOpcode",
+    "VoiceRegion",
     "VoiceState",
-    "VoiceWebsocketClient",
     "Webhook",
     "WebhookUser",
     "WebsocketClient",
@@ -5023,13 +5199,22 @@ __slots__ = __all__ = (
     "b64encode",
     "cache_manager",
     "channel_manager",
+    "close_event_codes",
+    "component_from_type",
     "components",
+    "decode_rtp_packet",
     "exceptions",
+    "generate_rtp_packet",
     "guilds_manager",
     "logger",
     "managers",
-    "message_command",
+    "nacl",
+    "opcodes",
     "options",
+    "os",
     "partials",
+    "perf_counter_ns",
     "roles_manager",
+    "rtp_handler",
+    "type_enums",
 )

@@ -1,4 +1,37 @@
-from enum import IntEnum
+from enum import IntEnum, Enum
+
+
+class Locale(Enum):
+    DANISH = "da"
+    GERMAN = "de"
+    ENGLISH_GB = "en-GB"
+    ENGLISH_US = "en-US"
+    SPANISH = "es-ES"
+    FRENCH = "fr"
+    CROATIAN = "hr"
+    ITALIAN = "it"
+    LITHUANIAN = "lt"
+    HUNGARIAN = "hu"
+    DUTCH = "nl"
+    NORWEGIAN = "no"
+    POLISH = "pl"
+    PORTUGUESE_BR = "pt-BR"
+    ROMANIAN = "ro"
+    FINNISH = "fi"
+    SWEDISH_SE = "sv-SE"
+    VIETNAMESE = "vi"
+    TURKISH = "tr"
+    CZECH = "cs"
+    GREEK = "el"
+    BULGARIAN = "bg"
+    RUSSIAN = "ru"
+    UKRAINE = "uk"
+    HINDI = "hi"
+    THAI = "th"
+    CHINESE_CN = "zh-CN"
+    JAPANESE = "ja"
+    CHINESE_TW = "zh-TW"
+    KOREAN = "ko"
 
 
 class AutoModerationActionType(IntEnum):

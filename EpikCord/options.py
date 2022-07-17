@@ -4,9 +4,7 @@ from .type_enums import ChannelTypes
 
 
 class BaseSlashCommandOption:
-    def __init__(
-        self, *, name: str, description: str, required: Optional[bool] = False
-    ):
+    def __init__(self, *, name: str, description: str, required: Optional[bool] = True):
         self.name: str = name
         self.description: str = description
         self.required: bool = required
@@ -46,7 +44,7 @@ class StringOption(BaseSlashCommandOption):
 
         if self.min_length:
             usual_dict["min_length"] = self.min_length
-        if self.max_value:
+        if self.max_length:
             usual_dict["max_length"] = self.max_length
 
         return usual_dict
@@ -161,7 +159,7 @@ class AttachmentOption(BaseSlashCommandOption):
 
 
 class SlashCommandOptionChoice:
-    def __init__(self, *name: str, value: Union[float, int, str]):
+    def __init__(self, *, name: str, value: Union[float, int, str]):
         self.name: str = name
         self.value: Union[float, int, str] = value
 
@@ -187,17 +185,16 @@ class Subcommand(BaseSlashCommandOption):
         *,
         name: str,
         description: str = None,
-        required: bool = True,
         options: Optional[List[AnyOption]] = None,
     ):
-        super().__init__(name=name, description=description, required=required)
+        super().__init__(name=name, description=description)
         self.type = 1
         converted_options = []
 
         if not options:
             options = []
 
-        for option in options:
+        for option in [option.to_dict() for option in options]:
             if option["type"] == 1:
                 converted_options.append(StringOption(**option))
 
@@ -205,12 +202,14 @@ class Subcommand(BaseSlashCommandOption):
                 converted_options.append(SubCommandGroup(**option))
 
             else:
-                converted_options.append(self.conversion_type[option["type"]](**option))
+                option_type = option.pop("type", None)
+                converted_options.append(self.conversion_type[option_type](**option))
 
         self.options: List[AnyOption] = converted_options
 
     def to_dict(self):
         usual_dict = super().to_dict()
+        usual_dict.pop("required", None)
         usual_dict["options"] = [option.to_dict() for option in self.options]
         return usual_dict
 
@@ -234,22 +233,23 @@ class SubCommandGroup(BaseSlashCommandOption):
         *,
         name: str,
         description: str = None,
-        required: bool = True,
         options: Optional[List[AnyOption]] = None,
     ):
-        super().__init__(name=name, description=description, required=required)
+        super().__init__(name=name, description=description)
         self.type = 2
         converted_options = []
-        for option in options:
+        for option in [option.to_dict() for option in options]:
             if option["type"] == 2:
                 converted_options.append(SubCommandGroup(**option))
             else:
-                converted_options.append(self.conversion_type[option["type"]](**option))
+                option_type = option.pop("type", None)
+                converted_options.append(self.conversion_type[option_type](**option))
 
         self.options: List[AnyOption] = converted_options
 
     def to_dict(self):
         usual_dict = super().to_dict()
+        usual_dict.pop("required", None)
         usual_dict["options"] = [option.to_dict() for option in self.options]
         return usual_dict
 
