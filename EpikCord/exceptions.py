@@ -64,7 +64,7 @@ class DiscordAPIError(EpikCordException):
         if "_errors" in d:
             return [
                 LocatedError(**error, path=".".join(key_path[1:]))
-                for error in d["_errors"]
+                for error in d.get("_errors", [])
             ]
 
         return [
@@ -123,7 +123,7 @@ class GateawayUnavailable502(DiscordAPIError):
     ...
 
 
-class InternalServerError5xx(EpikCordException):
+class DiscordServerError5xx(EpikCordException):
     ...
 
 
