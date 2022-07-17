@@ -1949,7 +1949,7 @@ class GuildTextChannel(GuildChannel, Messageable):
         invitable: Optional[bool],
         rate_limit_per_user: Optional[int],
         reason: Optional[str],
-    ):
+    ) -> Union[PrivateThread, Thread]:
         data = {"name": name}
         if auto_archive_duration:
             data["auto_archive_duration"] = auto_archive_duration
@@ -1971,7 +1971,10 @@ class GuildTextChannel(GuildChannel, Messageable):
             headers=headers,
             channel_id=self.id,
         )
-        self.client.guilds[self.guild_id].append(Thread(await response.json()))
+        thread = Thread(await response.json())
+        self.client.guilds[self.guild_id].append(thread)
+
+        return thread
 
     async def bulk_delete(self, message_ids: List[str], reason: Optional[str]) -> None:
 
