@@ -1,37 +1,33 @@
-name: Sphinx build
-
-on: push
+on:
+  push:
+  pull_request:
 
 jobs:
-  build:
+  setup_sphinx:
     runs-on: ubuntu-latest
     steps:
+     - uses: actions/checkout@v2
+     - name: "Set up Python"
+        uses: actions/setup-python@v2
+        with: 
+          python-version: '3.8'
 
-    - uses: actions/checkout@v3
+     - name: "Install Sphinx"
+        run: pip install -U sphinx
 
-    - name: Make Logs Directory
-      run: mkdir /tmp/sphinx-log
+     - name: "Run Sphinx Render"
+        run: |
+          cd ./docs/
+          make html
 
-    - name: Setup Python
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.9' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+      - name: Setup Git
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git commit -am "docs: Update documentation"
 
-    - name: Install sphinx_rtd_theme
-      run: pip install sphinx_rtd_theme
-
-    - name: Build HTML
-      uses: ammaraskar/sphinx-action@master
-
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: html-docs
-        path: docs/build/html/
-
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        branch: master
-        directory: docs
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push docs
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
