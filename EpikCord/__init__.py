@@ -5052,10 +5052,6 @@ __all__ = (
     "Integration",
     "IntegrationAccount",
     "Intents",
-<<<<<<< HEAD
-    "InternalServerError5xx",
-=======
->>>>>>> a59d158b02ecd14399e9f5e278f4b6fc62aaca85
     "InvalidApplicationCommandOptionType",
     "InvalidApplicationCommandType",
     "InvalidArgumentType",
