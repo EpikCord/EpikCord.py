@@ -33,7 +33,6 @@ from urllib.parse import quote as _quote
 
 from aiohttp import ClientSession, ClientResponse, ClientWebSocketResponse
 
-from .__main__ import __version__
 from .close_event_codes import *
 from .components import *
 from .exceptions import *
@@ -4962,7 +4961,10 @@ class AutoModerationRule:
         return
 
 
+__version__ = "0.5.2"
+
 __all__ = (
+    "__version__",
     "ActionRow",
     "Activity",
     "AllowedMention",
