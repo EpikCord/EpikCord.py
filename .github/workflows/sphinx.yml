@@ -6,16 +6,16 @@ jobs:
   setup_sphinx:
     runs-on: ubuntu-latest
     steps:
-     - uses: actions/checkout@v2
-     - name: "Set up Python"
+      - uses: actions/checkout@v2
+      - name: "Set up Python"
         uses: actions/setup-python@v2
         with: 
           python-version: '3.8'
 
-     - name: "Install Sphinx"
+      - name: "Install Sphinx"
         run: pip install -U sphinx
 
-     - name: "Run Sphinx Render"
+      - name: "Run Sphinx Render"
         run: |
           cd ./docs/
           make html
