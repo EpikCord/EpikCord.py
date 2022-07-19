@@ -1,8 +1,8 @@
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 
 
 class PartialEmoji:
-    def __init__(self, data: dict):
+    def __init__(self, data: Dict[str, Any]):
         self.data: dict = data
         self.name: str = data.get("name")
         self.id: str = data.get("id")
@@ -21,7 +21,7 @@ class PartialEmoji:
 
 
 class PartialUser:
-    def __init__(self, data: dict):
+    def __init__(self, data: Dict[str, Any]):
         self.data: dict = data
         self.id: str = data.get("id")
         self.username: str = data.get("username")
@@ -30,7 +30,7 @@ class PartialUser:
 
 
 class PartialGuild:
-    def __init__(self, data):
+    def __init__(self, data: Dict[str, Any]):
         self.data: dict = data
         self.id: str = data.get("id")
         self.name: str = data.get("name")

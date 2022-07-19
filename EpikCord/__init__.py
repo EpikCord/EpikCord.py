@@ -4,22 +4,21 @@ NOTE: version string only in setup.cfg
 from __future__ import annotations
 
 import asyncio
-import struct
-import zlib
-from .rtp_handler import *
 import datetime
 import io
 import os
 import re
 import socket
+import struct
+import zlib
+from abc import abstractmethod
 from base64 import b64encode
 from collections import defaultdict, deque
 from importlib import import_module
 from inspect import iscoroutine
 from logging import getLogger
-from time import perf_counter_ns
-from .type_enums import *
 from sys import platform
+from time import perf_counter_ns
 from typing import (
     Optional,
     List,
@@ -28,7 +27,6 @@ from typing import (
     TypeVar,
     Callable,
     Tuple,
-    Any,
     Type,
     TYPE_CHECKING,
 )
@@ -36,15 +34,16 @@ from urllib.parse import quote as _quote
 
 from aiohttp import ClientSession, ClientResponse, ClientWebSocketResponse
 
-from .__main__ import __version__
 from .close_event_codes import *
-from .status_code import *
 from .components import *
 from .exceptions import *
 from .managers import *
 from .opcodes import *
 from .options import *
 from .partials import *
+from .rtp_handler import *
+from .status_code import *
+from .type_enums import *
 
 CT = TypeVar("CT", bound="Colour")
 T = TypeVar("T")
@@ -1408,6 +1407,11 @@ class BaseCommand:
     def is_message_command(self):
         return self.type == 3
 
+    @abstractmethod
+    @property
+    def type(self):
+        ...
+
 
 class ClientUserCommand(BaseCommand):
     """
@@ -2695,7 +2699,6 @@ class Embed:  # Always wanted to make this class :D
     ):
         self.type: int = type
         self.title: Optional[str] = title
-        self.type: Optional[str] = type
         self.description: Optional[str] = description
         self.url: Optional[str] = url
         self.video: Optional[dict] = video
@@ -3810,7 +3813,7 @@ class ApplicationCommandInteraction(BaseInteraction):
         self.command_id: str = self.interaction_data.get("id")
         self.command_name: str = self.interaction_data.get("name")
         self.command_type: int = self.interaction_data.get("type")
-        self.resolved: ResolvedDataHandler(client, data.get("resolved", {}))
+        self.resolved = ResolvedDataHandler(client, data.get("resolved", {}))
         self.options: List[dict] | None = self.interaction_data.get("options", [])
 
 
@@ -4960,7 +4963,10 @@ class AutoModerationRule:
             f"guilds/{self.guild_id}/auto-moderation/rules/{self.id}"
         )
 
+__version__ = "0.5.2"
+
 __all__ = (
+    "__version__",
     "ActionRow",
     "Activity",
     "AllowedMention",
@@ -5046,7 +5052,10 @@ __all__ = (
     "Integration",
     "IntegrationAccount",
     "Intents",
+<<<<<<< HEAD
     "InternalServerError5xx",
+=======
+>>>>>>> a59d158b02ecd14399e9f5e278f4b6fc62aaca85
     "InvalidApplicationCommandOptionType",
     "InvalidApplicationCommandType",
     "InvalidArgumentType",
