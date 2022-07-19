@@ -1,6 +1,4 @@
-__all__ = ("__version__", "info")
-
-__version__ = "0.5.2"
+from EpikCord import __version__
 
 
 def info():
