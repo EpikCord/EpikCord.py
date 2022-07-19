@@ -12,6 +12,13 @@ jobs:
     - name: Make Logs Directory
       run: mkdir /tmp/sphinx-log
 
+    - name: Setup Python
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.9' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+
+    - name: Install sphinx_rtd_theme
+      run: pip install sphinx_rtd_theme
 
     - name: Build HTML
       uses: ammaraskar/sphinx-action@master
