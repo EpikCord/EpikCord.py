@@ -189,6 +189,7 @@ class UserClient:
 
         return [PartialGuild(d) for d in data]
 
+
 Localisation = Localization
 
 
