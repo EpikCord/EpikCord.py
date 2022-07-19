@@ -6,7 +6,6 @@ build:
   tools:
     python: "3.9"
   commands:
-    - apt update && apt install -y python3-pip
     - pip install sphinx sphinx_rtd_theme
     - cd ./docs/
     - sphinx-build -b html source build
