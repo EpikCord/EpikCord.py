@@ -1,42 +1,42 @@
-on:
-  push:
-  pull_request:
+# on:
+#   push:
+#   pull_request:
 
-jobs:
-  setup:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: "Set up Python"
-        uses: actions/setup-python@v2
-        with: 
-          python-version: '3.8'
+# jobs:
+#   setup:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: "Set up Python"
+#         uses: actions/setup-python@v2
+#         with: 
+#           python-version: '3.8'
 
-      - name: Setup Sphinx
-        run: pip install -U sphinx sphinx_rtd_theme
+#       - name: Setup Sphinx
+#         run: pip install -U sphinx sphinx_rtd_theme
 
-      - name: Setup Git
-        run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
+#       - name: Setup Git
+#         run: |
+#           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+#           git config --local user.name "github-actions[bot]"
 
 
-  build_docs:
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Run Sphinx Render"
-        run: |
-          cd ./docs/
-          make html
+#   build_docs:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: "Run Sphinx Render"
+#         run: |
+#           cd ./docs/
+#           make html
 
-  commit_changes:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Commit changes
-        run: 'git commit -am "docs: Update documentation"'
+#   commit_changes:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Commit changes
+#         run: 'git commit -am "docs: Update documentation"'
 
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+#       - name: Push changes
+#         uses: ad-m/github-push-action@master
+#         with:
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           branch: ${{ github.ref }}
