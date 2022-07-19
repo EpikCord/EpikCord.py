@@ -55,6 +55,7 @@ _ORJSON = False
 
 try:
     import nacl
+
     _NACL = True
 
 except ImportError:
@@ -2180,6 +2181,7 @@ class DMChannel(BaseChannel):
             PartialUser(data.get("recipient")) if data.get("recipient") else None
         )
 
+
 class ChannelCategory(GuildChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
@@ -2203,10 +2205,12 @@ class _FakeTask:
     def cancel(self):
         return True
 
+
 class UnknownBucket:
     def __init__(self):
         self.lock = asyncio.Lock()
         self.close_task: _FakeTask = _FakeTask()
+
 
 class Bucket(UnknownBucket):
     def __init__(self, *, discord_hash: str):
@@ -2216,6 +2220,7 @@ class Bucket(UnknownBucket):
     def __eq__(self, other):
         return self.bucket_hash == other.bucket_hash
 
+
 class DiscordWSMessage:
     def __init__(self, *, data, type, extra):
         self.data = data
@@ -2224,6 +2229,7 @@ class DiscordWSMessage:
 
     def json(self) -> Any:
         return json.loads(self.data)
+
 
 class DiscordGatewayWebsocket(ClientWebSocketResponse):
     def __init__(self, *args, **kwargs):
@@ -4962,6 +4968,7 @@ class AutoModerationRule:
         await self.client.http.delete(
             f"guilds/{self.guild_id}/auto-moderation/rules/{self.id}"
         )
+
 
 __version__ = "0.5.2"
 
