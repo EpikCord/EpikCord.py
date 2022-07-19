@@ -3,7 +3,7 @@ on:
   pull_request:
 
 jobs:
-  setup_sphinx:
+  setup:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -15,18 +15,27 @@ jobs:
       - name: Setup Sphinx
         run: pip install -U sphinx sphinx_rtd_theme
 
+      - name: Setup Git
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+
+  build_docs:
+    runs-on: ubuntu-latest
+    steps:
       - name: "Run Sphinx Render"
         run: |
           cd ./docs/
           make html
 
-      - name: Setup Git
-        run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git commit -am "docs: Update documentation"
+  commit_changes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Commit changes
+        run: 'git commit -am "docs: Update documentation"'
 
-      - name: Push docs
+      - name: Push changes
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
