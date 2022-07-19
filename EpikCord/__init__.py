@@ -50,16 +50,22 @@ CT = TypeVar("CT", bound="Colour")
 T = TypeVar("T")
 logger = getLogger(__name__)
 
+_NACL = False
+_ORJSON = False
+
+
 try:
     import nacl
-except ImportError:
-    logger.warning(
-        "The PyNacl library was not found, so voice is not supported."
-        " Please install it by doing ``pip install PyNaCl``"
-        " If you want voice support"
-    )
+    _NACL = True
 
-_ORJSON = False
+except ImportError:
+    if not _NACL:
+        logger.warning(
+            "The PyNacl library was not found, so voice is not supported."
+            " Please install it by doing ``pip install PyNaCl``"
+            " If you want voice support"
+        )
+
 
 try:
     import orjson as json
@@ -208,8 +214,8 @@ class CommandHandler:
         options: Optional[List[AnyOption]] = None,
         name_localizations: Optional[List[Localization]] = None,
         description_localizations: Optional[List[Localization]] = None,
-        name_localisations: Optional[List[Localisation]] = None,
-        description_localisations: Optional[List[Localisation]] = None,
+        name_localisations: Optional[List[Localization]] = None,
+        description_localisations: Optional[List[Localization]] = None,
     ):
         name_localization = self.utils.match_mixed(
             name_localizations, name_localisations
@@ -1156,7 +1162,7 @@ class EventHandler:
     async def command_error(
         self, interaction: ApplicationCommandInteraction, error: Exception
     ):
-        raise error
+        logger.exception(error)
 
 
 class WebsocketClient(EventHandler):
@@ -2194,23 +2200,18 @@ class _FakeTask:
     def cancel(self):
         return True
 
-
-class Bucket:
-    def __init__(self, *, discord_hash: str):
-        self.bucket_hash = discord_hash
-        self.lock: asyncio.Lock = asyncio.Lock()
-
-        self.close_task = _FakeTask()
-
-    def __eq__(self, other):
-        return self.bucket_hash == other.bucket_hash
-
-
 class UnknownBucket:
     def __init__(self):
         self.lock = asyncio.Lock()
         self.close_task: _FakeTask = _FakeTask()
 
+class Bucket(UnknownBucket):
+    def __init__(self, *, discord_hash: str):
+        super().__init__()
+        self.bucket_hash = discord_hash
+
+    def __eq__(self, other):
+        return self.bucket_hash == other.bucket_hash
 
 class DiscordWSMessage:
     def __init__(self, *, data, type, extra):
@@ -2220,7 +2221,6 @@ class DiscordWSMessage:
 
     def json(self) -> Any:
         return json.loads(self.data)
-
 
 class DiscordGatewayWebsocket(ClientWebSocketResponse):
     def __init__(self, *args, **kwargs):
@@ -3059,6 +3059,7 @@ class Integration:
         )
 
 
+# TODO Adapt this to subclass Flags
 class SystemChannelFlags:
     def __init__(self, *, value: Optional[int] = None):
         self.value: int = value
@@ -3083,7 +3084,6 @@ class SystemChannelFlags:
 class Guild:
     def __init__(self, client: Client, data: dict):
         self.client = client
-        self.lock: asyncio.Lock = asyncio.Lock()
         self.data: dict = data
         self.id: str = data.get("id")
         self.name: str = data.get("name")
@@ -3759,7 +3759,7 @@ class ModalSubmitInteraction(BaseInteraction):
             Union[Button, SelectMenu, TextInput]
         ] = self.interaction_data.get("components")
 
-    async def send_modal(self, *args, **kwargs):
+    async def send_modal(self, *_, **__):
         raise NotImplementedError("ModalSubmitInteractions cannot send modals.")
 
 
