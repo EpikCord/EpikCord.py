@@ -11,6 +11,7 @@ import re
 import socket
 import struct
 import zlib
+from abc import abstractmethod
 from base64 import b64encode
 from collections import defaultdict, deque
 from importlib import import_module
@@ -1400,6 +1401,11 @@ class BaseCommand:
     def is_message_command(self):
         return self.type == 3
 
+    @abstractmethod
+    @property
+    def type(self):
+        ...
+
 
 class ClientUserCommand(BaseCommand):
     """
@@ -2694,7 +2700,6 @@ class Embed:  # Always wanted to make this class :D
     ):
         self.type: int = type
         self.title: Optional[str] = title
-        self.type: Optional[str] = type
         self.description: Optional[str] = description
         self.url: Optional[str] = url
         self.video: Optional[dict] = video
@@ -3809,7 +3814,7 @@ class ApplicationCommandInteraction(BaseInteraction):
         self.command_id: str = self.interaction_data.get("id")
         self.command_name: str = self.interaction_data.get("name")
         self.command_type: int = self.interaction_data.get("type")
-        self.resolved: ResolvedDataHandler(client, data.get("resolved", {}))
+        self.resolved = ResolvedDataHandler(client, data.get("resolved", {}))
         self.options: List[dict] | None = self.interaction_data.get("options", [])
 
 
