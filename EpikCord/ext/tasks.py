@@ -43,16 +43,15 @@ class Tasks:
         You can set the time of when it starts, stops and  add which arguments to give to the task
         You may also define whether to run once or run indefinitely
 
-        Args:
-            task (Callable): 
-            The function to run on the background
-            interval (Optional[int]): 
-            The interval (in seconds) for a delay between when the instance of the task stops and starts again.Defaults to 5.
-            You may use `TimeParser.total_seconds` method
-            limit (Optional[int]): 
-            The number of instances to start after delay. Usually unlimited
-
-        """
+        
+        :param task: The function to run on the background
+        :type task: Callable[..., None]
+        :param interval:The interval (in seconds) for a delay between when the instance of the task stops and starts again.Defaults to 5.
+                        You may use `TimeParser.total_seconds` method, defaults to None
+        :type interval: Optional[int]
+        :param limit: The number of instances to start. Usually unlimited
+        :type limit: Optional[int] 
+        """        
         kwargs["interval"] = interval
 
         async def full_task(client, task, *args,**kwargs):
