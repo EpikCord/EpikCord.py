@@ -1480,14 +1480,19 @@ class ClientSlashCommand(BaseCommand):
             "name": self.name,
             "description": self.description,
             "type": self.type,
-            "options": [option.to_dict() for option in self.options]
+            "options": [option.to_dict() for option in self.options],
         }
 
         if self.name_localizations:
-            payload["name_localizations"] = [l.to_dict() for l in self.name_localizations]
+            payload["name_localizations"] = [
+                l.to_dict() for l in self.name_localizations
+            ]
         if self.description_localizations:
-            payload["description_localizations"] = [l.to_dict() for l in self.description_localizations]
+            payload["description_localizations"] = [
+                l.to_dict() for l in self.description_localizations
+            ]
         return payload
+
 
 class ClientMessageCommand(ClientUserCommand):
     @property
