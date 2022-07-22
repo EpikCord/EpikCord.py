@@ -33,6 +33,7 @@ class Tasks:
         self,
         task: Callable[..., None],
         interval: Optional[int] = None,
+        *args,
         **kwargs,
     ):
         """Adds a background task (Tasks that run silently in the background)
@@ -48,16 +49,16 @@ class Tasks:
             interval (Optional[int]): 
             The interval (in seconds) for a delay between when the instance of the task stops and starts again.Defaults to 5.
             You may use `TimeParser.total_seconds` method
-            instances (Optional[int]): 
+            limit (Optional[int]): 
             The number of instances to start after delay. Usually unlimited
 
         """
         kwargs["interval"] = interval
 
-        async def full_task(client, task, **kwargs):
+        async def full_task(client, task, *args,**kwargs):
             async def task_func(interval):
                 try:
-                    await task(client)
+                    await task(client, *args,**kwargs)
                 except Exception as e:
                     raise TaskFailedError(f"Task failed due to: {e}")
 
@@ -76,8 +77,8 @@ class Tasks:
             else:
                 await task_func(client, interval)
 
-        task = asyncio.get_event_loop().create_task(
-            full_task(self.client, task, **kwargs)
+        created_task = asyncio.get_event_loop().create_task(
+            full_task(self.client, task, *args,**kwargs, )
         )
-        self.client.tasks.append(task)
-        return task
+        self.client.tasks[task.__name__] = created_task
+        return created_task

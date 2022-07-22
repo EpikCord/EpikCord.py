@@ -2506,7 +2506,7 @@ class Client(WebsocketClient, CommandHandler):
         self.user: ClientUser = None
         self.application: Optional[ClientApplication] = None
         self.sections: List[Any] = []
-        self.tasks: List[asyncio.Task] = []
+        self.tasks: Dict[str, asyncio.Task] = {}
 
     @property
     def latency(self):
