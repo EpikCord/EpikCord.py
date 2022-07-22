@@ -1448,8 +1448,8 @@ class ClientSlashCommand(BaseCommand):
         name: str,
         description: str,
         callback: Callable,
-        guild_ids: Optional[List[str]],
-        options: Optional[List[AnyOption]],
+        guild_ids: Optional[List[str]] = None,
+        options: Optional[List[AnyOption]] = None,
         name_localization: Optional[Localization] = None,
         description_localization: Optional[str] = None,
     ):
@@ -1460,11 +1460,9 @@ class ClientSlashCommand(BaseCommand):
         self.description_localizations: Optional[
             Localization
         ] = description_localization
-        if not description:
-            raise TypeError(f"Missing description for command {name}.")
         self.callback: Callable = callback
-        self.guild_ids: Optional[List[str]] = guild_ids
-        self.options: Optional[List[AnyOption]] = options
+        self.guild_ids: Optional[List[str]] = guild_ids or []
+        self.options: Optional[List[AnyOption]] = options or []
         self.autocomplete_options: dict = {}
 
     @property
@@ -1478,15 +1476,18 @@ class ClientSlashCommand(BaseCommand):
         return wrapper
 
     def to_dict(self):
-        return {
+        payload = {
             "name": self.name,
             "description": self.description,
             "type": self.type,
-            "options": [option.to_dict() for option in options],
-            "name_localization": self.name_localization,
-            "description_localization": self.description_localization,
+            "options": [option.to_dict() for option in self.options]
         }
 
+        if self.name_localizations:
+            payload["name_localizations"] = [l.to_dict() for l in self.name_localizations]
+        if self.description_localizations:
+            payload["description_localizations"] = [l.to_dict() for l in self.description_localizations]
+        return payload
 
 class ClientMessageCommand(ClientUserCommand):
     @property
