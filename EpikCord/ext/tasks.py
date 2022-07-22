@@ -12,7 +12,7 @@ __all__ = (
 
 
 
-@staticmethod
+
 def total_seconds(
     day: int = 0,
     hour: int = 0,
@@ -33,6 +33,7 @@ class Tasks:
         self,
         task: Callable[..., None],
         interval: Optional[int] = None,
+        limit:Optional[int] = None,
         *args,
         **kwargs,
     ):
@@ -51,7 +52,7 @@ class Tasks:
         :param limit: The number of instances to start. Usually unlimited
         :type limit: Optional[int] 
         """        
-        kwargs["interval"] = interval
+        
 
         async def full_task(client, task, *args,**kwargs):
             async def task_func(interval):
@@ -64,13 +65,13 @@ class Tasks:
 
             interval = interval if interval <= 0 else 5
             task_start = False
-            nb_instances = kwargs.get("limit")
 
-            if nb_instances:
+            if limit:
                 instances = int(nb_instances)
                 finished_instances = 0
                 while instances > finished_instances:
                     await task_func(client, interval)
+                    finished_instances += 1
 
             else:
                 await task_func(client, interval)
