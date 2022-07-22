@@ -71,9 +71,7 @@ except ImportError:
 
 """
 :license:
-Some parts of the code is sourced from discord.py
 The MIT License (MIT)
-Copyright © 2015-2021 Rapptz
 Copyright © 2021-present EpikHost
 Permission is hereby granted, free of charge, to any person obtaining a copy of 
 this software and associated documentation files (the “Software”), to deal in 
@@ -657,9 +655,7 @@ class Messageable:
             payload["sticker_ids"] = sticker_ids
 
         if attachments:
-            payload["attachments"] = [
-                attachment.to_dict() for attachment in attachments
-            ]
+            logger.error("Attachments for files are NOT supported")
 
         if suppress_embeds:
             payload["suppress_embeds"] = 1 << 2

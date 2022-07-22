@@ -1,6 +1,16 @@
+import argparse
+
 __all__ = ("__version__", "info")
 
 __version__ = "0.5.2"
+
+class F:
+    ...
+parser = argparse.ArgumentParser()
+parser.add_argument("--version", help="displays the version of the library",nargs="?")
+args = parser.parse_args(namespace=F)
+
+
 
 
 def info():
@@ -11,5 +21,5 @@ def info():
     )
 
 
-if __name__ == "__main__":
-    info()
+if args.version:
+    print("lol")
