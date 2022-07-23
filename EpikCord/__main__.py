@@ -62,9 +62,9 @@ parser.add_argument(
 colorama.init(autoreset=True)
 
 
-def write_bot(token):
-    if IS_WINDOWS:
-        ...
+def write_bot(name,file,token):
+    with open(f"{file}/{name}", 'x') as write_file:
+        write_file.write(_bot_tmplate.replace('[token]', token))
 
 
 def setup():
@@ -83,7 +83,9 @@ def setup():
             dir_question = input(
                 "This directory does not exist. Would you like me to create it?(y/n)"
             )
-            if not dir_question == "y":
+            if dir_question == "y":
+                os.makedirs(directory)
+            else:
                 sys.exit("OK, Exiting...")
         print("We need to ask you a few questions, then we will finish the setup")
         token = input("What is the token for this bot?: ")
@@ -104,7 +106,7 @@ def setup():
         print("We need to ask you a few questions, then we will finish the setup")
         token = input("What is the token for this bot?: ")
         print("Writing the bot to the current directory")
-        write_bot(token)
+        write_bot(name_query, directory,token)
 
 
 def info():
