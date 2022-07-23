@@ -1,5 +1,6 @@
 import argparse
 import os
+import re
 import sys
 import colorama
 from platform import system as get_parent_os
@@ -30,30 +31,7 @@ class InvalidNameError(Exception):
     ...
 
 
-win_reserved = (
-    "CON",
-    "CON1",
-    "CON2",
-    "CON3",
-    "CON4",
-    "CON5",
-    "CON6",
-    "CON7",
-    "CON8",
-    "CON9",
-    "PRN",
-    "NUL",
-    "AUX",
-    "LPT1",
-    "LPT2",
-    "LPT3",
-    "LPT4",
-    "LPT5",
-    "LPT6",
-    "LPT7",
-    "LPT8",
-    "LPT9",
-)
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -71,9 +49,9 @@ def setup():
     if IS_WINDOWS:
         print(f"{colorama.Back.GREEN}{colorama.Fore.BLUE}Welcome To Setup!")
         name_query = input("What is the name of the new bot: ")
-        for name in win_reserved:
-            if name_query.upper() == name:
-                raise InvalidNameError(
+        
+        if re.fullmatch(r'((AUX|CON|LPT)\d?)|NUL|PRN', name_query):
+            raise InvalidNameError(
                     "This is a Windows reserved keyword, You are not allowed to create these files"
                 )
         directory = input(
