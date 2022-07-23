@@ -1,14 +1,13 @@
 import argparse
+from ast import parse
 
 __all__ = ("__version__", "info")
 
 __version__ = "0.5.2"
 
-class F:
-    ...
 parser = argparse.ArgumentParser()
-parser.add_argument("--version", help="displays the version of the library",nargs="?")
-args = parser.parse_args(namespace=F)
+parser.add_argument("--version", help="displays the version of the library", action='store_true')
+parser.add_argument("bot")
 
 
 
@@ -20,6 +19,10 @@ def info():
         "Please report any bugs to https://github.com/EpikCord/EpikCord.py/issues."
     )
 
+def parse_args(args:argparse.Namespace):
+    if args.version:
+        info()
 
-if args.version:
-    print("lol")
+def main():
+    args = parser.parse_args()
+    parse_args(args)
