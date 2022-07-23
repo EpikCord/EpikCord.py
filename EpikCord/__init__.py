@@ -1111,7 +1111,6 @@ class EventHandler:
         application_response = await self.http.get("/oauth2/applications/@me")
         application_data = await application_response.json()
         self.application: ClientApplication = ClientApplication(self, application_data)
-
         if self.overwrite_commands_on_ready:
 
             command_sorter = defaultdict(list)
