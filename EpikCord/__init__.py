@@ -77,7 +77,9 @@ except ImportError:
 
 """
 :license:
+Some parts of this code are sourced from discord.py
 The MIT License (MIT)
+Copyright © 2015-2020 Rapptz
 Copyright © 2021-present EpikHost
 Permission is hereby granted, free of charge, to any person obtaining a copy of 
 this software and associated documentation files (the “Software”), to deal in 
