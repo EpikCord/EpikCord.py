@@ -4,22 +4,21 @@ NOTE: version string only in setup.cfg
 from __future__ import annotations
 
 import asyncio
-import struct
-import zlib
-from .rtp_handler import *
 import datetime
 import io
 import os
 import re
 import socket
+import struct
+import zlib
+from abc import abstractmethod
 from base64 import b64encode
 from collections import defaultdict, deque
 from importlib import import_module
 from inspect import iscoroutine
 from logging import getLogger
-from time import perf_counter_ns
-from .type_enums import *
 from sys import platform
+from time import perf_counter_ns
 from typing import (
     Optional,
     List,
@@ -28,7 +27,6 @@ from typing import (
     TypeVar,
     Callable,
     Tuple,
-    Any,
     Type,
     TYPE_CHECKING,
 )
@@ -36,30 +34,38 @@ from urllib.parse import quote as _quote
 
 from aiohttp import ClientSession, ClientResponse, ClientWebSocketResponse
 
-from .__main__ import __version__
 from .close_event_codes import *
-from .status_code import *
 from .components import *
 from .exceptions import *
 from .managers import *
 from .opcodes import *
 from .options import *
 from .partials import *
+from .rtp_handler import *
+from .status_code import *
+from .type_enums import *
 
 CT = TypeVar("CT", bound="Colour")
 T = TypeVar("T")
 logger = getLogger(__name__)
 
+_NACL = False
+_ORJSON = False
+
+
 try:
     import nacl
-except ImportError:
-    logger.warning(
-        "The PyNacl library was not found, so voice is not supported."
-        " Please install it by doing ``pip install PyNaCl``"
-        " If you want voice support"
-    )
 
-_ORJSON = False
+    _NACL = True
+
+except ImportError:
+    if not _NACL:
+        logger.warning(
+            "The PyNacl library was not found, so voice is not supported."
+            " Please install it by doing ``pip install PyNaCl``"
+            " If you want voice support"
+        )
+
 
 try:
     import orjson as json
@@ -100,6 +106,94 @@ class Localization:
         return {self.locale: self.value}
 
 
+class Connection:
+    def __init__(self, data: dict):
+        self.id: str = data["id"]
+        self.name: str = data["name"]
+        self.type: str = data["type"]
+        self.revoked: Optional[bool] = data["revoked"]
+        self.integrations: Optional[List[Integration]] = [
+            Integration(data) for data in data.get("integrations", [])
+        ]
+        self.verified: bool = data["verified"]
+        self.friend_sync: bool = data["friend_sync"]
+        self.show_activity: bool = data["show_activity"]
+        self.visibility: VisibilityType = VisibilityType(data["visibility"])
+
+
+class AuthorizationInformation:
+    def __init__(self, data: dict):
+        self.application: Application = Application(data["application"])
+        self.scopes: List[str] = data["scopes"]
+        self.expires: datetime.datetime = datetime.datetime.fromisoformat(
+            data["expires"]
+        )
+        self.user: Optional[User] = (
+            User(self, data["user"]) if data.get("user") else None
+        )
+
+    def to_dict(self) -> dict:
+        payload = {
+            "application": self.application.to_dict(),
+            "scopes": self.scopes,
+            "expires": self.expires.isoformat(),
+        }
+        if self.user:
+            payload["user"] = self.user.to_dict()
+
+        return payload
+
+
+class UserClient:
+    """This class is meant to be used with an Access Token. Not a User Account Token"""
+
+    def __init__(self, token: str, *, discord_endpoint):
+        self.token = token
+        self._http: HTTPClient = HTTPClient(
+            headers={
+                "Authorization": f"Bearer {token}",
+                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
+            },
+            discord_endpoint=discord_endpoint,
+        )
+        self.application: Optional[Application] = None
+
+    async def fetch_application(self):
+        application = Application(
+            await (await self._http.get("/oauth2/applications/@me")).json()
+        )
+        self.application: Optional[Application] = application
+        return application
+
+    async def fetch_authorization_information(self):
+        data = await (await self._http.get("/oauth2/@me")).json()
+        if self.application:
+            data["application"] = self.application.to_dict()
+        return AuthorizationInformation(data)
+
+    async def fetch_connections(self) -> List[Connection]:
+        data = await (await self._http.get("/users/@me/connections")).json()
+        return [Connection(d) for d in data]
+
+    async def fetch_guilds(
+        self,
+        *,
+        before: Optional[str] = None,
+        after: Optional[str] = None,
+        limit: int = 200,
+    ) -> List[PartialGuild]:
+        params = {"limit": limit}
+
+        if before:
+            params["before"] = before
+        if after:
+            params["after"] = after
+
+        data = await (await self._http.get("/users/@me/guilds", params=params)).json()
+
+        return [PartialGuild(d) for d in data]
+
+
 Localisation = Localization
 
 
@@ -118,8 +212,8 @@ class CommandHandler:
         options: Optional[List[AnyOption]] = None,
         name_localizations: Optional[List[Localization]] = None,
         description_localizations: Optional[List[Localization]] = None,
-        name_localisations: Optional[List[Localisation]] = None,
-        description_localisations: Optional[List[Localisation]] = None,
+        name_localisations: Optional[List[Localization]] = None,
+        description_localisations: Optional[List[Localization]] = None,
     ):
         name_localization = self.utils.match_mixed(
             name_localizations, name_localisations
@@ -152,25 +246,21 @@ class CommandHandler:
 
     def user_command(self, name: Optional[str] = None):
         def register_slash_command(func):
-            result = ClientUserCommand(
-                **{
-                    "callback": func,
-                    "name": name or func.__name__,
-                }
-            )
-            self.commands[name](result)
-            return result
+
+            results = ClientUserCommand(callback=func, name=name or func.__name__)
+
+            self.commands[name] = results
+            return results
 
         return register_slash_command
 
     def message_command(self, name: Optional[str] = None):
         def register_slash_command(func):
-            self.commands[name] = ClientMessageCommand(
-                **{
-                    "callback": func,
-                    "name": name or func.__name__,
-                }
-            )
+
+            results = ClientMessageCommand(callback=func, name=name or func.__name__)
+
+            self.commands[name] = results
+            return results
 
         return register_slash_command
 
@@ -1017,7 +1107,6 @@ class EventHandler:
         application_response = await self.http.get("/oauth2/applications/@me")
         application_data = await application_response.json()
         self.application: ClientApplication = ClientApplication(self, application_data)
-
         if self.overwrite_commands_on_ready:
 
             command_sorter = defaultdict(list)
@@ -1068,7 +1157,7 @@ class EventHandler:
     async def command_error(
         self, interaction: ApplicationCommandInteraction, error: Exception
     ):
-        raise error
+        logger.exception(error)
 
 
 class WebsocketClient(EventHandler):
@@ -1314,6 +1403,11 @@ class BaseCommand:
     def is_message_command(self):
         return self.type == 3
 
+    @abstractmethod
+    @property
+    def type(self):
+        ...
+
 
 class ClientUserCommand(BaseCommand):
     """
@@ -1349,8 +1443,8 @@ class ClientSlashCommand(BaseCommand):
         name: str,
         description: str,
         callback: Callable,
-        guild_ids: Optional[List[str]],
-        options: Optional[List[AnyOption]],
+        guild_ids: Optional[List[str]] = None,
+        options: Optional[List[AnyOption]] = None,
         name_localization: Optional[Localization] = None,
         description_localization: Optional[str] = None,
     ):
@@ -1361,11 +1455,9 @@ class ClientSlashCommand(BaseCommand):
         self.description_localizations: Optional[
             Localization
         ] = description_localization
-        if not description:
-            raise TypeError(f"Missing description for command {name}.")
         self.callback: Callable = callback
-        self.guild_ids: Optional[List[str]] = guild_ids
-        self.options: Optional[List[AnyOption]] = options
+        self.guild_ids: Optional[List[str]] = guild_ids or []
+        self.options: Optional[List[AnyOption]] = options or []
         self.autocomplete_options: dict = {}
 
     @property
@@ -1379,14 +1471,22 @@ class ClientSlashCommand(BaseCommand):
         return wrapper
 
     def to_dict(self):
-        return {
+        payload = {
             "name": self.name,
             "description": self.description,
             "type": self.type,
-            "options": [option.to_dict() for option in options],
-            "name_localization": self.name_localization,
-            "description_localization": self.description_localization,
+            "options": [option.to_dict() for option in self.options],
         }
+
+        if self.name_localizations:
+            payload["name_localizations"] = [
+                l.to_dict() for l in self.name_localizations
+            ]
+        if self.description_localizations:
+            payload["description_localizations"] = [
+                l.to_dict() for l in self.description_localizations
+            ]
+        return payload
 
 
 class ClientMessageCommand(ClientUserCommand):
@@ -1585,7 +1685,7 @@ class ClientApplication(Application):
         super().__init__(data)
         self.client = client
 
-    async def fetch_application(self):
+    async def fetch(self):
         response: ClientResponse = await self.client.http.get("oauth2/applications/@me")
         data: dict = await response.json()
         return Application(data)
@@ -2107,21 +2207,19 @@ class _FakeTask:
         return True
 
 
-class Bucket:
-    def __init__(self, *, discord_hash: str):
-        self.bucket_hash = discord_hash
-        self.lock: asyncio.Lock = asyncio.Lock()
-
-        self.close_task = _FakeTask()
-
-    def __eq__(self, other):
-        return self.bucket_hash == other.bucket_hash
-
-
 class UnknownBucket:
     def __init__(self):
         self.lock = asyncio.Lock()
         self.close_task: _FakeTask = _FakeTask()
+
+
+class Bucket(UnknownBucket):
+    def __init__(self, *, discord_hash: str):
+        super().__init__()
+        self.bucket_hash = discord_hash
+
+    def __eq__(self, other):
+        return self.bucket_hash == other.bucket_hash
 
 
 class DiscordWSMessage:
@@ -2608,7 +2706,6 @@ class Embed:  # Always wanted to make this class :D
     ):
         self.type: int = type
         self.title: Optional[str] = title
-        self.type: Optional[str] = type
         self.description: Optional[str] = description
         self.url: Optional[str] = url
         self.video: Optional[dict] = video
@@ -2971,6 +3068,7 @@ class Integration:
         )
 
 
+# TODO Adapt this to subclass Flags
 class SystemChannelFlags:
     def __init__(self, *, value: Optional[int] = None):
         self.value: int = value
@@ -2995,7 +3093,6 @@ class SystemChannelFlags:
 class Guild:
     def __init__(self, client: Client, data: dict):
         self.client = client
-        self.lock: asyncio.Lock = asyncio.Lock()
         self.data: dict = data
         self.id: str = data.get("id")
         self.name: str = data.get("name")
@@ -3671,7 +3768,7 @@ class ModalSubmitInteraction(BaseInteraction):
             Union[Button, SelectMenu, TextInput]
         ] = self.interaction_data.get("components")
 
-    async def send_modal(self, *args, **kwargs):
+    async def send_modal(self, *_, **__):
         raise NotImplementedError("ModalSubmitInteractions cannot send modals.")
 
 
@@ -3723,7 +3820,7 @@ class ApplicationCommandInteraction(BaseInteraction):
         self.command_id: str = self.interaction_data.get("id")
         self.command_name: str = self.interaction_data.get("name")
         self.command_type: int = self.interaction_data.get("type")
-        self.resolved: ResolvedDataHandler(client, data.get("resolved", {}))
+        self.resolved = ResolvedDataHandler(client, data.get("resolved", {}))
         self.options: List[dict] | None = self.interaction_data.get("options", [])
 
 
@@ -4872,10 +4969,12 @@ class AutoModerationRule:
         await self.client.http.delete(
             f"guilds/{self.guild_id}/auto-moderation/rules/{self.id}"
         )
-        return
 
 
-__slots__ = __all__ = (
+__version__ = "0.5.2"
+
+__all__ = (
+    "__version__",
     "ActionRow",
     "Activity",
     "AllowedMention",
@@ -4961,7 +5060,6 @@ __slots__ = __all__ = (
     "Integration",
     "IntegrationAccount",
     "Intents",
-    "InternalServerError5xx",
     "InvalidApplicationCommandOptionType",
     "InvalidApplicationCommandType",
     "InvalidArgumentType",

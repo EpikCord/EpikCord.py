@@ -1,3 +1,4 @@
+
 import argparse
 import colorama
 
@@ -5,6 +6,7 @@ import colorama
 __all__ = ("__version__", "info")
 
 __version__ = "0.5.2"
+
 
 _bot_tmplate = """#!/usr/bin/env python
 from EpikCord import Client, Intents

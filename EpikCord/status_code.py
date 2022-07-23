@@ -28,7 +28,10 @@ class HTTPCodes(StatusCode):
     SERVER_ERROR = 500
 
     @classmethod
-    def _missing_(cls, value: int) -> HTTPCodes:
+    def _missing_(cls, value: object) -> HTTPCodes:
+        if not isinstance(value, int):
+            raise ValueError(f"{value} is not a valid HTTP status code.")
+
         if value > HTTPCodes.SERVER_ERROR and value != HTTPCodes.GATEWAY_UNAVAILABLE:
             return HTTPCodes.SERVER_ERROR
 
@@ -263,5 +266,5 @@ class JsonErrorCodes(StatusCode):
     # I want to die :)
 
     @classmethod
-    def _missing_(cls, value: int) -> JsonErrorCodes:
+    def _missing_(cls, value: object) -> JsonErrorCodes:
         return cls.GENERAL_ERROR
