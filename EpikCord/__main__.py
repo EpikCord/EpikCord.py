@@ -81,7 +81,7 @@ def get_question(name_query):
         directory = input(
             "Which directory to write the bot to?:(Type . to make a bot in the current directory): "
         )
-        if not os.path.isdir(directory) or not directory == ".":
+        if not os.path.isdir(directory) or directory != ".":
             dir_question = input(
                 "This directory does not exist. Would you like me to create it?(y/n)"
             )
