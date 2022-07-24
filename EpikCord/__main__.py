@@ -5,7 +5,7 @@ import sys
 import colorama
 from platform import system as get_parent_os
 
-__version__ = "0.5.2"
+from EpikCord import __version__
 _bot_tmplate = """#!/usr/bin/env python
 from EpikCord import Client, Intents
 from config import token
@@ -81,7 +81,7 @@ def get_question(name_query):
         directory = input(
             "Which directory to write the bot to?:(Type . to make a bot in the current directory): "
         )
-        if not os.path.isdir(directory) or not directory == ".":
+        if not os.path.isdir(directory) or directory != ".":
             dir_question = input(
                 "This directory does not exist. Would you like me to create it?(y/n)"
             )
@@ -89,7 +89,8 @@ def get_question(name_query):
                 os.makedirs(f"{directory}/{name_query}")
                 directory = f"{directory}/{name_query}"
             else:
-                sys.exit("OK, Exiting...")
+                print("OK, Exiting...")
+                return
         elif directory == ".":
             directory = os.getcwd()
             os.makedirs(f"{directory}/{name_query}")
