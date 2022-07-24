@@ -1,7 +1,7 @@
 from enum import IntEnum
 from typing import Union, Optional, List
 
-from .exceptions import (
+from ..exceptions import (
     InvalidArgumentType,
     CustomIdIsTooBig,
     InvalidComponentStyle,
@@ -9,7 +9,7 @@ from .exceptions import (
     TooManyComponents,
     LabelIsTooBig,
 )
-from .partials import PartialEmoji
+from ..commons.partials import PartialEmoji
 
 
 class SelectMenuOption:
@@ -340,11 +340,23 @@ class ActionRow:
             yield component
 
     def add_components(self, components: List[Union[Button, SelectMenu]]):
+
         for component in self.check_still_valid(components):
             self.components.append(component.to_dict())
 
     def add_component(self, component: Union[Button, SelectMenu, TextInput]):
-        for component in self.check_still_valid(self.components):
-            ...  # Just let the validator run
-
+        self.check_still_valid(self.components)
         self.components.append(component.to_dict())
+
+class Modal:
+    def __init__(self, *, title: str, custom_id: str, components: List[ActionRow]):
+        self.title = title
+        self.custom_id = custom_id
+        self.components = components
+
+    def to_dict(self):
+        return {
+            "title": self.title,
+            "custom_id": self.custom_id,
+            "components": [c.to_dict() for c in self.components],
+        }
