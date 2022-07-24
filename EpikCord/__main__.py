@@ -95,7 +95,7 @@ def get_question(name_query):
             os.makedirs(f"{directory}/{name_query}")
             directory = f"{os.getcwd()}/{name_query}"
         print("We need to ask you a few questions, then we will finish the setup")
-        token = input("What is the token for this bot?: ")
+        token = input("Input Token: ")
         gitignore_confirm = input("Would you like to add a .gitignore file to the folder(y/n):")
         section_confirm = input("Add a sections folder?")
         print("Writing the bot to the current directory")
@@ -103,15 +103,15 @@ def get_question(name_query):
 
 def write_bot(name,folder,token,gitignore,if_sections):
     if gitignore == 'y':
-        with open(f"{folder}/.gitignore", 'x') as write_file:
-            write_file.write(__gitignore_template)
+        with open(f"{folder}/.gitignore", 'x') as f:
+            f.write(__gitignore_template)
     if if_sections == 'y':
         os.makedirs(f"{folder}/sections")
         print('Sections are not yet supported properly')
-    with open(f"{folder}/{name}.py", 'x') as write_file:
-        write_file.write(_bot_tmplate.replace('[name]', name))
-    with open(f"{folder}/config.py", 'x') as write_file:
-        write_file.write(__config_file_template.replace('[token]', f"\'{token}\'"))
+    with open(f"{folder}/{name}.py", 'x') as f:
+        f.write(_bot_tmplate.replace('[name]', name))
+    with open(f"{folder}/config.py", 'x') as f:
+        f.write(__config_file_template.replace('[token]', f"\'{token}\'"))
 
     
 
@@ -153,10 +153,9 @@ def parse_args(args: argparse.ArgumentParser):
         parser.exit(0)
 
 
-def main():
 
-    parse_args(parser)
+
 
 
 if __name__ == "__main__":
-    main()
+    parse_args(parser)
