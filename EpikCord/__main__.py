@@ -89,7 +89,8 @@ def get_question(name_query):
                 os.makedirs(f"{directory}/{name_query}")
                 directory = f"{directory}/{name_query}"
             else:
-                sys.exit("OK, Exiting...")
+                print("OK, Exiting...")
+                return
         elif directory == ".":
             directory = os.getcwd()
             os.makedirs(f"{directory}/{name_query}")
