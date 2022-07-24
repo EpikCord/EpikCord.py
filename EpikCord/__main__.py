@@ -5,7 +5,7 @@ import sys
 import colorama
 from platform import system as get_parent_os
 
-__version__ = "0.5.2"
+from EpikCord import __version__
 _bot_tmplate = """#!/usr/bin/env python
 from EpikCord import Client, Intents
 from config import token
