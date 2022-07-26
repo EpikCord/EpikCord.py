@@ -10,7 +10,7 @@ import os
 import re
 import socket
 import struct
-import zlib
+import zlib 
 from abc import abstractmethod
 from base64 import b64encode
 from collections import defaultdict, deque
@@ -197,74 +197,6 @@ class UserClient:
 
 
 Localisation = Localization
-
-
-class CommandHandler:
-    def __init__(self):
-        self.commands: Dict[
-            str, Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]
-        ] = {}
-
-    def command(
-        self,
-        *,
-        name: Optional[str] = None,
-        description: str = None,
-        guild_ids: Optional[List[str]] = None,
-        options: Optional[List[AnyOption]] = None,
-        name_localizations: Optional[List[Localization]] = None,
-        description_localizations: Optional[List[Localization]] = None,
-        name_localisations: Optional[List[Localization]] = None,
-        description_localisations: Optional[List[Localization]] = None,
-    ):
-        name_localization = self.utils.match_mixed(
-            name_localizations, name_localisations
-        )
-        description_localization = self.utils.match_mixed(
-            description_localizations, description_localisations
-        )
-
-        def register_slash_command(func):
-            desc = description or func.__doc__
-            if not desc:
-                raise TypeError(
-                    f"Command with {name or func.__name__} has no description. This is required."
-                )
-
-            command = ClientSlashCommand(
-                name=name or func.__name__,
-                description=desc,
-                guild_ids=guild_ids or [],
-                options=options or [],
-                callback=func,
-                name_localization=name_localization,
-                description_localization=description_localization,
-            )
-
-            self.commands[command.name] = command
-            return command
-
-        return register_slash_command
-
-    def user_command(self, name: Optional[str] = None):
-        def register_slash_command(func):
-
-            results = ClientUserCommand(callback=func, name=name or func.__name__)
-
-            self.commands[name] = results
-            return results
-
-        return register_slash_command
-
-    def message_command(self, name: Optional[str] = None):
-        def register_slash_command(func):
-
-            results = ClientMessageCommand(callback=func, name=name or func.__name__)
-
-            self.commands[name] = results
-            return results
-
-        return register_slash_command
 
 
 class Status:
@@ -793,12 +725,82 @@ class VoiceRegion:
         self.deprecated: bool = data["deprecated"]
         self.custom: bool = data["custom"]
 
+class CommandHandler:
+    def __init__(self):
+        self.commands: Dict[
+            str, Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]
+        ] = {}
+        super().__init__()
 
-class EventHandler:
+    def command(
+        self,
+        *,
+        name: Optional[str] = None,
+        description: str = None,
+        guild_ids: Optional[List[str]] = None,
+        options: Optional[List[AnyOption]] = None,
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
+        name_localisations: Optional[List[Localization]] = None,
+        description_localisations: Optional[List[Localization]] = None,
+    ):
+        name_localization = self.utils.match_mixed(
+            name_localizations, name_localisations
+        )
+        description_localization = self.utils.match_mixed(
+            description_localizations, description_localisations
+        )
+
+        def register_slash_command(func):
+            desc = description or func.__doc__
+            if not desc:
+                raise TypeError(
+                    f"Command with {name or func.__name__} has no description. This is required."
+                )
+
+            command = ClientSlashCommand(
+                name=name or func.__name__,
+                description=desc,
+                guild_ids=guild_ids or [],
+                options=options or [],
+                callback=func,
+                name_localization=name_localization,
+                description_localization=description_localization,
+            )
+
+            self.commands[command.name] = command
+            return command
+
+        return register_slash_command
+
+    def user_command(self, name: Optional[str] = None):
+        def register_slash_command(func):
+
+            results = ClientUserCommand(callback=func, name=name or func.__name__)
+
+            self.commands[name] = results
+            return results
+
+        return register_slash_command
+
+    def message_command(self, name: Optional[str] = None):
+        def register_slash_command(func):
+
+            results = ClientMessageCommand(callback=func, name=name or func.__name__)
+
+            self.commands[name] = results
+            return results
+
+        return register_slash_command
+
+
+
+class EventHandler(CommandHandler):
     # Class that'll contain all methods that'll be called when an event is
     # triggered.
 
     def __init__(self):
+        super().__init__()
         self.events = defaultdict(list)
         self.wait_for_events = defaultdict(list)
         self.latencies = deque(maxlen=5)
@@ -2480,7 +2482,9 @@ class Section:
         super().__init_subclass__(**kwargs)
 
 
-class Client(WebsocketClient, CommandHandler):
+
+
+class Client(WebsocketClient):
     def __init__(
         self,
         token: str,
@@ -4728,7 +4732,7 @@ class Shard(WebsocketClient):
         await self.resume()
 
 
-class ShardManager(CommandHandler, EventHandler):
+class ShardManager(EventHandler):
     def __init__(
         self,
         token: str,
@@ -5165,12 +5169,9 @@ __all__ = (
     "guilds_manager",
     "logger",
     "managers",
-    "nacl",
     "opcodes",
     "options",
-    "os",
     "partials",
-    "perf_counter_ns",
     "roles_manager",
     "rtp_handler",
     "type_enums",
