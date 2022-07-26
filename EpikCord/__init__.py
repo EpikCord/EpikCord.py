@@ -49,6 +49,8 @@ CT = TypeVar("CT", bound="Colour")
 T = TypeVar("T")
 logger = getLogger(__name__)
 
+__version__ = "0.5.2"
+
 _NACL = False
 _ORJSON = False
 
@@ -4977,9 +4979,6 @@ class AutoModerationRule:
         await self.client.http.delete(
             f"guilds/{self.guild_id}/auto-moderation/rules/{self.id}"
         )
-
-
-__version__ = "0.5.2"
 
 __all__ = (
     "__version__",
