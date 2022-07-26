@@ -10,7 +10,7 @@ import os
 import re
 import socket
 import struct
-import zlib 
+import zlib
 from abc import abstractmethod
 from base64 import b64encode
 from collections import defaultdict, deque
@@ -725,6 +725,7 @@ class VoiceRegion:
         self.deprecated: bool = data["deprecated"]
         self.custom: bool = data["custom"]
 
+
 class CommandHandler:
     def __init__(self):
         self.commands: Dict[
@@ -792,7 +793,6 @@ class CommandHandler:
             return results
 
         return register_slash_command
-
 
 
 class EventHandler(CommandHandler):
@@ -2480,8 +2480,6 @@ class Section:
                 cls._commands[cls.__name__].append(attr_value)
 
         super().__init_subclass__(**kwargs)
-
-
 
 
 class Client(WebsocketClient):
