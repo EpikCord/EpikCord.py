@@ -4978,6 +4978,7 @@ class AutoModerationRule:
             f"guilds/{self.guild_id}/auto-moderation/rules/{self.id}"
         )
 
+
 __all__ = (
     "__version__",
     "ActionRow",
