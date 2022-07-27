@@ -42,7 +42,7 @@ class HTTPCodes(StatusCode):
         )
 
 
-class JsonErrorCodes(StatusCode):
+class JSONErrorCodes(StatusCode):
     GENERAL_ERROR = 0
 
     UNKNOWN_ACCOUNT = 10001
