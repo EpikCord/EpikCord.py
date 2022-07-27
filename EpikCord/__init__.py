@@ -49,7 +49,7 @@ CT = TypeVar("CT", bound="Colour")
 T = TypeVar("T")
 logger = getLogger(__name__)
 
-__version__ = "0.5.2"
+__version__ = '0.5.2'
 
 _NACL = False
 _ORJSON = False
