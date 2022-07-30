@@ -337,6 +337,7 @@ class Presence:
 
         return payload
 
+
 class Reaction:
     """
     A class representation of a Reaction.
@@ -3084,6 +3085,7 @@ class SystemChannelFlags:
     @property
     def suppress_join_notification_replies(self):
         self.value += 1 << 3
+
 
 class WebhookUser:
     def __init__(self, data: dict):

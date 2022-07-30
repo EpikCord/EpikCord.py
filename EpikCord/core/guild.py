@@ -1,8 +1,6 @@
 import EpikCord
-from typing import (
-    Optional,
-    List
-)
+from typing import Optional, List
+
 
 class UnavailableGuild:
     """
@@ -14,6 +12,7 @@ class UnavailableGuild:
         self.data = data
         self.id: str = data.get("id")
         self.available: bool = data.get("available")
+
 
 class Guild:
     def __init__(self, client, data: dict):
@@ -71,7 +70,9 @@ class Guild:
         self.channels: List[EpikCord.GuildChannel] = [
             client.utils.channel_from_type(channel) for channel in data.get("channels")
         ]
-        self.threads: List[EpikCord.Thread] = [EpikCord.Thread(thread) for thread in data.get("threads")]
+        self.threads: List[EpikCord.Thread] = [
+            EpikCord.Thread(thread) for thread in data.get("threads")
+        ]
         self.presences: List[dict] = data.get("presences")
         self.max_presences: int = data.get("max_presences")
         self.max_members: int = data.get("max_members")
