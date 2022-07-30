@@ -19,7 +19,6 @@ from typing import (
     Union,
     Dict,
     TypeVar,
-    Callable,
     Tuple,
     Type
 )
@@ -32,6 +31,7 @@ from .commons import *
 from .client import *
 from .exceptions import *
 from .network import *
+from .commands import *
 from .managers import *
 from .opcodes import *
 from .options import *
@@ -46,6 +46,8 @@ from .type_enums import *
 CT = TypeVar("CT", bound="Colour")
 T = TypeVar("T")
 logger = getLogger(__name__)
+
+__version__ = "0.5.3"
 
 _NACL = False # Indicates if the user has been warned about the lack of nacl
 _ORJSON = False # Indicates if the user has orjson
@@ -2903,7 +2905,7 @@ class Shard(WebsocketClient):
         await self.resume()
 
 
-class ShardManager(CommandHandler, EventHandler):
+class ShardManager(EventHandler):
     def __init__(
         self,
         token: str,
@@ -3120,8 +3122,6 @@ class AutoModerationRule:
         )
 
 
-__version__ = "0.5.2"
-
 __all__ = (
     "__version__",
     "ActionRow",
@@ -3309,7 +3309,6 @@ __all__ = (
     "guilds_manager",
     "logger",
     "managers",
-    "nacl",
     "opcodes",
     "options",
     "partials",
