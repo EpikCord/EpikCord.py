@@ -1,7 +1,7 @@
 from typing import List, Union, Optional
 
 from .cache_manager import CacheManager
-from .. import UnavailableGuild, Guild
+from ..core import Guild, UnavailableGuild
 
 
 class GuildManager(CacheManager):
