@@ -790,11 +790,14 @@ class EventHandler(CommandHandler):
     # Class that'll contain all methods that'll be called when an event is
     # triggered.
 
-    def __init__(self):
+    def __init__(self, cache_limit = 1000):
         super().__init__()
         self.events = defaultdict(list)
         self.wait_for_events = defaultdict(list)
         self.latencies = deque(maxlen=5)
+        self.auto_moderation_cache = cache_manager.CacheManager()
+
+
 
     def wait_for(
         self, event_name: str, *, check: Optional[Callable] = None, timeout: int = None
@@ -1156,6 +1159,23 @@ class EventHandler(CommandHandler):
     ):
         logger.exception(error)
 
+    async def auto_moderation_rule_create(self, data:dict) -> AutoModerationRule:
+        rule = AutoModerationRule(self, data)
+        self.auto_moderation_cache.add_to_cache(rule.guild_id, rule)
+        return rule
+    
+    async def auto_moderation_rule_update(self, data:dict)-> tuple[Optional[AutoModerationRule], AutoModerationRule]:
+        after:AutoModerationRule = AutoModerationRule(self,data)
+        before:Optional[AutoModerationRule] = self.auto_moderation_cache.get(after.guild_id)
+        return before,after
+        
+    async def auto_moderation_rule_delete(self, data:dict)->Optional[AutoModerationRule]:
+        #According to discord docs, they will send an automoderation object , but i think it will be blank rule
+        # In this case, we need a previous instance, so discord's reply is not feasible
+        # Until the docs are clarified, I think our best bet here is to take the previous one from the cache
+        rule_guild_id = data["guild_id"]
+        previous:AutoModerationRule = self.auto_moderation_cache.get(rule_guild_id)
+        return previous
 
 class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
