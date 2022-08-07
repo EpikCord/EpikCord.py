@@ -789,15 +789,11 @@ class CommandHandler:
 class EventHandler(CommandHandler):
     # Class that'll contain all methods that'll be called when an event is
     # triggered.
-
-    def __init__(self, cache_limit = 1000):
+    def __init__(self):
         super().__init__()
         self.events = defaultdict(list)
         self.wait_for_events = defaultdict(list)
         self.latencies = deque(maxlen=5)
-        self.auto_moderation_cache = cache_manager.CacheManager()
-
-
 
     def wait_for(
         self, event_name: str, *, check: Optional[Callable] = None, timeout: int = None
@@ -855,11 +851,7 @@ class EventHandler(CommandHandler):
 
         return wrapper
 
-    async def guild_members_chunk(self, data: dict):
-        ...
 
-    async def guild_delete(self, data: dict):
-        return self.guilds.get(data["id"])
 
     async def handle_events(self):
         async for event in self.ws:
@@ -1046,43 +1038,7 @@ class EventHandler(CommandHandler):
 
         return interaction
 
-    async def channel_create(self, data: dict):
-        channel = self.utils.channel_from_type(data)
-        self.channels.add_to_cache(channel.id, channel)
-        return channel
 
-    async def message_create(self, data: dict):
-        """Event fired when messages are created"""
-        return Message(self, data)
-
-    async def guild_create(self, data):
-        guild = (
-            UnavailableGuild(data)
-            if data.get("unavailable") is True
-            else Guild(self, data)
-            if data.get("unavailable") is False
-            else None
-        )
-
-        if not guild:
-            return
-
-        self.guilds.add_to_cache(guild.id, guild)
-
-        if data.get("unavailable") is None:
-            return  # Bot was removed
-
-        for channel in data["channels"]:
-            self.channels.add_to_cache(
-                data["id"], self.utils.channel_from_type(channel)
-            )
-
-        for thread in data["threads"]:
-            self.channels.add_to_cache(data["id"], self.utils.channel_from_type(thread))
-
-        return guild
-
-        # TODO: Add other attributes to cache
 
     def event(self, event_name: Optional[str] = None):
         def register_event(func):
@@ -1097,9 +1053,7 @@ class EventHandler(CommandHandler):
 
         return register_event
 
-    async def guild_member_update(self, data):
-        guild_member = GuildMember(self, data)
-        return self.members.fetch(data["id"]), guild_member
+
 
     async def ready(self, data: dict):
         self.user: ClientUser = ClientUser(self, data.get("user"))
@@ -1159,12 +1113,13 @@ class EventHandler(CommandHandler):
     ):
         logger.exception(error)
 
+    #AutoModeration Events
     async def auto_moderation_rule_create(self, data:dict) -> AutoModerationRule:
         rule = AutoModerationRule(self, data)
         self.auto_moderation_cache.add_to_cache(rule.guild_id, rule)
         return rule
     
-    async def auto_moderation_rule_update(self, data:dict)-> tuple[Optional[AutoModerationRule], AutoModerationRule]:
+    async def auto_moderation_rule_update(self, data:dict)->tuple[Optional[AutoModerationRule], AutoModerationRule]:
         after:AutoModerationRule = AutoModerationRule(self,data)
         before:Optional[AutoModerationRule] = self.auto_moderation_cache.get(after.guild_id)
         return before,after
@@ -1176,6 +1131,72 @@ class EventHandler(CommandHandler):
         rule_guild_id = data["guild_id"]
         previous:AutoModerationRule = self.auto_moderation_cache.get(rule_guild_id)
         return previous
+
+    async def auto_moderation_action_execution(self, data:dict) -> AutoModerationExecutionEvent:
+        return AutoModerationExecutionEvent(data)    
+
+    # Guild Events
+    async def guild_create(self, data):
+        guild = (
+            UnavailableGuild(data)
+            if data.get("unavailable") is True
+            else Guild(self, data)
+            if data.get("unavailable") is False
+            else None
+        )
+
+        if not guild:
+            return
+
+        self.guilds.add_to_cache(guild.id, guild)
+
+        if data.get("unavailable") is None:
+            return  # Bot was removed
+
+        for channel in data["channels"]:
+            self.channels.add_to_cache(
+                data["id"], self.utils.channel_from_type(channel)
+            )
+
+        for thread in data["threads"]:
+            self.channels.add_to_cache(data["id"], self.utils.channel_from_type(thread))
+
+        return guild
+
+        # TODO: Add other attributes to cache
+
+    async def guild_member_update(self, data):
+        guild_member = GuildMember(self, data)
+        return self.members.fetch(data["id"]), guild_member
+
+    async def guild_members_chunk(self, data: dict):
+        ...
+
+    async def guild_delete(self, data: dict):
+        return self.guilds.get(data["id"])
+
+    # Channel Events
+    async def channel_create(self, data: dict)-> AnyChannel:
+        channel = self.utils.channel_from_type(data)
+        self.channels.add_to_cache(channel.id, channel)
+        return channel
+    
+    async def channel_update(self, data:dict) -> tuple[Optional[AnyChannel], AnyChannel]:
+        after:GuildChannel = self.utils.channel_from_type(data)
+        before = self.channels.get(after.id)
+        return before,after
+    
+    async def channel_delete(self,data:dict)-> Optional[AnyChannel]:
+        channel = self.channels.get(data["id"])
+        return channel
+
+    # Message Events
+    async def message_create(self, data: dict)-> Message:
+        """Event fired when messages are created"""
+
+        return Message(self, data)
+
+
 
 class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
@@ -2501,6 +2522,7 @@ class Client(WebsocketClient):
         *,
         status: Optional[Status] = None,
         activity: Optional[Activity] = None,
+        cache_limit:Optional[int] = 1000,
         overwrite_commands_on_ready: Optional[bool] = False,
         discord_endpoint: str = "https://discord.com/api/v10",
     ):
@@ -2508,6 +2530,7 @@ class Client(WebsocketClient):
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
         self.guilds: GuildManager = GuildManager(self)
         self.channels: ChannelManager = ChannelManager(self)
+        self.auto_moderation_cache = cache_manager.CacheManager(cache_limit)
         self.presence: Presence = Presence(status=status, activity=activity)
         self._components = {}
 
@@ -4614,6 +4637,20 @@ class AutoModerationAction:
             "type": int(self.type),
             "metadata": self.metadata.to_dict(),
         }
+
+class AutoModerationExecutionEvent:
+    def __init__(self, data:dict):
+        self.guild_id = data["guild_id"]
+        self.action = AutoModerationAction(data["action"])
+        self.id = data["rule_id"]
+        self.trigger_type = AutoModerationTriggerType(data["rule_trigger_type"])
+        self.user_id = data["user_id"]
+        self.channel_id = data.get("channel_id")
+        self.message_id = data.get("message_id")
+        self.alert_system_message_id = data.get("alert_system_message_id")
+        self.content = data["content"]
+        self.matched_keyword = data["matched_keyword"]
+        self.matched_content = data["matched_content"]
 
 
 class AutoModerationRule:

@@ -1,9 +1,18 @@
+import asyncio
 from typing import Any, Optional
 
 
 class CacheManager:
-    def __init__(self):
+    def __init__(self, limit= 1000):
+        self.limit = limit
         self.cache = {}
+        asyncio.create_task(self.limit_check)
+
+
+    async def limit_check(self):
+        while True:
+            if len(self.cache) >= self.limit:
+                self.cache.pop(next(iter(self.cache)))
 
     def add_to_cache(self, key, value):
         self.cache[key] = value
