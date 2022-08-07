@@ -6,12 +6,12 @@ from ..core import Guild, UnavailableGuild
 
 class GuildManager(CacheManager):
     def __init__(
-        self, client, guilds: Optional[List[Union[Guild, UnavailableGuild]]] = None
+        self, client, guilds: Optional[List[Union[Guild, UnavailableGuild]]] = None, limit = 1000
     ):
         if guilds is None:
             guilds = []
 
-        super().__init__()
+        super().__init__(limit)
         self.client = client
         self.available_guilds = {
             guild.id: guild

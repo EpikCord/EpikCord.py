@@ -1203,14 +1203,20 @@ class EventHandler(CommandHandler):
         ...
     
     # Guild Role: TODO: Cache Roles per Server
-    async def guild_role_create(self,data:dict) -> tuple[Optional[Guild], Role]:
-        return self.guilds.fetch(data["guild_id"]), Role(self,data["role"])
+    async def guild_role_create(self,data:dict) -> Role:
+        role = Role(self,data["role"])
+        self.roles.add_to_cache(role.id, role)
+        return role
 
-    async def guild_role_update(self,data:dict):
-        ...
+    async def guild_role_update(self,data:dict) -> tuple[Optional[Role], Role]:
+        after = Role(self, data["role"])
+        before = self.roles.get(after.id)
+        return before, after 
 
-    async def guild_role_delete(self, data:dict):
-        ...
+    async def guild_role_delete(self, data:dict) -> Optional[Role]:
+        deleted = self.roles.get(data["role_id"])
+        return deleted
+    
     # Guild Scheduled Event Create: TODO: Caching
     async def guild_scheduled_event_create(self, data:dict) -> GuildScheduledEvent:
         return GuildScheduledEvent(self, data)
@@ -1218,7 +1224,8 @@ class EventHandler(CommandHandler):
     guild_scheduled_event_update = guild_scheduled_event_create
     guild_scheduled_event_delete = guild_scheduled_event_create
 
-    
+    async def guild_scheduled_event_user_add(self, data:dict):
+        ...
     # Channel Events
     async def channel_create(self, data: dict)-> AnyChannel:
         channel = self.utils.channel_from_type(data)
@@ -2585,8 +2592,8 @@ class Client(WebsocketClient):
     ):
         super().__init__(token, intents)
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
-        self.guilds: GuildManager = GuildManager(self)
-        self.channels: ChannelManager = ChannelManager(self)
+        self.guilds: GuildManager = GuildManager(self, limit=cache_limit)
+        self.channels: ChannelManager = ChannelManager(self, limit=cache_limit)
         self.roles = CacheManager(cache_limit)
         self.auto_moderation_cache = CacheManager(cache_limit)
         self.presence: Presence = Presence(status=status, activity=activity)
