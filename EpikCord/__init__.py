@@ -1167,7 +1167,9 @@ class EventHandler(CommandHandler):
         return before ,after
     
     async def guild_delete(self, data: dict) -> Optional[Guild]:
-        return self.guilds.get(data["id"])
+        deleted = self.guilds.get(data["id"])
+        self.guilds.remove_from_cache(data["id"])
+        return deleted
 
     async def guild_ban_add(self, data:dict) -> tuple[Optional[Guild], User]:
         return self.guilds.get(data["guild_id"]), User(self, data["user"])
@@ -1212,6 +1214,7 @@ class EventHandler(CommandHandler):
 
     async def guild_role_delete(self, data:dict) -> Optional[Role]:
         deleted = self.roles.get(data["role_id"])
+        self.roles.remove_from_cache(data["role_id"])
         return deleted
     
     # Guild Scheduled Event Create: TODO: Caching
@@ -1241,8 +1244,8 @@ class EventHandler(CommandHandler):
         return before,after
     
     async def channel_delete(self,data:dict)-> Optional[AnyChannel]:
-        return self.channels.get(data["id"])
-    
+        deleted = self.channels.get(data["id"])
+        self.channels.remove_from_cache(data["id"])
     async def channel_pins_update(self,data:dict) -> tuple[Optional[str], str, Optional[datetime.datetime]]:
         timestamp = data.get("last_pin_timestamp")
         dt = datetime.datetime.fromisoformat(timestamp) if timestamp else None
