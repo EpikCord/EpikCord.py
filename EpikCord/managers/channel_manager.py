@@ -1,4 +1,4 @@
-from typing import TypeAlias, Union, List, Optional
+from typing import  Union, List, Optional
 
 from .cache_manager import CacheManager
 from .. import (
@@ -12,7 +12,7 @@ from .. import (
     GuildStageChannel,
 )
 
-AnyChannel:TypeAlias = Union[
+AnyChannel = Union[
     GuildChannel,
     GuildTextChannel,
     GuildNewsChannel,
