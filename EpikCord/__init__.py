@@ -1186,14 +1186,39 @@ class EventHandler(CommandHandler):
         stickers = [Sticker(sticker) for sticker in data["stickers"]]
         return self.guilds.fetch(data["guild_id"]), stickers 
 
-    async def guild_member_update(self, data):
+    async def guild_integrations_update(self,data:dict) -> Optional[Guild]:
+        return self.guilds.fetch(data["guild_id"])
+
+    async def guild_member_add(self,data:dict) -> tuple[Optional[Guild], GuildMember]:
+        return self.guilds.fetch(data["guild_id"]), GuildMember(self, data)    
+
+    async def guild_member_update(self, data) -> tuple[Optional[GuildMember],GuildMember]:
         guild_member = GuildMember(self, data)
         return self.members.fetch(data["id"]), guild_member
 
+    async def guild_member_remove(self, data:dict) -> tuple[Optional[Guild], User]:
+        return self.guilds.fetch(data["guild_id"]), User(self,data["user"])
+
     async def guild_members_chunk(self, data: dict):
         ...
+    
+    # Guild Role: TODO: Cache Roles per Server
+    async def guild_role_create(self,data:dict) -> tuple[Optional[Guild], Role]:
+        return self.guilds.fetch(data["guild_id"]), Role(self,data["role"])
 
+    async def guild_role_update(self,data:dict):
+        ...
 
+    async def guild_role_delete(self, data:dict):
+        ...
+    # Guild Scheduled Event Create: TODO: Caching
+    async def guild_scheduled_event_create(self, data:dict) -> GuildScheduledEvent:
+        return GuildScheduledEvent(self, data)
+    
+    guild_scheduled_event_update = guild_scheduled_event_create
+    guild_scheduled_event_delete = guild_scheduled_event_create
+
+    
     # Channel Events
     async def channel_create(self, data: dict)-> AnyChannel:
         channel = self.utils.channel_from_type(data)
@@ -2562,7 +2587,8 @@ class Client(WebsocketClient):
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
         self.guilds: GuildManager = GuildManager(self)
         self.channels: ChannelManager = ChannelManager(self)
-        self.auto_moderation_cache = cache_manager.CacheManager(cache_limit)
+        self.roles = CacheManager(cache_limit)
+        self.auto_moderation_cache = CacheManager(cache_limit)
         self.presence: Presence = Presence(status=status, activity=activity)
         self._components = {}
 
