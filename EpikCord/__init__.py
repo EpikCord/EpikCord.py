@@ -1219,10 +1219,16 @@ class EventHandler(CommandHandler):
     
     # Guild Scheduled Event Create: TODO: Caching
     async def guild_scheduled_event_create(self, data:dict) -> GuildScheduledEvent:
-        return GuildScheduledEvent(self, data)
+        event = GuildScheduledEvent(self, data)
+        self.guild_events.add_to_cache(event.id, event)
+        return event
     
-    guild_scheduled_event_update = guild_scheduled_event_create
-    guild_scheduled_event_delete = guild_scheduled_event_create
+    async def guild_scheduled_event_update(self,data:dict):
+        after = GuildScheduledEvent(self,data)
+        before = self.guild_events.get(after.id)
+        return before, after
+    async def guild_scheduled_event_delete(self,data:dict):
+        return GuildScheduledEvent(self, data)
 
     async def guild_scheduled_event_user_add(self, data:dict):
         ...
@@ -2594,8 +2600,9 @@ class Client(WebsocketClient):
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
         self.guilds: GuildManager = GuildManager(self, limit=cache_limit)
         self.channels: ChannelManager = ChannelManager(self, limit=cache_limit)
-        self.roles = CacheManager(cache_limit)
-        self.auto_moderation_cache = CacheManager(cache_limit)
+        self.roles = RoleManager(self,cache_limit)
+        self.guild_events = ScheduledEventManager(self,cache_limit)
+        self.auto_moderation_cache = ScheduledEventManager(cache_limit)
         self.presence: Presence = Presence(status=status, activity=activity)
         self._components = {}
 
