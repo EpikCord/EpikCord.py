@@ -1125,9 +1125,6 @@ class EventHandler(CommandHandler):
         return before,after
         
     async def auto_moderation_rule_delete(self, data:dict)->Optional[AutoModerationRule]:
-        #According to discord docs, they will send an automoderation object , but i think it will be blank rule
-        # In this case, we need a previous instance, so discord's reply is not feasible
-        # Until the docs are clarified, I think our best bet here is to take the previous one from the cache
         rule_guild_id = data["guild_id"]
         previous:AutoModerationRule = self.auto_moderation_cache.get(rule_guild_id)
         return previous
