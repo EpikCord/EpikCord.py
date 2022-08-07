@@ -3,17 +3,14 @@ from typing import Any, Optional
 
 
 class CacheManager:
-    def __init__(self, limit= 1000):
+    def __init__(self, limit= 5000):
         self.limit = limit
         self.cache = {}
         
     
     def add_to_cache(self, key, value):
-        if not len(self.cache) < self.limit:
+        if len(self.cache) >= self.limit:
             self.cache.pop(next(iter(self.cache)))
-        self.cache[key] = value
-
-    def add_to_cache(self, key, value):
         self.cache[key] = value
 
     def remove_from_cache(self, key):

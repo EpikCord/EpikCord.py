@@ -2589,7 +2589,7 @@ class Client(WebsocketClient):
         *,
         status: Optional[Status] = None,
         activity: Optional[Activity] = None,
-        cache_limit:Optional[int] = 1000,
+        cache_limit:Optional[int] = 5000,
         overwrite_commands_on_ready: Optional[bool] = False,
         discord_endpoint: str = "https://discord.com/api/v10",
     ):

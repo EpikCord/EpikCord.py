@@ -25,7 +25,7 @@ AnyChannel = Union[
 
 
 class ChannelManager(CacheManager):
-    def __init__(self, client, channels: Optional[List[AnyChannel]] = None, limit = 1000):
+    def __init__(self, client, channels: Optional[List[AnyChannel]] = None, limit = 5000):
         super().__init__(limit)
         self.client = client
         self.cache = {channel.id: channel for channel in channels} if channels else {}
