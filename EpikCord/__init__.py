@@ -2592,17 +2592,17 @@ class Client(WebsocketClient):
         *,
         status: Optional[Status] = None,
         activity: Optional[Activity] = None,
-        cache_limit:Optional[int] = 5000,
+        local_cache_limit:Optional[int] = 5000,
         overwrite_commands_on_ready: Optional[bool] = False,
         discord_endpoint: str = "https://discord.com/api/v10",
     ):
         super().__init__(token, intents)
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
-        self.guilds: GuildManager = GuildManager(self, limit=cache_limit)
-        self.channels: ChannelManager = ChannelManager(self, limit=cache_limit)
-        self.roles = RoleManager(self,cache_limit)
-        self.guild_events = ScheduledEventManager(self,cache_limit)
-        self.auto_moderation_cache = ScheduledEventManager(cache_limit)
+        self.guilds: GuildManager = GuildManager(self, limit=local_cache_limit)
+        self.channels: ChannelManager = ChannelManager(self, limit=local_cache_limit)
+        self.roles = RoleManager(self,local_cache_limit)
+        self.guild_events = ScheduledEventManager(self,local_cache_limit)
+        self.auto_moderation_cache = AutoModerationRuleManager(local_cache_limit)
         self.presence: Presence = Presence(status=status, activity=activity)
         self._components = {}
 
