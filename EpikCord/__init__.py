@@ -1249,7 +1249,7 @@ class EventHandler(CommandHandler):
     async def channel_pins_update(self,data:dict) -> tuple[Optional[str], str, Optional[datetime.datetime]]:
         timestamp = data.get("last_pin_timestamp")
         dt = datetime.datetime.fromisoformat(timestamp) if timestamp else None
-        return (data.get("guild_id"), data["channel_id"], dt)
+        return (self.guilds.fetch(data.get("guild_id")), self.channels.fetch(data["channel_id"]), dt)
     
     # Thread Events, TODO: Need to do more Events 
     async def thread_list_sync(self,data:dict):

@@ -10,5 +10,5 @@ from .cache_manager import *
 from .guilds_manager import *
 from .roles_manager import *
 from .channel_manager import *
-from .other_manager import *
+from .misc_managers import *
 from .member_manager import *
