@@ -1163,38 +1163,38 @@ class EventHandler(CommandHandler):
         # TODO: Add other attributes to cache
     async def guild_update(self, data) -> tuple[Optional[Guild], Guild]:
         after:Guild = Guild(self, data)
-        before:Optional[Guild] = self.guilds.fetch(after.id)
+        before:Optional[Guild] = self.guilds.get(after.id)
         return before ,after
     
     async def guild_delete(self, data: dict) -> Optional[Guild]:
         return self.guilds.get(data["id"])
 
     async def guild_ban_add(self, data:dict) -> tuple[Optional[Guild], User]:
-        return self.guilds.fetch(data["guild_id"]), User(self, data["user"])
+        return self.guilds.get(data["guild_id"]), User(self, data["user"])
 
     async def guild_ban_remove(self, data:dict)-> tuple[Optional[Guild], User]:
-        return self.guilds.fetch(data["guild_id"]), User(self, data["user"])
+        return self.guilds.get(data["guild_id"]), User(self, data["user"])
     
     async def guild_emojis_update(self,data:dict) -> tuple[Optional[Guild], List[Emoji]]:
         emojis = [Emoji(self,emoji, data["guild_id"]) for emoji in data["emojis"]]
-        return self.guilds.fetch(data["guild_id"]), emojis
+        return self.guilds.get(data["guild_id"]), emojis
 
     async def guild_stickers_update(self,data:dict) -> tuple[Optional[Guild], List[Sticker]]:
         stickers = [Sticker(sticker) for sticker in data["stickers"]]
-        return self.guilds.fetch(data["guild_id"]), stickers 
+        return self.guilds.get(data["guild_id"]), stickers 
 
     async def guild_integrations_update(self,data:dict) -> Optional[Guild]:
-        return self.guilds.fetch(data["guild_id"])
+        return self.guilds.get(data["guild_id"])
 
     async def guild_member_add(self,data:dict) -> tuple[Optional[Guild], GuildMember]:
-        return self.guilds.fetch(data["guild_id"]), GuildMember(self, data)    
+        return self.guilds.get(data["guild_id"]), GuildMember(self, data)    
 
     async def guild_member_update(self, data) -> tuple[Optional[GuildMember],GuildMember]:
         guild_member = GuildMember(self, data)
-        return self.members.fetch(data["id"]), guild_member
+        return self.members.get(data["id"]), guild_member
 
     async def guild_member_remove(self, data:dict) -> tuple[Optional[Guild], User]:
-        return self.guilds.fetch(data["guild_id"]), User(self,data["user"])
+        return self.guilds.get(data["guild_id"]), User(self,data["user"])
 
     async def guild_members_chunk(self, data: dict):
         ...
