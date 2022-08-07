@@ -2598,8 +2598,8 @@ class Client(WebsocketClient):
     ):
         super().__init__(token, intents)
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
-        self.guilds: GuildManager = GuildManager(self, limit=local_cache_limit)
-        self.channels: ChannelManager = ChannelManager(self, limit=local_cache_limit)
+        self.guilds= GuildManager(self, limit=local_cache_limit)
+        self.channels= ChannelManager(self, limit=local_cache_limit)
         self.roles = RoleManager(self,local_cache_limit)
         self.guild_events = ScheduledEventManager(self,local_cache_limit)
         self.auto_moderation_cache = AutoModerationRuleManager(local_cache_limit)
