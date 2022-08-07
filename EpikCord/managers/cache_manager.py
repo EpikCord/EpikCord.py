@@ -6,7 +6,7 @@ class CacheManager:
     def __init__(self, limit= 1000):
         self.limit = limit
         self.cache = {}
-        asyncio.create_task(self.limit_check)
+        asyncio.create_task(self.limit_check())
 
 
     async def limit_check(self):

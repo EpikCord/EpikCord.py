@@ -1136,7 +1136,7 @@ class EventHandler(CommandHandler):
         return AutoModerationExecutionEvent(data)    
 
     # Guild Events
-    async def guild_create(self, data):
+    async def guild_create(self, data) -> Union[UnavailableGuild, Guild]:
         guild = (
             UnavailableGuild(data)
             if data.get("unavailable") is True
@@ -1164,6 +1164,27 @@ class EventHandler(CommandHandler):
         return guild
 
         # TODO: Add other attributes to cache
+    async def guild_update(self, data) -> tuple[Optional[Guild], Guild]:
+        after:Guild = Guild(self, data)
+        before:Optional[Guild] = self.guilds.fetch(after.id)
+        return before ,after
+    
+    async def guild_delete(self, data: dict) -> Optional[Guild]:
+        return self.guilds.get(data["id"])
+
+    async def guild_ban_add(self, data:dict) -> tuple[Optional[Guild], User]:
+        return self.guilds.fetch(data["guild_id"]), User(self, data["user"])
+
+    async def guild_ban_remove(self, data:dict)-> tuple[Optional[Guild], User]:
+        return self.guilds.fetch(data["guild_id"]), User(self, data["user"])
+    
+    async def guild_emojis_update(self,data:dict) -> tuple[Optional[Guild], List[Emoji]]:
+        emojis = [Emoji(self,emoji, data["guild_id"]) for emoji in data["emojis"]]
+        return self.guilds.fetch(data["guild_id"]), emojis
+
+    async def guild_stickers_update(self,data:dict) -> tuple[Optional[Guild], List[Sticker]]:
+        stickers = [Sticker(sticker) for sticker in data["stickers"]]
+        return self.guilds.fetch(data["guild_id"]), stickers 
 
     async def guild_member_update(self, data):
         guild_member = GuildMember(self, data)
@@ -1172,8 +1193,6 @@ class EventHandler(CommandHandler):
     async def guild_members_chunk(self, data: dict):
         ...
 
-    async def guild_delete(self, data: dict):
-        return self.guilds.get(data["id"])
 
     # Channel Events
     async def channel_create(self, data: dict)-> AnyChannel:
@@ -1187,13 +1206,20 @@ class EventHandler(CommandHandler):
         return before,after
     
     async def channel_delete(self,data:dict)-> Optional[AnyChannel]:
-        channel = self.channels.get(data["id"])
-        return channel
+        return self.channels.get(data["id"])
+    
+    async def channel_pins_update(self,data:dict) -> tuple[Optional[str], str, Optional[datetime.datetime]]:
+        timestamp = data.get("last_pin_timestamp")
+        dt = datetime.datetime.fromisoformat(timestamp) if timestamp else None
+        return (data.get("guild_id"), data["channel_id"], dt)
+    
+    # Thread Events, TODO: Need to do more Events 
+    async def thread_list_sync(self,data:dict):
+        return ThreadSyncEvent(self, data)
 
     # Message Events
     async def message_create(self, data: dict)-> Message:
         """Event fired when messages are created"""
-
         return Message(self, data)
 
 
@@ -1653,6 +1679,12 @@ class Thread:
         )
         return await response.json()
 
+class ThreadSyncEvent:
+    def __init__(self, client, data:dict):
+        self.guild_id = data["guild_id"]
+        self.channel_ids = data.get("channel_ids")
+        self.threads = [Thread(client, thread) for thread in data["threads"]]
+        self.members = [ThreadMember(member) for member in data["members"]]
 
 class PrivateThread(Thread):
     ...
