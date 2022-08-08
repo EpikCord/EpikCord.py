@@ -15,6 +15,7 @@ from abc import abstractmethod
 from base64 import b64encode
 from collections import defaultdict, deque
 from importlib import import_module
+from importlib.util import find_spec
 from inspect import iscoroutine
 from logging import getLogger
 from sys import platform
@@ -52,30 +53,25 @@ logger = getLogger(__name__)
 
 __version__ = "0.5.2"
 
-_NACL = False
-_ORJSON = False
+_NACL = find_spec("nacl")
+_ORJSON = find_spec("orjson")
 
 
-try:
+if _NACL:
     import nacl
-
-    _NACL = True
-
-except ImportError:
-    if not _NACL:
-        logger.warning(
-            "The PyNacl library was not found, so voice is not supported."
-            " Please install it by doing ``pip install PyNaCl``"
-            " If you want voice support"
-        )
+    
+else:
+    logger.warning(
+        "The PyNacl library was not found, so voice is not supported."
+        " Please install it by doing ``pip install PyNaCl``"
+        " If you want voice support"
+    )
 
 
-try:
+if _ORJSON:
     import orjson as json
 
-    _ORJSON = True
-
-except ImportError:
+else:
     import json
 
 """
@@ -152,7 +148,7 @@ class AuthorizationInformation:
 class UserClient:
     """This class is meant to be used with an Access Token. Not a User Account Token"""
 
-    def __init__(self, token: str, *, discord_endpoint):
+    def __init__(self, token: str, *, discord_endpoint: str):
         self.token = token
         self._http: HTTPClient = HTTPClient(
             headers={
@@ -378,7 +374,7 @@ class Message:
 
     """
 
-    def __init__(self, client, data: dict):
+    def __init__(self, client: Client, data: dict):
         self.client = client
         self.id: str = data.get("id")
         self.channel_id: str = data.get("channel_id")
@@ -406,7 +402,7 @@ class Message:
         #     if data.get("author")
         #     else None
         # )
-        # I forgot Message Intents are gonna stop this.
+        #! I forgot Message Intents are gonna stop this.
         self.content: Optional[str] = data.get("content")
         self.timestamp: datetime.datetime = datetime.datetime.fromisoformat(
             data["timestamp"]
@@ -437,8 +433,8 @@ class Message:
         self.activity: Optional[MessageActivity] = (
             MessageActivity(data.get("activity")) if data.get("activity") else None
         )
-        # Despite there being a PartialApplication,
-        # Discord don't specify what attributes it has
+        #* Despite there being a PartialApplication,
+        #* Discord don't specify what attributes it has
         self.application: Application = (
             Application(data.get("application")) if data.get("application") else None
         )
@@ -549,7 +545,7 @@ class Message:
                 "rate_limit_per_user": rate_limit_per_user,
             },
         )
-        # Cache it
+        #* Cache it
         self.client.guilds[self.guild_id].append(Thread(await response.json()))
         return Thread(await response.json())
 
@@ -697,8 +693,8 @@ class User(Messageable):
         self.system: Optional[bool] = data.get("system")
         self.mfa_enabled: bool = data.get("mfa_enabled")
         self.banner: Optional[str] = data.get("banner")
-        # the user's banner color encoded as an integer representation of
-        # hexadecimal color code
+        #* the user's banner color encoded as an integer representation of
+        #* hexadecimal color code
         self.accent_color: Optional[int] = data.get("accent_color")
         self.locale: Optional[str] = data.get("locale")
         self.verified: bool = data.get("verified")
@@ -1412,9 +1408,11 @@ class ClientUserCommand(BaseCommand):
 
     Attributes:
     -----------
-        * name The name set for the User Command
-        * callback: callable The function to call for the User Command
-        (Passed in by the library)
+        * name: str
+            The name set for the User Command
+        * callback: Callable
+            The function to call for the User Command
+            (Passed in by the library)
 
     Parameters:
     -----------
@@ -2448,7 +2446,7 @@ class HTTPClient(ClientSession):
 
 
 class Event:
-    def __init__(self, callback, *, event_name: str):
+    def __init__(self, callback: Callable, *, event_name: str):
         self.callback = callback
         self.event_name = event_name or callback.__name__
 
