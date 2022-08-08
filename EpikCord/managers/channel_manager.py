@@ -1,7 +1,7 @@
 from typing import Union, List, Optional
 
 from .cache_manager import CacheManager
-from .. import (
+from ..channels import (
     GuildChannel,
     GuildTextChannel,
     GuildNewsChannel,
