@@ -2,7 +2,7 @@ from enum import IntEnum
 
 
 class Opcode(IntEnum):
-    pass
+    ...
 
 
 class GatewayOpcode(Opcode):

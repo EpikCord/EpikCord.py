@@ -2,17 +2,23 @@ from enum import IntEnum
 
 
 class CloseEventCode(IntEnum):
-    pass
+    """Universal close event codes."""
+    
+    UnknownOpcode = 4001
+    DecodeError = 4002
+    
+    NotAuthenticated = 4003
+    AuthenticationFailed = 4004
+    AlreadyAuthenticated = 4005
+    
+    SessionTimedOut = 4009
 
 
 class GatewayCECode(CloseEventCode):
     """Gateway close event code."""
 
     UnknownError = 4000
-    UnknownOpcode = 4001
-    DecodeError = 4002
 
-    NotAuthenticated = 4003
     AuthenticationFailed = 4004
     AlreadyAuthenticated = 4005
 
@@ -31,15 +37,7 @@ class GatewayCECode(CloseEventCode):
 class VoiceCECode(CloseEventCode):
     """Voice close event code."""
 
-    UnknownOpcode = 4001
-    DecodeError = 4002
-
-    NotAuthenticated = 4003
-    AuthenticationFailed = 4004
-    AlreadyAuthenticated = 4005
-
     SessionExpired = 4006
-    SessionTimedOut = 4009
 
     ServerNotFound = 4011
     UnknownProtocol = 4012
