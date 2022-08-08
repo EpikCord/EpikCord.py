@@ -1,16 +1,13 @@
+from __future__ import annotations
 from typing import List, Union, Optional
 
 from .cache_manager import CacheManager
-from ..core import Guild, UnavailableGuild
-
 
 class GuildManager(CacheManager):
     def __init__(
-        self, client, guilds: Optional[List[Union[Guild, UnavailableGuild]]] = None
+        self, client, guilds = []
     ):
-        if guilds is None:
-            guilds = []
-
+        from EpikCord import UnavailableGuild, Guild
         super().__init__()
         self.client = client
         self.available_guilds = {
@@ -29,7 +26,7 @@ class GuildManager(CacheManager):
         *,
         with_counts: Optional[bool] = False,
     ):
-
+        from EpikCord import Guild
         if with_counts:
             return Guild(
                 self.client,
