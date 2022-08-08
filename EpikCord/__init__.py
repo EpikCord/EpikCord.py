@@ -59,7 +59,7 @@ _ORJSON = find_spec("orjson")
 
 if _NACL:
     import nacl
-    
+
 else:
     logger.warning(
         "The PyNacl library was not found, so voice is not supported."
@@ -433,8 +433,8 @@ class Message:
         self.activity: Optional[MessageActivity] = (
             MessageActivity(data.get("activity")) if data.get("activity") else None
         )
-        #* Despite there being a PartialApplication,
-        #* Discord don't specify what attributes it has
+        # * Despite there being a PartialApplication,
+        # * Discord don't specify what attributes it has
         self.application: Application = (
             Application(data.get("application")) if data.get("application") else None
         )
@@ -545,7 +545,7 @@ class Message:
                 "rate_limit_per_user": rate_limit_per_user,
             },
         )
-        #* Cache it
+        # * Cache it
         self.client.guilds[self.guild_id].append(Thread(await response.json()))
         return Thread(await response.json())
 
@@ -693,8 +693,8 @@ class User(Messageable):
         self.system: Optional[bool] = data.get("system")
         self.mfa_enabled: bool = data.get("mfa_enabled")
         self.banner: Optional[str] = data.get("banner")
-        #* the user's banner color encoded as an integer representation of
-        #* hexadecimal color code
+        # * the user's banner color encoded as an integer representation of
+        # * hexadecimal color code
         self.accent_color: Optional[int] = data.get("accent_color")
         self.locale: Optional[str] = data.get("locale")
         self.verified: bool = data.get("verified")
