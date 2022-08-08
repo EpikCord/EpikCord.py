@@ -2,9 +2,11 @@ from typing import Union, Dict, Optional, List
 from ..localizations import *
 from ..options import AnyOption
 
+
 class CommandHandler:
     def __init__(self):
         from EpikCord import ClientSlashCommand, ClientUserCommand, ClientMessageCommand
+
         self.commands: Dict[
             str, Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]
         ] = {}
@@ -36,6 +38,7 @@ class CommandHandler:
                     f"Command with {name or func.__name__} has no description. This is required."
                 )
             from EpikCord import ClientSlashCommand
+
             command = ClientSlashCommand(
                 name=name or func.__name__,
                 description=desc,
@@ -54,6 +57,7 @@ class CommandHandler:
     def user_command(self, name: Optional[str] = None):
         def register_slash_command(func):
             from EpikCord import ClientUserCommand
+
             results = ClientUserCommand(callback=func, name=name or func.__name__)
 
             self.commands[name] = results
@@ -64,6 +68,7 @@ class CommandHandler:
     def message_command(self, name: Optional[str] = None):
         def register_slash_command(func):
             from EpikCord import ClientMessageCommand
+
             results = ClientMessageCommand(callback=func, name=name or func.__name__)
 
             self.commands[name] = results

@@ -1,5 +1,6 @@
 from .type_enums import Locale
 
+
 class Localization:
     def __init__(self, locale: Locale, value: str):
         self.locale: Locale = str(locale)
@@ -7,5 +8,6 @@ class Localization:
 
     def to_dict(self):
         return {self.locale: self.value}
+
 
 Localisation = Localization

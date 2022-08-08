@@ -6,6 +6,7 @@ import datetime
 if TYPE_CHECKING:
     from EpikCord import ThreadMember
 
+
 class Thread:
     def __init__(self, client, data: dict):
         super().__init__(client, data)
@@ -63,6 +64,7 @@ class Thread:
 
     async def fetch_member(self, member_id: str) -> ThreadMember:
         from EpikCord import ThreadMember
+
         response = await self.client.http.get(
             f"/channels/{self.id}/thread-members/{member_id}", channel_id=self.id
         )
@@ -72,6 +74,7 @@ class Thread:
 
     async def list_members(self) -> List[ThreadMember]:
         from EpikCord import ThreadMember
+
         response = await self.client.http.get(
             f"/channels/{self.id}/thread-members", channel_id=self.id
         )
