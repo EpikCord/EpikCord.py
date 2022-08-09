@@ -381,8 +381,7 @@ class EventHandler(CommandHandler):
 
                 for guild_id in command.guild_ids or []:
                     command_sorter[guild_id].append(command_payload)
-                else:
-                    command_sorter["global"].append(command_payload)
+                command_sorter["global"].append(command_payload)
 
             for guild_id, commands in command_sorter.items():
 

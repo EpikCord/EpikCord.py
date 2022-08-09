@@ -3,42 +3,36 @@ NOTE: version string only in setup.cfg
 """
 from __future__ import annotations
 
-import asyncio
 import datetime
 import io
 import os
 import re
-from abc import abstractproperty
+from abc import abstractmethod
 from base64 import b64encode
-from collections import defaultdict
-from logging import getLogger
-from sys import platform
 from typing import (
     Optional,
     List,
     Union,
-    Dict,
     TypeVar,
-    Callable,
     Tuple,
     Type,
-    TYPE_CHECKING,
+    DefaultDict,
 )
 from urllib.parse import quote as _quote
 
+from .channels import *
+from .client import *
 from .close_event_codes import *
 from .components import *
 from .exceptions import *
+from .localizations import *
 from .managers import *
 from .opcodes import *
-from .client import *
 from .options import *
 from .partials import *
 from .rtp_handler import *
-from .thread import Thread
-from .localizations import *
 from .status_code import *
-from .channels import *
+from .thread import Thread
 from .type_enums import *
 
 CT = TypeVar("CT", bound="Colour")
@@ -182,10 +176,10 @@ class Status:
         InvalidStatus
             The status that you supplied is not valid.
         """
-        if status in {"online", "dnd", "idle", "invisible", "offline"}:
-            setattr(self, "status", status if status != "offline" else "invisible")
-        else:
+        if status not in {"online", "dnd", "idle", "invisible", "offline"}:
             raise InvalidStatus("That is an invalid status.")
+
+        self.status = status if status != "offline" else "invisible"
 
 
 class Activity:
@@ -403,40 +397,32 @@ class Guild:
             The description of the guild.
         premium_progress_bar_enabled: Optional[bool]
             Whether the guild has the premium progress bar enabled.
-
+        reason: Optional[str]
+            The reason for editing the guild.
         Returns
         -------
         :class:`EpikCord.Guild`
         """
-        data = {}
-        if name is not None:
-            data["name"] = name
-        if verification_level is not None:
-            data["verification_level"] = verification_level
-        if default_message_notifications is not None:
-            data["default_message_notifications"] = default_message_notifications
-        if explicit_content_filter is not None:
-            data["explicit_content_filter"] = explicit_content_filter
-        if afk_channel_id is not None:
-            data["afk_channel_id"] = afk_channel_id
-        if afk_timeout is not None:
-            data["afk_timeout"] = afk_timeout
-        if owner_id is not None:
-            data["owner_id"] = owner_id
-        if system_channel_id is not None:
-            data["system_channel_id"] = system_channel_id.value
-        if system_channel_flags is not None:
-            data["system_channel_flags"] = system_channel_flags
-        if rules_channel_id is not None:
-            data["rules_channel_id"] = rules_channel_id
-        if preferred_locale is not None:
-            data["preferred_locale"] = preferred_locale
-        if features is not None:
-            data["features"] = features
-        if description is not None:
-            data["description"] = description
-        if premium_progress_bar_enabled is not None:
-            data["premium_progress_bar_enabled"] = premium_progress_bar_enabled
+        data = Utils.filter_values(
+            {
+                "name": name,
+                "verification_level": verification_level,
+                "default_message_notifications": default_message_notifications,
+                "explicit_content_filter": explicit_content_filter,
+                "afk_channel_id": afk_channel_id,
+                "afk_timeout": afk_timeout,
+                "owner_id": owner_id,
+                "system_channel_id": system_channel_id,
+                "system_channel_flags": (
+                    system_channel_flags.id if system_channel_flags else None
+                ),
+                "rules_channel_id": rules_channel_id,
+                "preferred_locale": preferred_locale,
+                "features": features,
+                "description": description,
+                "premium_progress_bar_enabled": premium_progress_bar_enabled,
+            }
+        )
 
         headers = self.client.http.headers.copy()
         if reason:
@@ -461,7 +447,6 @@ class Guild:
         res = await self.client.http.get(f"/guilds/{self.id}/preview", guild_id=self.id)
 
         data = await res.json()
-
         return GuildPreview(data)
 
     async def delete(self):
@@ -475,10 +460,10 @@ class Guild:
         List[GuildChannel]
             The guild channels.
         """
-        channels = await self.client.http.get(
+        channels_ = await self.client.http.get(
             f"/guilds/{self.id}/channels", guild_id=self.id
         )
-        return [self.client.utils.channel_from_type(channel) for channel in channels]
+        return [self.client.utils.channel_from_type(channel) for channel in channels_]
 
     async def create_channel(
         self,
@@ -522,27 +507,20 @@ class Guild:
         nsfw: Optional[bool]
             Whether the channel is nsfw.
         """
-        data = {}
-        if name is not None:
-            data["name"] = name
-        if type is not None:
-            data["type"] = type
-        if topic is not None:
-            data["topic"] = topic
-        if bitrate is not None:
-            data["bitrate"] = bitrate
-        if user_limit is not None:
-            data["user_limit"] = user_limit
-        if rate_limit_per_user is not None:
-            data["rate_limit_per_user"] = rate_limit_per_user
-        if position is not None:
-            data["position"] = position
-        if permission_overwrites is not None:
-            data["permission_overwrites"] = permission_overwrites
-        if parent_id is not None:
-            data["parent_id"] = parent_id
-        if nsfw is not None:
-            data["nsfw"] = nsfw
+        data = Utils.filter_values(
+            {
+                "name": name,
+                "type": type,
+                "topic": topic,
+                "bitrate": bitrate,
+                "user_limit": user_limit,
+                "rate_limit_per_user": rate_limit_per_user,
+                "position": position,
+                "permission_overwrites": permission_overwrites,
+                "parent_id": parent_id,
+                "nsfw": nsfw,
+            }
+        )
 
         headers = self.client.http.headers.copy()
         if reason:
@@ -558,33 +536,6 @@ class Guild:
                 )
             ).json()
         )
-
-
-from typing import Optional, List
-
-
-class UnavailableGuild:
-    """
-    The class representation of an UnavailableGuild.
-    The Guild object should be given to use when the guild is available.
-    """
-
-    def __init__(self, data):
-        self.data = data
-        self.id: str = data.get("id")
-        self.available: bool = data.get("available")
-
-
-class UnavailableGuild:
-    """
-    The class representation of an UnavailableGuild.
-    The Guild object should be given to use when the guild is available.
-    """
-
-    def __init__(self, data):
-        self.data = data
-        self.id: str = data.get("id")
-        self.available: bool = data.get("available")
 
 
 class UnavailableGuild:
@@ -966,8 +917,8 @@ class BaseCommand:
     def is_message_command(self):
         return self.type == 3
 
-    @abstractproperty
     @property
+    @abstractmethod
     def type(self):
         ...
 
@@ -1045,11 +996,11 @@ class ClientSlashCommand(BaseCommand):
 
         if self.name_localizations:
             payload["name_localizations"] = [
-                l.to_dict() for l in self.name_localizations
+                loc.to_dict() for loc in self.name_localizations
             ]
         if self.description_localizations:
             payload["description_localizations"] = [
-                l.to_dict() for l in self.description_localizations
+                loc.to_dict() for loc in self.description_localizations
             ]
         return payload
 
@@ -1397,10 +1348,10 @@ class Attachment:
 
 
 class Section:
-    _commands: Dict[
-        str, Union[ClientUserCommand, ClientSlashCommand, ClientMessageCommand]
-    ] = defaultdict(list)
-    _events: Dict[str, Event] = defaultdict(list)
+    _cmd = Union[ClientUserCommand, ClientSlashCommand, ClientMessageCommand]
+
+    _commands: DefaultDict[str, List[_cmd]] = defaultdict(list)
+    _events: DefaultDict[str, List[Event]] = defaultdict(list)
 
     def __init_subclass__(cls, **kwargs):
         for attr_value in cls.__dict__.values():
@@ -1877,15 +1828,13 @@ class GuildScheduledEvent:
         self.scheduled_start_time: str = data.get("scheduled_start_time")
         self.scheduled_end_time: Optional[str] = data.get("scheduled_end_time")
         self.privacy_level: int = data.get("privacy_level")
-        self.status: str = (
-            "SCHEDULED"
-            if data.get("status") == 1
-            else "ACTIVE"
-            if data.get("status") == 2
-            else "COMPLETED"
-            if data.get("status") == 3
-            else "CANCELLED"
-        )
+
+        self.status = {
+            "SCHEDULED": 1,
+            "ACTIVE": 2,
+            "COMPLETED": 3,
+        }.get(data.get("status"), "CANCELLED")
+
         self.entity_type: str = (
             "STAGE_INSTANCE"
             if data.get("entity_type") == 1
@@ -2054,7 +2003,7 @@ class BaseInteraction:
         message_data = {"tts": tts, "flags": 0}
 
         if suppress_embeds:
-            message_data["flags"] | +1 << 2
+            message_data["flags"] |= +1 << 2
         if ephemeral:
             message_data["flags"] |= 1 << 6
 
@@ -2522,30 +2471,27 @@ class SlashCommand(ApplicationCommand):
             "options"
         )  # Return the type hinted class later this will take too long and
         # is very tedious, I'll probably get Copilot to do it for me lmao
+        opts = [
+            Subcommand,
+            SubCommandGroup,
+            StringOption,
+            IntegerOption,
+            BooleanOption,
+            UserOption,
+            ChannelOption,
+            RoleOption,
+            MentionableOption,
+            NumberOption,
+            AttachmentOption,
+        ]
+
         for option in self.options:
             option_type = option.get("type")
-            if option_type == 1:
-                return Subcommand(option)
-            elif option_type == 2:
-                return SubCommandGroup(option)
-            elif option_type == 3:
-                return StringOption(option)
-            elif option_type == 4:
-                return IntegerOption(option)
-            elif option_type == 5:
-                return BooleanOption(option)
-            elif option_type == 6:
-                return UserOption(option)
-            elif option_type == 7:
-                return ChannelOption(option)
-            elif option_type == 8:
-                return RoleOption(option)
-            elif option_type == 9:
-                return MentionableOption(option)
-            elif option_type == 10:
-                return NumberOption(option)
-            elif option_type == 11:
-                return AttachmentOption(option)
+            if option_type >= len(opts):
+                raise ValueError(f"Invalid option type {option_type}")
+
+            # shouldn't be return but since it was return before I'll leave it
+            return opts[option_type - 1](option)
 
     def to_dict(self):
         json_options = [option.to_dict for option in self.options]
@@ -2879,7 +2825,8 @@ class Utils:
             rf"(?P<markdown>[_\\~|\*`]|{self._MARKDOWN_ESCAPE_COMMON})"
         )
 
-    def filter_values(self, dictionary: dict):
+    @staticmethod
+    def filter_values(dictionary: dict):
         return {k: v for k, v in dictionary.items() if v is not None}
 
     async def override_commands(self):
@@ -2957,9 +2904,7 @@ class Utils:
 
     def match_mixed(self, variant_one: str, variant_two: str):
         """Matches and returns a single output from two"""
-        return (
-            variant_one if not variant_two else variant_two if not variant_one else None
-        )
+        return (None if variant_one else variant_two) if variant_two else variant_one
 
     def interaction_from_type(self, data):
         interaction_type = data["type"]
