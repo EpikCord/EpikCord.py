@@ -7,7 +7,7 @@ import datetime
 import io
 import os
 import re
-from abc import abstractproperty, abstractmethod
+from abc import abstractmethod
 from base64 import b64encode
 from typing import (
     Optional,
@@ -917,8 +917,8 @@ class BaseCommand:
     def is_message_command(self):
         return self.type == 3
 
-    @abstractmethod
     @property
+    @abstractmethod
     def type(self):
         ...
 
