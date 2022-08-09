@@ -490,7 +490,7 @@ class Guild:
         user_limit: Optional[int] = None,
         rate_limit_per_user: Optional[int] = None,
         position: Optional[int] = None,
-        permission_overwrites: List[Optional[Overwrite]] = None,
+        permission_overwrites: Optional[List[Overwrite]] = None,
         parent_id: Optional[str] = None,
         nsfw: Optional[bool] = None,
     ):
@@ -514,7 +514,7 @@ class Guild:
             The rate limit per user of the channel.
         position: Optional[int]
             The position of the channel.
-        permission_overwrites: List[Optional[Overwrite]]
+        permission_overwrites: Optional[List[Overwrite]]
             The permission overwrites of the channel.
         parent_id: Optional[str]
             The parent id of the channel.
