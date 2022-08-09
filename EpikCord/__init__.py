@@ -11,7 +11,6 @@ import re
 from abc import abstractproperty
 from base64 import b64encode
 from collections import defaultdict
-from importlib.util import find_spec
 from logging import getLogger
 from sys import platform
 from typing import (
@@ -26,8 +25,6 @@ from typing import (
     TYPE_CHECKING,
 )
 from urllib.parse import quote as _quote
-
-from aiohttp import ClientSession, ClientResponse, ClientWebSocketResponse
 
 from .close_event_codes import *
 from .components import *
@@ -1171,7 +1168,7 @@ class ClientApplication(Application):
         self.client = client
 
     async def fetch(self):
-        response: ClientResponse = await self.client.http.get("oauth2/applications/@me")
+        response = await self.client.http.get("oauth2/applications/@me")
         data: dict = await response.json()
         return Application(data)
 
@@ -3450,7 +3447,6 @@ __all__ = (
     "InvalidToken",
     "Invite",
     "LabelIsTooBig",
-    "List",
     "Locale",
     "Localisation",
     "Localization",
@@ -3527,7 +3523,6 @@ __all__ = (
     "WebsocketClient",
     "WelcomeScreen",
     "WelcomeScreenChannel",
-    "b64encode",
     "cache_manager",
     "channel_manager",
     "close_event_codes",
