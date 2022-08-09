@@ -2893,18 +2893,20 @@ class Utils:
                 command_payload["options"] = [
                     option.to_dict() for option in getattr(command, "options", [])
                 ]
+
                 if command.name_localizations:
                     command_payload["name_localizations"] = {}
                     for name_localization in command.name_localizations:
                         command_payload["name_localizations"][
                             name_localization
-                        ] = command.name_localizations[name_localization.to_dict()]
+                        ] = name_localization.to_dict()
+
                 if command.description_localizations:
                     command_payload["description_localizations"] = {}
                     for description_localization in command.description_localizations:
                         command_payload["description_localizations"][
-                            description_localization.to_dict()
-                        ] = command.description_localizations[description_localization]
+                            description_localization
+                        ] = description_localization.to_dict()
 
             for guild_id in command.guild_ids or []:
                 command_sorter[guild_id].append(command_payload)
