@@ -245,6 +245,7 @@ class Activity:
 
         return payload
 
+
 class UnavailableGuild:
     """
     The class representation of an UnavailableGuild.
@@ -288,7 +289,7 @@ class Guild:
             else "ALL_MEMBERS"
         )
         self.roles: List[Role] = [
-            Role(client, {**role_data, "guild": self}) 
+            Role(client, {**role_data, "guild": self})
             for role_data in data.get("roles")
         ]
         self.emojis: List[Emoji] = [
@@ -1770,7 +1771,7 @@ class Emoji:
         self.id: Optional[str] = data.get("id")
         self.name: Optional[str] = data.get("name")
         self.roles: List[Role] = [
-            Role(client, {**role_data, "guild": self}) 
+            Role(client, {**role_data, "guild": self})
             for role_data in data.get("roles")
         ]
         self.user: Optional[User] = User(data.get("user")) if data.get("user") else None
