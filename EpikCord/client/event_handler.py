@@ -107,6 +107,7 @@ class EventHandler(CommandHandler):
 
             elif event["op"] == GatewayOpcode.DISPATCH:
                 await self.handle_event(event)
+
             elif event["op"] == GatewayOpcode.HEARTBEAT:
                 # I shouldn't wait the remaining delay according to the docs.
                 await self.heartbeat(True)
@@ -134,6 +135,8 @@ class EventHandler(CommandHandler):
         await self.handle_close()
 
     async def handle_event(self, event: dict):
+        from EpikCord import UnavailableGuild
+
         self.sequence = event["s"]
         logger.info(f"Received event {event['t']} with data {event['d']}")
 
@@ -150,14 +153,13 @@ class EventHandler(CommandHandler):
         except Exception as e:
             logger.exception(f"Error handling event {event['t']}: {e}")
 
-        # Circular import
-        from EpikCord import UnavailableGuild
-
         if isinstance(results_from_event, UnavailableGuild):
             return  # This is their lazy backfill which I dislike.
 
+        logger.debug(f"Emitting user event {event['t']}")
         try:
             if results_from_event != event["d"]:
+
                 results_from_event = [results_from_event] if results_from_event else []
                 if callbacks := self.events.get(event["t"].lower()):
                     logger.info(
@@ -290,7 +292,7 @@ class EventHandler(CommandHandler):
         return Message(self, data)
 
     async def guild_create(self, data):
-        from EpikCord import UnavailableGuild, Guild
+        from EpikCord import UnavailableGuild, Guild, Thread
 
         guild = (
             UnavailableGuild(data)
@@ -314,7 +316,7 @@ class EventHandler(CommandHandler):
             )
 
         for thread in data["threads"]:
-            self.channels.add_to_cache(data["id"], self.utils.channel_from_type(thread))
+            self.channels.add_to_cache(data["id"], Thread(self, thread))
 
         return guild
 
