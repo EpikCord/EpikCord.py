@@ -110,7 +110,7 @@ class AuthorizationInformation:
 
 
 class UserClient:
-    """This class is meant to be used with an Access Token. Not a User Account Token"""
+    """This class is meant to be used with an Access Token. Not a User Account Token. This does not support Self Bots."""
 
     def __init__(self, token: str, *, discord_endpoint: str):
         self.token = token
@@ -245,10 +245,6 @@ class Activity:
 
         return payload
 
-
-from typing import Optional, List
-
-
 class UnavailableGuild:
     """
     The class representation of an UnavailableGuild.
@@ -292,10 +288,8 @@ class Guild:
             else "ALL_MEMBERS"
         )
         self.roles: List[Role] = [
-            Role(client, role)
-            for role in [
-                {**role_data, "guild": self} for role_data in data.get("roles")
-            ]
+            Role(client, {**role_data, "guild": self}) 
+            for role_data in data.get("roles")
         ]
         self.emojis: List[Emoji] = [
             Emoji(client, emoji, self.id) for emoji in data.get("emojis")
@@ -1776,10 +1770,8 @@ class Emoji:
         self.id: Optional[str] = data.get("id")
         self.name: Optional[str] = data.get("name")
         self.roles: List[Role] = [
-            Role(client, role)
-            for role in [
-                {**role_data, "guild": self} for role_data in data.get("roles")
-            ]
+            Role(client, {**role_data, "guild": self}) 
+            for role_data in data.get("roles")
         ]
         self.user: Optional[User] = User(data.get("user")) if data.get("user") else None
         self.requires_colons: bool = data.get("require_colons")
