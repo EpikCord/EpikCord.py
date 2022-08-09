@@ -1,5 +1,6 @@
 from enum import IntEnum
 
+
 class GatewayCECode(IntEnum):
     """Gateway close event code."""
 

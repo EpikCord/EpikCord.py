@@ -12,6 +12,7 @@ from .opcodes import VoiceOpcode, GatewayOpcode
 from .partials import PartialUser
 from importlib.util import find_spec
 import asyncio
+
 logger = getLogger(__name__)
 _NACL = find_spec("nacl")
 
@@ -26,11 +27,13 @@ else:
         " If you want voice support"
     )
 
+
 class BaseChannel:
     def __init__(self, client, data: dict):
         self.id: str = data.get("id")
         self.client = client
         self.type = data.get("type")
+
 
 if TYPE_CHECKING:
     from EpikCord import Message, File, ThreadMember
@@ -112,6 +115,7 @@ class Messageable:
         return Message(self.client, data)
 
 
+
 class GuildChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
@@ -172,6 +176,7 @@ class GuildChannel(BaseChannel):
 
     async def fetch_pinned_messages(self) -> List[Message]:
         from EpikCord import Message
+
         response = await self.client.http.get(
             f"/channels/{self.id}/pins", channel_id=self.id
         )
@@ -211,6 +216,7 @@ class TypingContextManager:
 
     async def __aexit__(self):
         self.typing.cancel()
+
 
 class GuildTextChannel(GuildChannel, Messageable):
     def __init__(self, client, data: dict):
@@ -457,6 +463,7 @@ class Connectable:
             [voice_state_update_coro, voice_server_update_coro]
         )
         from EpikCord import VoiceState
+
         for event in events:
             if isinstance(event.result(), VoiceState):  # If it's the VoiceState
                 self.session_id = event.result().session_id

@@ -174,6 +174,7 @@ class UserClient:
 
         return [PartialGuild(d) for d in data]
 
+
 class Status:
     """The class which represents a Status.
 
@@ -260,6 +261,7 @@ class Activity:
 
         return payload
 
+
 from typing import Optional, List
 
 
@@ -331,9 +333,7 @@ class Guild:
         self.channels: List[GuildChannel] = [
             client.utils.channel_from_type(channel) for channel in data.get("channels")
         ]
-        self.threads: List[Thread] = [
-            Thread(thread) for thread in data.get("threads")
-        ]
+        self.threads: List[Thread] = [Thread(thread) for thread in data.get("threads")]
         self.presences: List[dict] = data.get("presences")
         self.max_presences: int = data.get("max_presences")
         self.max_members: int = data.get("max_members")
@@ -579,6 +579,8 @@ class Guild:
                 )
             ).json()
         )
+
+
 from typing import Optional, List
 
 
@@ -594,6 +596,17 @@ class UnavailableGuild:
         self.available: bool = data.get("available")
 
 
+class UnavailableGuild:
+    """
+    The class representation of an UnavailableGuild.
+    The Guild object should be given to use when the guild is available.
+    """
+
+    def __init__(self, data):
+        self.data = data
+        self.id: str = data.get("id")
+        self.available: bool = data.get("available")
+
 
 class UnavailableGuild:
     """
@@ -606,16 +619,6 @@ class UnavailableGuild:
         self.id: str = data.get("id")
         self.available: bool = data.get("available")
 
-class UnavailableGuild:
-    """
-    The class representation of an UnavailableGuild.
-    The Guild object should be given to use when the guild is available.
-    """
-
-    def __init__(self, data):
-        self.data = data
-        self.id: str = data.get("id")
-        self.available: bool = data.get("available")
 
 class Presence:
     """
@@ -968,6 +971,7 @@ class VoiceRegion:
         self.optimal: bool = data["optimal"]
         self.deprecated: bool = data["deprecated"]
         self.custom: bool = data["custom"]
+
 
 class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
@@ -1641,6 +1645,7 @@ class Attachment:
         self.height: Optional[int] = data.get("height")
         self.ephemeral: Optional[bool] = data.get("ephemeral")
 
+
 class _FakeTask:
     def cancel(self):
         return True
@@ -1887,6 +1892,7 @@ class HTTPClient(ClientSession):
             res = await self.request("PUT", url, *args, **kwargs)
             return res
         return await super().put(url, *args, **kwargs)
+
 
 class Section:
     _commands: Dict[

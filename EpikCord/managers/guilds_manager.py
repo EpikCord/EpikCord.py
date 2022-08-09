@@ -3,11 +3,11 @@ from typing import List, Union, Optional
 
 from .cache_manager import CacheManager
 
+
 class GuildManager(CacheManager):
-    def __init__(
-        self, client, guilds = []
-    ):
+    def __init__(self, client, guilds=[]):
         from EpikCord import UnavailableGuild, Guild
+
         super().__init__()
         self.client = client
         self.available_guilds = {
@@ -27,6 +27,7 @@ class GuildManager(CacheManager):
         with_counts: Optional[bool] = False,
     ):
         from EpikCord import Guild
+
         if with_counts:
             return Guild(
                 self.client,

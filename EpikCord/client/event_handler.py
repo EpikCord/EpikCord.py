@@ -9,10 +9,12 @@ from collections import defaultdict, deque
 
 logger = getLogger(__name__)
 
+
 class Event:
     def __init__(self, callback: Callable, *, event_name: str):
         self.callback = callback
         self.event_name = event_name or callback.__name__
+
 
 class EventHandler(CommandHandler):
     # Class that'll contain all methods that'll be called when an event is
@@ -67,6 +69,7 @@ class EventHandler(CommandHandler):
 
     async def voice_state_update(self, data: dict):
         from EpikCord import VoiceState
+
         return VoiceState(
             self, data
         )  # TODO: Make this return something like (VoiceState, Member) or make VoiceState get Member from member_id
@@ -283,10 +286,12 @@ class EventHandler(CommandHandler):
     async def message_create(self, data: dict):
         """Event fired when messages are created"""
         from EpikCord import Message
+
         return Message(self, data)
 
     async def guild_create(self, data):
         from EpikCord import UnavailableGuild, Guild
+
         guild = (
             UnavailableGuild(data)
             if data.get("unavailable") is True
@@ -330,16 +335,19 @@ class EventHandler(CommandHandler):
 
     async def guild_member_update(self, data):
         from EpikCord import GuildMember
+
         guild_member = GuildMember(self, data)
         return self.members.fetch(data["id"]), guild_member
 
     async def ready(self, data: dict):
         from EpikCord import ClientUser
+
         self.user: ClientUser = ClientUser(self, data.get("user"))
         self.session_id: str = data["session_id"]
         application_response = await self.http.get("/oauth2/applications/@me")
         application_data = await application_response.json()
         from EpikCord import ClientApplication
+
         self.application: ClientApplication = ClientApplication(self, application_data)
         if self.overwrite_commands_on_ready:
 
@@ -388,7 +396,5 @@ class EventHandler(CommandHandler):
                 )
         return None
 
-    async def command_error(
-        self, interaction, error: Exception
-    ):
+    async def command_error(self, interaction, error: Exception):
         logger.exception(error)
