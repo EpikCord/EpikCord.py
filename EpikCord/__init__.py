@@ -3,42 +3,33 @@ NOTE: version string only in setup.cfg
 """
 from __future__ import annotations
 
-import asyncio
 import datetime
 import io
 import os
 import re
 from abc import abstractproperty
 from base64 import b64encode
-from collections import defaultdict
-from logging import getLogger
-from sys import platform
 from typing import (
-    Optional,
-    List,
     Union,
-    Dict,
     TypeVar,
-    Callable,
     Tuple,
     Type,
-    TYPE_CHECKING,
 )
 from urllib.parse import quote as _quote
 
+from .channels import *
+from .client import *
 from .close_event_codes import *
 from .components import *
 from .exceptions import *
+from .localizations import *
 from .managers import *
 from .opcodes import *
-from .client import *
 from .options import *
 from .partials import *
 from .rtp_handler import *
-from .thread import Thread
-from .localizations import *
 from .status_code import *
-from .channels import *
+from .thread import Thread
 from .type_enums import *
 
 CT = TypeVar("CT", bound="Colour")
