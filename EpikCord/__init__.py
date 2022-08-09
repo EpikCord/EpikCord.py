@@ -2880,11 +2880,7 @@ class Utils:
         )
 
     def filter_values(self, dictionary: dict):
-        formatted_dictionary = {}
-        for k,v in dictionary.items():
-            if v is not None:
-                formatted_dictionary[k] = v
-        return formatted_dictionary
+        return {k: v for k, v in dictionary.items() if v is not None}
 
     async def override_commands(self):
         command_sorter = defaultdict(list)
