@@ -496,23 +496,28 @@ class Connectable:
         self._closed = True
         if self.ws.close_close == GatewayCECode.UnknownOpcode:
             raise ClosedWebSocketConnection(
-                "EpikCord has sent an invalid OpCode to the Voice WebSocket. Report this at https://github.com/EpikCord/EpikCord.py/issues"
+                "EpikCord has sent an invalid OpCode to the Voice WebSocket."
+                " Report this at https://github.com/EpikCord/EpikCord.py/issues"
             )
         elif self.ws.close_code == GatewayCECode.DecodeError:
             raise ClosedWebSocketConnection(
-                "EpikCord has sent an invalid identify to the Voice WebSocket. Report this at https://github.com/EpikCord/EpikCord.py/issues"
+                "EpikCord has sent an invalid identify to the Voice WebSocket."
+                " Report this at https://github.com/EpikCord/EpikCord.py/issues"
             )
         elif self.ws.close_code == GatewayCECode.NotAuthenticated:
             raise ClosedWebSocketConnection(
-                "EpikCord has sent a payload before identifying to the Voice Websocket. Report this at https://github.com/EpikCord/EpikCord.py/issues"
+                "EpikCord has sent a payload before identifying to the Voice Websocket."
+                " Report this at https://github.com/EpikCord/EpikCord.py/issues"
             )
         elif self.ws.close_code == GatewayCECode.AuthenticationFailed:
             raise ClosedWebSocketConnection(
-                "EpikCord sent an invalid token to the Voice Websocket. Report this at https://github.com/EpikCord/EpikCord.py/issues"
+                "EpikCord sent an invalid token to the Voice Websocket."
+                " Report this at https://github.com/EpikCord/EpikCord.py/issues"
             )
         elif self.ws.close_code == GatewayCECode.AlreadyAuthenticated:
             raise ClosedWebSocketConnection(
-                "EpikCord sent more than one identify payload. Report this at https://github.com/EpikCord/EpikCord.py/issues"
+                "EpikCord sent more than one identify payload."
+                " Report this at https://github.com/EpikCord/EpikCord.py/issues"
             )
         elif self.ws.close_code == GatewayCECode.SessionTimedOut:
 
