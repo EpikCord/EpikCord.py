@@ -939,6 +939,7 @@ class File:
         self.fp.close = self._closer
         self._closer()
 
+
 class User(Messageable):
     def __init__(self, client, data: dict):
         super().__init__(client, data["id"])

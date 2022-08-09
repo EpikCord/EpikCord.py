@@ -38,6 +38,7 @@ class BaseChannel:
 if TYPE_CHECKING:
     from EpikCord import Message, File, ThreadMember
 
+
 class Messageable:
     def __init__(self, client, channel_id: str):
         self.id: str = channel_id
@@ -52,6 +53,7 @@ class Messageable:
         limit: Optional[int] = None,
     ) -> List[Message]:
         from EpikCord import Message
+
         response = await self.client.http.get(
             f"channels/{self.id}/messages",
             params={"around": around, "before": before, "after": after, "limit": limit},
@@ -61,6 +63,7 @@ class Messageable:
 
     async def fetch_message(self, *, message_id: str) -> Message:
         from EpikCord import Message
+
         response = await self.client.http.get(
             f"channels/{self.id}/messages/{message_id}"
         )
@@ -80,6 +83,7 @@ class Messageable:
         suppress_embeds: bool = False,
     ) -> Message:
         from EpikCord import Message
+
         payload = {}
 
         if content:
@@ -113,7 +117,6 @@ class Messageable:
         )
         data = await response.json()
         return Message(self.client, data)
-
 
 
 class GuildChannel(BaseChannel):
