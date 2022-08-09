@@ -1887,29 +1887,6 @@ class Integration:
             Application(data.get("application")) if data.get("application") else None
         )
 
-
-# TODO Adapt this to subclass Flags
-class SystemChannelFlags:
-    def __init__(self, *, value: Optional[int] = None):
-        self.value: int = value
-
-    @property
-    def suppress_join_notifications(self):
-        self.value += 1 << 0
-
-    @property
-    def suppress_premium_subscriptions(self):
-        self.value += 1 << 1
-
-    @property
-    def suppress_guild_reminder_notifications(self):
-        self.value += 1 << 2
-
-    @property
-    def suppress_join_notification_replies(self):
-        self.value += 1 << 3
-
-
 class WebhookUser:
     def __init__(self, data: dict):
         self.webhook_id: str = data.get("webhook_id")
@@ -1981,9 +1958,6 @@ class BaseInteraction:
         self.locale: Optional[str] = data.get("locale")
         self.guild_locale: Optional[str] = data.get("guild_locale")
         self.original_response: Optional[
-            Message
-        ] = None  # Can't be set on construction.
-        self.followup_response: Optional[
             Message
         ] = None  # Can't be set on construction.
 
@@ -2658,6 +2632,13 @@ class Intents(Flag):
     message_content = 1 << 15
     scheduled_event = 1 << 16
 
+
+class SystemChannelFlags(Flag):
+
+    suppress_join_notifications = 1 << 0
+    suppress_premium_subscriptions = 1 << 1
+    suppress_guild_reminder_notifications = 1 << 2
+    suppress_join_notification_replies = 1 << 3
 
 class Permissions(Flag):
     create_instant_invite = 1 << 0
