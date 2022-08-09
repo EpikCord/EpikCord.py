@@ -2881,7 +2881,7 @@ class Utils:
 
     def filter_values(self, dictionary: dict):
         formatted_dictionary = {}
-        for k,v in dictionary.items():
+        for k, v in dictionary.items():
             if v is not None:
                 formatted_dictionary[k] = v
         return formatted_dictionary
