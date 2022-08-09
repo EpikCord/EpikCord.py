@@ -342,13 +342,12 @@ class EventHandler(CommandHandler):
         return self.members.fetch(data["id"]), guild_member
 
     async def ready(self, data: dict):
-        from EpikCord import ClientUser
+        from EpikCord import ClientUser, ClientApplication
 
         self.user: ClientUser = ClientUser(self, data.get("user"))
         self.session_id: str = data["session_id"]
         application_response = await self.http.get("/oauth2/applications/@me")
         application_data = await application_response.json()
-        from EpikCord import ClientApplication
 
         self.application: ClientApplication = ClientApplication(self, application_data)
         if self.overwrite_commands_on_ready:
