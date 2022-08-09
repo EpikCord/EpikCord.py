@@ -16,14 +16,12 @@ class Task:
         self.runs = 0
 
     async def start(self, *args: typing.Any, **kwargs: typing.Any):
-        if self.max_runs <= 0:
-            cond = lambda: True
-        else:
-            cond = lambda: self.runs < self.max_runs
-
-        while cond():
+        while self.runs < self.max_runs:
             await self.wrapped_func(*args, **kwargs)
-            self.runs += 1
+
+            if self.max_runs > 0:
+                self.runs += 1
+
             await asyncio.sleep(self.duration)
 
     def run(self, *args: typing.Any, **kwargs: typing.Any):
