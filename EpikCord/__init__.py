@@ -15,7 +15,6 @@ from base64 import b64encode
 from collections import defaultdict, deque
 from importlib import import_module
 from importlib.util import find_spec
-from inspect import iscoroutine
 from logging import getLogger
 from sys import platform
 from time import perf_counter_ns
