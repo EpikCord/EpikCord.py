@@ -6,13 +6,9 @@ from ..exceptions import (
     DiscordServerError5xx,
     NotFound404,
     Forbidden403,
-    DiscordAPIError        
+    DiscordAPIError,
 )
-from typing import (
-    Union,
-    Dict,
-    Any
-)
+from typing import Union, Dict, Any
 from importlib.util import find_spec
 from aiohttp import ClientWebSocketResponse, ClientSession
 
@@ -31,6 +27,7 @@ else:
 class _FakeTask:
     def cancel(self):
         return True
+
 
 class UnknownBucket:
     def __init__(self):

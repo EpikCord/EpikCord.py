@@ -5,17 +5,13 @@ from logging import getLogger
 from importlib import import_module
 from ..managers import ChannelManager, GuildManager
 from collections import deque
-from typing import (
-    Optional,
-    List,
-    Any,
-    TYPE_CHECKING
-)
+from typing import Optional, List, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from EpikCord import Status, Activity, Check, Section
 
 logger = getLogger(__name__)
+
 
 class Client(WebsocketClient):
     def __init__(
@@ -30,12 +26,14 @@ class Client(WebsocketClient):
     ):
         super().__init__(token, intents)
         from EpikCord import Presence, ClientUser, ClientApplication, Utils
+
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
         self.guilds: GuildManager = GuildManager(self)
         self.channels: ChannelManager = ChannelManager(self)
         self.presence: Presence = Presence(status=status, activity=activity)
         self._components = {}
         from .. import __version__
+
         self.http: HTTPClient = HTTPClient(
             headers={
                 "Authorization": f"Bot {token}",
@@ -80,6 +78,7 @@ class Client(WebsocketClient):
     def load_sections_from_file(self, filename: str):
         sections = import_module(filename)
         from EpikCord import Section
+
         for possible_section in sections.__dict__.values():
             if issubclass(possible_section, Section):
                 self.load_section(possible_section)

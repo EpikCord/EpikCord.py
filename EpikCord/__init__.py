@@ -960,6 +960,7 @@ class VoiceRegion:
         self.deprecated: bool = data["deprecated"]
         self.custom: bool = data["custom"]
 
+
 class BaseCommand:
     def __init__(self):
         self.checks: List[Check] = []
@@ -1402,6 +1403,7 @@ class Attachment:
         self.height: Optional[int] = data.get("height")
         self.ephemeral: Optional[bool] = data.get("ephemeral")
 
+
 class Section:
     _commands: Dict[
         str, Union[ClientUserCommand, ClientSlashCommand, ClientMessageCommand]
@@ -1420,6 +1422,7 @@ class Section:
                 cls._commands[cls.__name__].append(attr_value)
 
         super().__init_subclass__(**kwargs)
+
 
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):

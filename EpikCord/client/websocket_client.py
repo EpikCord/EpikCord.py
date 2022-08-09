@@ -1,6 +1,14 @@
 from __future__ import annotations
 from time import perf_counter_ns
-from ..exceptions import InvalidIntents, InvalidToken, ShardingRequired, Ratelimited429, DisallowedIntents, InvalidToken, ClosedWebSocketConnection
+from ..exceptions import (
+    InvalidIntents,
+    InvalidToken,
+    ShardingRequired,
+    Ratelimited429,
+    DisallowedIntents,
+    InvalidToken,
+    ClosedWebSocketConnection,
+)
 import asyncio
 from sys import platform
 from ..close_event_codes import GatewayCECode
@@ -19,6 +27,7 @@ class WebsocketClient(EventHandler):
     def __init__(self, token: str, intents: int):
         super().__init__()
         from EpikCord import Intents
+
         self.token = token
         if not token:
             raise TypeError("Missing token.")
