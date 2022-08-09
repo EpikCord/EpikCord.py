@@ -293,7 +293,7 @@ class Guild:
         self.mfa_level: str = "NONE" if data.get("mfa_level") == 0 else "ELEVATED"
         self.application_id: Optional[str] = data.get("application_id")
         self.system_channel_id: Optional[str] = data.get("system_channel_id")
-        self.system_channel_flags: int = data.get("system_channel_flags")
+        self.system_channel_flags: int = SystemChannelFlags(data.get("system_channel_flags"))
         self.rules_channel_id: Optional[int] = data.get("rules_channel_id")
         self.joined_at: Optional[str] = data.get("joined_at")
         self.large: bool = data.get("large")
@@ -647,6 +647,7 @@ class Message:
         self.guild_id: Optional[str] = data.get("guild_id")
         self.webhook_id: Optional[str] = data.get("webhook_id")
         self.author: Optional[Union[WebhookUser, GuildMember, User]] = None
+
         if self.webhook_id:
             self.author = WebhookUser(data.get("author"))
         if data.get("member"):
@@ -657,17 +658,6 @@ class Message:
         else:
             self.author = User(self, data.get("author")) if data.get("author") else None
 
-        # member_data = data.get("member") if data.get("member") else data.get("000")
-        # self.author: Optional[Union[WebhookUser, User]] = (
-        #     WebhookUser(data.get("author"))
-        #     if data.get("webhook_id")
-        #     else GuildMember(client, member_data)
-        #     if data.get("member")
-        #     else User(client, data.get("author"))
-        #     if data.get("author")
-        #     else None
-        # )
-        #! I forgot Message Intents are gonna stop this.
         self.content: Optional[str] = data.get("content")
         self.timestamp: datetime.datetime = datetime.datetime.fromisoformat(
             data["timestamp"]
