@@ -9,7 +9,7 @@ from .exceptions import ClosedWebSocketConnection
 from logging import getLogger
 from .opcodes import VoiceOpcode, GatewayOpcode
 from .partials import PartialUser
-from inspect import find_spec
+from importlib.util import find_spec
 import asyncio
 logger = getLogger(__name__)
 _NACL = find_spec("nacl")
