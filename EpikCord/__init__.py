@@ -293,7 +293,9 @@ class Guild:
         self.mfa_level: str = "NONE" if data.get("mfa_level") == 0 else "ELEVATED"
         self.application_id: Optional[str] = data.get("application_id")
         self.system_channel_id: Optional[str] = data.get("system_channel_id")
-        self.system_channel_flags: int = SystemChannelFlags(data.get("system_channel_flags"))
+        self.system_channel_flags: int = SystemChannelFlags(
+            data.get("system_channel_flags")
+        )
         self.rules_channel_id: Optional[int] = data.get("rules_channel_id")
         self.joined_at: Optional[str] = data.get("joined_at")
         self.large: bool = data.get("large")
@@ -1877,6 +1879,7 @@ class Integration:
             Application(data.get("application")) if data.get("application") else None
         )
 
+
 class WebhookUser:
     def __init__(self, data: dict):
         self.webhook_id: str = data.get("webhook_id")
@@ -2629,6 +2632,7 @@ class SystemChannelFlags(Flag):
     suppress_premium_subscriptions = 1 << 1
     suppress_guild_reminder_notifications = 1 << 2
     suppress_join_notification_replies = 1 << 3
+
 
 class Permissions(Flag):
     create_instant_invite = 1 << 0
