@@ -69,5 +69,5 @@ def decode_rtp_packet(packet_bytes):
         "sequence_number": int(str(packet_bytes[4:8]), 16),
         "timestamp": int(str(packet_bytes[8:16]), 16),
         "ssrc": int(str(packet_bytes[16:24]), 16),
-        "payload": str(packet_bytes[24:])
+        "payload": str(packet_bytes[24:]),
     }

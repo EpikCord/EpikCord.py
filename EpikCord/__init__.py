@@ -15,7 +15,8 @@ from typing import (
     Union,
     TypeVar,
     Tuple,
-    Type, DefaultDict,
+    Type,
+    DefaultDict,
 )
 from urllib.parse import quote as _quote
 
@@ -179,7 +180,6 @@ class Status:
             raise InvalidStatus("That is an invalid status.")
 
         self.status = status if status != "offline" else "invisible"
-
 
 
 class Activity:
@@ -444,10 +444,7 @@ class Guild:
         if getattr(self, "preview"):
             return self.preview
 
-        res = await self.client.http.get(
-            f"/guilds/{self.id}/preview",
-            guild_id=self.id
-        )
+        res = await self.client.http.get(f"/guilds/{self.id}/preview", guild_id=self.id)
 
         data = await res.json()
         return GuildPreview(data)
@@ -466,10 +463,7 @@ class Guild:
         channels_ = await self.client.http.get(
             f"/guilds/{self.id}/channels", guild_id=self.id
         )
-        return [
-            self.client.utils.channel_from_type(channel)
-            for channel in channels_
-        ]
+        return [self.client.utils.channel_from_type(channel) for channel in channels_]
 
     async def create_channel(
         self,
@@ -2478,9 +2472,17 @@ class SlashCommand(ApplicationCommand):
         )  # Return the type hinted class later this will take too long and
         # is very tedious, I'll probably get Copilot to do it for me lmao
         opts = [
-            Subcommand, SubCommandGroup, StringOption, IntegerOption,
-            BooleanOption, UserOption, ChannelOption, RoleOption,
-            MentionableOption, NumberOption, AttachmentOption
+            Subcommand,
+            SubCommandGroup,
+            StringOption,
+            IntegerOption,
+            BooleanOption,
+            UserOption,
+            ChannelOption,
+            RoleOption,
+            MentionableOption,
+            NumberOption,
+            AttachmentOption,
         ]
 
         for option in self.options:
