@@ -1,7 +1,10 @@
-from typing import Union, Dict, Optional, List
+from __future__ import annotations
+from typing import Union, Dict, Optional, List, TYPE_CHECKING
 from ..localizations import *
 from ..options import AnyOption
 
+if TYPE_CHECKING:
+    from .. import Check
 
 class CommandHandler:
     def __init__(self):
@@ -23,6 +26,7 @@ class CommandHandler:
         description_localizations: Optional[List[Localization]] = None,
         name_localisations: Optional[List[Localization]] = None,
         description_localisations: Optional[List[Localization]] = None,
+        checks: Optional[List[Check]] = None
     ):
         name_localization = self.utils.match_mixed(
             name_localizations, name_localisations
@@ -47,6 +51,7 @@ class CommandHandler:
                 callback=func,
                 name_localization=name_localization,
                 description_localization=description_localization,
+                checks=checks or []
             )
 
             self.commands[command.name] = command
