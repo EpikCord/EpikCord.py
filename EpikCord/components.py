@@ -195,7 +195,7 @@ class Button(BaseComponent):
     def __init__(
         self,
         *,
-        style: Optional[Union[int, str]] = 1,
+        style: Optional[Union[int, str]] = None,
         label: Optional[str] = None,
         emoji: Optional[Union[PartialEmoji, dict]] = None,
         url: Optional[str] = None,
@@ -205,28 +205,32 @@ class Button(BaseComponent):
         super().__init__(custom_id=custom_id)
         self.type: int = 2
         self.disabled = disabled
+        self.style: Optional[Union[int, str]] = style or 1
 
-        if style is not None:
-            self.set_style(style)
-
-        if url:
+        if url or style == ButtonStyle.LINK:
             self.url: Optional[str] = url
             self.style = 5
-        if emoji:
-            self.emoji: Optional[Union[PartialEmoji, dict]] = emoji
-        if label:
-            self.label: Optional[str] = label
+        else:
+            self.url = None
 
-    def set_style(self, style: Union[int, str]):
+        self.emoji: Optional[Union[PartialEmoji, dict]] = emoji
+        self.label: Optional[str] = label
+
+    def set_style(self, style: Union[ButtonStyle, str]):
         # check from ButtonStyle IntEnum
-        for btn_style in ButtonStyle:
-            if isinstance(style, int) and btn_style.value == style:
-                self.style = style
-                return self
+        if isinstance(style, str):
+            if not ButtonStyle[style]:
+                raise InvalidArgumentType("Style must be in ButtonStyle enum.")
 
-            elif isinstance(style, str) and btn_style.name.upper() == style.upper():
-                self.style = style
-                return self
+            style = ButtonStyle[style]
+            return self
+
+        elif isinstance(style, ButtonStyle):
+            style = style.value
+            return self
+
+        elif style in [1,2,3,4,5]:
+            self.style = style
 
         raise InvalidComponentStyle(
             "Invalid button style. Style must be one of the following: "
@@ -234,21 +238,16 @@ class Button(BaseComponent):
         )
 
     def to_dict(self):
-        settings = {
+        from EpikCord import Utils
+        settings = Utils.filter_values({
             "type": self.type,
             "custom_id": self.custom_id,
             "disabled": self.disabled,
             "style": self.style,
-        }
-
-        if getattr(self, "label", None):
-            settings["label"] = self.label
-
-        if getattr(self, "url", None):
-            settings["url"] = self.url
-
-        if getattr(self, "emoji", None):
-            settings["emoji"] = self.emoji
+            "label": self.label,
+            "url": self.url,
+            "emoji": self.emoji,
+        })
 
         return settings
 
@@ -259,16 +258,16 @@ class Button(BaseComponent):
         if len(label) > 80:
             raise LabelIsTooBig("Label must be 80 characters or less.")
 
-        self.settings["label"] = label
+        self.label = label
         return self
 
     def set_emoji(self, emoji: Union[PartialEmoji, dict]):
         if isinstance(emoji, dict):
-            self.settings["emoji"] = emoji
+            self.emoji = emoji
             return self
 
         elif isinstance(emoji, PartialEmoji):
-            self.settings["emoji"] = emoji.data
+            self.emoji = emoji.data
             return self
         raise InvalidArgumentType(
             "Emoji must be a PartialEmoji or a dict that represents a PartialEmoji."
@@ -279,10 +278,20 @@ class Button(BaseComponent):
         if not isinstance(url, str):
             raise InvalidArgumentType("Url must be a string.")
 
-        self.settings["url"] = url
-        self.settings["style"] = 5
+        self.url = url
+        self.style = 5
         return self
 
+    @classmethod
+    def from_dict(self, data):
+        return Button(**{
+            "custom_id": data["custom_id"],
+            "style": data.get("style"),
+            "label": data.get("label"),
+            "emoji": data.get("emoji"),
+            "url": data.get("url"),
+            "disabled": data.get("disabled"),
+        })
 
 def component_from_type(component_data: dict):
     component_type = component_data["type"]

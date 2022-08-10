@@ -239,6 +239,12 @@ class EventHandler(CommandHandler):
                 )
 
             if interaction.is_button():  # If it's a button
+                component = None
+                for action_row in interaction.message.components:
+                    for component in action_row["components"]:
+                        if component["custom_id"] == interaction.custom_id:
+                            component = component
+
                 return await self._components[interaction.custom_id](
                     interaction, self.utils.interaction_from_type(component)
                 )  # Call the callback
