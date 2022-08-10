@@ -219,7 +219,7 @@ class EventHandler(CommandHandler):
                         else:
                             check.callback(interaction)
                     except RuntimeError:
-                        ... # Suppress.
+                        ...  # Suppress.
                 for option in interaction.options:
                     options.append(option.get("value"))
             try:
