@@ -213,7 +213,7 @@ class EventHandler(CommandHandler):
 
             if command.is_slash_command():
                 for check in command.checks:
-                    if iscoroutine(check):
+                    if iscoroutine(check(interaction)):
                         await check.callback(interaction)
                     else:
                         check.callback(interaction)
