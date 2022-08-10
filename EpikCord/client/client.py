@@ -56,15 +56,6 @@ class Client(WebsocketClient):
     def average_latency(self):
         return sum(self.latencies) / len(self.latencies)
 
-    def add_check(self, check: Check):
-        def wrapper(command_callback):
-            command = list(
-                filter(lambda c: c.callback == command_callback, self.commands.values())
-            )
-            command[0].checks.append(check)
-
-        return wrapper
-
     def load_section(self, section: Section):
 
         for event in section._events.values():
