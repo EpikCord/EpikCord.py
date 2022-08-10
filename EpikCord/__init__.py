@@ -1656,32 +1656,10 @@ class Embed:  # Always wanted to make this class :D
 
     def to_dict(self):
         final_product = {}
-
-        if hasattr(self, "title"):
-            final_product["title"] = self.title
-        if hasattr(self, "description"):
-            final_product["description"] = self.description
-        if hasattr(self, "url"):
-            final_product["url"] = self.url
-        if hasattr(self, "timestamp"):
-            final_product["timestamp"] = self.timestamp
-        if hasattr(self, "color"):
-            final_product["color"] = self.color.value
-        if hasattr(self, "footer"):
-            final_product["footer"] = self.footer
-        if hasattr(self, "image"):
-            final_product["image"] = self.image
-        if hasattr(self, "thumbnail"):
-            final_product["thumbnail"] = self.thumbnail
-        if hasattr(self, "video"):
-            final_product["video"] = self.video
-        if hasattr(self, "provider"):
-            final_product["provider"] = self.provider
-        if hasattr(self, "author"):
-            final_product["author"] = self.author
-        if hasattr(self, "fields"):
-            final_product["fields"] = self.fields
-
+        for key, value in self.__dict__.items():
+            if value is None and not key.startswith("_"):
+                continue
+            final_product[key] = value
         return final_product
 
 
