@@ -58,7 +58,7 @@ class Client(WebsocketClient):
 
     def add_check(self, check: Check):
         def wrapper(command_callback):
-            logger.info(f"Adding check to {command}")
+            logger.info(f"Adding check to {command_callback.__name__}")
             command = list(
                 filter(lambda c: c.callback == command_callback, self.commands.values())
             )
