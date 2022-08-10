@@ -897,8 +897,8 @@ class VoiceRegion:
 
 
 class BaseCommand:
-    def __init__(self):
-        self.checks: List[Check] = []
+    def __init__(self, checks: Optional[List[Check]]):
+        self.checks: List[Check] = checks
 
     def is_slash_command(self):
         return self.type == 1
@@ -932,10 +932,11 @@ class ClientUserCommand(BaseCommand):
     All parameters follow the documentation of the Attributes accordingly
         * name
         * callback
+        * checks
     """
 
-    def __init__(self, *, name: str, callback: Callable):
-        super().__init__()
+    def __init__(self, *, name: str, callback: Callable, checks: Optional[List[Check]]):
+        super().__init__(checks or [])
         self.name: str = name
         self.callback: Callable = callback
 
@@ -955,8 +956,9 @@ class ClientSlashCommand(BaseCommand):
         options: Optional[List[AnyOption]] = None,
         name_localization: Optional[Localization] = None,
         description_localization: Optional[str] = None,
+        checks: Optional[List[Check]] = None,
     ):
-        super().__init__()
+        super().__init__(checks or [])
         self.name: str = name
         self.description: str = description
         self.name_localizations: Optional[Localization] = name_localization

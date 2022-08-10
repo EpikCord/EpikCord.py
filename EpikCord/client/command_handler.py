@@ -59,22 +59,22 @@ class CommandHandler:
 
         return register_slash_command
 
-    def user_command(self, name: Optional[str] = None):
+    def user_command(self, name: Optional[str] = None, checks: Optional[List[Check]] = None):
         def register_slash_command(func):
             from EpikCord import ClientUserCommand
 
-            results = ClientUserCommand(callback=func, name=name or func.__name__)
+            results = ClientUserCommand(callback=func, name=name or func.__name__, checks=checks or [])
 
             self.commands[name] = results
             return results
 
         return register_slash_command
 
-    def message_command(self, name: Optional[str] = None):
+    def message_command(self, name: Optional[str] = None, checks: Optional[List[Check]] = None):
         def register_slash_command(func):
             from EpikCord import ClientMessageCommand
 
-            results = ClientMessageCommand(callback=func, name=name or func.__name__)
+            results = ClientMessageCommand(callback=func, name=name or func.__name__, checks=checks or [])
 
             self.commands[name] = results
             return results
