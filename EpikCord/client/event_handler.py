@@ -213,11 +213,13 @@ class EventHandler(CommandHandler):
 
             if command.is_slash_command():
                 for check in command.checks:
-                    if iscoroutine(check(interaction)):
-                        await check.callback(interaction)
-                    else:
-                        check.callback(interaction)
-
+                    try:
+                        if iscoroutine(check.callback(interaction)):
+                            await check.callback(interaction)
+                        else:
+                            check.callback(interaction)
+                    except RuntimeError:
+                        ... # Suppress.
                 for option in interaction.options:
                     options.append(option.get("value"))
             try:
