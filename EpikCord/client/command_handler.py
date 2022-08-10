@@ -6,6 +6,7 @@ from ..options import AnyOption
 if TYPE_CHECKING:
     from .. import Check
 
+
 class CommandHandler:
     def __init__(self):
         from EpikCord import ClientSlashCommand, ClientUserCommand, ClientMessageCommand
@@ -26,7 +27,7 @@ class CommandHandler:
         description_localizations: Optional[List[Localization]] = None,
         name_localisations: Optional[List[Localization]] = None,
         description_localisations: Optional[List[Localization]] = None,
-        checks: Optional[List[Check]] = None
+        checks: Optional[List[Check]] = None,
     ):
         name_localization = self.utils.match_mixed(
             name_localizations, name_localisations
@@ -51,7 +52,7 @@ class CommandHandler:
                 callback=func,
                 name_localization=name_localization,
                 description_localization=description_localization,
-                checks=checks or []
+                checks=checks or [],
             )
 
             self.commands[command.name] = command
@@ -59,22 +60,30 @@ class CommandHandler:
 
         return register_slash_command
 
-    def user_command(self, name: Optional[str] = None, checks: Optional[List[Check]] = None):
+    def user_command(
+        self, name: Optional[str] = None, checks: Optional[List[Check]] = None
+    ):
         def register_slash_command(func):
             from EpikCord import ClientUserCommand
 
-            results = ClientUserCommand(callback=func, name=name or func.__name__, checks=checks or [])
+            results = ClientUserCommand(
+                callback=func, name=name or func.__name__, checks=checks or []
+            )
 
             self.commands[name] = results
             return results
 
         return register_slash_command
 
-    def message_command(self, name: Optional[str] = None, checks: Optional[List[Check]] = None):
+    def message_command(
+        self, name: Optional[str] = None, checks: Optional[List[Check]] = None
+    ):
         def register_slash_command(func):
             from EpikCord import ClientMessageCommand
 
-            results = ClientMessageCommand(callback=func, name=name or func.__name__, checks=checks or [])
+            results = ClientMessageCommand(
+                callback=func, name=name or func.__name__, checks=checks or []
+            )
 
             self.commands[name] = results
             return results
