@@ -107,7 +107,7 @@ class HTTPClient(ClientSession):
             logger.critical(f"Failed a {method} {url} 5 times.")
             return  # Just quit the request
 
-        if url.startswith("ws"):
+        if url.startswith("ws") or not kwargs.get("to_discord", True):
             return await super().request(method, url, *args, **kwargs)
 
         if url.startswith("/"):
