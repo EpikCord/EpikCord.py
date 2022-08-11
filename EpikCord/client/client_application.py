@@ -1,13 +1,18 @@
-from ..exceptions import InvalidApplicationCommandType, InvalidApplicationCommandOptionType
-from typing import (
-    List,
-    Optional,
-    Dict
+from ..exceptions import (
+    InvalidApplicationCommandType,
+    InvalidApplicationCommandOptionType,
 )
+from typing import List, Optional, Dict
 
 from ..options import *
 
-from ..application import Application, ApplicationCommand, ApplicationCommandPermission, GuildApplicationCommandPermission
+from ..application import (
+    Application,
+    ApplicationCommand,
+    ApplicationCommandPermission,
+    GuildApplicationCommandPermission,
+)
+
 
 class ClientApplication(Application):
     def __init__(self, client, data: dict):

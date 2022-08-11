@@ -4,17 +4,14 @@ import datetime
 from .colour import Colour
 from logging import getLogger
 from .thread import Thread
-from typing import (
-    Union,
-    Optional,
-    List
-)
+from typing import Union, Optional, List
 from urllib.parse import quote as _quote
 from .sticker import *
 from .application import Application
 from .components import *
 
 logger = getLogger(__name__)
+
 
 class Reaction:
     """
@@ -36,6 +33,7 @@ class Reaction:
         self.count: int = data.get("count")
         self.me: bool = data.get("me")
         self.emoji: PartialEmoji = PartialEmoji(data.get("emoji"))
+
 
 class Embed:
     def __init__(
@@ -196,6 +194,7 @@ class Embed:
             final_product[key] = value
         return final_product
 
+
 class File:
     """
     Represents a file. Sourced from Discord.py
@@ -245,6 +244,7 @@ class File:
         self.fp.close = self._closer
         self._closer()
 
+
 class Message:
     """Represents a Discord message.
 
@@ -264,7 +264,16 @@ class Message:
     """
 
     def __init__(self, client, data: dict):
-        from EpikCord import WebhookUser, GuildMember, User, MentionedChannel, Reaction, MessageActivity, MessageInteraction
+        from EpikCord import (
+            WebhookUser,
+            GuildMember,
+            User,
+            MentionedChannel,
+            Reaction,
+            MessageActivity,
+            MessageInteraction,
+        )
+
         self.client = client
         self.id: str = data.get("id")
         self.channel_id: str = data.get("channel_id")

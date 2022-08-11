@@ -1,8 +1,6 @@
-from typing import (
-    Optional,
-    List
-)
+from typing import Optional, List
 from .partials import PartialUser
+
 
 class TeamMember:
     def __init__(self, data: dict):
@@ -39,6 +37,7 @@ class Application:
         self.cover_image: Optional[str] = data.get("cover_image")
         self.flags: int = data.get("flags")
 
+
 class ApplicationCommand:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
@@ -50,6 +49,7 @@ class ApplicationCommand:
         self.default_permissions: bool = data.get("default_permissions")
         self.version: str = data.get("version")
 
+
 class ApplicationCommandPermission:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
@@ -58,6 +58,7 @@ class ApplicationCommandPermission:
 
     def to_dict(self):
         return {"id": self.id, "type": self.type, "permission": self.permission}
+
 
 class GuildApplicationCommandPermission:
     def __init__(self, data: dict):

@@ -5,7 +5,7 @@ import datetime
 
 if TYPE_CHECKING:
     from EpikCord import ThreadMember
-    
+
 
 class Thread:
     def __init__(self, client, data: dict):

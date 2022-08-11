@@ -1,9 +1,4 @@
-from typing import (
-    Tuple,
-    Type,
-    TypeVar,
-    Any
-)
+from typing import Tuple, Type, TypeVar, Any
 
 CT = TypeVar("CT", bound="Colour")
 
@@ -143,4 +138,3 @@ class Colour:
 
 
 Color = Colour
-

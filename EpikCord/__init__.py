@@ -760,6 +760,7 @@ class ThreadMember:
         )
         self.flags: int = data.get("flags")
 
+
 class Attachment:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
@@ -1584,6 +1585,7 @@ class SlashCommand(ApplicationCommand):
             "description": self.description,
             "options": json_options,
         }
+
 
 class ClientUser:
     def __init__(self, client, data: dict):

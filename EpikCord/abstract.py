@@ -1,9 +1,7 @@
-from typing import (
-    Optional,
-    List
-)
+from typing import Optional, List
 
 from .message import File, Message
+
 
 class Messageable:
     def __init__(self, client, channel_id: str):
