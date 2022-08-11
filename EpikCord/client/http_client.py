@@ -110,11 +110,7 @@ class HTTPClient(ClientSession):
             return  # Just quit the request
 
         if url.startswith("ws") or not to_discord:
-            self.base_uri = ""
-            res = await super().request(method, url, *args, **kwargs)
-            self.base_uri = "https://discord.com/api/v10"
-            return res
-
+            return await super().request(method, url, *args, **kwargs)
         if url.startswith("/"):
             url = url[1:]
 
@@ -256,7 +252,7 @@ class HTTPClient(ClientSession):
             res = await self.request("POST", url, *args, **kwargs)
             return res
 
-        return await self.post(url, *args, **kwargs)
+        return await super().post(url, *args, **kwargs)
 
     async def patch(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
