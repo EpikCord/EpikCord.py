@@ -38,6 +38,7 @@ class Client(WebsocketClient):
             headers={
                 "Authorization": f"Bot {token}",
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
+                "Content-Type": "application/json",
             },
             discord_endpoint=discord_endpoint,
         )
