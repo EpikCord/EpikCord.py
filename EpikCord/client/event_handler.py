@@ -246,20 +246,28 @@ class EventHandler(CommandHandler):
                             component = component
 
                 return await self._components[interaction.custom_id](
-                    interaction, self.utils.component_from_type(component)
+                    interaction, component
                 )  # Call the callback
 
             elif interaction.is_select_menu():
 
-                def get_select_menu():
-                    for action_row in interaction.message.components:
-                        for component in action_row["components"]:
-                            if component["custom_id"] == interaction.custom_id:
-                                component = self.utils.component_from_type(component)
-                                return component
+                if not self._components.get(interaction.custom_id):
+                    logger.warning(
+                        f"A user tried to interact with a component with the "
+                        f"custom id {interaction.custom_id}, but it is not "
+                        f"registered in this code, but is on Discord. "
+                    )
+                    return
+
+                component = None
+                for action_row in interaction.message.components:
+                    for possible_component in action_row.components:
+                        if possible_component.custom_id == interaction.custom_id:
+                            component = possible_component
+                            break
 
                 return await self._components[interaction.custom_id](
-                    interaction, get_select_menu(), *interaction.values
+                    interaction, component, *interaction.values
                 )
 
         if interaction.is_autocomplete:
