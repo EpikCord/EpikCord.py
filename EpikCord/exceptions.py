@@ -57,7 +57,7 @@ class DiscordAPIError(EpikCordException):
         if key_path is None:
             key_path = []
 
-        if "_errors" in d:
+        if d.get("_errors"):
             return [
                 LocatedError(**error, path=".".join(key_path[1:]))
                 for error in d.get("_errors", [])

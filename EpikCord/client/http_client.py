@@ -101,14 +101,17 @@ class HTTPClient(ClientSession):
         self.global_ratelimit.set()
         self.buckets: Dict[str, Bucket] = {}
 
-    async def request(self, method, url, *args, attempt: int = 1, **kwargs):
+    async def request(self, method, url, *args, attempt: int = 1, to_discord = True, **kwargs):
 
         if attempt > 5:
             logger.critical(f"Failed a {method} {url} 5 times.")
             return  # Just quit the request
 
-        if url.startswith("ws") or not kwargs.get("to_discord", True):
-            return await super().request(method, url, *args, **kwargs)
+        if url.startswith("ws") or not to_discord:
+            self.base_uri = ""
+            res = await super().request(method, url, *args, **kwargs)
+            self.base_uri = "https://discord.com/api/v10"
+            return res
 
         if url.startswith("/"):
             url = url[1:]
