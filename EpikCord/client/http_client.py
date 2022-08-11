@@ -145,7 +145,7 @@ class HTTPClient(ClientSession):
             if guild_id or channel_id:
                 self.buckets[bucket_hash] = Bucket(
                     discord_hash=res.headers.get("X-RateLimit-Bucket")
-                ) # Make a bucket
+                )  # Make a bucket
             else:
                 b = Bucket(discord_hash=res.headers.get("X-RateLimit-Bucket"))
                 if b in self.buckets.values():
