@@ -101,7 +101,9 @@ class HTTPClient(ClientSession):
         self.global_ratelimit.set()
         self.buckets: Dict[str, Bucket] = {}
 
-    async def request(self, method, url, *args, attempt: int = 1, to_discord = True, **kwargs):
+    async def request(
+        self, method, url, *args, attempt: int = 1, to_discord=True, **kwargs
+    ):
 
         if attempt > 5:
             logger.critical(f"Failed a {method} {url} 5 times.")
