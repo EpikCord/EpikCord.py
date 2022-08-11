@@ -1588,6 +1588,7 @@ class ClientUser:
         # Reinitialize the class with the new data, the full data.
         self.__init__(data)
 
+
 class Flag:
     if TYPE_CHECKING:
         class_flags: "dict[str, Any]"

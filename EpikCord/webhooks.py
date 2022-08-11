@@ -1,7 +1,6 @@
-from typing import (
-    Optional
-)
+from typing import Optional
 from .partials import PartialGuild
+
 
 class WebhookUser:
     def __init__(self, data: dict):
@@ -9,10 +8,12 @@ class WebhookUser:
         self.username: str = data.get("username")
         self.avatar: str = data.get("avatar")
 
+
 class SourceChannel:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
         self.name: str = data.get("name")
+
 
 class Webhook:  # Not used for making webhooks
     def __init__(self, client, data: dict):
