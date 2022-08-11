@@ -102,7 +102,15 @@ class HTTPClient(ClientSession):
         self.buckets: Dict[str, Bucket] = {}
 
     async def request(
-        self, method, url, *args, attempt: int = 1, to_discord=True, guild_id: Union[str, int] = 0, channel_id: Union[int, str] = 0, **kwargs
+        self,
+        method,
+        url,
+        *args,
+        attempt: int = 1,
+        to_discord=True,
+        guild_id: Union[str, int] = 0,
+        channel_id: Union[int, str] = 0,
+        **kwargs,
     ):
 
         if attempt > 5:
