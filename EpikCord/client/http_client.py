@@ -102,7 +102,7 @@ class HTTPClient(ClientSession):
         self.buckets: Dict[str, Bucket] = {}
 
     async def request(
-        self, method, url, *args, attempt: int = 1, to_discord=True, **kwargs
+        self, method, url, *args, attempt: int = 1, to_discord=True, guild_id: Union[str, int] = 0, channel_id: Union[int, str] = 0, **kwargs
     ):
 
         if attempt > 5:
@@ -121,8 +121,6 @@ class HTTPClient(ClientSession):
 
         await self.global_ratelimit.wait()
 
-        guild_id: Union[str, int] = kwargs.get("guild_id", 0)
-        channel_id: Union[str, int] = kwargs.get("channel_id", 0)
         bucket_hash = f"{guild_id}:{channel_id}:{url}"
         bucket = self.buckets.get(bucket_hash)
 
@@ -244,16 +242,12 @@ class HTTPClient(ClientSession):
         **kwargs,
     ):
         if to_discord:
-            res = await self.request("GET", url, *args, **kwargs)
-            return res
-
+            return await self.request("GET", url, *args, **kwargs)
         return await super().get(url, *args, **kwargs)
 
     async def post(self, url, *args, to_discord: bool = True, **kwargs):
         if to_discord:
-            res = await self.request("POST", url, *args, **kwargs)
-            return res
-
+            return await self.request("POST", url, *args, **kwargs)
         return await super().post(url, *args, **kwargs)
 
     async def patch(self, url, *args, to_discord: bool = True, **kwargs):
