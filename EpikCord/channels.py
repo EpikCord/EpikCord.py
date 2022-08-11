@@ -241,13 +241,15 @@ class GuildTextChannel(GuildChannel, Messageable):
         rate_limit_per_user: Optional[int] = None,
         reason: Optional[str] = None,
     ) -> Thread:
-        data = self.client.utils.filter_values({
-            "name": name,
-            "auto_archive_duration": auto_archive_duration,
-            "type": type,
-            "invitable": invitable,
-            "rate_limit_per_user": rate_limit_per_user,
-        })
+        data = self.client.utils.filter_values(
+            {
+                "name": name,
+                "auto_archive_duration": auto_archive_duration,
+                "type": type,
+                "invitable": invitable,
+                "rate_limit_per_user": rate_limit_per_user,
+            }
+        )
 
         headers = self.client.http.headers.copy()
 
