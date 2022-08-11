@@ -228,7 +228,7 @@ class HTTPClient(ClientSession):
         ]
 
         if body:
-            message.append(f"Sent body: {body}")
+            message.append(f"Sent body: {body} ")
 
         if h := dict(res.request_info.headers):
             message.append(f"Sent headers: {h} ")
