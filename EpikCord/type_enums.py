@@ -5,10 +5,12 @@ class VisibilityType(IntEnum):
     NONE = 0
     EVERYONE = 1
 
+
 class ApplicationCommandPermissionType(IntEnum):
     ROLE = 1
     USER = 2
     CHANNEL = 3
+
 
 class Locale(Enum):
     DANISH = "da"

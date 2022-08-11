@@ -3,6 +3,7 @@ from .partials import PartialUser
 from .options import *
 from .type_enums import ApplicationCommandPermissionType, Locale
 
+
 class TeamMember:
     def __init__(self, data: dict):
         self.data = data
@@ -60,29 +61,41 @@ class ApplicationCommand:
             10: NumberOption,
             11: AttachmentOption,
         }
-        self.options: List[AnyOption] = [conversion_type[option["type"]] for option in data.get("options", [])]
+        self.options: List[AnyOption] = [
+            conversion_type[option["type"]] for option in data.get("options", [])
+        ]
         self.default_member_permissions: str = data.get("default_permissions")
         self.version: str = data.get("version")
         self.name_localizations: Dict[Locale, str] = data.get("name_localizations")
-        self.description_localizations: Dict[Locale, str] = data.get("description_localizations")
+        self.description_localizations: Dict[Locale, str] = data.get(
+            "description_localizations"
+        )
         self.name_localisations = self.name_localizations
         self.description_localisations = self.description_localizations
+
 
 class ApplicationCommandPermission:
     def __init__(self, data):
         self.id: str = data.get("id")
-        self.type: ApplicationCommandPermissionType = ApplicationCommandPermissionType(data.get("type"))
+        self.type: ApplicationCommandPermissionType = ApplicationCommandPermissionType(
+            data.get("type")
+        )
         self.permission: bool = data.get("permission")
+
 
 class GuildApplicationCommandPermission:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
         self.application_id: str = data.get("application_id")
         self.guild_id: int = data.get("guild_id")
-        self.permissions: List[ApplicationCommandPermission] = [ApplicationCommandPermission(permission) for permission in data.get("permissions")]
+        self.permissions: List[ApplicationCommandPermission] = [
+            ApplicationCommandPermission(permission)
+            for permission in data.get("permissions")
+        ]
 
     def to_dict(self):
         return {"id": self.id, "type": self.type, "permission": self.permission}
+
 
 class GuildApplicationCommandPermission:
     def __init__(self, data: dict):
