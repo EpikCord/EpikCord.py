@@ -258,7 +258,7 @@ class GuildTextChannel(GuildChannel, Messageable):
 
         response = await self.client.http.post(
             f"/channels/{self.id}/threads",
-            data=data,
+            json=data,
             headers=headers,
             channel_id=self.id,
         )
@@ -275,7 +275,7 @@ class GuildTextChannel(GuildChannel, Messageable):
 
         response = await self.client.http.post(
             f"channels/{self.id}/messages/bulk-delete",
-            data={"messages": message_ids},
+            json={"messages": message_ids},
             headers=headers,
             channel_id=self.id,
         )
