@@ -8,7 +8,7 @@ from ..exceptions import (
     Forbidden403,
     DiscordAPIError,
 )
-from typing import Union, Dict, Any
+from typing import Union, Dict, Any, Optional
 from importlib.util import find_spec
 from aiohttp import ClientWebSocketResponse, ClientSession
 
@@ -139,7 +139,7 @@ class HTTPClient(ClientSession):
 
         res = await super().request(method, url, *args, **kwargs)
 
-        await self.log_request(res)
+        await self.log_request(res, kwargs.get("json", kwargs.get("data", None)))
 
         if isinstance(bucket, UnknownBucket) and res.headers.get("X-RateLimit-Bucket"):
             if guild_id or channel_id:
@@ -220,19 +220,21 @@ class HTTPClient(ClientSession):
         return res
 
     @staticmethod
-    async def log_request(res):
+    async def log_request(res, body: Optional[dict] = None):
         message = [
             f"Sent a {res.request_info.method} to {res.url} "
             f"and got a {res.status} response. ",
             f"Content-Type: {res.headers['Content-Type']} ",
         ]
 
-        if h := dict(res.headers):
-            message.append(f"Received headers: {h} ")
+        if body:
+            message.append(f"Sent body: {body}")
 
         if h := dict(res.request_info.headers):
             message.append(f"Sent headers: {h} ")
 
+        if h := dict(res.headers):
+            message.append(f"Received headers: {h} ")
         try:
             message.append(f"Received body: {await res.json()} ")
 
