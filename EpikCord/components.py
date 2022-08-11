@@ -229,7 +229,7 @@ class Button(BaseComponent):
             style = style.value
             return self
 
-        elif style in [1,2,3,4,5]:
+        elif style in [1, 2, 3, 4, 5]:
             self.style = style
 
         raise InvalidComponentStyle(
@@ -239,15 +239,18 @@ class Button(BaseComponent):
 
     def to_dict(self):
         from EpikCord import Utils
-        settings = Utils.filter_values({
-            "type": self.type,
-            "custom_id": self.custom_id,
-            "disabled": self.disabled,
-            "style": self.style,
-            "label": self.label,
-            "url": self.url,
-            "emoji": self.emoji,
-        })
+
+        settings = Utils.filter_values(
+            {
+                "type": self.type,
+                "custom_id": self.custom_id,
+                "disabled": self.disabled,
+                "style": self.style,
+                "label": self.label,
+                "url": self.url,
+                "emoji": self.emoji,
+            }
+        )
 
         return settings
 
@@ -284,14 +287,17 @@ class Button(BaseComponent):
 
     @classmethod
     def from_dict(self, data):
-        return Button(**{
-            "custom_id": data["custom_id"],
-            "style": data.get("style"),
-            "label": data.get("label"),
-            "emoji": data.get("emoji"),
-            "url": data.get("url"),
-            "disabled": data.get("disabled"),
-        })
+        return Button(
+            **{
+                "custom_id": data["custom_id"],
+                "style": data.get("style"),
+                "label": data.get("label"),
+                "emoji": data.get("emoji"),
+                "url": data.get("url"),
+                "disabled": data.get("disabled"),
+            }
+        )
+
 
 def component_from_type(component_data: dict):
     component_type = component_data["type"]
