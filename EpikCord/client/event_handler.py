@@ -246,7 +246,7 @@ class EventHandler(CommandHandler):
                             component = component
 
                 return await self._components[interaction.custom_id](
-                    interaction, self.utils.interaction_from_type(component)
+                    interaction, self.utils.component_from_type(component)
                 )  # Call the callback
 
             elif interaction.is_select_menu():
