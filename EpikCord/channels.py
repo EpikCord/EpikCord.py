@@ -235,21 +235,19 @@ class GuildTextChannel(GuildChannel, Messageable):
         self,
         name: str,
         *,
-        auto_archive_duration: Optional[int],
-        type: Optional[int],
-        invitable: Optional[bool],
-        rate_limit_per_user: Optional[int],
-        reason: Optional[str],
+        auto_archive_duration: Optional[int] = None,
+        type: Optional[int] = 11,
+        invitable: Optional[bool] = None,
+        rate_limit_per_user: Optional[int] = None,
+        reason: Optional[str] = None,
     ) -> Thread:
-        data = {"name": name}
-        if auto_archive_duration:
-            data["auto_archive_duration"] = auto_archive_duration
-        if type:
-            data["type"] = type
-        if invitable is not None:  # Geez having a bool is gonna be a pain
-            data["invitable"] = invitable
-        if rate_limit_per_user:
-            data["rate_limit_per_user"] = rate_limit_per_user
+        data = self.client.utils.filter_values({
+            "name": name,
+            "auto_archive_duration": auto_archive_duration,
+            "type": type,
+            "invitable": invitable,
+            "rate_limit_per_user": rate_limit_per_user,
+        })
 
         headers = self.client.http.headers.copy()
 
@@ -263,7 +261,7 @@ class GuildTextChannel(GuildChannel, Messageable):
             channel_id=self.id,
         )
         thread = Thread(await response.json())
-        self.client.guilds[self.guild_id].append(thread)
+        self.client.guilds[self.guild_id].channels.append(thread)
 
         return thread
 
