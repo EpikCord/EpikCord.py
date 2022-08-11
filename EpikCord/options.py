@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Optional, Union, List
-from .type_enums import ChannelTypes
+from .type_enums import ChannelTypes, Locale
 
 
 class BaseSlashCommandOption:
@@ -162,6 +162,8 @@ class SlashCommandOptionChoice:
     def __init__(self, *, name: str, value: Union[float, int, str]):
         self.name: str = name
         self.value: Union[float, int, str] = value
+        self.name_localizations: Dict[Locale, str] = data.get("name_localizations")
+        self.name_localisations = self.name_localizations
 
     def to_dict(self):
         return {"name": self.name, "value": self.value}

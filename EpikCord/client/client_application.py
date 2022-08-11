@@ -24,8 +24,9 @@ class ClientApplication(Application):
         data: dict = await response.json()
         return Application(data)
 
-    async def fetch_global_application_commands(self) -> List[ApplicationCommand]:
-        response = await self.client.http.get(f"/applications/{self.id}/commands")
+    async def fetch_global_application_commands(self, *, with_localizations: bool = False, with_localisations: bool = False) -> List[ApplicationCommand]:
+        with_localisation = with_localisations or with_localizations
+        response = await self.client.http.get(f"/applications/{self.id}/commands?with_localizations={with_localization}")
         payload = [ApplicationCommand(command) for command in await response.json()]
         self.client.application_commands = payload
         return payload
@@ -36,8 +37,9 @@ class ClientApplication(Application):
         name: str,
         description: str,
         options: Optional[List[AnyOption]],
-        default_permission: Optional[bool] = False,
+        default_member_permission: Optional[str] = None,
         command_type: Optional[int] = 1,
+        dm_permission: bool = True
     ):
         payload = {
             "name": name,
