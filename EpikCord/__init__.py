@@ -340,8 +340,8 @@ class Guild:
             GuildStageChannel(client, channel)
             for channel in data.get("stage_instances")
         ]
-        self.stickers: Optional[StickerItem] = (
-            StickerItem(data.get("stickers")) if data.get("stickers") else None
+        self.stickers: Optional[List[StickerItem]] = (
+            [StickerItem(sticker) for sticker in data.get("stickers")] if data.get("stickers") else None
         )
         self.guild_schedulded_events: List[GuildScheduledEvent] = [
             GuildScheduledEvent(client, event)
