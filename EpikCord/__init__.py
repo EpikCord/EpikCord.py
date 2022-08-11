@@ -308,7 +308,7 @@ class Guild:
         self.channels: List[GuildChannel] = [
             client.utils.channel_from_type(channel) for channel in data.get("channels")
         ]
-        self.channels.extend([Thread(thread) for thread in data.get("threads")])
+        self.channels.extend([Thread(self.client, thread) for thread in data.get("threads")])
         self.presences: List[dict] = data.get("presences")
         self.max_presences: int = data.get("max_presences")
         self.max_members: int = data.get("max_members")
