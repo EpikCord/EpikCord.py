@@ -228,8 +228,10 @@ class HTTPClient(ClientSession):
             message.append(f"Sent headers: {h} ")
 
         try:
-            await res.json()
             message.append(f"Received body: {await res.json()} ")
+
+        except:
+            ...
 
         finally:
             logger.debug("".join(message))
