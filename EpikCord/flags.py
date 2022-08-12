@@ -1,11 +1,12 @@
 from typing import TYPE_CHECKING, Any
+from typing_extensions import reveal_type
 
 __all__ = ("Intents", "SystemChannelFlags", "Permissions", "Flag")
 
 
 class Flag:
     if TYPE_CHECKING:
-        class_flags: "dict[str, Any]"
+        class_flags: "dict[str, int]"
 
     def __init_subclass__(cls) -> None:
         cls.class_flags = {k: v for k, v in cls.__dict__.items() if isinstance(v, int)}

@@ -1,6 +1,7 @@
 from typing import Optional, List
 from .partials import PartialUser
 from .options import *
+from .localizations import Localization
 from .type_enums import ApplicationCommandPermissionType, Locale
 
 
@@ -66,10 +67,8 @@ class ApplicationCommand:
         ]
         self.default_member_permissions: str = data.get("default_permissions")
         self.version: str = data.get("version")
-        self.name_localizations: Dict[Locale, str] = data.get("name_localizations")
-        self.description_localizations: Dict[Locale, str] = data.get(
-            "description_localizations"
-        )
+        self.name_localizations: List[Localization] = data.get("name_localizations")
+        self.description_localizations: List[Localization] = [Localization(k, v) for k, v in data.get("description_localizations").items()]
         self.name_localisations = self.name_localizations
         self.description_localisations = self.description_localizations
 
