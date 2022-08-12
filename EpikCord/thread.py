@@ -17,7 +17,7 @@ class Thread(Messageable):
         self.archived: bool = data.get("archived")
         self.auto_archive_duration: int = data.get("auto_archive_duration")
         self.archive_timestamp: datetime.datetime = datetime.datetime.fromisoformat(
-            data["archive_timestamp"]
+            data.get("archive_timestamp")
         )
         self.locked: bool = data.get("locked")
 
