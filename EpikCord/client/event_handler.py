@@ -304,6 +304,7 @@ class EventHandler(CommandHandler):
     async def message_create(self, data: dict):
         """Event fired when messages are created"""
         from EpikCord import Message
+
         message = Message(self, data)
         message.channel = self.channels.get(message.channel_id)
 
