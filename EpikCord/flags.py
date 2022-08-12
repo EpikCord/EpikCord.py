@@ -3,6 +3,7 @@ from enum import IntFlag
 from typing import Dict, Any
 
 class EpikCordFlag(IntFlag):
+<<<<<<< HEAD
     class_flags: Dict[str, int]
 
     def __init_subclass__(cls) -> None:
