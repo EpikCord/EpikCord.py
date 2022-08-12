@@ -68,7 +68,9 @@ class ApplicationCommand:
         self.default_member_permissions: str = data.get("default_permissions")
         self.version: str = data.get("version")
         self.name_localizations: List[Localization] = data.get("name_localizations")
-        self.description_localizations: List[Localization] = [Localization(k, v) for k, v in data.get("description_localizations").items()]
+        self.description_localizations: List[Localization] = [
+            Localization(k, v) for k, v in data.get("description_localizations").items()
+        ]
         self.name_localisations = self.name_localizations
         self.description_localisations = self.description_localizations
 
