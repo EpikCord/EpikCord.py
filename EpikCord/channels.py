@@ -262,7 +262,7 @@ class GuildTextChannel(GuildChannel, Messageable):
             headers=headers,
             channel_id=self.id,
         )
-        thread = Thread(await response.json())
+        thread = Thread(self.client, await response.json())
         self.client.guilds[self.guild_id].channels.append(thread)
 
         return thread
