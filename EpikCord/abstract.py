@@ -57,15 +57,17 @@ class Messageable:
     ) -> Message:
         from EpikCord import Message
 
-        payload = self.client.utils.filter_values({
-            "content": content,
-            "embeds": embeds,
-            "components": components,
-            "tts": tts,
-            "allowed_mentions": allowed_mentions,
-            "sticker_ids": sticker_ids,
-            "attachments": attachments,
-        })
+        payload = self.client.utils.filter_values(
+            {
+                "content": content,
+                "embeds": embeds,
+                "components": components,
+                "tts": tts,
+                "allowed_mentions": allowed_mentions,
+                "sticker_ids": sticker_ids,
+                "attachments": attachments,
+            }
+        )
 
         if suppress_embeds:
             payload["suppress_embeds"] = 1 << 2
