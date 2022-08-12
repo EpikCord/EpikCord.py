@@ -1,7 +1,8 @@
-from typing import Optional, List
+from __future__ import annotations
+from typing import Optional, List, TYPE_CHECKING
 
-from .message import File, Message
-
+if TYPE_CHECKING:
+    from EpikCord import Message, File
 
 class Messageable:
     def __init__(self, client, channel_id: str):
