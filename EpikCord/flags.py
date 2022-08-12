@@ -2,6 +2,7 @@ from __future__ import annotations
 from enum import IntFlag
 from typing import Dict, Any
 
+
 class EpikCordFlag(IntFlag):
     class_flags: Dict[str, int]
 
@@ -44,6 +45,7 @@ class EpikCordFlag(IntFlag):
     @classmethod
     def all(cls):
         return cls(**{k: True for k in cls.class_flags})
+
 
 class Intents(EpikCordFlag):
     guilds = 1 << 0
