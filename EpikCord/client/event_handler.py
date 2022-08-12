@@ -2,7 +2,7 @@ from .command_handler import CommandHandler
 from ..opcodes import GatewayOpcode
 from logging import getLogger
 from time import perf_counter_ns
-from inspect import iscoroutine
+from inspect import iscoroutinefunction
 import asyncio
 from typing import Optional, Callable
 from collections import defaultdict, deque
@@ -214,7 +214,7 @@ class EventHandler(CommandHandler):
             if command.is_slash_command():
                 for check in command.checks:
                     try:
-                        if iscoroutine(check.callback(interaction)):
+                        if iscoroutinefunction(check.callback):
                             await check.callback(interaction)
                         else:
                             check.callback(interaction)
