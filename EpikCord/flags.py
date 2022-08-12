@@ -3,7 +3,6 @@ from enum import IntFlag
 
 
 class EpikCordFlag(IntFlag):
-
     @classmethod
     def all(cls) -> EpikCordFlag:
         value = 0
@@ -88,8 +87,4 @@ class Permissions(EpikCordFlag):
     moderator_members = 1 << 40
 
 
-__all__ = (
-    "Intents",
-    "SystemChannelFlags",
-    "Permissions", "EpikCordFlag"
-)
+__all__ = ("Intents", "SystemChannelFlags", "Permissions", "EpikCordFlag")
