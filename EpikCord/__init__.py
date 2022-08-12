@@ -31,7 +31,7 @@ from .rtp_handler import *
 from .status_code import *
 from .thread import *
 from .type_enums import *
-from .flags import Intents, Permissions, SystemChannelFlags
+from .flags import *
 
 T = TypeVar("T")
 logger = getLogger(__name__)
