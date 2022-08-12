@@ -1,8 +1,13 @@
 from __future__ import annotations
 from enum import IntFlag
+from typing import Optional
 
 
 class EpikCordFlag(IntFlag):
+    def __call__(self, value: Optional[bool]) -> bool:
+        value = value or 0
+        return super().__call__(value)
+
     @classmethod
     def all(cls) -> EpikCordFlag:
         value = 0
