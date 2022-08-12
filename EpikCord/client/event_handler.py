@@ -307,6 +307,7 @@ class EventHandler(CommandHandler):
 
         message = Message(self, data)
         message.channel = self.channels.get(message.channel_id)
+        message.channel.last_message = message
 
         return message
 

@@ -7,7 +7,14 @@ if TYPE_CHECKING:
 
 class Messageable:
     def __init__(self, client, channel_id: str):
-        self.id: str = channel_id
+
+        if isinstance(channel_id, (int, str)):
+            self.id: str = channel_id
+        elif isinstance(channel_id, dict):
+            self.id: str = channel_id.get("id")
+        else:
+            raise TypeError(f"Expected str, int or dict, got {type(channel_id)}")
+
         self.client = client
 
     async def fetch_messages(
@@ -50,30 +57,15 @@ class Messageable:
     ) -> Message:
         from EpikCord import Message
 
-        payload = {}
-
-        if content:
-            payload["content"] = content
-
-        if embeds:
-            payload["embeds"] = [embed.to_dict() for embed in embeds]
-
-        if components:
-            payload["components"] = [component.to_dict() for component in components]
-
-        if tts:
-            payload["tts"] = tts
-
-        if allowed_mentions:
-            payload["allowed_mentions"] = allowed_mentions.to_dict()
-
-        if sticker_ids:
-            payload["sticker_ids"] = sticker_ids
-
-        if attachments:
-            payload["attachments"] = [
-                attachment.to_dict() for attachment in attachments
-            ]
+        payload = self.client.utils.filter_values({
+            "content": content,
+            "embeds": embeds,
+            "components": components,
+            "tts": tts,
+            "allowed_mentions": allowed_mentions,
+            "sticker_ids": sticker_ids,
+            "attachments": attachments,
+        })
 
         if suppress_embeds:
             payload["suppress_embeds"] = 1 << 2
