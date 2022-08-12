@@ -7,7 +7,7 @@ from EpikCord import Client, Intents, StringOption, NumberOption
 
 intents = Intents.all()
 
-client= Client("token", intents)
+client = Client("token", intents)
 
 
 @client.event

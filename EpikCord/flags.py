@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Any
 
 __all__ = ("Intents", "SystemChannelFlags", "Permissions", "Flag")
 
+
 class Flag:
     if TYPE_CHECKING:
         class_flags: "dict[str, Any]"
