@@ -779,18 +779,20 @@ class Attachment:
         self.ephemeral: Optional[bool] = data.get("ephemeral")
 
     def to_dict(self) -> Dict[str, Any]:
-        return Utils.filter_values({
-            "id": self.id,
-            "filename": self.file_name,
-            "description": self.description,
-            "content_type": self.content_type,
-            "size": self.size,
-            "url": self.url,
-            "proxy_url": self.proxy_url,
-            "width": self.width,
-            "height": self.height,
-            "ephemeral": self.ephemeral,
-        })
+        return Utils.filter_values(
+            {
+                "id": self.id,
+                "filename": self.file_name,
+                "description": self.description,
+                "content_type": self.content_type,
+                "size": self.size,
+                "url": self.url,
+                "proxy_url": self.proxy_url,
+                "width": self.width,
+                "height": self.height,
+                "ephemeral": self.ephemeral,
+            }
+        )
 
 
 class Section:
@@ -1515,6 +1517,7 @@ class AllowedMention:
             "roles": self.roles,
             "users": self.users,
         }
+
 
 class MessageInteraction:
     def __init__(self, client, data: dict):
