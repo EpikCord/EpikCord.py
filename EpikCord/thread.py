@@ -1,5 +1,6 @@
 from __future__ import annotations
 from .exceptions import ThreadArchived, NotFound404
+from .abstract import Messageable
 from typing import List, Optional, TYPE_CHECKING
 import datetime
 
@@ -7,7 +8,7 @@ if TYPE_CHECKING:
     from EpikCord import ThreadMember
 
 
-class Thread:
+class Thread(Messageable):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
         self.owner_id: str = data.get("owner_id")
@@ -16,7 +17,7 @@ class Thread:
         self.archived: bool = data.get("archived")
         self.auto_archive_duration: int = data.get("auto_archive_duration")
         self.archive_timestamp: datetime.datetime = datetime.datetime.fromisoformat(
-            data["archive_timestamp"]
+            data.get("archive_timestamp")
         )
         self.locked: bool = data.get("locked")
 

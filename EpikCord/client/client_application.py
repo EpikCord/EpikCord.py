@@ -3,7 +3,7 @@ from ..exceptions import (
     InvalidApplicationCommandOptionType,
 )
 from typing import List, Optional, Dict
-
+from ..flags import Permissions
 from ..options import *
 
 from ..application import (
@@ -29,7 +29,7 @@ class ClientApplication(Application):
     ) -> List[ApplicationCommand]:
         with_localisation = with_localisations or with_localizations
         response = await self.client.http.get(
-            f"/applications/{self.id}/commands?with_localizations={with_localization}"
+            f"/applications/{self.id}/commands?with_localizations={with_localisation}"
         )
         payload = [ApplicationCommand(command) for command in await response.json()]
         self.client.application_commands = payload
@@ -41,14 +41,15 @@ class ClientApplication(Application):
         name: str,
         description: str,
         options: Optional[List[AnyOption]],
-        default_member_permission: Optional[str] = None,
+        default_member_permission: Optional[Permissions] = None,
         command_type: Optional[int] = 1,
         dm_permission: bool = True,
     ):
         payload = {
             "name": name,
             "description": description,
-            "default_permissions": default_permission,
+            "default_permissions": default_member_permission,
+            "dm_permissions": dm_permission,
         }
 
         if command_type not in range(1, 4):
