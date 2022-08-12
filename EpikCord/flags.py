@@ -1,54 +1,19 @@
-from typing import TYPE_CHECKING, Any
+from __future__ import annotations
+from enum import IntFlag
 
-__all__ = ("Intents", "SystemChannelFlags", "Permissions", "Flag")
 
-
-class Flag:
-    if TYPE_CHECKING:
-        class_flags: "dict[str, int]"
-
-    def __init_subclass__(cls) -> None:
-        cls.class_flags = {k: v for k, v in cls.__dict__.items() if isinstance(v, int)}
-        return cls
-
-    def __init__(self, value: int = 0, **kwargs):
-        self.value = value
-        self.turned_on: "list[str]" = [k for k, a in kwargs.items() if a]
-
-        for k, v in self.class_flags.items():
-            if v & value and k not in self.turned_on:
-                self.turned_on.append(k)
-
-        self.calculate_from_turned()
-
-    def calculate_from_turned(self):
-        value = 0
-        for key, flag in self.class_flags.items():
-            if key in self.class_flags:
-                value |= flag
-        self.value = value
-
-    def __getattribute__(self, __name: str) -> Any:
-        original = super().__getattribute__
-        if __name in original("class_flags"):
-            return __name in original("turned_on")
-        return original(__name)
-
-    def __setattr__(self, __name: str, __value: Any) -> None:
-        if __name not in self.class_flags:
-            return super().__setattr__(__name, __value)
-        if __value and __name not in self.turned_on:
-            self.turned_on.append(__name)
-        elif not __value and __name in self.turned_on:
-            self.turned_on.remove(__name)
-        self.calculate_from_turned()
-
+class EpikCordFlag(IntFlag):
     @classmethod
-    def all(cls):
-        return cls(**{k: True for k in cls.class_flags})
+    def all(cls) -> EpikCordFlag:
+        value = 0
+
+        for k in cls.__members__:
+            value |= cls[k]
+
+        return cls(value)
 
 
-class Intents(Flag):
+class Intents(EpikCordFlag):
     guilds = 1 << 0
     members = 1 << 1
     bans = 1 << 2
@@ -71,7 +36,7 @@ class Intents(Flag):
     scheduled_event = 1 << 16
 
 
-class SystemChannelFlags(Flag):
+class SystemChannelFlags(EpikCordFlag):
 
     suppress_join_notifications = 1 << 0
     suppress_premium_subscriptions = 1 << 1
@@ -79,7 +44,7 @@ class SystemChannelFlags(Flag):
     suppress_join_notification_replies = 1 << 3
 
 
-class Permissions(Flag):
+class Permissions(EpikCordFlag):
     create_instant_invite = 1 << 0
     kick_members = 1 << 1
     ban_members = 1 << 2
@@ -120,3 +85,6 @@ class Permissions(Flag):
     send_messages_in_threads = 1 << 38
     start_embedded_activities = 1 << 39
     moderator_members = 1 << 40
+
+
+__all__ = ("Intents", "SystemChannelFlags", "Permissions", "EpikCordFlag")
