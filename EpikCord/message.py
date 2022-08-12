@@ -394,9 +394,13 @@ class Message:
         )
         return await response.json()
 
-    async def delete(self):
+    async def delete(self, reason: str):
+        headers = self.client.headers.copy()
+        if reason:
+            headers["X-Audit-Log-Reason"] = reason
         response = await self.client.http.delete(
-            f"channels/{self.channel_id}/messages/{self.id}"
+            f"channels/{self.channel_id}/messages/{self.id}",
+            headers=headers
         )
         return await response.json()
 
