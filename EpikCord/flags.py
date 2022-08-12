@@ -4,8 +4,6 @@ from typing import Optional
 
 
 class EpikCordFlag(IntFlag):
-    
-
     def __call__(self, value: Optional[bool] = None) -> bool:
         value = value or 0
         return super().__call__(value)
