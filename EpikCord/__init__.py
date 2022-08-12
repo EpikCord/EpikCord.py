@@ -14,25 +14,27 @@ from typing import (
     TypeVar,
     DefaultDict,
 )
+from .client import *
+from .managers import *
+from .abstract import *
 from .application import *
 from .channels import *
-from .webhooks import *
-from .client import *
 from .close_event_codes import *
+from .colour import *
 from .components import *
 from .exceptions import *
+from .flags import *
 from .localizations import *
-from .managers import *
 from .message import *
 from .opcodes import *
 from .options import *
-from .sticker import *
 from .partials import *
 from .rtp_handler import *
 from .status_code import *
+from .sticker import *
 from .thread import *
 from .type_enums import *
-from .flags import *
+from .webhooks import *
 
 T = TypeVar("T")
 logger = getLogger(__name__)
@@ -776,6 +778,20 @@ class Attachment:
         self.height: Optional[int] = data.get("height")
         self.ephemeral: Optional[bool] = data.get("ephemeral")
 
+    def to_dict(self) -> Dict[str, Any]:
+        return Utils.filter_values({
+            "id": self.id,
+            "filename": self.file_name,
+            "description": self.description,
+            "content_type": self.content_type,
+            "size": self.size,
+            "url": self.url,
+            "proxy_url": self.proxy_url,
+            "width": self.width,
+            "height": self.height,
+            "ephemeral": self.ephemeral,
+        })
+
 
 class Section:
     _cmd = Union[ClientUserCommand, ClientSlashCommand, ClientMessageCommand]
@@ -1487,13 +1503,18 @@ class AllowedMention:
         roles: List[str],
         users: List[str],
     ):
-        self.data = {
-            "parse": allowed_mentions,
-            "replied_user": replied_user,
-            "roles": roles,
-            "users": users,
-        }
+        self.allowed_mentions: List[str] = allowed_mentions
+        self.replied_user: bool = replied_user
+        self.roles: List[str] = roles
+        self.users: List[str] = users
 
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "allowed_mentions": self.allowed_mentions,
+            "replied_user": self.replied_user,
+            "roles": self.roles,
+            "users": self.users,
+        }
 
 class MessageInteraction:
     def __init__(self, client, data: dict):

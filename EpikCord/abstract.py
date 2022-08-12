@@ -1,8 +1,9 @@
 from __future__ import annotations
 from typing import Optional, List, TYPE_CHECKING
+from .components import ActionRow
 
 if TYPE_CHECKING:
-    from EpikCord import Message, File
+    from EpikCord import Message, File, AllowedMention
 
 
 class Messageable:
@@ -48,9 +49,9 @@ class Messageable:
         content: Optional[str] = None,
         *,
         embeds: Optional[List[dict]] = None,
-        components=None,
+        components: List[ActionRow]=None,
         tts: Optional[bool] = False,
-        allowed_mentions=None,
+        allowed_mention: AllowedMention =None,
         sticker_ids: Optional[List[str]] = None,
         attachments: List[File] = None,
         suppress_embeds: bool = False,
@@ -60,12 +61,12 @@ class Messageable:
         payload = self.client.utils.filter_values(
             {
                 "content": content,
-                "embeds": embeds,
-                "components": components,
+                "embeds": [embed.to_dict() for embed in embeds],
+                "components": [component.to_dict() for component in components],
                 "tts": tts,
-                "allowed_mentions": allowed_mentions,
+                "allowed_mentions": allowed_mention.to_dict(),
                 "sticker_ids": sticker_ids,
-                "attachments": attachments,
+                "attachments": [attachment.to_dict() for attachment in attachments],
             }
         )
 

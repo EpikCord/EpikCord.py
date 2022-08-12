@@ -1,8 +1,7 @@
 from __future__ import annotations
 from typing import Dict, Any
 
-
-class EpikCordFlag:
+class Flag:
     class_flags: Dict[str, int]
 
     def __init_subclass__(cls) -> None:
@@ -46,7 +45,7 @@ class EpikCordFlag:
         return cls(**{k: True for k in cls.class_flags})
 
 
-class Intents(EpikCordFlag):
+class Intents(Flag):
     guilds = 1 << 0
     members = 1 << 1
     bans = 1 << 2
@@ -69,7 +68,7 @@ class Intents(EpikCordFlag):
     scheduled_event = 1 << 16
 
 
-class SystemChannelFlags(EpikCordFlag):
+class SystemChannelFlags(Flag):
 
     suppress_join_notifications = 1 << 0
     suppress_premium_subscriptions = 1 << 1
@@ -77,7 +76,7 @@ class SystemChannelFlags(EpikCordFlag):
     suppress_join_notification_replies = 1 << 3
 
 
-class Permissions(EpikCordFlag):
+class Permissions(Flag):
     create_instant_invite = 1 << 0
     kick_members = 1 << 1
     ban_members = 1 << 2
@@ -120,4 +119,4 @@ class Permissions(EpikCordFlag):
     moderator_members = 1 << 40
 
 
-__all__ = ("Intents", "SystemChannelFlags", "Permissions", "EpikCordFlag")
+__all__ = ("Intents", "SystemChannelFlags", "Permissions", "Flag")
