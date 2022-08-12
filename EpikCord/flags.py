@@ -1,9 +1,8 @@
 from __future__ import annotations
-from enum import IntFlag
 from typing import Dict, Any
 
 
-class EpikCordFlag(IntFlag):
+class EpikCordFlag:
     class_flags: Dict[str, int]
 
     def __init_subclass__(cls) -> None:
