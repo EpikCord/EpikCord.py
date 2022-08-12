@@ -16,9 +16,11 @@ class Thread(Messageable):
         self.member_count: int = data.get("member_count")
         self.archived: bool = data.get("archived")
         self.auto_archive_duration: int = data.get("auto_archive_duration")
-        self.archive_timestamp: Optional[datetime.datetime] = datetime.datetime.fromisoformat(
-            data.get("archive_timestamp")
-        ) if data.get("archive_timestamp") else None
+        self.archive_timestamp: Optional[datetime.datetime] = (
+            datetime.datetime.fromisoformat(data.get("archive_timestamp"))
+            if data.get("archive_timestamp")
+            else None
+        )
         self.locked: bool = data.get("locked")
 
     async def join(self):
