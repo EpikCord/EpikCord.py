@@ -1,5 +1,4 @@
 from typing import TYPE_CHECKING, Any
-from typing_extensions import reveal_type
 
 __all__ = ("Intents", "SystemChannelFlags", "Permissions", "Flag")
 
