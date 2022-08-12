@@ -16,6 +16,7 @@ from typing import (
 )
 from .application import *
 from .channels import *
+from .webhooks import *
 from .client import *
 from .close_event_codes import *
 from .components import *
