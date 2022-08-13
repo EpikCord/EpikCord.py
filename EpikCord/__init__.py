@@ -53,4 +53,8 @@ from .utils import *
 from .voice import *
 from .webhooks import *
 
-__version__ = "0.5.2"
+
+T = TypeVar("T")
+logger = getLogger(__name__)
+
+__version__ = "0.5.4"
