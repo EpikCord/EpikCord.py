@@ -151,10 +151,10 @@ class UserClient:
         if after:
             params["after"] = after
 
-        guilds = await self._http.get("/users/@me/guilds", params=params)
-        data = await guilds.json()
+        data = await self._http.get("/users/@me/guilds", params=params)
+        guilds = await data.json()
 
-        return [PartialGuild(d) for d in data]
+        return [PartialGuild(d) for d in guilds]
 
 
 class Guild:
