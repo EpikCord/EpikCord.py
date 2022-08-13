@@ -1,11 +1,17 @@
 from __future__ import annotations
 from .exceptions import ThreadArchived, NotFound404
 from .abstract import Messageable
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, Optional
 import datetime
 
-if TYPE_CHECKING:
-    from EpikCord import ThreadMember
+class ThreadMember:
+    def __init__(self, data: dict):
+        self.id: str = data.get("user_id")
+        self.thread_id: str = data.get("thread_id")
+        self.join_timestamp: datetime.datetime = datetime.datetime.fromisoformat(
+            data["join_timestamp"]
+        )
+        self.flags: int = data.get("flags")
 
 
 class Thread(Messageable):

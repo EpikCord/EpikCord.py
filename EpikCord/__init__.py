@@ -464,17 +464,6 @@ class Overwrite:
         self.allow: str = data.get("allow")
         self.deny: str = data.get("deny")
 
-
-class ThreadMember:
-    def __init__(self, data: dict):
-        self.id: str = data.get("user_id")
-        self.thread_id: str = data.get("thread_id")
-        self.join_timestamp: datetime.datetime = datetime.datetime.fromisoformat(
-            data["join_timestamp"]
-        )
-        self.flags: int = data.get("flags")
-
-
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
 #         super().__init__(data)
