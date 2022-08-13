@@ -1,6 +1,7 @@
 from .abstract import Messageable
 from typing import Optional
 
+
 class User(Messageable):
     def __init__(self, client, data: dict):
         super().__init__(client, data["id"])

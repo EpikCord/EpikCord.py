@@ -4,12 +4,7 @@ NOTE: version string only in setup.cfg
 from __future__ import annotations
 
 import datetime
-from typing import (
-    Optional,
-    List,
-    Union,
-    TypeVar
-)
+from typing import Optional, List, Union, TypeVar
 from .client import *
 from .managers import *
 from .abstract import *
@@ -156,7 +151,6 @@ class UserClient:
         data = await (await self._http.get("/users/@me/guilds", params=params)).json()
 
         return [PartialGuild(d) for d in data]
-
 
 
 class Guild:
@@ -462,6 +456,7 @@ class UnavailableGuild:
         self.id: str = data.get("id")
         self.available: bool = data.get("available")
 
+
 class Overwrite:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
@@ -478,6 +473,7 @@ class ThreadMember:
             data["join_timestamp"]
         )
         self.flags: int = data.get("flags")
+
 
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
@@ -680,6 +676,7 @@ class Integration:
             Application(data.get("application")) if data.get("application") else None
         )
 
+
 class Invite:
     def __init__(self, data: dict):
         self.code: str = data.get("code")
@@ -736,6 +733,7 @@ class GuildMember(User):
             "communication_disabled_until"
         )
 
+
 class MessageActivity:
     def __init__(self, data: dict):
         self.type: int = data.get("type")
@@ -763,12 +761,11 @@ class AllowedMention:
             "users": self.users,
         }
 
+
 class SlashCommand(ApplicationCommand):
     def __init__(self, data: dict):
         super().__init__(data)
-        self.options: Optional[List[AnyOption]] = data.get(
-            "options"
-        )
+        self.options: Optional[List[AnyOption]] = data.get("options")
         opts = [
             Subcommand,
             SubCommandGroup,
@@ -799,6 +796,7 @@ class SlashCommand(ApplicationCommand):
             "description": self.description,
             "options": json_options,
         }
+
 
 __all__ = (
     "__version__",

@@ -1,6 +1,7 @@
 import datetime
 from typing import Optional
 
+
 class VoiceRegion:
     def __init__(self, data: dict):
         self.id: str = data["id"]
@@ -9,9 +10,11 @@ class VoiceRegion:
         self.deprecated: bool = data["deprecated"]
         self.custom: bool = data["custom"]
 
+
 class VoiceState:
     def __init__(self, client, data: dict):
         from EpikCord import GuildMember
+
         self.data: dict = data
         self.guild_id: Optional[str] = data.get("guild_id")
         self.channel_id: str = data.get("channel_id")

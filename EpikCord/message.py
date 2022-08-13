@@ -12,8 +12,10 @@ from .components import *
 
 logger = getLogger(__name__)
 
+
 def _filter_values(dictionary: dict) -> dict:
     return {k: v for k, v in dictionary.items() if v is not None}
+
 
 class Attachment:
     def __init__(self, data: dict):
@@ -43,6 +45,7 @@ class Attachment:
                 "ephemeral": self.ephemeral,
             }
         )
+
 
 class Reaction:
     """

@@ -6,6 +6,7 @@ from .options import SlashCommandOptionChoice
 from typing import Optional, Union, List
 from .message import Message, Embed, Attachment
 
+
 class Modal:
     def __init__(self, *, title: str, custom_id: str, components: List[ActionRow]):
         self.title = title
@@ -16,8 +17,10 @@ class Modal:
         return {
             "title": self.title,
             "custom_id": self.custom_id,
-            "components": [component.to_dict() for component in self.components]
+            "components": [component.to_dict() for component in self.components],
         }
+
+
 class ResolvedDataHandler:
     def __init__(self, client, resolved_data: dict):
         self.data: dict = resolved_data
@@ -392,9 +395,11 @@ class UserCommandInteraction(ApplicationCommandInteraction):
 class MessageCommandInteraction(UserCommandInteraction):
     ...  # Literally the same thing.
 
+
 class MessageInteraction:
     def __init__(self, client, data: dict):
         from EpikCord import GuildMember, User
+
         self.id: str = data.get("id")
         self.type: int = data.get("type")
         self.name: str = data.get("name")

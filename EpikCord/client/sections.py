@@ -4,6 +4,7 @@ from typing import Union, DefaultDict, List
 from .event_handler import Event
 from ..commands import ClientMessageCommand, ClientSlashCommand, ClientUserCommand
 
+
 class Section:
     _cmd = Union[ClientUserCommand, ClientSlashCommand, ClientMessageCommand]
 
