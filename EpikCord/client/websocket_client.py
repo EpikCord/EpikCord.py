@@ -213,13 +213,6 @@ class WebsocketClient(EventHandler):
         if self._closed:
             return
 
-        # for voice in self.voice_clients:
-        #     try:
-        #         await voice.disconnect(force=True)
-        #     except Exception:
-        #         # if an error happens during disconnects, disregard it.
-        #         pass
-
         if self.ws is not None and not self.ws.closed:
             await self.ws.close(code=4000)
 
