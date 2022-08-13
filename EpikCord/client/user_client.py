@@ -8,6 +8,7 @@ from .http_client import HTTPClient
 from ..user import User
 from ..guild import Integration
 
+
 class Connection:
     def __init__(self, data: dict):
         self.id: str = data["id"]
@@ -52,6 +53,7 @@ class UserClient:
     def __init__(self, token: str, *, discord_endpoint: str):
         self.token = token
         from EpikCord import __version__
+
         self._http: HTTPClient = HTTPClient(
             headers={
                 "Authorization": f"Bearer {token}",
@@ -95,4 +97,3 @@ class UserClient:
         data = await (await self._http.get("/users/@me/guilds", params=params)).json()
 
         return [PartialGuild(d) for d in data]
-

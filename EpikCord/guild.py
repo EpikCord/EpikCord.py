@@ -11,6 +11,7 @@ from .sticker import StickerItem
 from .channels import Overwrite
 from .partials import PartialGuild
 
+
 class UnavailableGuild:
     """
     The class representation of an UnavailableGuild.
@@ -22,6 +23,7 @@ class UnavailableGuild:
         self.id: str = data.get("id")
         self.available: bool = data.get("available")
 
+
 class Invite:
     def __init__(self, data: dict):
         self.code: str = data.get("code")
@@ -29,7 +31,9 @@ class Invite:
             PartialGuild(data.get("guild")) if data.get("guild") else None
         )
         self.channel: AnyChannel = (
-            Utils.channel_from_type(data.get("channel")) if data.get("channel") else None
+            Utils.channel_from_type(data.get("channel"))
+            if data.get("channel")
+            else None
         )
         self.inviter: Optional[User] = (
             User(data.get("inviter")) if data.get("inviter") else None
@@ -59,6 +63,7 @@ class Invite:
             data.get("guild_scheduled_event")
         )
 
+
 class GuildMember(User):
     def __init__(self, client, data: dict):
         super().__init__(client, data.get("user"))
@@ -77,6 +82,7 @@ class GuildMember(User):
             "communication_disabled_until"
         )
 
+
 class GuildPreview:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
@@ -91,6 +97,7 @@ class GuildPreview:
         self.stickers: List[Sticker] = [
             Sticker(sticker) for sticker in data.get("stickers", [])
         ]
+
 
 class Guild:
     def __init__(self, client, data: dict):
@@ -383,6 +390,7 @@ class Guild:
             ).json()
         )
 
+
 class RoleTag:
     def __init__(self, data: dict):
         self.bot_id: Optional[str] = data.get("bot_id")
@@ -406,6 +414,7 @@ class Role:
         self.mentionable: bool = data.get("mentionable")
         self.tags: RoleTag = RoleTag(self.data.get("tags"))
         self.guild: Guild = Guild(client, data.get("guild"))
+
 
 class Emoji:
     def __init__(self, client, data: dict):
@@ -454,6 +463,7 @@ class Emoji:
             f"/guilds/{self.guild_id}/emojis/{self.id}", headers=headers
         )
 
+
 class WelcomeScreenChannel:
     def __init__(self, data: dict):
         self.channel_id: str = data.get("channel_id")
@@ -469,6 +479,7 @@ class WelcomeScreen:
             WelcomeScreenChannel(welcome_channel)
             for welcome_channel in data.get("welcome_channels")
         ]
+
 
 class GuildWidgetSettings:
     def __init__(self, data: dict):
