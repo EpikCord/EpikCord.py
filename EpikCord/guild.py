@@ -9,6 +9,7 @@ from .utils import Utils
 from .thread import Thread
 from .sticker import StickerItem
 from .channels import Overwrite
+from .partials import PartialGuild
 
 class UnavailableGuild:
     """
@@ -20,6 +21,43 @@ class UnavailableGuild:
         self.data = data
         self.id: str = data.get("id")
         self.available: bool = data.get("available")
+
+class Invite:
+    def __init__(self, data: dict):
+        self.code: str = data.get("code")
+        self.guild: Optional[PartialGuild] = (
+            PartialGuild(data.get("guild")) if data.get("guild") else None
+        )
+        self.channel: AnyChannel = (
+            Utils.channel_from_type(data.get("channel")) if data.get("channel") else None
+        )
+        self.inviter: Optional[User] = (
+            User(data.get("inviter")) if data.get("inviter") else None
+        )
+        self.target_type: int = data.get("target_type")
+        self.target_user: Optional[User] = (
+            User(data.get("target_user")) if data.get("target_user") else None
+        )
+        self.target_application: Optional[Application] = (
+            Application(data.get("target_application"))
+            if data.get("target_application")
+            else None
+        )
+        self.approximate_presence_count: Optional[int] = data.get(
+            "approximate_presence_count"
+        )
+        self.approximate_member_count: Optional[int] = data.get(
+            "approximate_member_count"
+        )
+        self.expires_at: Optional[str] = data.get("expires_at")
+        self.stage_instance: Optional[GuildStageChannel] = (
+            GuildStageChannel(data.get("stage_instance"))
+            if data.get("stage_instance")
+            else None
+        )
+        self.guild_scheduled_event: Optional[GuildScheduledEvent] = GuildScheduledEvent(
+            data.get("guild_scheduled_event")
+        )
 
 class GuildMember(User):
     def __init__(self, client, data: dict):
