@@ -1,5 +1,6 @@
 from __future__ import annotations
-from importlib.util import resolve_name
+from importlib.util import find_spec, module_from_spec, resolve_name
+from sys import modules
 from .websocket_client import WebsocketClient
 from .http_client import HTTPClient
 from logging import getLogger
@@ -69,7 +70,22 @@ class Client(WebsocketClient):
         logger.info(f"Loaded Section {section.__name__}")
 
     def load_sections_from_file(self, filename: str, *, package: str = None):
+        name = resolve_name(filename, package)
+        spec = find_spec(name)
+
+        if not spec:
+            raise ImportError(f"Could not find module {name}")
+        sections_spec = module_from_spec(spec)
+
+        try:
+            spec.loader.exec_module(sections_spec)
+        except Exception as e:
+            raise ImportError(f"Could not load module {name}") from e
+
         sections = import_module(filename, package)
+
+        modules[filename] = sections_spec
+
         from EpikCord import Section
 
         for possible_section in sections.__dict__.values():
