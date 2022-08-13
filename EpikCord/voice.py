@@ -1,6 +1,13 @@
 import datetime
 from typing import Optional
 
+class VoiceRegion:
+    def __init__(self, data: dict):
+        self.id: str = data["id"]
+        self.name: str = data["name"]
+        self.optimal: bool = data["optimal"]
+        self.deprecated: bool = data["deprecated"]
+        self.custom: bool = data["custom"]
 
 class VoiceState:
     def __init__(self, client, data: dict):

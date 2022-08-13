@@ -474,15 +474,6 @@ class UnavailableGuild:
         self.id: str = data.get("id")
         self.available: bool = data.get("available")
 
-class VoiceRegion:
-    def __init__(self, data: dict):
-        self.id: str = data["id"]
-        self.name: str = data["name"]
-        self.optimal: bool = data["optimal"]
-        self.deprecated: bool = data["deprecated"]
-        self.custom: bool = data["custom"]
-
-
 class Overwrite:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
