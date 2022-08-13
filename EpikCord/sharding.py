@@ -4,7 +4,10 @@ from typing import (
     List
 )
 from sys import platform
-from .client import 
+from .flags import Intents
+from .utils import Utils
+from .client import *
+
 from .presence import Presence
 
 
@@ -67,6 +70,7 @@ class ShardManager(EventHandler):
         super().__init__()
         self.token: str = token
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
+        from EpikCord import __version__
         self.http: HTTPClient = HTTPClient(
             headers={
                 "Authorization": f"Bot {token}",
