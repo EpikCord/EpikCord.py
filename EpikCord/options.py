@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Optional, Union, List
+from .localizations import Localization
 from .type_enums import ChannelTypes, Locale
 
 
@@ -159,10 +160,10 @@ class AttachmentOption(BaseSlashCommandOption):
 
 
 class SlashCommandOptionChoice:
-    def __init__(self, *, name: str, value: Union[float, int, str]):
+    def __init__(self, *, name: str, value: Union[float, int, str], name_localization: Optional[List[Localization]]):
         self.name: str = name
         self.value: Union[float, int, str] = value
-        self.name_localizations: Dict[Locale, str] = data.get("name_localizations")
+        self.name_localizations: List[Localization] = [Localization(k, v) for k, v in name_localization.items()]
         self.name_localisations = self.name_localizations
 
     def to_dict(self):
