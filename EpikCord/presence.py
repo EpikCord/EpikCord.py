@@ -1,6 +1,7 @@
 from typing import Optional, List
 from .exceptions import InvalidStatus, InvalidData
 
+
 class Status:
     """The class which represents a Status.
 
@@ -86,6 +87,7 @@ class Activity:
             payload["url"] = self.url
 
         return payload
+
 
 class Presence:
     """

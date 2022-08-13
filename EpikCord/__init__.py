@@ -154,6 +154,7 @@ class UserClient:
 
         return [PartialGuild(d) for d in data]
 
+
 class UnavailableGuild:
     """
     The class representation of an UnavailableGuild.
@@ -468,6 +469,7 @@ class UnavailableGuild:
         self.data = data
         self.id: str = data.get("id")
         self.available: bool = data.get("available")
+
 
 class User(Messageable):
     def __init__(self, client, data: dict):
@@ -945,6 +947,7 @@ class SlashCommand(ApplicationCommand):
             "options": json_options,
         }
 
+
 class VoiceState:
     def __init__(self, client, data: dict):
         self.data: dict = data
@@ -1013,6 +1016,7 @@ class Paginator:
 
     def remove_page(self, page: Embed):
         self.__pages = list(filter(lambda embed: embed != page, self.__pages))
+
 
 __all__ = (
     "__version__",

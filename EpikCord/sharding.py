@@ -1,8 +1,4 @@
-from typing import (
-    Optional,
-    Union,
-    List
-)
+from typing import Optional, Union, List
 from sys import platform
 from .flags import Intents
 from .utils import Utils
@@ -71,6 +67,7 @@ class ShardManager(EventHandler):
         self.token: str = token
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
         from EpikCord import __version__
+
         self.http: HTTPClient = HTTPClient(
             headers={
                 "Authorization": f"Bot {token}",
