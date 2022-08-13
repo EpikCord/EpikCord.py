@@ -2057,7 +2057,9 @@ class CommandUtils(CommandHandler):
     def event(name: str):
         def wrapper(callback):
             return Event(callback, event_name=name)
+
         return wrapper
+
 
 class AutoModerationTriggerMetaData:
     def __init__(self, data: dict):
