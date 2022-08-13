@@ -5,13 +5,15 @@ from .colour import Colour
 from logging import getLogger
 from .thread import Thread
 from typing import Union, Optional, List, Dict, Any
-from .utils import Utils
 from urllib.parse import quote as _quote
 from .sticker import *
 from .application import Application
 from .components import *
 
 logger = getLogger(__name__)
+
+def _filter_values(dictionary: dict) -> dict:
+    return {k: v for k, v in dictionary.items() if v is not None}
 
 class Attachment:
     def __init__(self, data: dict):
@@ -27,7 +29,7 @@ class Attachment:
         self.ephemeral: Optional[bool] = data.get("ephemeral")
 
     def to_dict(self) -> Dict[str, Any]:
-        return Utils.filter_values(
+        return _filter_values(
             {
                 "id": self.id,
                 "filename": self.file_name,
