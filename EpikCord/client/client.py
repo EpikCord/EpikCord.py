@@ -1,4 +1,5 @@
 from __future__ import annotations
+import asyncio
 from importlib.util import find_spec, module_from_spec, resolve_name
 from sys import modules
 from .websocket_client import WebsocketClient
@@ -66,6 +67,9 @@ class Client(WebsocketClient):
 
         for command in section._commands.values():
             self.commands[command.name] = command
+
+        async def _(*_, **__): ...
+        asyncio.create_task(getattr(section, "on_load", getattr(section, "load", _))(self))
 
     def load_sections_from_file(self, filename: str, *, package: str = None):
         name = resolve_name(filename, package)
