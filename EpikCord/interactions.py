@@ -3,12 +3,8 @@ from .application import ApplicationCommandOption
 from .exceptions import InvalidArgumentType
 from .components import *
 from .options import SlashCommandOptionChoice
-from typing import Optional, Union, List, TYPE_CHECKING
-from .message import Message, Embed
-
-
-if TYPE_CHECKING:
-    from EpikCord import Attachment
+from typing import Optional, Union, List
+from .message import Message, Embed, Attachment
 
 class Modal:
     def __init__(self, *, title: str, custom_id: str, components: List[ActionRow]):

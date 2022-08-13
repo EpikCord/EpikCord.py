@@ -500,36 +500,6 @@ class ThreadMember:
         )
         self.flags: int = data.get("flags")
 
-
-class Attachment:
-    def __init__(self, data: dict):
-        self.id: str = data.get("id")
-        self.file_name: str = data.get("filename")
-        self.description: Optional[str] = data.get("description")
-        self.content_type: Optional[str] = data.get("content_type")
-        self.size: int = data.get("size")
-        self.url: str = data.get("url")
-        self.proxy_url: str = data.get("proxy_url")
-        self.width: Optional[int] = data.get("width")
-        self.height: Optional[int] = data.get("height")
-        self.ephemeral: Optional[bool] = data.get("ephemeral")
-
-    def to_dict(self) -> Dict[str, Any]:
-        return Utils.filter_values(
-            {
-                "id": self.id,
-                "filename": self.file_name,
-                "description": self.description,
-                "content_type": self.content_type,
-                "size": self.size,
-                "url": self.url,
-                "proxy_url": self.proxy_url,
-                "width": self.width,
-                "height": self.height,
-                "ephemeral": self.ephemeral,
-            }
-        )
-
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
 #         super().__init__(data)
