@@ -138,8 +138,6 @@ class Utils:
         b64 = b64encode(data).decode("ascii")
         return fmt.format(mime=mime, data=b64)
 
-    
-
     def component_from_type(self, component_data: dict):
         component_type = component_data.get("type")
         component_cls = self.component_types.get(component_type)
