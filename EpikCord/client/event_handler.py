@@ -220,10 +220,13 @@ class EventHandler(CommandHandler):
                             check.callback(interaction)
                     except RuntimeError:
                         ...  # Suppress.
-                for option in interaction.options:
-                    options.append(option.get("value"))
+                options.extend(
+                    option.get("value") for option in interaction.options
+                )
+
             try:
                 return await command.callback(interaction, *options)
+
             except Exception as e:
                 await self.command_error(interaction, e)
 
@@ -274,16 +277,14 @@ class EventHandler(CommandHandler):
             command = self.commands.get(interaction.command_name)
             if not command:
                 return
-            ...  # TODO: Implement autocomplete
 
         if interaction.is_modal_submit:
             action_rows = interaction._components
             component_object_list = []
             for action_row in action_rows:
-                for component in action_row.get("components"):
-                    component_object_list.append(
-                        component["value"]
-                    )  # TODO: Fix this later, component_object_list is empty ;(
+                component_object_list.extend(
+                    component["value"] for component in action_row.get("components")
+                )
 
             await self._components.get(interaction.custom_id)(
                 interaction, *component_object_list

@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import zlib
 from logging import getLogger
 from ..status_code import HTTPCodes
@@ -112,18 +113,18 @@ class HTTPClient(ClientSession):
         channel_id: Union[int, str] = 0,
         **kwargs,
     ):
-
         if attempt > 5:
             logger.critical(f"Failed a {method} {url} 5 times.")
-            return  # Just quit the request
+            return
 
         if url.startswith("ws") or not to_discord:
             return await super().request(method, url, *args, **kwargs)
+
         if url.startswith("/"):
             url = url[1:]
 
         if url.endswith("/"):
-            url = url[: len(url) - 1]
+            url = url[:-1]
 
         url = f"{self.base_uri}/{url}"
 
@@ -145,7 +146,8 @@ class HTTPClient(ClientSession):
             if guild_id or channel_id:
                 self.buckets[bucket_hash] = Bucket(
                     discord_hash=res.headers.get("X-RateLimit-Bucket")
-                )  # Make a bucket
+                )
+
             else:
                 b = Bucket(discord_hash=res.headers.get("X-RateLimit-Bucket"))
                 if b in self.buckets.values():
@@ -162,14 +164,15 @@ class HTTPClient(ClientSession):
         if (
             int(res.headers.get("X-RateLimit-Remaining", 1)) == 0
             and res.status != HTTPCodes.TOO_MANY_REQUESTS
-        ):  # We've exhausted the bucket.
+        ):
             logger.critical(
-                f"Exhausted {res.headers['X-RateLimit-Bucket']} ({res.url}). Reset in {res.headers['X-RateLimit-Reset-After']} seconds"
+                f"Exhausted {res.headers['X-RateLimit-Bucket']} ({res.url}). "
+                f"Reset in {res.headers['X-RateLimit-Reset-After']} seconds"
             )
+
             await asyncio.sleep(float(res.headers["X-RateLimit-Reset-After"]))
             bucket.lock.release()
-
-        if res.status == HTTPCodes.TOO_MANY_REQUESTS:  # Body is always present here.
+        if res.status == HTTPCodes.TOO_MANY_REQUESTS:
             time_to_sleep = (
                 body.get("retry_after")
                 if body.get("retry_after") > res.headers["X-RateLimit-Reset-After"]
@@ -184,9 +187,10 @@ class HTTPClient(ClientSession):
 
             await self.global_ratelimit.set()
             bucket.lock.release()
+
             return await self.request(
                 method, url, *args, **kwargs, attempt=attempt + 1
-            )  # Retry the request
+            )
 
         if res.status >= HTTPCodes.SERVER_ERROR:
             raise DiscordServerError5xx(body)
@@ -206,12 +210,11 @@ class HTTPClient(ClientSession):
             except Exception as e:
                 logger.exception(e)
 
-        async def dispose():  # After waiting 5 minutes without any interaction, the bucket will be disposed.
+        async def dispose():
             await asyncio.sleep(300)
-            try:
+
+            with contextlib.suppress(KeyError):
                 del self.buckets[bucket_hash]
-            except KeyError:
-                ...
 
         bucket.close_task.cancel()
 
@@ -235,11 +238,9 @@ class HTTPClient(ClientSession):
 
         if h := dict(res.headers):
             message.append(f"Received headers: {h} ")
+
         try:
             message.append(f"Received body: {await res.json()} ")
-
-        except:
-            ...
 
         finally:
             logger.debug("".join(message))
