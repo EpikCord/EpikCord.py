@@ -530,27 +530,6 @@ class Attachment:
             }
         )
 
-
-class Section:
-    _cmd = Union[ClientUserCommand, ClientSlashCommand, ClientMessageCommand]
-
-    _commands: DefaultDict[str, List[_cmd]] = defaultdict(list)
-    _events: DefaultDict[str, List[Event]] = defaultdict(list)
-
-    def __init_subclass__(cls, **kwargs):
-        for attr_value in cls.__dict__.values():
-            if isinstance(attr_value, Event):
-                cls._events[cls.__name__].append(attr_value)
-
-            elif isinstance(
-                attr_value,
-                (ClientSlashCommand, ClientUserCommand, ClientMessageCommand),
-            ):
-                cls._commands[attr_value.name] = attr_value
-
-        super().__init_subclass__(**kwargs)
-
-
 # class ClientGuildMember(Member):
 #     def __init__(self, client: Client,data: dict):
 #         super().__init__(data)
@@ -751,9 +730,6 @@ class Integration:
         self.application: Optional[Application] = (
             Application(data.get("application")) if data.get("application") else None
         )
-
-
-
 
 class Invite:
     def __init__(self, data: dict):
