@@ -2048,55 +2048,16 @@ class Check:
         )
 
 
-class CommandUtils:
+class CommandUtils(CommandHandler):
     @staticmethod
     def check(callback):
         return Check(callback)
 
     @staticmethod
-    def user_command(name: Optional[str] = None):
-        def register_user_command(func):
-            return ClientUserCommand(name=name or func.__name__, callback=func)
-
-        return register_user_command
-
-    @staticmethod
-    def message_command(name: Optional[str] = None):
-        def register_message_command(func):
-            return ClientMessageCommand(name=name or func.__name__, callback=func)
-
-        return register_message_command
-
-    @staticmethod
-    def command(
-        *,
-        name: Optional[str] = None,
-        description: str = None,
-        guild_ids: Optional[List[str]] = None,
-        options: Optional[List[AnyOption]] = None,
-    ):
-        def register_slash_command(func):
-            desc = description or func.__doc__
-            if not desc:
-                raise TypeError(
-                    f"Command with {name or func.__name__} has no description. This is required."
-                )
-            return ClientSlashCommand(
-                name=name or func.__name__,
-                description=desc,
-                guild_ids=guild_ids or [],
-                options=options or [],
-            )
-
-        return register_slash_command
-
-    @staticmethod
-    def event(name: Optional[str] = None):
-        def register_event(func):
-            return Event(callback=func, event_name=name or func.__name__)
-
-        return register_event
-
+    def event(name: str):
+        def wrapper(callback):
+            return Event(callback, event_name=name)
+        return wrapper
 
 class AutoModerationTriggerMetaData:
     def __init__(self, data: dict):
