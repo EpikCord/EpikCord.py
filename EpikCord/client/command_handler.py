@@ -30,7 +30,10 @@ class CommandHandler:
         checks: Optional[List[Check]] = None,
     ):
         name_localization = name_localizations, name_localisations or []
-        description_localization = description_localizations, description_localisations or []
+        description_localization = (
+            description_localizations,
+            description_localisations or [],
+        )
 
         def register_slash_command(func):
             desc = description or func.__doc__
