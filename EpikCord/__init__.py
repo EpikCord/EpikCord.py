@@ -1297,6 +1297,7 @@ class ShardManager(EventHandler):
         loop = asyncio.get_event_loop()
         loop.run_until_complete(wrapper())
 
+
 class AutoModerationTriggerMetaData:
     def __init__(self, data: dict):
         self.keyword_filter: List[str] = data.get("keyword_filter")
@@ -1402,6 +1403,7 @@ class AutoModerationRule:
         await self.client.http.delete(
             f"guilds/{self.guild_id}/auto-moderation/rules/{self.id}"
         )
+
 
 __all__ = (
     "__version__",

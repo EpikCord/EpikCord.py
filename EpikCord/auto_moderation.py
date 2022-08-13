@@ -6,6 +6,7 @@ from .type_enums import (
     AutoModerationTriggerType,
 )
 
+
 class AutoModerationTriggerMetaData:
     def __init__(self, data: dict):
         self.keyword_filter: List[str] = data.get("keyword_filter")
