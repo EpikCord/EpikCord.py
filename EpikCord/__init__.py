@@ -822,14 +822,6 @@ class GuildMember(User):
             "communication_disabled_until"
         )
 
-
-class MentionedChannel:
-    def __init__(self, data: dict):
-        self.id: str = data.get("id")
-        self.guild_id: str = data.get("guild_id")
-        self.type: int = data.get("type")
-        self.name: str = data.get("name")
-
 class MessageActivity:
     def __init__(self, data: dict):
         self.type: int = data.get("type")
