@@ -383,3 +383,23 @@ class UserCommandInteraction(ApplicationCommandInteraction):
 
 class MessageCommandInteraction(UserCommandInteraction):
     ...  # Literally the same thing.
+
+class MessageInteraction:
+    def __init__(self, client, data: dict):
+        from EpikCord import GuildMember, User
+        self.id: str = data.get("id")
+        self.type: int = data.get("type")
+        self.name: str = data.get("name")
+        self.user: User = User(client, data.get("user"))
+        payload = {}
+        if data.get("user"):
+            payload.update(data.get("user"))
+        if data.get("member"):
+            payload.update(data.get("member"))
+        if data.get("user") and not data.get("member"):
+            payload = {**data.get("user")}
+
+        self.member: Optional[GuildMember] = (
+            GuildMember(client, payload) if data.get("member") else None
+        )
+        self.user = User(client, data.get("user"))

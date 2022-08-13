@@ -29,6 +29,7 @@ from .opcodes import *
 from .options import *
 from .partials import *
 from .rtp_handler import *
+from .voice import *
 from .status_code import *
 from .sticker import *
 from .thread import *
@@ -889,34 +890,12 @@ class AllowedMention:
             "users": self.users,
         }
 
-
-class MessageInteraction:
-    def __init__(self, client, data: dict):
-        self.id: str = data.get("id")
-        self.type: int = data.get("type")
-        self.name: str = data.get("name")
-        self.user: User = User(client, data.get("user"))
-        payload = {}
-        if data.get("user"):
-            payload.update(data.get("user"))
-        if data.get("member"):
-            payload.update(data.get("member"))
-        if data.get("user") and not data.get("member"):
-            payload = {**data.get("user")}
-
-        self.member: Optional[GuildMember] = (
-            GuildMember(client, payload) if data.get("member") else None
-        )
-        self.user = User(client, data.get("user"))
-
-
 class SlashCommand(ApplicationCommand):
     def __init__(self, data: dict):
         super().__init__(data)
         self.options: Optional[List[AnyOption]] = data.get(
             "options"
-        )  # Return the type hinted class later this will take too long and
-        # is very tedious, I'll probably get Copilot to do it for me lmao
+        )
         opts = [
             Subcommand,
             SubCommandGroup,
@@ -936,8 +915,8 @@ class SlashCommand(ApplicationCommand):
             if option_type >= len(opts):
                 raise ValueError(f"Invalid option type {option_type}")
 
-            # shouldn't be return but since it was return before I'll leave it
-            return opts[option_type - 1](option)
+            option.pop("type")
+            opts[option_type - 1](**option)
 
     def to_dict(self):
         json_options = [option.to_dict for option in self.options]
@@ -947,30 +926,6 @@ class SlashCommand(ApplicationCommand):
             "description": self.description,
             "options": json_options,
         }
-
-
-class VoiceState:
-    def __init__(self, client, data: dict):
-        self.data: dict = data
-        self.guild_id: Optional[str] = data.get("guild_id")
-        self.channel_id: str = data.get("channel_id")
-        self.user_id: str = data.get("user_id")
-        self.member: Optional[GuildMember] = (
-            GuildMember(client, data.get("member")) if data.get("member") else None
-        )
-        self.session_id: str = data.get("session_id")
-        self.deaf: bool = data.get("deaf")
-        self.mute: bool = data.get("mute")
-        self.self_deaf: bool = data.get("self_deaf")
-        self.self_mute: bool = data.get("self_mute")
-        self.self_stream: Optional[bool] = data.get("self_stream")
-        self.self_video: bool = data.get("self_video")
-        self.suppress: bool = data.get("suppress")
-        self.request_to_speak_timestamp: Optional[datetime.datetime] = (
-            datetime.datetime.fromisoformat(data.get("request_to_speak_timestamp"))
-            if data.get("request_to_speak_timestamp")
-            else None
-        )
 
 __all__ = (
     "__version__",
