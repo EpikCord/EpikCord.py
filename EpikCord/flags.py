@@ -68,6 +68,9 @@ class Intents(Flag):
     message_content = 1 << 15
     scheduled_event = 1 << 16
 
+    auto_moderation_configuration = 1 << 20
+    auto_moderation_action_execution = 1 << 21
+
 
 class SystemChannelFlags(Flag):
 
