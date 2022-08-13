@@ -4,6 +4,7 @@ from .abstract import Messageable
 from typing import List, Optional
 import datetime
 
+
 class ThreadMember:
     def __init__(self, data: dict):
         self.id: str = data.get("user_id")

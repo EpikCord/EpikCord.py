@@ -19,6 +19,7 @@ logger = getLogger(__name__)
 def _filter_values(dictionary: dict) -> dict:
     return {k: v for k, v in dictionary.items() if v is not None}
 
+
 class AllowedMention:
     def __init__(
         self,
@@ -40,10 +41,12 @@ class AllowedMention:
             "users": self.users,
         }
 
+
 class MessageActivity:
     def __init__(self, data: dict):
         self.type: int = data.get("type")
         self.party_id: Optional[str] = data.get("party_id")
+
 
 class Attachment:
     def __init__(self, data: dict):
@@ -391,6 +394,7 @@ class Message:
             else None
         )
         from .interactions import MessageInteraction
+
         self.interaction: Optional[MessageInteraction] = (
             MessageInteraction(client, data.get("interaction"))
             if data.get("interaction")
