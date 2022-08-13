@@ -8,8 +8,7 @@ from typing import (
     Optional,
     List,
     Union,
-    TypeVar,
-    DefaultDict,
+    TypeVar
 )
 from .client import *
 from .managers import *
