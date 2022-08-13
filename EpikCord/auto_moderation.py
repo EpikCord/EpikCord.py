@@ -1,5 +1,10 @@
 from typing import List, Optional
-from .type_enums import AutoModerationKeywordPresetTypes, AutoModerationActionType, AutoModerationEventType, AutoModerationTriggerType
+from .type_enums import (
+    AutoModerationKeywordPresetTypes,
+    AutoModerationActionType,
+    AutoModerationEventType,
+    AutoModerationTriggerType,
+)
 
 
 class AutoModerationTriggerMetaData:

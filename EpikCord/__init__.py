@@ -1297,6 +1297,7 @@ class ShardManager(EventHandler):
         loop = asyncio.get_event_loop()
         loop.run_until_complete(wrapper())
 
+
 class AutoModerationTriggerMetaData:
     def __init__(self, data: dict):
         self.keyword_filter: List[str] = data.get("keyword_filter")
