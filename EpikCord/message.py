@@ -9,6 +9,10 @@ from urllib.parse import quote as _quote
 from .sticker import *
 from .application import Application
 from .components import *
+from .user import User
+from .webhooks import WebhookUser
+from .mentioned import MentionedChannel
+from .interactions import MessageInteraction
 
 logger = getLogger(__name__)
 
@@ -16,6 +20,10 @@ logger = getLogger(__name__)
 def _filter_values(dictionary: dict) -> dict:
     return {k: v for k, v in dictionary.items() if v is not None}
 
+class MessageActivity:
+    def __init__(self, data: dict):
+        self.type: int = data.get("type")
+        self.party_id: Optional[str] = data.get("party_id")
 
 class Attachment:
     def __init__(self, data: dict):
@@ -299,13 +307,8 @@ class Message:
 
     def __init__(self, client, data: dict):
         from EpikCord import (
-            WebhookUser,
             GuildMember,
-            User,
-            MentionedChannel,
             Reaction,
-            MessageActivity,
-            MessageInteraction,
         )
 
         self.client = client

@@ -25,6 +25,7 @@ from .user import User
 from .options import *
 from .partials import *
 from .rtp_handler import *
+from .guild import *
 from .voice import *
 from .status_code import *
 from .sticker import *
@@ -355,19 +356,6 @@ class Guild:
             ).json()
         )
 
-
-class UnavailableGuild:
-    """
-    The class representation of an UnavailableGuild.
-    The Guild object should be given to use when the guild is available.
-    """
-
-    def __init__(self, data):
-        self.data = data
-        self.id: str = data.get("id")
-        self.available: bool = data.get("available")
-
-
 class Overwrite:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
@@ -632,13 +620,6 @@ class GuildMember(User):
         self.communication_disabled_until: Optional[str] = data.get(
             "communication_disabled_until"
         )
-
-
-class MessageActivity:
-    def __init__(self, data: dict):
-        self.type: int = data.get("type")
-        self.party_id: Optional[str] = data.get("party_id")
-
 
 class AllowedMention:
     def __init__(
