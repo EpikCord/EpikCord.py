@@ -68,8 +68,12 @@ class Client(WebsocketClient):
         for command in section._commands.values():
             self.commands[command.name] = command
 
-        async def _(*_, **__): ...
-        asyncio.create_task(getattr(section, "on_load", getattr(section, "load", _))(self))
+        async def _(*_, **__):
+            ...
+
+        asyncio.create_task(
+            getattr(section, "on_load", getattr(section, "load", _))(self)
+        )
 
     def load_sections_from_file(self, filename: str, *, package: str = None):
         name = resolve_name(filename, package)
