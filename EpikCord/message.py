@@ -12,13 +12,33 @@ from .components import *
 from .user import User
 from .webhooks import WebhookUser
 from .mentioned import MentionedChannel
-from .interactions import MessageInteraction
 
 logger = getLogger(__name__)
 
 
 def _filter_values(dictionary: dict) -> dict:
     return {k: v for k, v in dictionary.items() if v is not None}
+
+class AllowedMention:
+    def __init__(
+        self,
+        allowed_mentions: List[str],
+        replied_user: bool,
+        roles: List[str],
+        users: List[str],
+    ):
+        self.allowed_mentions: List[str] = allowed_mentions
+        self.replied_user: bool = replied_user
+        self.roles: List[str] = roles
+        self.users: List[str] = users
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "allowed_mentions": self.allowed_mentions,
+            "replied_user": self.replied_user,
+            "roles": self.roles,
+            "users": self.users,
+        }
 
 class MessageActivity:
     def __init__(self, data: dict):
@@ -370,6 +390,7 @@ class Message:
             if data.get("referenced_message")
             else None
         )
+        from .interactions import MessageInteraction
         self.interaction: Optional[MessageInteraction] = (
             MessageInteraction(client, data.get("interaction"))
             if data.get("interaction")
