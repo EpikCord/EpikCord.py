@@ -1,4 +1,5 @@
 from __future__ import annotations
+from importlib.util import resolve_name
 from .websocket_client import WebsocketClient
 from .http_client import HTTPClient
 from logging import getLogger
@@ -67,8 +68,8 @@ class Client(WebsocketClient):
 
         logger.info(f"Loaded Section {section.__name__}")
 
-    def load_sections_from_file(self, filename: str):
-        sections = import_module(filename, f".{filename.split('.')[1]}")
+    def load_sections_from_file(self, filename: str, *, package: str = None):
+        sections = import_module(resolve_name(filename, package))
         from EpikCord import Section
 
         for possible_section in sections.__dict__.values():
