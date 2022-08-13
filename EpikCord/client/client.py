@@ -67,8 +67,6 @@ class Client(WebsocketClient):
         for command in section._commands.values():
             self.commands[command.name] = command
 
-        logger.info(f"Loaded Section {section.__name__}")
-
     def load_sections_from_file(self, filename: str, *, package: str = None):
         name = resolve_name(filename, package)
         spec = find_spec(name)
