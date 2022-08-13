@@ -69,7 +69,7 @@ class Client(WebsocketClient):
         logger.info(f"Loaded Section {section.__name__}")
 
     def load_sections_from_file(self, filename: str, *, package: str = None):
-        sections = import_module(resolve_name(filename, package))
+        sections = import_module(filename, package)
         from EpikCord import Section
 
         for possible_section in sections.__dict__.values():
