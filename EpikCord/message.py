@@ -221,12 +221,11 @@ class Embed:
         self.url = url
 
     def to_dict(self):
-        final_product = {}
-        for key, value in self.__dict__.items():
-            if value is None and not key.startswith("_"):
-                continue
-            final_product[key] = value
-        return final_product
+        return {
+            key: value
+            for key, value in self.__dict__.items()
+            if value is not None or key.startswith("_")
+        }
 
 
 class File:
@@ -318,6 +317,7 @@ class Message:
 
         if self.webhook_id:
             self.author = WebhookUser(data.get("author"))
+
         if data.get("member"):
             member_data = data["member"]
             if data.get("author"):

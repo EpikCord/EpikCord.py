@@ -108,7 +108,7 @@ class Utils:
 
         for guild_id, commands in command_sorter.items():
             if guild_id == "global":
-                await self.client.application.bulk_overwrite_global_application_commands(
+                await self.client.application.bulk_overwrite_global_app_commands(
                     commands
                 )
                 continue
@@ -118,19 +118,21 @@ class Utils:
             )
 
     @staticmethod
-    def get_mime_type_for_image(data: bytes):
+    def get_mime_type_for_image(data: bytes) -> str:
         if data.startswith(b"\x89\x50\x4E\x47\x0D\x0A\x1A\x0A"):
             return "image/png"
-        elif data[:3] == b"\xff\xd8\xff" or data[6:10] in (b"JFIF", b"Exif"):
+
+        if data[:3] == b"\xff\xd8\xff" or data[6:10] in (b"JFIF", b"Exif"):
             return "image/jpeg"
-        elif data.startswith(
-            (b"\x47\x49\x46\x38\x37\x61", b"\x47\x49\x46\x38\x39\x61")
-        ):
+
+        gif_header = (b"\x47\x49\x46\x38\x37\x61", b"\x47\x49\x46\x38\x39\x61")
+        if data.startswith(gif_header):
             return "image/gif"
-        elif data.startswith(b"RIFF") and data[8:12] == b"WEBP":
+
+        if data.startswith(b"RIFF") and data[8:12] == b"WEBP":
             return "image/webp"
-        else:
-            raise InvalidArgumentType("Unsupported image type given")
+
+        raise InvalidArgumentType("Unsupported image type given")
 
     def _bytes_to_base64_data(self, data: bytes) -> str:
         fmt = "data:{mime};base64,{data}"
@@ -168,12 +170,11 @@ class Utils:
 
     def channel_from_type(self, channel_data: dict):
         channel_type = channel_data.get("type")
-        channel_cls = self.channels_types.get(channel_type)
 
-        if not channel_cls:
-            raise InvalidArgumentType(f"Unknown channel type: {channel_type}")
+        if channel_cls := self.channels_types.get(channel_type):
+            return channel_cls(self.client, channel_data)
 
-        return channel_cls(self.client, channel_data)
+        raise InvalidArgumentType(f"Unknown channel type: {channel_type}")
 
     @staticmethod
     def compute_timedelta(dt: datetime.datetime):
@@ -203,21 +204,23 @@ class Utils:
     def escape_markdown(
         self, text: str, *, as_needed: bool = False, ignore_links: bool = True
     ) -> str:
-        if not as_needed:
-
-            def replacement(match):
-                groupdict = match.groupdict()
-                if is_url := groupdict.get("url"):
-                    return is_url
-                return "\\" + groupdict["markdown"]
-
-            regex = self._MARKDOWN_STOCK_REGEX
-            if ignore_links:
-                regex = f"(?:{self._URL_REGEX}|{regex})"
-            return re.sub(regex, replacement, text, 0, re.MULTILINE)
-        else:
+        if as_needed:
             text = re.sub(r"\\", r"\\\\", text)
             return self._MARKDOWN_ESCAPE_REGEX.sub(r"\\\1", text)
+
+        def replacement(match):
+            grouping = match.groupdict()
+
+            if is_url := grouping.get("url"):
+                return is_url
+
+            return "\\" + grouping["markdown"]
+
+        regex = self._MARKDOWN_STOCK_REGEX
+        if ignore_links:
+            regex = f"(?:{self._URL_REGEX}|{regex})"
+
+        return re.sub(regex, replacement, text, 0, re.MULTILINE)
 
     @staticmethod
     def escape_mentions(text: str) -> str:
