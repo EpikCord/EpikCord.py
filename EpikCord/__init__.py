@@ -17,6 +17,7 @@ from .abstract import *
 from .auto_moderation import *
 from .application import *
 from .channels import *
+from .sharding import *
 from .close_event_codes import *
 from .colour import *
 from .components import *
