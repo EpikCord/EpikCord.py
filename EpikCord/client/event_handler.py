@@ -306,7 +306,9 @@ class EventHandler(CommandHandler):
         from EpikCord import Message
 
         message = Message(self, data)
-        message.channel = self.channels.get(message.channel_id) or await self.channels.fetch(message.channel_id)
+        message.channel = self.channels.get(
+            message.channel_id
+        ) or await self.channels.fetch(message.channel_id)
         message.channel.last_message = message
 
         return message
