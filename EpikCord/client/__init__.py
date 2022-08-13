@@ -4,3 +4,4 @@ from .websocket_client import *
 from .http_client import *
 from .client import *
 from .client_application import *
+from .client_user import *
