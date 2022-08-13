@@ -159,17 +159,6 @@ class UserClient:
         return [PartialGuild(d) for d in data]
 
 
-class UnavailableGuild:
-    """
-    The class representation of an UnavailableGuild.
-    The Guild object should be given to use when the guild is available.
-    """
-
-    def __init__(self, data):
-        self.data = data
-        self.id: str = data.get("id")
-        self.available: bool = data.get("available")
-
 
 class Guild:
     def __init__(self, client, data: dict):
