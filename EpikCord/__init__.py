@@ -753,18 +753,6 @@ class Integration:
         )
 
 
-class Modal:
-    def __init__(self, *, title: str, custom_id: str, components: List[ActionRow]):
-        self.title = title
-        self.custom_id = custom_id
-        self.components = [component.to_dict() for component in components]
-
-    def to_dict(self):
-        return {
-            "title": self.title,
-            "custom_id": self.custom_id,
-            "components": self.components,
-        }
 
 
 class Invite:

@@ -6,10 +6,22 @@ from .options import SlashCommandOptionChoice
 from typing import Optional, Union, List, TYPE_CHECKING
 from .message import Message, Embed
 
+
 if TYPE_CHECKING:
-    from EpikCord import Attachment, Modal
+    from EpikCord import Attachment
 
+class Modal:
+    def __init__(self, *, title: str, custom_id: str, components: List[ActionRow]):
+        self.title = title
+        self.custom_id = custom_id
+        self.components = [component.to_dict() for component in components]
 
+    def to_dict(self):
+        return {
+            "title": self.title,
+            "custom_id": self.custom_id,
+            "components": [component.to_dict() for component in self.components]
+        }
 class ResolvedDataHandler:
     def __init__(self, client, resolved_data: dict):
         self.data: dict = resolved_data
