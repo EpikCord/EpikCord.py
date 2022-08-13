@@ -4,12 +4,18 @@ import re
 import datetime
 import asyncio
 from typing import TypeVar
-from .interactions import ApplicationCommandInteraction, MessageComponentInteraction, AutoCompleteInteraction, ModalSubmitInteraction
+from .interactions import (
+    ApplicationCommandInteraction,
+    MessageComponentInteraction,
+    AutoCompleteInteraction,
+    ModalSubmitInteraction,
+)
 from .components import *
 from .client import CommandHandler
 from .channels import *
 
 T = TypeVar("T")
+
 
 class Utils:
     """
@@ -236,15 +242,18 @@ class Utils:
         finally:
             loop.close()
 
+
 class CommandUtils(CommandHandler):
     @staticmethod
     def check(callback):
         from EpikCord import Check
+
         return Check(callback)
 
     @staticmethod
     def event(name: str):
         from EpikCord import Event
+
         def wrapper(callback):
             return Event(callback, event_name=name)
 

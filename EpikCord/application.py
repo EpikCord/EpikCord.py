@@ -115,12 +115,14 @@ class GuildApplicationCommandPermission:
             "permissions": self.permissions.to_dict(),
         }
 
+
 class ApplicationCommandOption:
     def __init__(self, data: dict):
         self.command_name: str = data.get("name")
         self.command_type: int = data.get("type")
         self.value: Optional[Union[str, int, float]] = data.get("value")
         self.focused: Optional[bool] = data.get("focused")
+
 
 class ApplicationCommandSubcommandOption(ApplicationCommandOption):
     def __init__(self, data: dict):

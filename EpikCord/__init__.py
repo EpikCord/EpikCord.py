@@ -637,6 +637,7 @@ class VoiceRegion:
         self.deprecated: bool = data["deprecated"]
         self.custom: bool = data["custom"]
 
+
 class Overwrite:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
@@ -921,7 +922,6 @@ class Modal:
         }
 
 
-
 class Invite:
     def __init__(self, data: dict):
         self.code: str = data.get("code")
@@ -1188,6 +1188,7 @@ class Paginator:
     def remove_page(self, page: Embed):
         self.__pages = list(filter(lambda embed: embed != page, self.__pages))
 
+
 class Shard(WebsocketClient):
     def __init__(
         self,
@@ -1294,6 +1295,7 @@ class ShardManager(EventHandler):
 
         loop = asyncio.get_event_loop()
         loop.run_until_complete(wrapper())
+
 
 class AutoModerationTriggerMetaData:
     def __init__(self, data: dict):

@@ -7,6 +7,7 @@ from abc import abstractmethod
 
 logger = getLogger(__name__)
 
+
 class Check:
     def __init__(self, callback):
         self.callback = callback
@@ -34,6 +35,7 @@ class Check:
             f"{interaction.author.username} ({interaction.author.id}) failed "
             f"the check {self.command_callback.__name__}. "
         )
+
 
 class BaseCommand:
     def __init__(self, checks: Optional[List[Check]]):
