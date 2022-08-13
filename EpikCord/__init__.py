@@ -31,6 +31,7 @@ from .rtp_handler import *
 from .status_code import *
 from .sticker import *
 from .thread import *
+from .presence import *
 from .type_enums import *
 from .utils import *
 from .commands import *
@@ -152,94 +153,6 @@ class UserClient:
         data = await (await self._http.get("/users/@me/guilds", params=params)).json()
 
         return [PartialGuild(d) for d in data]
-
-
-class Status:
-    """The class which represents a Status.
-
-    Attributes
-    ----------
-    status : str
-        The status of the user.
-    """
-
-    def __init__(self, status: str):
-        """Represents a Status.
-
-        Arguments
-        ---------
-        status : str
-            The status of the user.
-            Either ``online``, ``idle``, ``dnd`` or ``invisible``.
-
-        Raises
-        ------
-        InvalidStatus
-            The status that you supplied is not valid.
-        """
-        if status not in {"online", "dnd", "idle", "invisible", "offline"}:
-            raise InvalidStatus("That is an invalid status.")
-
-        self.status = status if status != "offline" else "invisible"
-
-
-class Activity:
-    """Represents a Discord Activity object.
-
-    Attributes
-    ---------
-    name : str
-        The name of the activity.
-    type : int
-        The type of the activity.
-    url : Optional[str]
-        The url of the activity.
-        Only available for the streaming activity
-
-    """
-
-    def __init__(self, *, name: str, type: int, url: Optional[str] = None):
-        """Represents a Discord Activity object.
-
-        Arguments
-        ---------
-        name : str
-            The name of the activity.
-        type : int
-            The type of the activity.
-        url : Optional[str]
-            The url of the activity.
-            Only available for the streaming activity.
-        """
-        self.name = name
-        self.type = type
-        self.url = url
-
-    def to_dict(self):
-        """Returns activity class as dict
-
-        Returns
-        -------
-        payload : dict
-            The dict representation of the Activity.
-
-        Raises
-        ------
-            InvalidData
-                You tried to set an url for a non-streaming activity.
-        """
-        payload = {
-            "name": self.name,
-            "type": self.type,
-        }
-
-        if self.url:
-            if self.type != 1:
-                raise InvalidData("You cannot set a URL")
-            payload["url"] = self.url
-
-        return payload
-
 
 class UnavailableGuild:
     """
@@ -555,56 +468,6 @@ class UnavailableGuild:
         self.data = data
         self.id: str = data.get("id")
         self.available: bool = data.get("available")
-
-
-class Presence:
-    """
-    A class representation of a Presence.
-
-    Attributes
-    ----------
-    activity : Optional[Activity]
-        The activity of the user.
-    status : Status
-        The status of the user.
-    """
-
-    def __init__(
-        self,
-        *,
-        activity: Optional[List[Activity]] = None,
-        status: Optional[Status] = None,
-    ):
-        """
-        Arguments
-        ---------
-        activity : Optional[Activity]
-            The activity of the user.
-        status : Status
-            The status of the user.
-        """
-        self.activity: Optional[List[Activity]] = activity
-        self.status: Status = status.status if isinstance(status, Status) else status
-
-    def to_dict(self):
-        """
-        The dict representation of the Presence.
-
-        Returns
-        -------
-        payload : dict
-            The dict representation of the Presence.
-        """
-        payload = {}
-
-        if self.status:
-            payload["status"] = self.status
-
-        if self.activity:
-            payload["activity"] = [self.activity.to_dict()]
-
-        return payload
-
 
 class User(Messageable):
     def __init__(self, client, data: dict):
@@ -1082,44 +945,6 @@ class SlashCommand(ApplicationCommand):
             "options": json_options,
         }
 
-
-class ClientUser:
-    def __init__(self, client, data: dict):
-        self.client = client
-        self.data = data
-        self.verified: bool = data.get("verified")
-        self.username: str = data.get("username")
-        self.mfa_enabled: bool = data.get("mfa_enabled")
-        self.id: str = data.get("id")
-        self.flags: int = data.get("flags")
-        self.email: Optional[str] = data.get("email")
-        self.discriminator: str = data.get("discriminator")
-        self.bot: bool = data.get("bot")
-        self.avatar: str = data.get("avatar")
-        if not self.bot:  # if they're a user account
-            logger.warning(
-                "Warning: Self botting is against Discord ToS." " You can get banned. "
-            )
-
-    async def fetch(self):
-        response = await self.client.http.get("users/@me")
-        data = await response.json()
-        super().__init__(data)  # Reinitialize the class with the new data.
-
-    async def edit(
-        self, *, username: Optional[str] = None, avatar: Optional[bytes] = None
-    ):
-        payload = {}
-        if username:
-            payload["username"] = username
-        if avatar:
-            payload["avatar"] = self.client.utils.bytes_to_base64_data(avatar)
-        response = await self.client.http.patch("users/@me", json=payload)
-        data = await response.json()
-        # Reinitialize the class with the new data, the full data.
-        self.__init__(data)
-
-
 class VoiceState:
     def __init__(self, client, data: dict):
         self.data: dict = data
@@ -1188,116 +1013,6 @@ class Paginator:
 
     def remove_page(self, page: Embed):
         self.__pages = list(filter(lambda embed: embed != page, self.__pages))
-
-
-class Shard(WebsocketClient):
-    def __init__(
-        self,
-        token,
-        intents,
-        shard_id,
-        number_of_shards,
-        presence: Optional[Presence] = None,
-    ):
-        super().__init__(token, intents, presence)
-        self.shard_id = [shard_id, number_of_shards]
-
-    async def ready(self, data: dict):
-        self.user: ClientUser = ClientUser(self, data.get("user"))
-        self.session_id: str = data["session_id"]
-        application_response = await self.http.get("/oauth2/applications/@me")
-        application_data = await application_response.json()
-        self.application: ClientApplication = ClientApplication(self, application_data)
-        return None
-
-    async def identify(self):
-        payload = {
-            "op": GatewayOpcode.IDENTIFY,
-            "d": {
-                "token": self.token,
-                "intents": self.intents.value,
-                "properties": {
-                    "os": platform,
-                    "browser": "EpikCord.py",
-                    "device": "EpikCord.py",
-                },
-                "shard": str(self.shard_id),
-            },
-        }
-
-        if self.presence:
-            payload["d"]["presence"] = self.presence.to_dict()
-
-        await self.send_json(payload)
-
-    async def reconnect(self):
-        await self.close()
-        await self.connect()
-        await self.identify()
-        await self.resume()
-
-
-class ShardManager(EventHandler):
-    def __init__(
-        self,
-        token: str,
-        intents: Optional[Union[Intents, int]],
-        *,
-        shards: Optional[int] = None,
-        overwrite_commands_on_ready: bool = False,
-    ):
-        super().__init__()
-        self.token: str = token
-        self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
-        self.http: HTTPClient = HTTPClient(
-            headers={
-                "Authorization": f"Bot {token}",
-                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
-            }
-        )
-        self.intents: Intents = (
-            intents if isinstance(intents, Intents) else Intents(intents)
-        )
-        self.desired_shards: Optional[int] = shards
-        self.shards: List[Shard] = []
-
-    def run(self):
-        async def wrapper():
-            endpoint_data = await self.http.get("/gateway/bot")  # ClientResponse
-            endpoint_data = await endpoint_data.json()  # Dict
-
-            max_concurrency = endpoint_data["session_start_limit"]["max_concurrency"]
-
-            shards = self.desired_shards
-
-            if not shards:
-                shards = endpoint_data["shards"]
-
-            for shard_id in range(shards):
-                self.shards.append(Shard(self.token, self.intents, shard_id, shards))
-
-            current_iteration = 0  # The current shard_id we've run
-
-            for shard in self.shards:
-                shard.events = self.events
-                coro = shard.wait_for("ready")
-                await shard.login()
-                await coro()
-
-                current_iteration += 1
-
-                if current_iteration == max_concurrency:
-                    await asyncio.sleep(5)
-                    current_iteration = 0  # Reset it
-
-            if self.overwrite_commands_on_ready:
-                for shard in self.shards:
-                    await Utils(shard).override_commands()
-
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(wrapper())
-
-
 
 __all__ = (
     "__version__",
