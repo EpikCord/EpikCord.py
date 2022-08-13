@@ -567,7 +567,7 @@ class Section:
                 attr_value,
                 (ClientSlashCommand, ClientUserCommand, ClientMessageCommand),
             ):
-                cls._commands[cls.__name__].append(attr_value)
+                cls._commands[attr_value.name] = attr_value
 
         super().__init_subclass__(**kwargs)
 
