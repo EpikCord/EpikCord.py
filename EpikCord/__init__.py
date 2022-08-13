@@ -563,7 +563,7 @@ class Section:
             if isinstance(attr_value, Event):
                 cls._events[cls.__name__].append(attr_value)
 
-            elif issubclass(
+            elif isinstance(
                 attr_value,
                 (ClientSlashCommand, ClientUserCommand, ClientMessageCommand),
             ):
