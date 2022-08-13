@@ -27,6 +27,12 @@ else:
         " If you want voice support"
     )
 
+class Overwrite:
+    def __init__(self, data: dict):
+        self.id: str = data.get("id")
+        self.type: int = data.get("type")
+        self.allow: str = data.get("allow")
+        self.deny: str = data.get("deny")
 
 class BaseChannel:
     def __init__(self, client, data: dict):
@@ -378,7 +384,7 @@ class DMChannel(BaseChannel):
         )
 
 
-class ChannelCategory(GuildChannel):
+class CategoryChannel(GuildChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
 
@@ -596,3 +602,13 @@ class VoiceChannel(GuildChannel, Messageable, Connectable):
         self.bitrate: int = data.get("bitrate")
         self.user_limit: int = data.get("user_limit")
         self.rtc_region: str = data.get("rtc_region")
+
+AnyChannel = Union[
+    GuildTextChannel,
+    VoiceChannel,
+    CategoryChannel,
+    GuildNewsChannel,
+    GuildNewsThread,
+    Thread,
+    GuildStageChannel
+]
