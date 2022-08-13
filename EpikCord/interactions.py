@@ -9,14 +9,17 @@ from .message import Message, Embed
 if TYPE_CHECKING:
     from EpikCord import Attachment, Modal
 
+
 class ResolvedDataHandler:
     def __init__(self, client, resolved_data: dict):
         self.data: dict = resolved_data
         ...
 
+
 class BaseInteraction:
     def __init__(self, client, data: dict):
         from EpikCord import GuildMember, User
+
         self.id: str = data.get("id")
         self.client = client
         self.type: int = data.get("type")
@@ -92,6 +95,7 @@ class BaseInteraction:
 
     async def send_modal(self, modal: Modal):
         from EpikCord import Modal
+
         if not isinstance(modal, Modal):
             raise InvalidArgumentType("The modal argument must be of type Modal.")
         payload = {"type": 9, "data": modal.to_dict()}
@@ -340,6 +344,7 @@ class ModalSubmitInteraction(BaseInteraction):
     async def send_modal(self, *_, **__):
         raise NotImplementedError("ModalSubmitInteractions cannot send modals.")
 
+
 class AutoCompleteInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
@@ -358,6 +363,7 @@ class AutoCompleteInteraction(BaseInteraction):
         await self.client.http.post(
             f"/interactions/{self.id}/{self.token}/callback", json=payload
         )
+
 
 class ApplicationCommandInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
