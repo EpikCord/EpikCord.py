@@ -25,9 +25,8 @@ class ClientUser:
     async def fetch(self):
         response = await self.client.http.get("users/@me")
         data = await response.json()
-        return self.__init__(
-            self.client, data
-        )  # Reinitialize the class with the new data.
+        self.__init__(self.client, data)
+        # Reinitialize the class with the new data.
 
     async def edit(
         self, *, username: Optional[str] = None, avatar: Optional[bytes] = None
@@ -39,4 +38,4 @@ class ClientUser:
             payload["avatar"] = self.client.utils.bytes_to_base64_data(avatar)
         response = await self.client.http.patch("users/@me", json=payload)
         data = await response.json()
-        return self.__init__(self.client, data)
+        self.__init__(self.client, data)

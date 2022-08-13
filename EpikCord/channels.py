@@ -194,22 +194,6 @@ class GuildChannel(BaseChannel):
         data = await response.json()
         return [Message(self.client, message) for message in data]
 
-    # async def edit_permission_overwrites I'll do this later
-
-    # async def edit(self, *,name: str, position: str, permission_overwrites: List[dict], reason: Optional[str] = None):
-    #     data = {}
-    #     if name:
-    #         data["name"] = name
-    #     if position:
-    #         data["position"] = position
-    #     if permission_overwrites:
-    #         data["permission_overwrites"] = permission_overwrites
-    #     headers = self.client.http.headers
-    #     headers["X-Audit-Log-Reason"] = reason
-    #     response = await self.client.http.patch(f"channels/{self.id}", data=data, headers=headers)
-    #     data = await response.json()
-    #     return GuildChannel(self.client, data)
-
 
 class TypingContextManager:
     def __init__(self, client, channel_id):
@@ -345,21 +329,6 @@ class GuildTextChannel(GuildChannel, Messageable):
             channel_id=self.id,
         )
         return await response.json()
-
-    # async def edit(self,*, name: Optional[str], position: Optional[str], permission_overwrites: Optional[List[dict]], reason: Optional[str], topic: Optional[str], nsfw: bool, rate_limit_per_user: Optional[int], parent_id: Optional[int], default_auto_archive_duration: Optional[int]):
-    #     data = {}
-    #     if name:
-    #         data["name"] = name
-    #     if position:
-    #         data["position"] = position
-    #     if permission_overwrites:
-    #         data["permission_overwrites"] = permission_overwrites
-
-    #     headers = self.client.http.headers
-    #     headers["X-Audit-Log-Reason"] = reason
-    #     response = await self.client.http.patch(f"channels/{self.id}", data=data, headers=headers)
-    #     data = await response.json()
-    #     return GuildTextChannel(self.client, data)
 
 
 class GuildNewsChannel(GuildTextChannel):

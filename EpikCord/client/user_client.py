@@ -48,7 +48,10 @@ class AuthorizationInformation:
 
 
 class UserClient:
-    """This class is meant to be used with an Access Token. Not a User Account Token. This does not support Self Bots."""
+    """
+    This class is meant to be used with an Access Token.
+    Not a User Account Token. This does not support Self Bots.
+    """
 
     def __init__(self, token: str, *, discord_endpoint: str):
         self.token = token
@@ -95,6 +98,6 @@ class UserClient:
             params["after"] = after
 
         data = await self._http.get("/users/@me/guilds", params=params)
-        guilds = data.json()
+        guilds = await data.json()
 
-        return [PartialGuild(g) for g in guilds]
+        return [PartialGuild(d) for d in guilds]

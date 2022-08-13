@@ -115,19 +115,19 @@ class ClientApplication(Application):
             f"/applications/{self.id}/commands/{command_id}", json=payload
         )
 
-    async def delete_global_application_command(self, command_id: str):
+    async def delete_global_app_command(self, command_id: str):
         await self.client.http.delete(f"/applications/{self.id}/commands/{command_id}")
 
-    async def bulk_overwrite_global_application_commands(self, commands: List[Dict]):
+    async def bulk_overwrite_global_app_commands(self, commands: List[Dict]):
         await self.client.http.put(f"/applications/{self.id}/commands", json=commands)
 
-    async def fetch_guild_application_commands(self, guild_id: str):
+    async def fetch_guild_app_commands(self, guild_id: str):
         response = await self.client.http.get(
             f"/applications/{self.id}/guilds/{guild_id}/commands"
         )
         return [ApplicationCommand(command) for command in await response.json()]
 
-    async def create_guild_application_command(
+    async def create_guild_app_command(
         self,
         guild_id: str,
         *,
