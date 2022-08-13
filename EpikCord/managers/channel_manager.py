@@ -7,7 +7,7 @@ from ..channels import (
     GuildNewsChannel,
     VoiceChannel,
     DMChannel,
-    ChannelCategory,
+    CategoryChannel,
     GuildNewsThread,
     GuildStageChannel,
 )
@@ -18,7 +18,7 @@ AnyChannel = Union[
     GuildNewsChannel,
     VoiceChannel,
     DMChannel,
-    ChannelCategory,
+    CategoryChannel,
     GuildNewsThread,
     GuildStageChannel,
 ]

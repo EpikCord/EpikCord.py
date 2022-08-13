@@ -33,7 +33,7 @@ class Utils:
         0: GuildTextChannel,
         1: DMChannel,
         2: VoiceChannel,
-        4: ChannelCategory,
+        4: CategoryChannel,
         5: GuildNewsChannel,
         10: GuildNewsThread,
         11: Thread,

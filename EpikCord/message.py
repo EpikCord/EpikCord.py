@@ -9,12 +9,43 @@ from urllib.parse import quote as _quote
 from .sticker import *
 from .application import Application
 from .components import *
+from .user import User
+from .webhooks import WebhookUser
+from .mentioned import MentionedChannel
 
 logger = getLogger(__name__)
 
 
 def _filter_values(dictionary: dict) -> dict:
     return {k: v for k, v in dictionary.items() if v is not None}
+
+
+class AllowedMention:
+    def __init__(
+        self,
+        allowed_mentions: List[str],
+        replied_user: bool,
+        roles: List[str],
+        users: List[str],
+    ):
+        self.allowed_mentions: List[str] = allowed_mentions
+        self.replied_user: bool = replied_user
+        self.roles: List[str] = roles
+        self.users: List[str] = users
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "allowed_mentions": self.allowed_mentions,
+            "replied_user": self.replied_user,
+            "roles": self.roles,
+            "users": self.users,
+        }
+
+
+class MessageActivity:
+    def __init__(self, data: dict):
+        self.type: int = data.get("type")
+        self.party_id: Optional[str] = data.get("party_id")
 
 
 class Attachment:
@@ -298,13 +329,8 @@ class Message:
 
     def __init__(self, client, data: dict):
         from EpikCord import (
-            WebhookUser,
             GuildMember,
-            User,
-            MentionedChannel,
             Reaction,
-            MessageActivity,
-            MessageInteraction,
         )
 
         self.client = client
@@ -367,6 +393,8 @@ class Message:
             if data.get("referenced_message")
             else None
         )
+        from .interactions import MessageInteraction
+
         self.interaction: Optional[MessageInteraction] = (
             MessageInteraction(client, data.get("interaction"))
             if data.get("interaction")
