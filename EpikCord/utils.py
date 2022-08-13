@@ -3,7 +3,7 @@ from collections import defaultdict
 import re
 import datetime
 import asyncio
-from typing import TypeVar
+from typing import Callable, TypeVar
 from .interactions import (
     ApplicationCommandInteraction,
     MessageComponentInteraction,
@@ -137,6 +137,8 @@ class Utils:
         b64 = b64encode(data).decode("ascii")
         return fmt.format(mime=mime, data=b64)
 
+    
+
     def component_from_type(self, component_data: dict):
         component_type = component_data.get("type")
         component_cls = self.component_types.get(component_type)
@@ -147,9 +149,13 @@ class Utils:
 
         return component_cls(**component_data)
 
+    def filter_values_dynamic(self, check: Callable, dictionary: dict):
+        """Returns a filtered dictionary of values that pass the check."""
+        return {k: v for k, v in dictionary.items() if check(v)}
+
     def match_mixed(self, variant_one: str, variant_two: str):
         """Matches and returns a single output from two"""
-        return (None if variant_one else variant_two) if variant_two else variant_one
+        return variant_one or variant_two
 
     def interaction_from_type(self, data):
         interaction_type = data["type"]
