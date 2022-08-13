@@ -29,12 +29,8 @@ class CommandHandler:
         description_localisations: Optional[List[Localization]] = None,
         checks: Optional[List[Check]] = None,
     ):
-        name_localization = self.utils.match_mixed(
-            name_localizations, name_localisations
-        )
-        description_localization = self.utils.match_mixed(
-            description_localizations, description_localisations
-        )
+        name_localization = name_localizations, name_localisations or []
+        description_localization = description_localizations, description_localisations or []
 
         def register_slash_command(func):
             desc = description or func.__doc__
