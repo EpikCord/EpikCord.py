@@ -188,9 +188,7 @@ class HTTPClient(ClientSession):
             await self.global_ratelimit.set()
             bucket.lock.release()
 
-            return await self.request(
-                method, url, *args, **kwargs, attempt=attempt + 1
-            )
+            return await self.request(method, url, *args, **kwargs, attempt=attempt + 1)
 
         if res.status >= HTTPCodes.SERVER_ERROR:
             raise DiscordServerError5xx(body)
