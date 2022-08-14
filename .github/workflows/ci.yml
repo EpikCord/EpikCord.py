@@ -12,7 +12,7 @@ jobs:
         os: [ ubuntu, windows, macos ]
       fail-fast: false
 
-    name: Nox - py ${{ matrix.python-version }} - ${{ matrix.os }})
+    name: Nox - py ${{ matrix.python }} - ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
 
