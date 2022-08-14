@@ -136,3 +136,9 @@ class Presence:
             payload["activity"] = [self.activity.to_dict()]
 
         return payload
+
+__all__ = (
+    "Status",
+    "Activity",
+    "Presence"
+)
