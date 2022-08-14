@@ -79,6 +79,7 @@ class Messageable:
         data = await response.json()
         return Message(self.client, data)
 
+
 class BaseCommand:
     def __init__(self, checks: Optional[List[Check]]):
         self.checks: List[Check] = checks
