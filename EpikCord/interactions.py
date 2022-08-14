@@ -182,4 +182,11 @@ class MessageInteraction:
 __all__ = (
     "Modal",
     "ModalSubmitInteraction",
+    "ResolvedDataHandler",
+    "MessageComponentInteraction",
+    "AutoCompleteInteraction",
+    "ApplicationCommandInteraction",
+    "UserCommandInteraction",
+    "MessageCommandInteraction",
+    "MessageInteraction"
 )
