@@ -125,3 +125,10 @@ class ClientMessageCommand(ClientUserCommand):
     @property
     def type(self):
         return 3
+
+__all__ = (
+    "ClientUserCommand",
+    "ClientSlashCommand",
+    "ClientMessageCommand",
+    "Check"
+)
