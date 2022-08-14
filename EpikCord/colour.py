@@ -138,3 +138,8 @@ class Colour:
 
 
 Color = Colour
+
+__all__ = (
+    "Colour",
+    "Color"
+)
