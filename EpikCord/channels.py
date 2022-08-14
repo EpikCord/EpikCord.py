@@ -11,6 +11,7 @@ from logging import getLogger
 from .opcodes import VoiceOpcode, GatewayOpcode
 from .partials import PartialUser
 from importlib.util import find_spec
+from .abstract import BaseChannel
 import asyncio
 
 logger = getLogger(__name__)
@@ -34,14 +35,6 @@ class Overwrite:
         self.type: int = data.get("type")
         self.allow: str = data.get("allow")
         self.deny: str = data.get("deny")
-
-
-class BaseChannel:
-    def __init__(self, client, data: dict):
-        self.id: str = data.get("id")
-        self.client = client
-        self.type = data.get("type")
-
 
 if TYPE_CHECKING:
     from EpikCord import Message, File, ThreadMember
@@ -584,3 +577,15 @@ AnyChannel = Union[
     Thread,
     GuildStageChannel,
 ]
+
+__all__ = (
+    "AnyChannel",
+    "GuildTextChannel",
+    "VoiceChannel",
+    "CategoryChannel",
+    "GuildNewsChannel",
+    "GuildNewsThread",
+    "Thread",
+    "GuildStageChannel",
+    "Overwrite"
+)

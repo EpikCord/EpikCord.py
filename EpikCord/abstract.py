@@ -97,4 +97,10 @@ class BaseCommand:
     def type(self):
         ...
 
-__all__ = ("Messageable", "BaseCommand")
+class BaseChannel:
+    def __init__(self, client, data: dict):
+        self.id: str = data.get("id")
+        self.client = client
+        self.type = data.get("type")
+
+__all__ = ("Messageable", "BaseCommand", "BaseChannel")
