@@ -1,8 +1,7 @@
 from __future__ import annotations
-from .application import ApplicationCommandOption
 from .exceptions import InvalidArgumentType
 from .components import *
-from .options import SlashCommandOptionChoice
+from .options import *
 from typing import Optional, Union, List
 from .message import Message, Embed, Attachment
 
@@ -359,8 +358,21 @@ class ModalSubmitInteraction(BaseInteraction):
 class AutoCompleteInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.options: List[ApplicationCommandOption] = [
-            ApplicationCommandOption(option) for option in data.get("options", [])
+        conversion_type = {
+            1: Subcommand,
+            2: SubCommandGroup,
+            3: StringOption,
+            4: IntegerOption,
+            5: BooleanOption,
+            6: UserOption,
+            7: ChannelOption,
+            8: RoleOption,
+            9: MentionableOption,
+            10: NumberOption,
+            11: AttachmentOption,
+        }
+        self.options: List[AnyOption] = [
+            conversion_type[option["type"]] for option in data.get("options", [])
         ]
 
     async def reply(self, choices: List[SlashCommandOptionChoice]) -> None:
