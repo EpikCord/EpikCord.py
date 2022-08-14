@@ -1,6 +1,7 @@
 from ..partials import PartialUser
 from typing import List
 
+
 class TeamMember:
     def __init__(self, data: dict):
         self.data = data

@@ -2,6 +2,7 @@ from typing import Optional
 from ..partials import PartialUser
 from .team import Team
 
+
 class Application:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
