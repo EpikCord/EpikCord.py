@@ -1,5 +1,6 @@
-from typing import Optional, List
-from .exceptions import InvalidStatus, InvalidData
+from typing import List, Optional
+
+from .exceptions import InvalidData, InvalidStatus
 
 
 class Status:

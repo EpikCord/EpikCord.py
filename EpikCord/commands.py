@@ -1,9 +1,10 @@
 from logging import getLogger
+from typing import Callable, List, Optional
+
+from .abstract import BaseCommand
 from .exceptions import FailedCheck
 from .localizations import Localization
 from .options import AnyOption
-from typing import Optional, List, Callable
-from .abstract import BaseCommand
 
 logger = getLogger(__name__)
 

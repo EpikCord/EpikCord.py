@@ -1,10 +1,10 @@
-from typing import Optional, Union, List
 from sys import platform
-from .flags import Intents
-from .utils import Utils
-from .client import *
+from typing import List, Optional, Union
 
+from .client import *
+from .flags import Intents
 from .presence import Presence
+from .utils import Utils
 
 
 class Shard(WebsocketClient):

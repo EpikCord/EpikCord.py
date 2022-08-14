@@ -1,20 +1,21 @@
 from __future__ import annotations
+
+import asyncio
+from logging import getLogger
+from sys import platform
 from time import perf_counter_ns
+from typing import TYPE_CHECKING, List, Optional
+
+from ..close_event_codes import GatewayCECode
 from ..exceptions import (
+    ClosedWebSocketConnection,
+    DisallowedIntents,
     InvalidIntents,
     InvalidToken,
-    ShardingRequired,
     Ratelimited429,
-    DisallowedIntents,
-    InvalidToken,
-    ClosedWebSocketConnection,
+    ShardingRequired,
 )
-import asyncio
-from sys import platform
-from ..close_event_codes import GatewayCECode
 from ..opcodes import GatewayOpcode
-from typing import Optional, List, TYPE_CHECKING
-from logging import getLogger
 from .event_handler import EventHandler
 
 if TYPE_CHECKING:
