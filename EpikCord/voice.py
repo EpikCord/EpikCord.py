@@ -36,4 +36,5 @@ class VoiceState:
             else None
         )
 
+
 __all__ = ("VoiceRegion", "VoiceState")

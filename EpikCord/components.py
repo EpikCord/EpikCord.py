@@ -45,6 +45,7 @@ class SelectMenuOption:
 
         return settings
 
+
 class SelectMenu(BaseComponent):
     def __init__(
         self,
@@ -346,6 +347,7 @@ class ActionRow:
             ...  # Just let the validator run
 
         self.components.append(component.to_dict())
+
 
 __all__ = (
     "ActionRow",

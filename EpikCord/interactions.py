@@ -179,6 +179,7 @@ class MessageInteraction:
         )
         self.user = User(client, data.get("user"))
 
+
 __all__ = (
     "Modal",
     "ModalSubmitInteraction",
@@ -188,5 +189,5 @@ __all__ = (
     "ApplicationCommandInteraction",
     "UserCommandInteraction",
     "MessageCommandInteraction",
-    "MessageInteraction"
+    "MessageInteraction",
 )

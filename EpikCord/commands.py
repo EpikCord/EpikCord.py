@@ -126,9 +126,5 @@ class ClientMessageCommand(ClientUserCommand):
     def type(self):
         return 3
 
-__all__ = (
-    "ClientUserCommand",
-    "ClientSlashCommand",
-    "ClientMessageCommand",
-    "Check"
-)
+
+__all__ = ("ClientUserCommand", "ClientSlashCommand", "ClientMessageCommand", "Check")

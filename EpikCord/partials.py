@@ -37,8 +37,5 @@ class PartialGuild:
         self.permissions: int = int(data.get("permissions"))
         self.features: List[str] = data.get("features")
 
-__all__ = (
-    "PartialEmoji",
-    "PartialUser",
-    "PartialGuild"
-)
+
+__all__ = ("PartialEmoji", "PartialUser", "PartialGuild")

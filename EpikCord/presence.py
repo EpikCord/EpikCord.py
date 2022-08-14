@@ -137,8 +137,5 @@ class Presence:
 
         return payload
 
-__all__ = (
-    "Status",
-    "Activity",
-    "Presence"
-)
+
+__all__ = ("Status", "Activity", "Presence")

@@ -38,7 +38,4 @@ class VoiceOpcode(Opcode):
     CLIENT_DISCONNECT = 13
 
 
-__all__ = (
-    "GatewayOpcode",
-    "VoiceOpcode"
-)
+__all__ = ("GatewayOpcode", "VoiceOpcode")

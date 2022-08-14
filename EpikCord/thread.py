@@ -104,7 +104,5 @@ class Thread(Messageable):
         )
         return await response.json()
 
-__all__ = (
-    "Thread",
-    "ThreadMember"
-)
+
+__all__ = ("Thread", "ThreadMember")

@@ -115,7 +115,5 @@ class ShardManager(EventHandler):
         loop = asyncio.get_event_loop()
         loop.run_until_complete(wrapper())
 
-__all__ = (
-    "Shard",
-    "ShardManager"
-)
+
+__all__ = ("Shard", "ShardManager")

@@ -45,8 +45,4 @@ class Webhook:  # Not used for making webhooks
         self.url: Optional[str] = data.get("url")
 
 
-__all__ = (
-    "Webhook",
-    "WebhookUser",
-    "SourceChannel"
-)
+__all__ = ("Webhook", "WebhookUser", "SourceChannel")

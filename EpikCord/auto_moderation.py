@@ -20,6 +20,7 @@ class AutoModTriggerMetaData:
             "presets": [int(preset) for preset in self.presets],
         }
 
+
 class AutoModActionMetaData:
     def __init__(self, data: dict):
         self.channel_id: str = data.get("channel_id")
@@ -31,6 +32,7 @@ class AutoModActionMetaData:
             "duration_seconds": self.duration_seconds,
         }
 
+
 class AutoModAction:
     def __init__(self, data: dict):
         self.type: int = AutoModActionType(data["type"])
@@ -41,6 +43,7 @@ class AutoModAction:
             "type": int(self.type),
             "metadata": self.metadata.to_dict(),
         }
+
 
 class AutoModRule:
     def __init__(self, client, data: dict):
@@ -104,4 +107,10 @@ class AutoModRule:
             f"guilds/{self.guild_id}/auto-moderation/rules/{self.id}"
         )
 
-__all__ = ("AutoModTriggerMetaData", "AutoModActionMetaData", "AutoModAction", "AutoModRule")
+
+__all__ = (
+    "AutoModTriggerMetaData",
+    "AutoModActionMetaData",
+    "AutoModAction",
+    "AutoModRule",
+)

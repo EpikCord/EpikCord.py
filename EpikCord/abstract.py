@@ -29,8 +29,19 @@ else:
 
 
 if TYPE_CHECKING:
-    from EpikCord import Message, File, AllowedMention, Check, VoiceChannel, ActionRow, Embed, Attachment, Modal
+    from EpikCord import (
+        Message,
+        File,
+        AllowedMention,
+        Check,
+        VoiceChannel,
+        ActionRow,
+        Embed,
+        Attachment,
+        Modal,
+    )
     from .components import *
+
 
 class TypingContextManager:
     def __init__(self, client, channel_id):
@@ -48,6 +59,7 @@ class TypingContextManager:
 
     async def __aexit__(self):
         self.typing.cancel()
+
 
 class Messageable:
     def __init__(self, client, channel_id: str):
@@ -124,6 +136,7 @@ class Messageable:
     async def typing(self) -> TypingContextManager:
         return TypingContextManager(self.client, self.id)
 
+
 class BaseCommand:
     def __init__(self, checks: Optional[List[Check]]):
         self.checks: List[Check] = checks
@@ -142,11 +155,13 @@ class BaseCommand:
     def type(self):
         ...
 
+
 class BaseChannel:
     def __init__(self, client, data: dict):
         self.id: str = data.get("id")
         self.client = client
         self.type = data.get("type")
+
 
 class Connectable:
     def __init__(
@@ -334,6 +349,7 @@ class Connectable:
         self.ip = ip_data[4:ip_end].decode("ascii")
         self.port = struct.unpack_from(">H", ip_data, len(ip_data) - 2)[0]
 
+
 class GuildChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
@@ -401,6 +417,7 @@ class GuildChannel(BaseChannel):
         data = await response.json()
         return [Message(self.client, message) for message in data]
 
+
 class BaseComponent:
     def __init__(self, *, custom_id: str):
         self.custom_id: str = custom_id
@@ -413,6 +430,7 @@ class BaseComponent:
             raise CustomIdIsTooBig("Custom Id must be 100 characters or less.")
 
         self.custom_id = custom_id
+
 
 class BaseInteraction:
     def __init__(self, client, data: dict):
@@ -665,6 +683,7 @@ class BaseInteraction:
             f"/webhook/{self.application_id}/{self.token}/"
         )
 
+
 class BaseSlashCommandOption:
     def __init__(self, *, name: str, description: str, required: Optional[bool] = True):
         self.name: str = name
@@ -683,4 +702,14 @@ class BaseSlashCommandOption:
             "type": self.type,
         }
 
-__all__ = ("Messageable", "BaseCommand", "BaseChannel", "TypingContextManager", "Connectable", "GuildChannel", "BaseComponent", "BaseSlashCommandOption")
+
+__all__ = (
+    "Messageable",
+    "BaseCommand",
+    "BaseChannel",
+    "TypingContextManager",
+    "Connectable",
+    "GuildChannel",
+    "BaseComponent",
+    "BaseSlashCommandOption",
+)

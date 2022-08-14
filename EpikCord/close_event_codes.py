@@ -49,7 +49,5 @@ class VoiceCECode(IntEnum):
     VoiceServerCrash = 4014
     UnknownEncryptionMode = 4015
 
-__all__ = (
-    'GatewayCECode',
-    'VoiceCECode'
-)
+
+__all__ = ("GatewayCECode", "VoiceCECode")

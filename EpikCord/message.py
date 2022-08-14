@@ -518,5 +518,5 @@ __all__ = (
     "Reaction",
     "Embed",
     "File",
-    "Message"
+    "Message",
 )

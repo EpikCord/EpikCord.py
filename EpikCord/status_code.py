@@ -269,7 +269,5 @@ class JsonErrorCodes(StatusCode):
     def _missing_(cls, value: object) -> JsonErrorCodes:
         return cls.GENERAL_ERROR
 
-__all__ = (
-    "HTTPCodes",
-    "JsonErrorCodes"
-)
+
+__all__ = ("HTTPCodes", "JsonErrorCodes")

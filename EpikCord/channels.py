@@ -12,12 +12,14 @@ logger = getLogger(__name__)
 if TYPE_CHECKING:
     from EpikCord import ThreadMember
 
+
 class Overwrite:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
         self.type: int = data.get("type")
         self.allow: str = data.get("allow")
         self.deny: str = data.get("deny")
+
 
 class GuildTextChannel(GuildChannel, Messageable):
     def __init__(self, client, data: dict):
@@ -208,5 +210,5 @@ __all__ = (
     "GuildNewsThread",
     "GuildStageChannel",
     "VoiceChannel",
-    "AnyChannel"
+    "AnyChannel",
 )

@@ -1,6 +1,7 @@
 from typing import List
 from ..message import Embed
 
+
 class Paginator:
     def __init__(self, *, pages: List[Embed]):
         self.current_index: int = 0

@@ -22,6 +22,5 @@ class Application:
         self.cover_image: Optional[str] = data.get("cover_image")
         self.flags: int = data.get("flags")
 
-__all__ = (
-    "Application"
-)
+
+__all__ = "Application"

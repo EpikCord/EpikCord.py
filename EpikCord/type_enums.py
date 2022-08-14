@@ -81,6 +81,7 @@ class ChannelType(IntEnum):
     GUILD_DIRECTORY = 14
     GUILD_FORUM = 15
 
+
 __all__ = (
     "VisibilityType",
     "ApplicationCommandPermissionType",
@@ -89,5 +90,5 @@ __all__ = (
     "AutoModEventType",
     "AutoModTriggerType",
     "AutoModKeywordPresetTypes",
-    "ChannelTypes"
+    "ChannelTypes",
 )

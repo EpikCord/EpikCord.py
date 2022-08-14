@@ -274,5 +274,5 @@ __all__ = (
     "NumberOption",
     "AttachmentOption",
     "SlashCommandOptionChoice",
-    "AnyOption"
+    "AnyOption",
 )

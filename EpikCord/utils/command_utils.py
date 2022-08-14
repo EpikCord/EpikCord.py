@@ -1,5 +1,6 @@
 from ..client import CommandHandler
 
+
 class CommandUtils(CommandHandler):
     @staticmethod
     def check(callback):

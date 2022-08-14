@@ -46,6 +46,7 @@ class ApplicationCommandPermission:
         )
         self.permission: bool = data.get("permission")
 
+
 class GuildApplicationCommandPermission:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
@@ -62,6 +63,7 @@ class GuildApplicationCommandPermission:
             "guild_id": self.guild_id,
             "permissions": self.permissions.to_dict(),
         }
+
 
 __all__ = (
     "ApplicationCommand",

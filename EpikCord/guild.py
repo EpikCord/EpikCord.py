@@ -570,6 +570,7 @@ class Integration:
             Application(data.get("application")) if data.get("application") else None
         )
 
+
 __all__ = (
     "Guild",
     "UnavailableGuild",
@@ -586,5 +587,5 @@ __all__ = (
     "GuildScheduledEvent",
     "IntegrationAccount",
     "Integration",
-    "GuildBan"
+    "GuildBan",
 )

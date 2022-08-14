@@ -16,7 +16,5 @@ class Sticker:
         self.pack_id: int = data.get("pack_id")
         self.sort_value: int = data.get("sort_value")
 
-__all__ = (
-    "StickerItem",
-    "Sticker"
-)
+
+__all__ = ("StickerItem", "Sticker")
