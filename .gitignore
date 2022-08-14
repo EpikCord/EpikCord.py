@@ -18,3 +18,6 @@ config.json
 RoboEpikLogs.log
 *.mp3
 *.mp4
+
+# Nox venv
+.nox
