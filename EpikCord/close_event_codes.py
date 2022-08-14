@@ -48,3 +48,8 @@ class VoiceCECode(IntEnum):
     Disconnected = 4013
     VoiceServerCrash = 4014
     UnknownEncryptionMode = 4015
+
+__all__ = (
+    'GatewayCECode',
+    'VoiceCECode'
+)
