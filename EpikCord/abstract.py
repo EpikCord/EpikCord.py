@@ -96,3 +96,5 @@ class BaseCommand:
     @abstractmethod
     def type(self):
         ...
+
+__all__ = ("Messageable", "BaseCommand")
