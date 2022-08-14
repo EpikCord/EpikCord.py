@@ -9,7 +9,7 @@ import socket
 from aiohttp import ClientWebSocketResponse
 import struct
 from .close_event_codes import GatewayCECode
-from .exceptions import ClosedWebSocketConnection
+from .exceptions import ClosedWebSocketConnection, InvalidArgumentType, CustomIdIsTooBig
 from .opcodes import VoiceOpcode, GatewayOpcode
 import asyncio
 
@@ -401,4 +401,17 @@ class GuildChannel(BaseChannel):
         data = await response.json()
         return [Message(self.client, message) for message in data]
 
-__all__ = ("Messageable", "BaseCommand", "BaseChannel", "TypingContextManager", "Connectable", "GuildChannel")
+class BaseComponent:
+    def __init__(self, *, custom_id: str):
+        self.custom_id: str = custom_id
+
+    def set_custom_id(self, custom_id: str):
+        if not isinstance(custom_id, str):
+            raise InvalidArgumentType("Custom Id must be a string.")
+
+        elif len(custom_id) > 100:
+            raise CustomIdIsTooBig("Custom Id must be 100 characters or less.")
+
+        self.custom_id = custom_id
+
+__all__ = ("Messageable", "BaseCommand", "BaseChannel", "TypingContextManager", "Connectable", "GuildChannel", "BaseComponent")
