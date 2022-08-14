@@ -1,14 +1,15 @@
 import datetime
-from typing import List, Optional
-
+from typing import Optional, List
 from .application import Application
-from .channels import AnyChannel, GuildStageChannel, Overwrite
 from .flags import Permissions, SystemChannelFlags
-from .partials import PartialGuild
-from .sticker import Sticker, StickerItem
-from .thread import Thread
 from .user import User
+from .channels import AnyChannel, GuildStageChannel
+from .sticker import Sticker
 from .utils import Utils
+from .thread import Thread
+from .sticker import StickerItem
+from .channels import Overwrite
+from .partials import PartialGuild
 
 
 class UnavailableGuild:

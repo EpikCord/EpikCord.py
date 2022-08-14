@@ -1,19 +1,17 @@
 from __future__ import annotations
 
-import asyncio
+from typing import List, Optional, Union, Dict, TYPE_CHECKING
 import socket
-import struct
-from importlib.util import find_spec
-from logging import getLogger
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
-
 from aiohttp import ClientWebSocketResponse
-
+from .thread import Thread
+import struct
 from .close_event_codes import GatewayCECode
 from .exceptions import ClosedWebSocketConnection
-from .opcodes import GatewayOpcode, VoiceOpcode
+from logging import getLogger
+from .opcodes import VoiceOpcode, GatewayOpcode
 from .partials import PartialUser
-from .thread import Thread
+from importlib.util import find_spec
+import asyncio
 
 logger = getLogger(__name__)
 _NACL = find_spec("nacl")
@@ -46,7 +44,7 @@ class BaseChannel:
 
 
 if TYPE_CHECKING:
-    from EpikCord import File, Message, ThreadMember
+    from EpikCord import Message, File, ThreadMember
 
 
 class Messageable:

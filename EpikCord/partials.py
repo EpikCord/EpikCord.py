@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Optional, List, Dict, Any
 
 
 class PartialEmoji:

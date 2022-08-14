@@ -1,7 +1,5 @@
 from __future__ import annotations
-
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
-
+from typing import Union, Dict, Optional, List, TYPE_CHECKING
 from ..localizations import *
 from ..options import AnyOption
 
@@ -11,7 +9,7 @@ if TYPE_CHECKING:
 
 class CommandHandler:
     def __init__(self):
-        from EpikCord import ClientMessageCommand, ClientSlashCommand, ClientUserCommand
+        from EpikCord import ClientSlashCommand, ClientUserCommand, ClientMessageCommand
 
         self.commands: Dict[
             str, Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]

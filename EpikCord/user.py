@@ -1,6 +1,5 @@
-from typing import Optional
-
 from .abstract import Messageable
+from typing import Optional
 
 
 class User(Messageable):

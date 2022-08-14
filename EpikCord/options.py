@@ -1,7 +1,5 @@
 from __future__ import annotations
-
-from typing import List, Optional, Union
-
+from typing import Optional, Union, List
 from .localizations import Localization
 from .type_enums import ChannelTypes, Locale
 

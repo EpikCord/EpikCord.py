@@ -1,5 +1,4 @@
 from typing import Optional
-
 from ..partials import PartialUser
 from .team import Team
 
