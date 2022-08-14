@@ -351,6 +351,7 @@ __all__ = (
     "ActionRow",
     "Button",
     "ButtonStyle",
-    "Component",
-
+    "SelectMenu",
+    "TextInput",
+    "SelectMenuOption",
 )

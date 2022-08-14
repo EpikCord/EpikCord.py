@@ -2,19 +2,22 @@ from base64 import b64encode
 from collections import defaultdict
 import re
 import datetime
+from ..exceptions import InvalidArgumentType
+from typing import Optional, Union
 import asyncio
+from logging import getLogger
 from typing import Callable, TypeVar
-from .interactions import (
+from ..interactions import (
     ApplicationCommandInteraction,
     MessageComponentInteraction,
     AutoCompleteInteraction,
     ModalSubmitInteraction,
 )
-from .components import *
-from .client import CommandHandler
-from .channels import *
-from .message import Embed
+from ..components import *
+from ..thread import Thread
+from ..channels import *
 
+logger = getLogger(__name__)
 T = TypeVar("T")
 
 
@@ -249,66 +252,3 @@ class Utils:
             loop.run_until_complete(loop.shutdown_asyncgens())
         finally:
             loop.close()
-
-
-class CommandUtils(CommandHandler):
-    @staticmethod
-    def check(callback):
-        from EpikCord import Check
-
-        return Check(callback)
-
-    @staticmethod
-    def event(name: str):
-        from EpikCord import Event
-
-        def wrapper(callback):
-            return Event(callback, event_name=name)
-
-        return wrapper
-
-
-class Paginator:
-    def __init__(self, *, pages: List[Embed]):
-        self.current_index: int = 0
-        self.__pages = pages
-
-    def __iter__(self):
-        return self
-
-    def __len__(self):
-        return len(self.__pages)
-
-    def __next__(self):
-        return self.forward()
-
-    @property
-    def page(self):
-        return self.__pages[self.current_index]
-
-    def forward(self):
-        self.current_index = min(len(self.__pages), self.current_index + 1)
-        return self.__pages[self.current_index]
-
-    def back(self):
-        self.current_index = max(0, self.current_index - 1)
-        return self.__pages[self.current_index]
-
-    def first(self):
-        self.current_index = 0
-
-    def last(self):
-        self.current_index = len(self.__pages)
-
-    def add_page(self, page: Embed):
-        self.__pages.append(page)
-
-    def insert_page(self, page: Embed, index: int):
-        if index >= len(self.__pages):
-            self.add_page(page)
-            return
-
-        self.__pages.index(page, index)
-
-    def remove_page(self, page: Embed):
-        self.__pages = list(filter(lambda embed: embed != page, self.__pages))

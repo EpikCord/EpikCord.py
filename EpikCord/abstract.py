@@ -2,7 +2,6 @@ from __future__ import annotations
 import asyncio
 from typing import Optional, List, TYPE_CHECKING
 from logging import getLogger
-from .components import ActionRow
 from importlib.util import find_spec
 from abc import abstractmethod
 import socket
@@ -30,7 +29,7 @@ else:
 
 
 if TYPE_CHECKING:
-    from EpikCord import Message, File, AllowedMention, Check, VoiceChannel
+    from EpikCord import Message, File, AllowedMention, Check, VoiceChannel, ActionRow
 
 class TypingContextManager:
     def __init__(self, client, channel_id):
