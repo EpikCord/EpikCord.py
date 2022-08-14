@@ -1,6 +1,5 @@
 from __future__ import annotations
-
-from typing import List, Optional, Union
+from typing import List, Union, Optional
 
 from .cache_manager import CacheManager
 
@@ -10,7 +9,7 @@ class GuildManager(CacheManager):
         if guilds is None:
             guilds = []
 
-        from EpikCord import Guild, UnavailableGuild
+        from EpikCord import UnavailableGuild, Guild
 
         super().__init__()
         self.client = client

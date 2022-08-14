@@ -1,9 +1,8 @@
 from typing import List, Optional
-
 from .type_enums import (
+    AutoModKeywordPresetTypes,
     AutoModActionType,
     AutoModEventType,
-    AutoModKeywordPresetTypes,
     AutoModTriggerType,
 )
 

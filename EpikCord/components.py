@@ -1,13 +1,13 @@
 from enum import IntEnum
-from typing import List, Optional, Union
+from typing import Union, Optional, List
 
 from .exceptions import (
-    CustomIdIsTooBig,
     InvalidArgumentType,
+    CustomIdIsTooBig,
     InvalidComponentStyle,
-    LabelIsTooBig,
-    TooManyComponents,
     TooManySelectMenuOptions,
+    TooManyComponents,
+    LabelIsTooBig,
 )
 from .partials import PartialEmoji
 

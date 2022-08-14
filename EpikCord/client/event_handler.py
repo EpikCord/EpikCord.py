@@ -1,12 +1,11 @@
-import asyncio
-from collections import defaultdict, deque
-from inspect import iscoroutinefunction
+from .command_handler import CommandHandler
+from ..opcodes import GatewayOpcode
 from logging import getLogger
 from time import perf_counter_ns
-from typing import Callable, Optional
-
-from ..opcodes import GatewayOpcode
-from .command_handler import CommandHandler
+from inspect import iscoroutinefunction
+import asyncio
+from typing import Optional, Callable
+from collections import defaultdict, deque
 
 logger = getLogger(__name__)
 
@@ -315,7 +314,7 @@ class EventHandler(CommandHandler):
         return message
 
     async def guild_create(self, data):
-        from EpikCord import Guild, Thread, UnavailableGuild
+        from EpikCord import UnavailableGuild, Guild, Thread
 
         guild = (
             UnavailableGuild(data)
@@ -365,7 +364,7 @@ class EventHandler(CommandHandler):
         return self.members.fetch(data["id"]), guild_member
 
     async def ready(self, data: dict):
-        from EpikCord import ClientApplication, ClientUser
+        from EpikCord import ClientUser, ClientApplication
 
         self.user: ClientUser = ClientUser(self, data.get("user"))
         self.session_id: str = data["session_id"]

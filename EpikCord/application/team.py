@@ -1,6 +1,5 @@
-from typing import List
-
 from ..partials import PartialUser
+from typing import List
 
 
 class TeamMember:

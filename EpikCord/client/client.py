@@ -1,19 +1,17 @@
 from __future__ import annotations
-
 import asyncio
-from collections import deque
-from importlib import import_module
 from importlib.util import find_spec, module_from_spec, resolve_name
-from logging import getLogger
 from sys import modules
-from typing import TYPE_CHECKING, Any, List, Optional
-
-from ..managers import ChannelManager, GuildManager
-from .http_client import HTTPClient
 from .websocket_client import WebsocketClient
+from .http_client import HTTPClient
+from logging import getLogger
+from importlib import import_module
+from ..managers import ChannelManager, GuildManager
+from collections import deque
+from typing import Optional, List, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from EpikCord import Activity, Check, Section, Status
+    from EpikCord import Status, Activity, Check, Section
 
 logger = getLogger(__name__)
 
@@ -30,7 +28,7 @@ class Client(WebsocketClient):
         discord_endpoint: str = "https://discord.com/api/v10",
     ):
         super().__init__(token, intents)
-        from EpikCord import ClientApplication, ClientUser, Presence, Utils
+        from EpikCord import Presence, ClientUser, ClientApplication, Utils
 
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
         self.guilds: GuildManager = GuildManager(self)

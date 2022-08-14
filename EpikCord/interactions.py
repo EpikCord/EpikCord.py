@@ -1,11 +1,9 @@
 from __future__ import annotations
-
-from typing import List, Optional, Union
-
-from .components import *
 from .exceptions import InvalidArgumentType
-from .message import Attachment, Embed, Message
+from .components import *
 from .options import *
+from typing import Optional, Union, List
+from .message import Message, Embed, Attachment
 
 
 class Modal:

@@ -1,8 +1,8 @@
 from collections import defaultdict
-from typing import DefaultDict, List, Union
+from typing import Union, DefaultDict, List
 
-from ..commands import ClientMessageCommand, ClientSlashCommand, ClientUserCommand
 from .event_handler import Event
+from ..commands import ClientMessageCommand, ClientSlashCommand, ClientUserCommand
 
 
 class Section:

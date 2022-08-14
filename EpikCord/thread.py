@@ -1,10 +1,8 @@
 from __future__ import annotations
-
-import datetime
-from typing import List, Optional
-
+from .exceptions import ThreadArchived, NotFound404
 from .abstract import Messageable
-from .exceptions import NotFound404, ThreadArchived
+from typing import List, Optional
+import datetime
 
 
 class ThreadMember:

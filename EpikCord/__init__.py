@@ -21,11 +21,12 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
+from .client import *
+from .managers import *
 from .abstract import *
 from .application import *
 from .auto_moderation import *
 from .channels import *
-from .client import *
 from .close_event_codes import *
 from .colour import *
 from .commands import *
@@ -35,7 +36,6 @@ from .flags import *
 from .guild import *
 from .interactions import *
 from .localizations import *
-from .managers import *
 from .mentioned import *
 from .message import *
 from .opcodes import *
