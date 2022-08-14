@@ -3,6 +3,7 @@ from ..type_enums import ApplicationCommandPermissionType
 from ..options import *
 from ..localizations import Localization
 
+
 class ApplicationCommand:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
