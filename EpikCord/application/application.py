@@ -21,3 +21,7 @@ class Application:
         self.team: Optional[Team] = Team(data.get("team")) if data.get("get") else None
         self.cover_image: Optional[str] = data.get("cover_image")
         self.flags: int = data.get("flags")
+
+__all__ = (
+    "Application"
+)
