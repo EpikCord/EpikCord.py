@@ -7,6 +7,7 @@ from .thread import Thread
 from typing import Union, Optional, List, Dict, Any
 from urllib.parse import quote as _quote
 from .sticker import *
+from .partials import PartialEmoji
 from .application import Application
 from .components import *
 from .user import User
@@ -508,3 +509,14 @@ class Message:
             f"channels/{self.channel_id}/messages/{self.id}/crosspost"
         )
         return await response.json()
+
+
+__all__ = (
+    "AllowedMention",
+    "MessageActivity",
+    "Attachment",
+    "Reaction",
+    "Embed",
+    "File",
+    "Message"
+)
