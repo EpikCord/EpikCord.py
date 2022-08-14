@@ -71,3 +71,8 @@ def decode_rtp_packet(packet_bytes):
         "ssrc": int(str(packet_bytes[16:24]), 16),
         "payload": str(packet_bytes[24:]),
     }
+
+__all__ = (
+    "decode_rtp_packet",
+    "generate_rtp_packet",
+)
