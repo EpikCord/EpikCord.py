@@ -22,12 +22,12 @@ jobs:
       with:
         python-version: '3.8'
 
-    - name: Install Black
-      run: pip install black
+    - name: Install nox
+      run: pip install nox
 
     - name: run Formatter
       run: |
-        black .
+        nox -s format
     - name: Push changes
       run: |
         git commit -m ":art: Format code automatically" -a || echo "No changes to commit"
