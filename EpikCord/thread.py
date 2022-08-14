@@ -103,3 +103,8 @@ class Thread(Messageable):
             channel_id=self.id,
         )
         return await response.json()
+
+__all__ = (
+    "Thread",
+    "ThreadMember"
+)
