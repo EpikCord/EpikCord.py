@@ -5,12 +5,12 @@ from .thread import Thread
 from .abstract import Messageable
 from logging import getLogger
 from .partials import PartialUser
-from .abstract import BaseChannel
+from .abstract import BaseChannel, Connectable, GuildChannel
 
 logger = getLogger(__name__)
 
 if TYPE_CHECKING:
-    from EpikCord import Message, ThreadMember
+    from EpikCord import ThreadMember
 
 class Overwrite:
     def __init__(self, data: dict):
@@ -18,74 +18,6 @@ class Overwrite:
         self.type: int = data.get("type")
         self.allow: str = data.get("allow")
         self.deny: str = data.get("deny")
-
-
-class GuildChannel(BaseChannel):
-    def __init__(self, client, data: dict):
-        super().__init__(client, data)
-        self.guild_id: str = data.get("guild_id")
-        self.position: int = data.get("position")
-        self.nsfw: bool = data.get("nsfw")
-        self.permission_overwrites: List[dict] = data.get("permission_overwrites")
-        self.parent_id: str = data.get("parent_id")
-        self.name: str = data.get("name")
-
-    async def delete(self, *, reason: Optional[str] = None) -> None:
-        if reason:
-            headers = self.client.http.headers.copy()
-        if reason:
-            headers["reason"] = reason
-
-        response = await self.client.http.delete(
-            f"/channels/{self.id}", headers=headers, channel_id=self.id
-        )
-        return await response.json()
-
-    async def fetch_invites(self):
-        response = await self.client.http.get(
-            f"/channels/{self.id}/invites", channel_id=self.id
-        )
-        return await response.json()
-
-    async def create_invite(
-        self,
-        *,
-        max_age: Optional[int],
-        max_uses: Optional[int],
-        temporary: Optional[bool],
-        unique: Optional[bool],
-        target_type: Optional[int],
-        target_user_id: Optional[str],
-        target_application_id: Optional[str],
-    ):
-        data = {
-            "max_age": max_age or None,
-            "max_uses": max_uses or None,
-            "temporary": temporary or None,
-            "unique": unique or None,
-            "target_type": target_type or None,
-            "target_user_id": target_user_id or None,
-            "target_application_id": target_application_id or None,
-        }
-
-        await self.client.http.post(
-            f"/channels/{self.id}/invites", json=data, channel_id=self.id
-        )
-
-    async def delete_overwrite(self, overwrites) -> None:
-        response = await self.client.http.delete(
-            f"/channels/{self.id}/permissions/{overwrites.id}", channel_id=self.id
-        )
-        return await response.json()
-
-    async def fetch_pinned_messages(self) -> List[Message]:
-        from EpikCord import Message
-
-        response = await self.client.http.get(
-            f"/channels/{self.id}/pins", channel_id=self.id
-        )
-        data = await response.json()
-        return [Message(self.client, message) for message in data]
 
 class GuildTextChannel(GuildChannel, Messageable):
     def __init__(self, client, data: dict):
@@ -276,5 +208,6 @@ __all__ = (
     "Thread",
     "GuildStageChannel",
     "Overwrite",
+    "DMChannel",
 
 )
