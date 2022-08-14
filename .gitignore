@@ -20,4 +20,5 @@ RoboEpikLogs.log
 *.mp4
 
 # Nox venv
+venv
 .nox
