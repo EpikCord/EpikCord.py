@@ -8,7 +8,6 @@ if TYPE_CHECKING:
 
 class Messageable:
     def __init__(self, client, channel_id: str):
-
         if isinstance(channel_id, (int, str)):
             self.id: str = channel_id
         elif isinstance(channel_id, dict):

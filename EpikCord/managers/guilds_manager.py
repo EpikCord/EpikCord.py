@@ -5,7 +5,10 @@ from .cache_manager import CacheManager
 
 
 class GuildManager(CacheManager):
-    def __init__(self, client, guilds=[]):
+    def __init__(self, client, guilds=None):
+        if guilds is None:
+            guilds = []
+
         from EpikCord import UnavailableGuild, Guild
 
         super().__init__()

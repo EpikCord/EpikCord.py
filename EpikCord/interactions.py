@@ -108,6 +108,7 @@ class BaseInteraction:
 
         if not isinstance(modal, Modal):
             raise InvalidArgumentType("The modal argument must be of type Modal.")
+
         payload = {"type": 9, "data": modal.to_dict()}
         await self.client.http.post(
             f"/interactions/{self.id}/{self.token}/callback", json=payload
@@ -136,6 +137,7 @@ class BaseInteraction:
     async def fetch_original_response(self, *, skip_cache: Optional[bool] = False):
         if not skip_cache and self.original_response:
             return self.original_response
+
         message_data = await self.client.http.get(
             f"/webhooks/{self.application_id}/{self.token}/messages/@original"
         )

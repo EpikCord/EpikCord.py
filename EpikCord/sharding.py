@@ -25,7 +25,6 @@ class Shard(WebsocketClient):
         application_response = await self.http.get("/oauth2/applications/@me")
         application_data = await application_response.json()
         self.application: ClientApplication = ClientApplication(self, application_data)
-        return None
 
     async def identify(self):
         payload = {

@@ -9,9 +9,10 @@ class BaseSlashCommandOption:
         self.name: str = name
         self.description: str = description
         self.required: bool = required
-        self.type: Optional[int] = None  #! Needs to be set by the subclass
-        #! People shouldn't use this class, this is just a base class for other
-        #! options, but they can use this for other options we are yet to account for.
+        self.type: Optional[int] = None
+        # ! Needs to be set by the subclass
+        # ! People shouldn't use this class, this is just a base class for other
+        # ! options, but they can use this for other options we are yet to account for.
 
     def to_dict(self):
         return {

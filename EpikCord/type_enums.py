@@ -45,24 +45,24 @@ class Locale(Enum):
     KOREAN = "ko"
 
 
-class AutoModerationActionType(IntEnum):
+class AutoModActionType(IntEnum):
     BLOCK_MESSAGE = 1
     SEND_ALERT_MESSAGE = 2
     TIMEOUT = 3
 
 
-class AutoModerationEventType(IntEnum):
+class AutoModEventType(IntEnum):
     MESSAGE_SEND = 1
 
 
-class AutoModerationTriggerType(IntEnum):
+class AutoModTriggerType(IntEnum):
     KEYWORD = 1
     HARMFUL_LINK = 2
     SPAM = 3
     KEYWORD_PRESENT = 4
 
 
-class AutoModerationKeywordPresetTypes(IntEnum):
+class AutoModKeywordPresetTypes(IntEnum):
     PROFANITY = 1
     SEXUAL_CONTENT = 2
     SLURS = 3

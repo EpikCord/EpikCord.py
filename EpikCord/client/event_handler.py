@@ -175,10 +175,13 @@ class EventHandler(CommandHandler):
                         await callback(results_from_event)
         except Exception as e:
             logger.exception(f"Error handling user-defined event {event['t']}: {e}")
-        if callbacks := self.wait_for_events.get(event["t"].lower()):
-            for future, check in callbacks:
-                if check(*results_from_event):
-                    future.set_result(results_from_event)
+
+        if not (callbacks := self.wait_for_events.get(event["t"].lower())):
+            return
+
+        for future, check in callbacks:
+            if check(*results_from_event):
+                future.set_result(results_from_event)
 
     async def handle_interaction(self, interaction):
         """The function which is the handler for interactions.
@@ -220,10 +223,11 @@ class EventHandler(CommandHandler):
                             check.callback(interaction)
                     except RuntimeError:
                         ...  # Suppress.
-                for option in interaction.options:
-                    options.append(option.get("value"))
+                options.extend(option.get("value") for option in interaction.options)
+
             try:
                 return await command.callback(interaction, *options)
+
             except Exception as e:
                 await self.command_error(interaction, e)
 
@@ -274,16 +278,14 @@ class EventHandler(CommandHandler):
             command = self.commands.get(interaction.command_name)
             if not command:
                 return
-            ...  # TODO: Implement autocomplete
 
         if interaction.is_modal_submit:
             action_rows = interaction._components
             component_object_list = []
             for action_row in action_rows:
-                for component in action_row.get("components"):
-                    component_object_list.append(
-                        component["value"]
-                    )  # TODO: Fix this later, component_object_list is empty ;(
+                component_object_list.extend(
+                    component["value"] for component in action_row.get("components")
+                )
 
             await self._components.get(interaction.custom_id)(
                 interaction, *component_object_list
@@ -291,9 +293,7 @@ class EventHandler(CommandHandler):
 
     async def interaction_create(self, data):
         interaction = self.utils.interaction_from_type(data)
-
         await self.handle_interaction(interaction)
-
         return interaction
 
     async def channel_create(self, data: dict):
@@ -372,51 +372,47 @@ class EventHandler(CommandHandler):
         application_data = await application_response.json()
 
         self.application: ClientApplication = ClientApplication(self, application_data)
-        if self.overwrite_commands_on_ready:
 
-            command_sorter = defaultdict(list)
+        if not self.overwrite_commands_on_ready:
+            return None
 
-            for command in self.commands.values():
-                command_payload = {"name": command.name, "type": command.type}
+        command_sorter = defaultdict(list)
 
-                if command_payload["type"] == 1:
-                    command_payload["description"] = command.description
-                    command_payload["options"] = [
-                        option.to_dict() for option in getattr(command, "options", [])
-                    ]
-                    if command.name_localizations:
-                        command_payload["name_localizations"] = {}
-                        for name_localization in command.name_localizations:
-                            command_payload["name_localizations"][
-                                name_localization
-                            ] = command.name_localizations[name_localization.to_dict()]
-                    if command.description_localizations:
-                        command_payload["description_localizations"] = {}
-                        for (
-                            description_localization
-                        ) in command.description_localizations:
-                            command_payload["description_localizations"][
-                                description_localization.to_dict()
-                            ] = command.description_localizations[
-                                description_localization
-                            ]
+        for command in self.commands.values():
+            cmd_payload = {"name": command.name, "type": command.type}
 
-                for guild_id in command.guild_ids or []:
-                    command_sorter[guild_id].append(command_payload)
-                command_sorter["global"].append(command_payload)
+            if cmd_payload["type"] == 1:
+                cmd_payload["description"] = command.description
+                cmd_payload["options"] = [
+                    option.to_dict() for option in getattr(command, "options", [])
+                ]
 
-            for guild_id, commands in command_sorter.items():
+                if command.name_localizations:
+                    cmd_payload["name_localizations"] = {}
+                    for name_localization in command.name_localizations:
+                        cmd_payload["name_localizations"][
+                            name_localization
+                        ] = command.name_localizations[name_localization.to_dict()]
 
-                if guild_id == "global":
-                    await self.application.bulk_overwrite_global_application_commands(
-                        commands
-                    )
-                    continue
+                if command.description_localizations:
+                    cmd_payload["description_localizations"] = {}
+                    for desc_loc in command.description_localizations:
+                        cmd_payload["description_localizations"][
+                            desc_loc.to_dict()
+                        ] = command.description_localizations[desc_loc]
 
-                await self.application.bulk_overwrite_guild_application_commands(
-                    guild_id, commands
-                )
-        return None
+            for guild_id in command.guild_ids or []:
+                command_sorter[guild_id].append(cmd_payload)
+            command_sorter["global"].append(cmd_payload)
+
+        for guild_id, commands in command_sorter.items():
+            if guild_id == "global":
+                await self.application.bulk_overwrite_global_app_commands(commands)
+                continue
+
+            await self.application.bulk_overwrite_guild_application_commands(
+                guild_id, commands
+            )
 
     async def command_error(self, interaction, error: Exception):
         logger.exception(error)

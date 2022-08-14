@@ -171,6 +171,7 @@ class WebsocketClient(EventHandler):
         res = await self.http.get("/gateway")
         data = await res.json()
         url = data["url"]
+
         self.ws = await self.http.ws_connect(
             f"{url}?v=10&encoding=json&compress=zlib-stream"
         )
@@ -179,6 +180,7 @@ class WebsocketClient(EventHandler):
 
     async def resume(self):
         logger.critical("Reconnecting...")
+
         await self.connect()
         await self.send_json(
             {
@@ -190,6 +192,7 @@ class WebsocketClient(EventHandler):
                 },
             }
         )
+
         self._closed = False
 
     async def identify(self):
@@ -205,20 +208,15 @@ class WebsocketClient(EventHandler):
                 },
             },
         }
+
         if self.presence:
             payload["d"]["presence"] = self.presence.to_dict()
+
         return await self.send_json(payload)
 
     async def close(self) -> None:
         if self._closed:
             return
-
-        # for voice in self.voice_clients:
-        #     try:
-        #         await voice.disconnect(force=True)
-        #     except Exception:
-        #         # if an error happens during disconnects, disregard it.
-        #         pass
 
         if self.ws is not None and not self.ws.closed:
             await self.ws.close(code=4000)
@@ -229,7 +227,6 @@ class WebsocketClient(EventHandler):
         self._closed = True
 
     def login(self):
-
         loop = asyncio.get_event_loop()
 
         async def runner():

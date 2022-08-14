@@ -1,17 +1,17 @@
 from typing import List, Optional
 from .type_enums import (
-    AutoModerationKeywordPresetTypes,
-    AutoModerationActionType,
-    AutoModerationEventType,
-    AutoModerationTriggerType,
+    AutoModKeywordPresetTypes,
+    AutoModActionType,
+    AutoModEventType,
+    AutoModTriggerType,
 )
 
 
-class AutoModerationTriggerMetaData:
+class AutoModTriggerMetaData:
     def __init__(self, data: dict):
         self.keyword_filter: List[str] = data.get("keyword_filter")
-        self.presets: List[AutoModerationKeywordPresetTypes] = [
-            AutoModerationKeywordPresetTypes(x) for x in data.get("presets")
+        self.presets: List[AutoModKeywordPresetTypes] = [
+            AutoModKeywordPresetTypes(x) for x in data.get("presets")
         ]
 
     def to_dict(self):
@@ -21,7 +21,7 @@ class AutoModerationTriggerMetaData:
         }
 
 
-class AutoModerationActionMetaData:
+class AutoModActionMetaData:
     def __init__(self, data: dict):
         self.channel_id: str = data.get("channel_id")
         self.duration_seconds: int = data.get("duration_seconds")
@@ -33,12 +33,10 @@ class AutoModerationActionMetaData:
         }
 
 
-class AutoModerationAction:
+class AutoModAction:
     def __init__(self, data: dict):
-        self.type: int = AutoModerationActionType(data["type"])
-        self.metadata: AutoModerationActionMetaData = AutoModerationActionMetaData(
-            data["metadata"]
-        )
+        self.type: int = AutoModActionType(data["type"])
+        self.metadata = AutoModActionMetaData(data["metadata"])
 
     def to_dict(self):
         return {
@@ -47,24 +45,20 @@ class AutoModerationAction:
         }
 
 
-class AutoModerationRule:
+class AutoModRule:
     def __init__(self, client, data: dict):
         self.client = client
         self.id: str = data["id"]
         self.guild_id: str = data["guild_id"]
         self.name: str = data["name"]
         self.creator_id: str = data["creator_id"]
-        self.event_type: AutoModerationEventType = AutoModerationEventType(
-            data["event_type"]
-        )
-        self.trigger_type: AutoModerationTriggerType = AutoModerationTriggerType(
-            data["trigger_type"]
-        )
-        self.trigger_metadata: AutoModerationTriggerMetaData = [
-            AutoModerationTriggerMetaData(data) for data in data["trigger_metadata"]
+        self.event_type = AutoModEventType(data["event_type"])
+        self.trigger_type = AutoModTriggerType(data["trigger_type"])
+        self.trigger_metadata: AutoModTriggerMetaData = [
+            AutoModTriggerMetaData(data) for data in data["trigger_metadata"]
         ]
-        self.actions: List[AutoModerationAction] = [
-            AutoModerationAction(data) for data in data.get("actions")
+        self.actions: List[AutoModAction] = [
+            AutoModAction(data) for data in data.get("actions")
         ]
         self.enabled: bool = data["enabled"]
         self.except_roles_ids: List[str] = data["except_roles"]
@@ -75,8 +69,8 @@ class AutoModerationRule:
         *,
         name: Optional[str] = None,
         event_type: Optional[int] = None,
-        trigger_metadata: Optional[AutoModerationTriggerMetaData] = None,
-        actions: Optional[List[AutoModerationAction]] = None,
+        trigger_metadata: Optional[AutoModTriggerMetaData] = None,
+        actions: Optional[List[AutoModAction]] = None,
         enabled: Optional[bool] = None,
         exempt_roles: Optional[List[str]] = None,
         exempt_channels: Optional[List[str]] = None,

@@ -51,7 +51,6 @@ class BaseComponent:
         self.custom_id: str = custom_id
 
     def set_custom_id(self, custom_id: str):
-
         if not isinstance(custom_id, str):
             raise InvalidArgumentType("Custom Id must be a string.")
 
@@ -286,7 +285,7 @@ class Button(BaseComponent):
         return self
 
     @classmethod
-    def from_dict(self, data):
+    def from_dict(cls, data):
         return Button(
             **{
                 "custom_id": data["custom_id"],
@@ -336,7 +335,6 @@ class ActionRow:
         text_inputs = 0
 
         for component in list_of_components:
-
             if isinstance(component, Button):
                 buttons += 1
 
