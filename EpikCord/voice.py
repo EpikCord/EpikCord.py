@@ -35,3 +35,5 @@ class VoiceState:
             if data.get("request_to_speak_timestamp")
             else None
         )
+
+__all__ = ("VoiceRegion", "VoiceState")
