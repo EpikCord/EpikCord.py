@@ -11,3 +11,5 @@ class Localization:
 
 
 Localisation = Localization
+
+__all__ = ("Localization", "Localisation")
