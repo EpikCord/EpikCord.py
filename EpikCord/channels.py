@@ -6,6 +6,7 @@ from aiohttp import ClientWebSocketResponse
 from .thread import Thread
 import struct
 from .close_event_codes import GatewayCECode
+from .abstract import Messageable
 from .exceptions import ClosedWebSocketConnection
 from logging import getLogger
 from .opcodes import VoiceOpcode, GatewayOpcode
@@ -28,6 +29,8 @@ else:
         " If you want voice support"
     )
 
+if TYPE_CHECKING:
+    from EpikCord import Message, ThreadMember
 
 class Overwrite:
     def __init__(self, data: dict):
@@ -36,8 +39,6 @@ class Overwrite:
         self.allow: str = data.get("allow")
         self.deny: str = data.get("deny")
 
-if TYPE_CHECKING:
-    from EpikCord import Message, ThreadMember
 
 class GuildChannel(BaseChannel):
     def __init__(self, client, data: dict):
@@ -105,25 +106,6 @@ class GuildChannel(BaseChannel):
         )
         data = await response.json()
         return [Message(self.client, message) for message in data]
-
-
-class TypingContextManager:
-    def __init__(self, client, channel_id):
-        self.typing: asyncio.Task = None
-        self.client = client
-        self.channel_id: str = channel_id
-
-    async def start_typing(self):
-
-        await self.client.http.post(f"/channels/{self.channel_id}/typing")
-        asyncio.get_event_loop().call_later(10, self.start_typing)
-
-    async def __aenter__(self):
-        self.typing = asyncio.create_task(self.start_typing())
-
-    async def __aexit__(self):
-        self.typing.cancel()
-
 
 class GuildTextChannel(GuildChannel, Messageable):
     def __init__(self, client, data: dict):

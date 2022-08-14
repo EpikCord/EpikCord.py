@@ -1,4 +1,5 @@
 from __future__ import annotations
+import asyncio
 from typing import Optional, List, TYPE_CHECKING
 from .components import ActionRow
 from abc import abstractmethod
@@ -6,6 +7,22 @@ from abc import abstractmethod
 if TYPE_CHECKING:
     from EpikCord import Message, File, AllowedMention, Check
 
+class TypingContextManager:
+    def __init__(self, client, channel_id):
+        self.typing: asyncio.Task = None
+        self.client = client
+        self.channel_id: str = channel_id
+
+    async def start_typing(self):
+
+        await self.client.http.post(f"/channels/{self.channel_id}/typing")
+        asyncio.get_event_loop().call_later(10, self.start_typing)
+
+    async def __aenter__(self):
+        self.typing = asyncio.create_task(self.start_typing())
+
+    async def __aexit__(self):
+        self.typing.cancel()
 
 class Messageable:
     def __init__(self, client, channel_id: str):
@@ -79,6 +96,10 @@ class Messageable:
         data = await response.json()
         return Message(self.client, data)
 
+    async def typing(self) -> TypingContextManager:
+        return TypingContextManager(self.client, self.id)
+
+
 class BaseCommand:
     def __init__(self, checks: Optional[List[Check]]):
         self.checks: List[Check] = checks
@@ -103,4 +124,4 @@ class BaseChannel:
         self.client = client
         self.type = data.get("type")
 
-__all__ = ("Messageable", "BaseCommand", "BaseChannel")
+__all__ = ("Messageable", "BaseCommand", "BaseChannel", "TypingContextManager")
