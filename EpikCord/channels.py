@@ -199,15 +199,14 @@ AnyChannel = Union[
 ]
 
 __all__ = (
-    "AnyChannel",
-    "GuildTextChannel",
-    "VoiceChannel",
-    "CategoryChannel",
-    "GuildNewsChannel",
-    "GuildNewsThread",
-    "Thread",
-    "GuildStageChannel",
     "Overwrite",
+    "GuildChannel",
+    "GuildTextChannel",
+    "GuildNewsChannel",
     "DMChannel",
-
+    "CategoryChannel",
+    "GuildNewsThread",
+    "GuildStageChannel",
+    "VoiceChannel",
+    "AnyChannel"
 )
