@@ -23,7 +23,7 @@ jobs:
           architecture: 'x64'
 
       - name: Install nox
-        run: pip install nox
+        run: pip install .[testing]
 
       - name: Run nox
         run: nox -s lint mypy

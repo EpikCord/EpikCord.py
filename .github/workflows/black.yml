@@ -23,7 +23,7 @@ jobs:
         python-version: '3.8'
 
     - name: Install nox
-      run: pip install nox
+      run: pip install -e .[testing]
 
     - name: run Formatter
       run: |
