@@ -1,10 +1,12 @@
 from __future__ import annotations
-from typing import Optional, List, TYPE_CHECKING
-from .components import ActionRow
+
 from abc import abstractmethod
+from typing import TYPE_CHECKING, List, Optional
+
+from .components import ActionRow
 
 if TYPE_CHECKING:
-    from EpikCord import Message, File, AllowedMention, Check
+    from EpikCord import AllowedMention, Check, File, Message
 
 
 class Messageable:

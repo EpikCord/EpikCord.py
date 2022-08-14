@@ -1,16 +1,16 @@
-from typing import Union, List, Optional
+from typing import List, Optional, Union
 
-from .cache_manager import CacheManager
 from ..channels import (
-    GuildChannel,
-    GuildTextChannel,
-    GuildNewsChannel,
-    VoiceChannel,
-    DMChannel,
     CategoryChannel,
+    DMChannel,
+    GuildChannel,
+    GuildNewsChannel,
     GuildNewsThread,
     GuildStageChannel,
+    GuildTextChannel,
+    VoiceChannel,
 )
+from .cache_manager import CacheManager
 
 AnyChannel = Union[
     GuildChannel,

@@ -1,12 +1,12 @@
 import datetime
-from typing import Optional, List
+from typing import List, Optional
 
-from ..partials import PartialGuild
 from ..application import Application
-from ..type_enums import VisibilityType
-from .http_client import HTTPClient
-from ..user import User
 from ..guild import Integration
+from ..partials import PartialGuild
+from ..type_enums import VisibilityType
+from ..user import User
+from .http_client import HTTPClient
 
 
 class Connection:

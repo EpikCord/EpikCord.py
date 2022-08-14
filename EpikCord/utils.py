@@ -1,18 +1,19 @@
+import asyncio
+import datetime
+import re
 from base64 import b64encode
 from collections import defaultdict
-import re
-import datetime
-import asyncio
 from typing import Callable, TypeVar
+
+from .channels import *
+from .client import CommandHandler
+from .components import *
 from .interactions import (
     ApplicationCommandInteraction,
-    MessageComponentInteraction,
     AutoCompleteInteraction,
+    MessageComponentInteraction,
     ModalSubmitInteraction,
 )
-from .components import *
-from .client import CommandHandler
-from .channels import *
 from .message import Embed
 
 T = TypeVar("T")

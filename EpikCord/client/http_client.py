@@ -1,17 +1,19 @@
 import asyncio
 import contextlib
 import zlib
-from logging import getLogger
-from ..status_code import HTTPCodes
-from ..exceptions import (
-    DiscordServerError5xx,
-    NotFound404,
-    Forbidden403,
-    DiscordAPIError,
-)
-from typing import Union, Dict, Any, Optional
 from importlib.util import find_spec
-from aiohttp import ClientWebSocketResponse, ClientSession
+from logging import getLogger
+from typing import Any, Dict, Optional, Union
+
+from aiohttp import ClientSession, ClientWebSocketResponse
+
+from ..exceptions import (
+    DiscordAPIError,
+    DiscordServerError5xx,
+    Forbidden403,
+    NotFound404,
+)
+from ..status_code import HTTPCodes
 
 logger = getLogger(__name__)
 
