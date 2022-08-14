@@ -1,9 +1,10 @@
 from __future__ import annotations
 from typing import Optional, List, TYPE_CHECKING
 from .components import ActionRow
+from abc import abstractmethod
 
 if TYPE_CHECKING:
-    from EpikCord import Message, File, AllowedMention
+    from EpikCord import Message, File, AllowedMention, Check
 
 
 class Messageable:
@@ -77,3 +78,21 @@ class Messageable:
         )
         data = await response.json()
         return Message(self.client, data)
+
+class BaseCommand:
+    def __init__(self, checks: Optional[List[Check]]):
+        self.checks: List[Check] = checks
+
+    def is_slash_command(self):
+        return self.type == 1
+
+    def is_user_command(self):
+        return self.type == 2
+
+    def is_message_command(self):
+        return self.type == 3
+
+    @property
+    @abstractmethod
+    def type(self):
+        ...

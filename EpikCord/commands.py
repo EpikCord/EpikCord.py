@@ -3,8 +3,7 @@ from .exceptions import FailedCheck
 from .localizations import Localization
 from .options import AnyOption
 from typing import Optional, List, Callable
-from abc import abstractmethod
-
+from .abstract import BaseCommand
 logger = getLogger(__name__)
 
 
@@ -35,25 +34,6 @@ class Check:
             f"{interaction.author.username} ({interaction.author.id}) failed "
             f"the check {self.command_callback.__name__}. "
         )
-
-
-class BaseCommand:
-    def __init__(self, checks: Optional[List[Check]]):
-        self.checks: List[Check] = checks
-
-    def is_slash_command(self):
-        return self.type == 1
-
-    def is_user_command(self):
-        return self.type == 2
-
-    def is_message_command(self):
-        return self.type == 3
-
-    @property
-    @abstractmethod
-    def type(self):
-        ...
 
 
 class ClientUserCommand(BaseCommand):
