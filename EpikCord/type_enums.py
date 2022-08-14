@@ -62,13 +62,13 @@ class AutoModTriggerType(IntEnum):
     KEYWORD_PRESENT = 4
 
 
-class AutoModKeywordPresetTypes(IntEnum):
+class AutoModKeywordPresetType(IntEnum):
     PROFANITY = 1
     SEXUAL_CONTENT = 2
     SLURS = 3
 
 
-class ChannelTypes(IntEnum):
+class ChannelType(IntEnum):
     GUILD_TEXT = 0
     DM = 1
     GUILD_VOICE = 2
