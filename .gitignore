@@ -8,11 +8,14 @@ build
 
 # Python environment
 __pycache__
+venv
 .py[cod]
 dist
+.nox
 
-# MyPy
+# Mypy cache
 .mypy_cache
+.dmypy.json
 
 # Other
 _build
@@ -21,8 +24,3 @@ config.json
 RoboEpikLogs.log
 *.mp3
 *.mp4
-
-
-# Nox venv
-venv
-.nox

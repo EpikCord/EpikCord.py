@@ -77,7 +77,7 @@ class ClientSlashCommand(BaseCommand):
         guild_ids: Optional[List[str]] = None,
         options: Optional[List[AnyOption]] = None,
         name_localization: Optional[Localization] = None,
-        description_localization: Optional[str] = None,
+        description_localization: Optional[Localization] = None,
         checks: Optional[List[Check]] = None,
     ):
         super().__init__(checks or [])

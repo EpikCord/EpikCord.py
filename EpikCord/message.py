@@ -45,19 +45,19 @@ class AllowedMention:
 
 class MessageActivity:
     def __init__(self, data: dict):
-        self.type: int = data.get("type")
+        self.type: int = data["type"]
         self.party_id: Optional[str] = data.get("party_id")
 
 
 class Attachment:
     def __init__(self, data: dict):
-        self.id: str = data.get("id")
-        self.file_name: str = data.get("filename")
+        self.id: str = data["id"]
+        self.file_name: str = data["filename"]
         self.description: Optional[str] = data.get("description")
         self.content_type: Optional[str] = data.get("content_type")
-        self.size: int = data.get("size")
-        self.url: str = data.get("url")
-        self.proxy_url: str = data.get("proxy_url")
+        self.size: int = data["size"]
+        self.url: str = data["url"]
+        self.proxy_url: str = data["proxy_url"]
         self.width: Optional[int] = data.get("width")
         self.height: Optional[int] = data.get("height")
         self.ephemeral: Optional[bool] = data.get("ephemeral")
@@ -96,9 +96,9 @@ class Reaction:
     """
 
     def __init__(self, data: dict):
-        self.count: int = data.get("count")
-        self.me: bool = data.get("me")
-        self.emoji: PartialEmoji = PartialEmoji(data.get("emoji"))
+        self.count: int = data["count"]
+        self.me: bool = data.get["me"]  # type: ignore
+        self.emoji: PartialEmoji = PartialEmoji(data["emoji"])
 
 
 class Embed:
@@ -120,19 +120,19 @@ class Embed:
         author: Optional[dict] = None,
         fields: Optional[List[dict]] = None,
     ):
-        self.type: int = type
+        self.type: Optional[int] = type
         self.title: Optional[str] = title
         self.description: Optional[str] = description
         self.url: Optional[str] = url
         self.video: Optional[dict] = video
-        self.timestamp: Optional[str] = timestamp
+        self.timestamp: Optional[datetime.datetime] = timestamp or None
         self.color: Optional[Colour] = color or colour
-        self.footer: Optional[str] = footer
-        self.image: Optional[str] = image
-        self.thumbnail: Optional[str] = thumbnail
-        self.provider: Optional[str] = provider
-        self.author: Optional[dict] = author
-        self.fields: Optional[List[str]] = fields
+        self.footer: Optional[Dict] = footer
+        self.image: Optional[Dict] = image
+        self.thumbnail: Optional[Dict] = thumbnail
+        self.provider: Optional[Dict] = provider
+        self.author: Optional[Dict] = author
+        self.fields: List[Dict] = fields or []
 
     def add_field(self, *, name: str, value: str, inline: bool = False):
         self.fields.append({"name": name, "value": value, "inline": inline})
@@ -145,7 +145,7 @@ class Embed:
         height: Optional[int] = None,
         width: Optional[int] = None,
     ):
-        config = {"url": url}
+        config: Dict[str, Union[int, str]] = {"url": url}  # type: ignore
         if proxy_url:
             config["proxy_url"] = proxy_url
         if height:
@@ -163,7 +163,7 @@ class Embed:
         height: Optional[int] = None,
         width: Optional[int] = None,
     ):
-        config = {"url": url}
+        config: Dict[str, Union[int, str]] = {"url": url}  # type: ignore
         if proxy_url:
             config["proxy_url"] = proxy_url
         if height:
@@ -181,7 +181,7 @@ class Embed:
         height: Optional[int] = None,
         width: Optional[int] = None,
     ):
-        config = {"url": url}
+        config: Dict[str, Union[int, str]] = {"url": url}  # type: ignore
         if proxy_url:
             config["proxy_url"] = proxy_url
         if height:
@@ -238,10 +238,10 @@ class Embed:
         self.fields = fields
 
     def set_color(self, *, colour: Colour):
-        self.color = colour.value
+        self.color = colour
 
-    def set_timestamp(self, *, timestamp: datetime.datetime):
-        self.timestamp = timestamp.isoformat()
+    def set_timestamp(self, *, timestamp: Optional[datetime.datetime] = None):
+        self.timestamp = timestamp or None
 
     def set_title(self, title: Optional[str] = None):
         self.title = title
@@ -281,13 +281,13 @@ class File:
             self.fp = open(fp, "rb")
             self._original_pos = 0
         self._closer = self.fp.close
-        self.fp.close = lambda: None
+        self.fp.close = lambda: None  # type: ignore
 
         if filename is None:
             if isinstance(fp, str):
                 _, self.filename = os.path.split(fp)
             else:
-                self.filename = getattr(fp, "name", None)
+                self.filename = getattr(fp, "name", None)  # type: ignore
         else:
             self.filename = filename
         if (
@@ -306,7 +306,7 @@ class File:
             self.fp.seek(self._original_pos)
 
     def close(self) -> None:
-        self.fp.close = self._closer
+        self.fp.close = self._closer  # type: ignore
         self._closer()
 
 
@@ -335,15 +335,15 @@ class Message:
         )
 
         self.client = client
-        self.id: str = data.get("id")
-        self.channel_id: str = data.get("channel_id")
+        self.id: int = int(data["id"])
+        self.channel_id: int = int(data["channel_id"])
         self.channel = client.channels.get(self.channel_id)
         self.guild_id: Optional[str] = data.get("guild_id")
         self.webhook_id: Optional[str] = data.get("webhook_id")
         self.author: Optional[Union[WebhookUser, GuildMember, User]] = None
 
         if self.webhook_id:
-            self.author = WebhookUser(data.get("author"))
+            self.author = WebhookUser(data["author"])
 
         if data.get("member"):
             member_data = data["member"]
@@ -351,19 +351,19 @@ class Message:
                 member_data["user"] = data["author"]
             self.author = GuildMember(self, member_data)
         else:
-            self.author = User(self, data.get("author")) if data.get("author") else None
+            self.author = User(self, data["author"]) if data.get("author") else None
 
         self.content: Optional[str] = data.get("content")
         self.timestamp: datetime.datetime = datetime.datetime.fromisoformat(
             data["timestamp"]
         )
         self.edited_timestamp: Optional[str] = (
-            datetime.datetime.fromisoformat(data.get("edited_timestamp"))
+            datetime.datetime.fromisoformat(data["edited_timestamp"])  # type: ignore
             if data.get("edited_timestamp")
             else None
         )
-        self.tts: bool = data.get("tts")
-        self.mention_everyone: bool = data.get("mention_everyone")
+        self.tts: bool = data["tts"]
+        self.mention_everyone: bool = data["mention_everyone"]
         self.mentions: Optional[List[User]] = [
             User(client, user) for user in data.get("mentions", [])
         ]
@@ -378,35 +378,38 @@ class Message:
             Reaction(reaction) for reaction in data.get("reactions", [])
         ]
         self.nonce: Optional[Union[int, str]] = data.get("nonce")
-        self.pinned: bool = data.get("pinned")
-        self.type: int = data.get("type")
+        self.pinned: bool = data["pinned"]
+        self.type: int = data["type"]
         self.activity: Optional[MessageActivity] = (
-            MessageActivity(data.get("activity")) if data.get("activity") else None
+            MessageActivity(data["activity"]) if data.get("activity") else None
         )
         # * Despite there being a PartialApplication,
         # * Discord don't specify what attributes it has
-        self.application: Application = (
-            Application(data.get("application")) if data.get("application") else None
+        self.application: Optional[Application] = (
+            Application(data["application"]) if data.get("application") else None
         )
-        self.flags: int = data.get("flags")
+        self.flags: Optional[int] = data.get("flags")
         self.referenced_message: Optional[Message] = (
-            Message(client, data.get("referenced_message"))
+            Message(client, data["referenced_message"])
             if data.get("referenced_message")
             else None
         )
         from .interactions import MessageInteraction
 
         self.interaction: Optional[MessageInteraction] = (
-            MessageInteraction(client, data.get("interaction"))
+            MessageInteraction(client, data["interaction"])
             if data.get("interaction")
             else None
         )
         self.thread: Optional[Thread] = (
-            Thread(data.get("thread")) if data.get("thread") else None
+            Thread(self.client, data["thread"]) if data.get("thread") else None
         )
-        self.components: Optional[List[Union[TextInput, SelectMenu, Button]]] = [
-            ActionRow.from_dict(component) for component in data.get("components")
-        ]
+        self.components: Optional[List[Union[TextInput, SelectMenu, Button]]] = (
+            [ActionRow.from_dict(component) for component in data["components"]]
+            if data.get("components")
+            else None
+        )
+
         self.stickers: Optional[List[StickerItem]] = [
             StickerItem(sticker) for sticker in data.get("stickers", [])
         ] or None
@@ -501,8 +504,9 @@ class Message:
             },
         )
         # * Cache it
-        self.client.guilds[self.guild_id].append(Thread(await response.json()))
-        return Thread(await response.json())
+        thread = Thread(self.client, await response.json())
+        self.client.guilds[self.guild_id].channels[thread.id] = thread
+        return Thread(self.client, await response.json())
 
     async def crosspost(self):
         response = await self.client.http.post(
