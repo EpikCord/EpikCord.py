@@ -4,6 +4,7 @@ from .team import Team
 
 from ..utils import Utils
 
+
 class Application:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
@@ -24,6 +25,9 @@ class Application:
         self.flags: int = data.get("flags")
 
     def to_dict(self):
-        return Utils.filter_values_dynamic(lambda i: not i.startswith("_") and bool(i), self.__dict__) # A dict of things that aren't private and return a Truthy value.
+        return Utils.filter_values_dynamic(
+            lambda i: not i.startswith("_") and bool(i), self.__dict__
+        )  # A dict of things that aren't private and return a Truthy value.
+
 
 __all__ = ("Application",)
