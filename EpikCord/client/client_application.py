@@ -245,3 +245,5 @@ class ClientApplication(Application):
             f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}/permissions",
             json=payload,
         )
+
+__all__ = ("ClientApplication",)
