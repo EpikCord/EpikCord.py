@@ -1,16 +1,18 @@
 from __future__ import annotations
+
 import asyncio
-from typing import Optional, List, TYPE_CHECKING, Union, Any, Dict
-from logging import getLogger
-from importlib.util import find_spec
-from abc import abstractmethod
 import socket
-from aiohttp import ClientWebSocketResponse
 import struct
+from abc import abstractmethod
+from importlib.util import find_spec
+from logging import getLogger
+from typing import Optional, List, TYPE_CHECKING, Union
+
+from aiohttp import ClientWebSocketResponse
+
 from .close_event_codes import GatewayCECode
 from .exceptions import ClosedWebSocketConnection, InvalidArgumentType, CustomIdIsTooBig
 from .opcodes import VoiceOpcode, GatewayOpcode
-import asyncio
 
 logger = getLogger("EpikCord.channels")
 
