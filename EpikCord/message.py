@@ -97,7 +97,7 @@ class Reaction:
 
     def __init__(self, data: dict):
         self.count: int = data["count"]
-        self.me: bool = data.get["me"] # type: ignore
+        self.me: bool = data.get["me"]  # type: ignore
         self.emoji: PartialEmoji = PartialEmoji(data["emoji"])
 
 
@@ -145,7 +145,7 @@ class Embed:
         height: Optional[int] = None,
         width: Optional[int] = None,
     ):
-        config: Dict[str, Union[int, str]] = {"url": url} # type: ignore
+        config: Dict[str, Union[int, str]] = {"url": url}  # type: ignore
         if proxy_url:
             config["proxy_url"] = proxy_url
         if height:
@@ -163,7 +163,7 @@ class Embed:
         height: Optional[int] = None,
         width: Optional[int] = None,
     ):
-        config: Dict[str, Union[int, str]] = {"url": url} # type: ignore
+        config: Dict[str, Union[int, str]] = {"url": url}  # type: ignore
         if proxy_url:
             config["proxy_url"] = proxy_url
         if height:
@@ -181,7 +181,7 @@ class Embed:
         height: Optional[int] = None,
         width: Optional[int] = None,
     ):
-        config: Dict[str, Union[int, str]] = {"url": url} # type: ignore
+        config: Dict[str, Union[int, str]] = {"url": url}  # type: ignore
         if proxy_url:
             config["proxy_url"] = proxy_url
         if height:
@@ -281,13 +281,13 @@ class File:
             self.fp = open(fp, "rb")
             self._original_pos = 0
         self._closer = self.fp.close
-        self.fp.close = lambda: None # type: ignore
+        self.fp.close = lambda: None  # type: ignore
 
         if filename is None:
             if isinstance(fp, str):
                 _, self.filename = os.path.split(fp)
             else:
-                self.filename = getattr(fp, "name", None) # type: ignore
+                self.filename = getattr(fp, "name", None)  # type: ignore
         else:
             self.filename = filename
         if (
@@ -306,7 +306,7 @@ class File:
             self.fp.seek(self._original_pos)
 
     def close(self) -> None:
-        self.fp.close = self._closer # type: ignore
+        self.fp.close = self._closer  # type: ignore
         self._closer()
 
 
@@ -358,7 +358,7 @@ class Message:
             data["timestamp"]
         )
         self.edited_timestamp: Optional[str] = (
-            datetime.datetime.fromisoformat(data["edited_timestamp"]) # type: ignore
+            datetime.datetime.fromisoformat(data["edited_timestamp"])  # type: ignore
             if data.get("edited_timestamp")
             else None
         )
@@ -385,7 +385,9 @@ class Message:
         )
         # * Despite there being a PartialApplication,
         # * Discord don't specify what attributes it has
-        self.application: Optional[Application] = Application(data["application"]) if data.get("application") else None
+        self.application: Optional[Application] = (
+            Application(data["application"]) if data.get("application") else None
+        )
         self.flags: Optional[int] = data.get("flags")
         self.referenced_message: Optional[Message] = (
             Message(client, data["referenced_message"])
@@ -402,9 +404,11 @@ class Message:
         self.thread: Optional[Thread] = (
             Thread(self.client, data["thread"]) if data.get("thread") else None
         )
-        self.components: Optional[List[Union[TextInput, SelectMenu, Button]]] = [
-            ActionRow.from_dict(component) for component in data["components"]
-        ] if data.get("components") else None
+        self.components: Optional[List[Union[TextInput, SelectMenu, Button]]] = (
+            [ActionRow.from_dict(component) for component in data["components"]]
+            if data.get("components")
+            else None
+        )
 
         self.stickers: Optional[List[StickerItem]] = [
             StickerItem(sticker) for sticker in data.get("stickers", [])
