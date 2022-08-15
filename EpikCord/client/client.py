@@ -1,5 +1,4 @@
 from __future__ import annotations
-import asyncio
 from importlib.util import find_spec, module_from_spec, resolve_name
 from sys import modules
 from .websocket_client import WebsocketClient
@@ -11,7 +10,7 @@ from collections import deque
 from typing import Optional, List, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from EpikCord import Status, Activity, Check, Section
+    from EpikCord import Status, Activity, Section
 
 logger = getLogger(__name__)
 
@@ -90,3 +89,5 @@ class Client(WebsocketClient):
         for possible_section in sections.__dict__.values():
             if issubclass(possible_section, Section):
                 self.load_section(possible_section)
+
+__all__ = ("Client",)
