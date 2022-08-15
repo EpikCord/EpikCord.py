@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Optional, Union, List
 from .localizations import Localization
-from .type_enums import ChannelTypes
+from .type_enums import ChannelType
 from .abstract import BaseSlashCommandOption
 
 
@@ -83,7 +83,7 @@ class ChannelOption(BaseSlashCommandOption):
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 7
-        self.channel_types: List[ChannelTypes] = []
+        self.channel_types: List[ChannelType] = []
 
     def to_dict(self):
         usual_dict: dict = super().to_dict()

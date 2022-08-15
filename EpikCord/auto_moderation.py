@@ -1,6 +1,6 @@
 from typing import List, Optional
 from .type_enums import (
-    AutoModKeywordPresetTypes,
+    AutoModKeywordPresetType,
     AutoModActionType,
     AutoModEventType,
     AutoModTriggerType,
@@ -10,8 +10,8 @@ from .type_enums import (
 class AutoModTriggerMetaData:
     def __init__(self, data: dict):
         self.keyword_filter: List[str] = data.get("keyword_filter")
-        self.presets: List[AutoModKeywordPresetTypes] = [
-            AutoModKeywordPresetTypes(x) for x in data.get("presets")
+        self.presets: List[AutoModKeywordPresetType] = [
+            AutoModKeywordPresetType(x) for x in data.get("presets")
         ]
 
     def to_dict(self):

@@ -89,6 +89,6 @@ __all__ = (
     "AutoModActionType",
     "AutoModEventType",
     "AutoModTriggerType",
-    "AutoModKeywordPresetTypes",
-    "ChannelTypes",
+    "AutoModKeywordPresetType",
+    "ChannelType",
 )

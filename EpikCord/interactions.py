@@ -2,8 +2,9 @@ from __future__ import annotations
 from .abstract import BaseInteraction
 from .components import *
 from .options import *
-from typing import Optional, Union, List
-from .message import Message, Embed, Attachment
+from typing import Optional, Union, List, TYPE_CHECKING
+if TYPE_CHECKING:
+    from .message import Embed, Attachment
 
 
 class Modal:
@@ -28,6 +29,7 @@ class ResolvedDataHandler:
 
 class MessageComponentInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
+        from EpikCord import Message
         super().__init__(client, data)
         self.message: Message = Message(client, data.get("message"))
         self.custom_id: str = self.interaction_data.get("custom_id")

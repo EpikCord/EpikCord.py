@@ -1,5 +1,8 @@
-from typing import List
-from ..message import Embed
+from __future__ import annotations
+from typing import List, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..message import Embed
 
 
 class Paginator:
