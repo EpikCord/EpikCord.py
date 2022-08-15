@@ -1,8 +1,10 @@
 from typing import Optional, Union, List
+import asyncio
 from sys import platform
 from .flags import Intents
 from .utils import Utils
-from .client import *
+from .client import ClientUser, ClientApplication, WebsocketClient, EventHandler, HTTPClient
+from .opcodes import GatewayOpcode
 
 from .presence import Presence
 
