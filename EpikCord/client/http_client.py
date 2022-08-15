@@ -190,6 +190,7 @@ class HTTPClient(ClientSession):
         if res.status >= HTTPCodes.SERVER_ERROR:
             raise DiscordServerError5xx(body)
 
+
         elif res.status == HTTPCodes.NOT_FOUND:
             raise NotFound404(body)
 
