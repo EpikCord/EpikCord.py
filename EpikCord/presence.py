@@ -116,7 +116,9 @@ class Presence:
             The status of the user.
         """
         self.activity: Optional[Activity] = activity
-        self.status: Optional[str] = status.status if isinstance(status, Status) else status
+        self.status: Optional[str] = (
+            status.status if isinstance(status, Status) else status
+        )
 
     def to_dict(self):
         """
