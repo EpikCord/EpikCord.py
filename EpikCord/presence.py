@@ -104,7 +104,7 @@ class Presence:
     def __init__(
         self,
         *,
-        activity: Optional[List[Activity]] = None,
+        activity: Optional[Activity] = None,
         status: Optional[Status] = None,
     ):
         """
@@ -115,7 +115,7 @@ class Presence:
         status : Status
             The status of the user.
         """
-        self.activity: Optional[List[Activity]] = activity
+        self.activity: Optional[Activity] = activity
         self.status: Status = status.status if isinstance(status, Status) else status
 
     def to_dict(self):
