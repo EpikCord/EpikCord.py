@@ -3,7 +3,13 @@ import asyncio
 from sys import platform
 from .flags import Intents
 from .utils import Utils
-from .client import ClientUser, ClientApplication, WebsocketClient, EventHandler, HTTPClient
+from .client import (
+    ClientUser,
+    ClientApplication,
+    WebsocketClient,
+    EventHandler,
+    HTTPClient,
+)
 from .opcodes import GatewayOpcode
 
 from .presence import Presence
@@ -17,7 +23,7 @@ class Shard(WebsocketClient):
         shard_id,
         number_of_shards,
         presence: Optional[Presence] = None,
-        discord_endpoint: Optional[str] = None
+        discord_endpoint: Optional[str] = None,
     ):
         super().__init__(token, intents, presence, discord_endpoint)
         self.shard_id = [shard_id, number_of_shards]
@@ -65,7 +71,7 @@ class ShardManager(EventHandler):
         shards: Optional[int] = None,
         overwrite_commands_on_ready: bool = False,
         discord_endpoint: Optional[str] = None,
-        presence: Optional[Presence] = None
+        presence: Optional[Presence] = None,
     ):
         super().__init__()
         self.token: str = token
@@ -100,7 +106,16 @@ class ShardManager(EventHandler):
                 shards = endpoint_data["shards"]
 
             for shard_id in range(shards):
-                self.shards.append(Shard(self.token, self.intents, shard_id, shards, self.presence, self.discord_endpoint))
+                self.shards.append(
+                    Shard(
+                        self.token,
+                        self.intents,
+                        shard_id,
+                        shards,
+                        self.presence,
+                        self.discord_endpoint,
+                    )
+                )
 
             current_iteration = 0  # The current shard_id we've run
 

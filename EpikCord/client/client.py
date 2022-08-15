@@ -25,7 +25,7 @@ class Client(WebsocketClient):
         activity: Optional[Activity] = None,
         overwrite_commands_on_ready: Optional[bool] = None,
         discord_endpoint: str = "https://discord.com/api/v10",
-        presence: Presence = None
+        presence: Presence = None,
     ):
         super().__init__(token, intents, presence, discord_endpoint=discord_endpoint)
         from EpikCord import Presence, ClientUser, ClientApplication, Utils

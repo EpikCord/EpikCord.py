@@ -25,7 +25,13 @@ logger = getLogger(__name__)
 
 
 class WebsocketClient(EventHandler):
-    def __init__(self, token: str, intents: int, presence: Presence, discord_endpoint: str = "https://discord.com/api/v10",):
+    def __init__(
+        self,
+        token: str,
+        intents: int,
+        presence: Presence,
+        discord_endpoint: str = "https://discord.com/api/v10",
+    ):
         super().__init__()
         from EpikCord import Intents, __version__
 
