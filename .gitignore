@@ -18,3 +18,4 @@ config.json
 RoboEpikLogs.log
 *.mp3
 *.mp4
+.mypy_cache
