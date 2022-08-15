@@ -687,7 +687,7 @@ class BaseInteraction:
 
 
 class BaseSlashCommandOption:
-    def __init__(self, *, name: str, description: str, required: bool = None):
+    def __init__(self, *, name: str, description: str, required: bool = False):
         self.name = name
         self.description = description
         self.required = required
