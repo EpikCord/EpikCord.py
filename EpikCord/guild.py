@@ -569,3 +569,23 @@ class Integration:
         self.application: Optional[Application] = (
             Application(data.get("application")) if data.get("application") else None
         )
+
+
+__all__ = (
+    "Guild",
+    "UnavailableGuild",
+    "Invite",
+    "GuildMember",
+    "GuildPreview",
+    "Role",
+    "RoleTag",
+    "Emoji",
+    "WelcomeScreenChannel",
+    "WelcomeScreen",
+    "GuildWidgetSettings",
+    "GuildWidget",
+    "GuildScheduledEvent",
+    "IntegrationAccount",
+    "Integration",
+    "GuildBan",
+)

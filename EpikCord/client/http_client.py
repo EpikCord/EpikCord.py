@@ -276,3 +276,6 @@ class HTTPClient(ClientSession):
             res = await self.request("PUT", url, *args, **kwargs)
             return res
         return await super().put(url, *args, **kwargs)
+
+
+__all__ = ("HTTPClient",)

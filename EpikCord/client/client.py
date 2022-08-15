@@ -1,5 +1,4 @@
 from __future__ import annotations
-import asyncio
 from importlib.util import find_spec, module_from_spec, resolve_name
 from sys import modules
 from .websocket_client import WebsocketClient
@@ -11,7 +10,7 @@ from collections import deque
 from typing import Optional, List, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from EpikCord import Status, Activity, Check, Section
+    from EpikCord import Status, Activity, Section, Presence
 
 logger = getLogger(__name__)
 
@@ -24,28 +23,18 @@ class Client(WebsocketClient):
         *,
         status: Optional[Status] = None,
         activity: Optional[Activity] = None,
-        overwrite_commands_on_ready: Optional[bool] = False,
+        overwrite_commands_on_ready: Optional[bool] = None,
         discord_endpoint: str = "https://discord.com/api/v10",
+        presence: Presence = None,
     ):
-        super().__init__(token, intents)
+        super().__init__(token, intents, presence, discord_endpoint=discord_endpoint)
         from EpikCord import Presence, ClientUser, ClientApplication, Utils
 
-        self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready
+        self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready or False
         self.guilds: GuildManager = GuildManager(self)
         self.channels: ChannelManager = ChannelManager(self)
         self.presence: Presence = Presence(status=status, activity=activity)
         self._components = {}
-        from .. import __version__
-
-        self.http: HTTPClient = HTTPClient(
-            headers={
-                "Authorization": f"Bot {token}",
-                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
-                "Content-Type": "application/json",
-            },
-            discord_endpoint=discord_endpoint,
-        )
-
         self.utils = Utils(self)
         self.latencies = deque(maxlen=5)
         self.user: ClientUser = None
@@ -90,3 +79,6 @@ class Client(WebsocketClient):
         for possible_section in sections.__dict__.values():
             if issubclass(possible_section, Section):
                 self.load_section(possible_section)
+
+
+__all__ = ("Client",)

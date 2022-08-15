@@ -88,3 +88,6 @@ class CommandHandler:
             return results
 
         return register_slash_command
+
+
+__all__ = ("CommandHandler",)

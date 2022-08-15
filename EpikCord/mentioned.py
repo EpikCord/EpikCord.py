@@ -18,3 +18,6 @@ class MentionedChannel:
         self.guild_id: str = data.get("guild_id")
         self.type: int = data.get("type")
         self.name: str = data.get("name")
+
+
+__all__ = ("MentionedUser", "MentionedChannel")

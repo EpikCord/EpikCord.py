@@ -24,3 +24,6 @@ class User(Messageable):
         self.flags: int = data.get("flags")
         self.premium_type: int = data.get("premium_type")
         self.public_flags: int = data.get("public_flags")
+
+
+__all__ = ("User",)

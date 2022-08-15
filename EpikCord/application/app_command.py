@@ -51,20 +51,6 @@ class GuildApplicationCommandPermission:
     def __init__(self, data: dict):
         self.id: str = data.get("id")
         self.application_id: str = data.get("application_id")
-        self.guild_id: int = data.get("guild_id")
-        self.permissions: List[ApplicationCommandPermission] = [
-            ApplicationCommandPermission(permission)
-            for permission in data.get("permissions")
-        ]
-
-    def to_dict(self):
-        return {"id": self.id, "type": self.type, "permission": self.permission}
-
-
-class GuildApplicationCommandPermission:
-    def __init__(self, data: dict):
-        self.id: str = data.get("id")
-        self.application_id: str = data.get("application_id")
         self.guild_id: str = data.get("guild_id")
         self.permissions: ApplicationCommandPermission = ApplicationCommandPermission(
             data.get("permissions")
@@ -77,3 +63,10 @@ class GuildApplicationCommandPermission:
             "guild_id": self.guild_id,
             "permissions": self.permissions.to_dict(),
         }
+
+
+__all__ = (
+    "ApplicationCommand",
+    "GuildApplicationCommandPermission",
+    "ApplicationCommandPermission",
+)

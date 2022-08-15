@@ -101,3 +101,6 @@ class UserClient:
         guilds = await data.json()
 
         return [PartialGuild(d) for d in guilds]
+
+
+__all__ = ("UserClient",)

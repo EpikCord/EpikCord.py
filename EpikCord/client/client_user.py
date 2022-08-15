@@ -39,3 +39,6 @@ class ClientUser:
         response = await self.client.http.patch("users/@me", json=payload)
         data = await response.json()
         self.__init__(self.client, data)
+
+
+__all__ = ("ClientUser",)

@@ -28,7 +28,7 @@ class Status:
         if status not in {"online", "dnd", "idle", "invisible", "offline"}:
             raise InvalidStatus("That is an invalid status.")
 
-        self.status = status if status != "offline" else "invisible"
+        self.status: str = status if status != "offline" else "invisible"
 
 
 class Activity:
@@ -104,7 +104,7 @@ class Presence:
     def __init__(
         self,
         *,
-        activity: Optional[List[Activity]] = None,
+        activity: Optional[Activity] = None,
         status: Optional[Status] = None,
     ):
         """
@@ -115,8 +115,10 @@ class Presence:
         status : Status
             The status of the user.
         """
-        self.activity: Optional[List[Activity]] = activity
-        self.status: Status = status.status if isinstance(status, Status) else status
+        self.activity: Optional[Activity] = activity
+        self.status: Optional[str] = (
+            status.status if isinstance(status, Status) else status
+        )
 
     def to_dict(self):
         """
@@ -136,3 +138,6 @@ class Presence:
             payload["activity"] = [self.activity.to_dict()]
 
         return payload
+
+
+__all__ = ("Status", "Activity", "Presence")

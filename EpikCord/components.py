@@ -1,9 +1,9 @@
 from enum import IntEnum
 from typing import Union, Optional, List
 
+from .abstract import BaseComponent
 from .exceptions import (
     InvalidArgumentType,
-    CustomIdIsTooBig,
     InvalidComponentStyle,
     TooManySelectMenuOptions,
     TooManyComponents,
@@ -44,20 +44,6 @@ class SelectMenuOption:
             settings["default"] = self.default
 
         return settings
-
-
-class BaseComponent:
-    def __init__(self, *, custom_id: str):
-        self.custom_id: str = custom_id
-
-    def set_custom_id(self, custom_id: str):
-        if not isinstance(custom_id, str):
-            raise InvalidArgumentType("Custom Id must be a string.")
-
-        elif len(custom_id) > 100:
-            raise CustomIdIsTooBig("Custom Id must be 100 characters or less.")
-
-        self.custom_id = custom_id
 
 
 class SelectMenu(BaseComponent):
@@ -361,3 +347,13 @@ class ActionRow:
             ...  # Just let the validator run
 
         self.components.append(component.to_dict())
+
+
+__all__ = (
+    "ActionRow",
+    "Button",
+    "ButtonStyle",
+    "SelectMenu",
+    "TextInput",
+    "SelectMenuOption",
+)
