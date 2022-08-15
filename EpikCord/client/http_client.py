@@ -81,9 +81,6 @@ class DiscordGatewayWebsocket(ClientWebSocketResponse):
             data=message, type=ws_message.type, extra=ws_message.extra
         )
 
-    async def __anext__(self) -> dict:
-        return await super().__anext__()
-
 
 class HTTPClient(ClientSession):
     def __init__(self, *args, **kwargs):
