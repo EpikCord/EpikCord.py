@@ -246,4 +246,5 @@ class ClientApplication(Application):
             json=payload,
         )
 
+
 __all__ = ("ClientApplication",)

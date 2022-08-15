@@ -40,4 +40,5 @@ class ClientUser:
         data = await response.json()
         self.__init__(self.client, data)
 
+
 __all__ = ("ClientUser",)

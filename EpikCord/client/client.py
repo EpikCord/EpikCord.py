@@ -90,4 +90,5 @@ class Client(WebsocketClient):
             if issubclass(possible_section, Section):
                 self.load_section(possible_section)
 
+
 __all__ = ("Client",)
