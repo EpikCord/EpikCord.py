@@ -23,12 +23,9 @@ jobs:
       with:
         python-version: '3.8'
 
-    - name: Install nox
-      run: pip install -e .[testing]
-
     - name: run Formatter
       run: |
-        nox -s format
+        make pretty
     - name: Push changes
       run: |
         git commit -m ":art: Format code automatically" -a || echo "No changes to commit"
