@@ -26,4 +26,4 @@ class User(Messageable):
         self.public_flags: int = data.get("public_flags")
 
 
-__all__ = "User"
+__all__ = ("User",)
