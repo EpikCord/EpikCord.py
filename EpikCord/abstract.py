@@ -1,6 +1,6 @@
 from __future__ import annotations
 import asyncio
-from typing import Optional, List, TYPE_CHECKING, Union
+from typing import Optional, List, TYPE_CHECKING, Union, Any, Dict
 from logging import getLogger
 from importlib.util import find_spec
 from abc import abstractmethod
@@ -685,10 +685,10 @@ class BaseInteraction:
 
 
 class BaseSlashCommandOption:
-    def __init__(self, *, name: str, description: str, required: Optional[bool] = None):
-        self.name: str = name
-        self.description: str = description
-        self.required: bool = required or False
+    def __init__(self, *, name: str, description: str, required: bool = None):
+        self.name = name
+        self.description = description
+        self.required = required
         self.type: Optional[int] = None
         # ! Needs to be set by the subclass
         # ! People shouldn't use this class, this is just a base class for other
