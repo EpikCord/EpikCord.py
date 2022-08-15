@@ -23,4 +23,4 @@ class Application:
         self.flags: int = data.get("flags")
 
 
-__all__ = "Application"
+__all__ = ("Application",)
