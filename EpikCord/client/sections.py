@@ -23,3 +23,5 @@ class Section:
                 cls._commands[attr_value.name] = attr_value
 
         super().__init_subclass__(**kwargs)
+
+__all__ = ("Section",)

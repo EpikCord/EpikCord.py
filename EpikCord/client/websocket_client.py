@@ -249,3 +249,5 @@ class WebsocketClient(EventHandler):
         finally:
             future.remove_done_callback(stop_loop_on_completion)
             self.utils.cleanup_loop(loop)
+
+__all__ = ("WebsocketClient",)
