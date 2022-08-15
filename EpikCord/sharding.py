@@ -17,12 +17,13 @@ class Shard(WebsocketClient):
         shard_id,
         number_of_shards,
         presence: Optional[Presence] = None,
+        discord_endpoint: Optional[str] = None
     ):
-        super().__init__(token, intents, presence)
+        super().__init__(token, intents, presence, discord_endpoint)
         self.shard_id = [shard_id, number_of_shards]
 
     async def ready(self, data: dict):
-        self.user: ClientUser = ClientUser(self, data.get("user"))
+        self.user: ClientUser = ClientUser(self, data["user"])
         self.session_id: str = data["session_id"]
         application_response = await self.http.get("/oauth2/applications/@me")
         application_data = await application_response.json()
@@ -63,6 +64,8 @@ class ShardManager(EventHandler):
         *,
         shards: Optional[int] = None,
         overwrite_commands_on_ready: bool = False,
+        discord_endpoint: Optional[str] = None,
+        presence: Optional[Presence] = None
     ):
         super().__init__()
         self.token: str = token
@@ -80,6 +83,9 @@ class ShardManager(EventHandler):
         )
         self.desired_shards: Optional[int] = shards
         self.shards: List[Shard] = []
+        self.presence: Presence = presence
+        self.discord_endpoint: Optional[str] = discord_endpoint
+        super().__init__()
 
     def run(self):
         async def wrapper():
@@ -94,7 +100,7 @@ class ShardManager(EventHandler):
                 shards = endpoint_data["shards"]
 
             for shard_id in range(shards):
-                self.shards.append(Shard(self.token, self.intents, shard_id, shards))
+                self.shards.append(Shard(self.token, self.intents, shard_id, shards, self.presence, self.discord_endpoint))
 
             current_iteration = 0  # The current shard_id we've run
 

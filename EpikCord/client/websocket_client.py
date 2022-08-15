@@ -16,6 +16,7 @@ from ..opcodes import GatewayOpcode
 from typing import Optional, List, TYPE_CHECKING
 from logging import getLogger
 from .event_handler import EventHandler
+from .http_client import HTTPClient
 
 if TYPE_CHECKING:
     from EpikCord import Presence
@@ -24,9 +25,9 @@ logger = getLogger(__name__)
 
 
 class WebsocketClient(EventHandler):
-    def __init__(self, token: str, intents: int):
+    def __init__(self, token: str, intents: int, presence: Presence, discord_endpoint: str = "https://discord.com/api/v10",):
         super().__init__()
-        from EpikCord import Intents
+        from EpikCord import Intents, __version__
 
         self.token = token
         if not token:
@@ -38,10 +39,18 @@ class WebsocketClient(EventHandler):
             self.intents = intents
 
         self._closed = True
+        self.presence = presence
         self.heartbeats = []
-
+        self.http: HTTPClient = HTTPClient(
+            headers={
+                "Authorization": f"Bot {token}",
+                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
+                "Content-Type": "application/json",
+            },
+            discord_endpoint=discord_endpoint,
+        )
         self.interval = None  # How frequently to heartbeat
-        self.session_id = None
+        self.session_id: Optional[str] = None
         self.sequence = None
 
     async def change_presence(self, *, presence: Optional[Presence]):

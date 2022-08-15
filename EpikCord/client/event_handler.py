@@ -44,7 +44,7 @@ class EventHandler(CommandHandler):
             If not specified, it'll wait forever.
         """
         timeout = timeout or 0
-        future = asyncio.Future()
+        future: asyncio.Future = asyncio.Future()
         if not check:
 
             def check(*_, **__):
@@ -88,7 +88,7 @@ class EventHandler(CommandHandler):
         ...
 
     async def guild_delete(self, data: dict):
-        return self.guilds.get(data["id"])
+        return self.guilds.get(data["id"]) # type: ignore 
 
     async def handle_events(self):
         async for event in self.ws:
