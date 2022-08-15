@@ -22,7 +22,7 @@ if _ORJSON:
     import orjson as json
 
 else:
-    import json
+    import json # type: ignore
 
 
 class _FakeTask:
@@ -32,7 +32,7 @@ class _FakeTask:
 
 class UnknownBucket:
     def __init__(self):
-        self.lock = asyncio.Lock()
+        self.event = asyncio.Event()
         self.close_task: _FakeTask = _FakeTask()
 
 
@@ -125,15 +125,11 @@ class HTTPClient(ClientSession):
 
         url = f"{self.base_uri}/{url}"
 
-        await self.global_ratelimit.wait()
-
         bucket_hash = f"{guild_id}:{channel_id}:{url}"
-        bucket = self.buckets.get(bucket_hash)
+        bucket: Union[Bucket, UnknownBucket] = self.buckets.get(bucket_hash, UnknownBucket())
 
-        if not bucket:
-            bucket = UnknownBucket()
-
-        await bucket.lock.acquire()
+        await bucket.event.wait()
+        await self.global_ratelimit.wait()
 
         res = await super().request(method, url, *args, **kwargs)
 
@@ -142,22 +138,28 @@ class HTTPClient(ClientSession):
         if isinstance(bucket, UnknownBucket) and res.headers.get("X-RateLimit-Bucket"):
             if guild_id or channel_id:
                 self.buckets[bucket_hash] = Bucket(
-                    discord_hash=res.headers.get("X-RateLimit-Bucket")
+                    discord_hash=res.headers["X-RateLimit-Bucket"]
                 )
 
             else:
-                b = Bucket(discord_hash=res.headers.get("X-RateLimit-Bucket"))
+                b = Bucket(discord_hash=res.headers["X-RateLimit-Bucket"])
                 if b in self.buckets.values():
                     self.buckets[bucket_hash] = {v: k for k, v in self.buckets.items()}[
                         b
-                    ]
+                    ] # type: ignore
                 else:
                     self.buckets[bucket_hash] = b
-        body = {}
+        body: Union[Dict, str] = {}
         if res.headers["Content-Type"] == "application/json":
             body = await res.json()
         else:
             body = await res.text()
+
+        if res.status in range(200, 299):
+            bucket.event.set()
+            self.global_ratelimit.set()
+            return res
+
         if (
             int(res.headers.get("X-RateLimit-Remaining", 1)) == 0
             and res.status != HTTPCodes.TOO_MANY_REQUESTS
@@ -168,22 +170,20 @@ class HTTPClient(ClientSession):
             )
 
             await asyncio.sleep(float(res.headers["X-RateLimit-Reset-After"]))
-            bucket.lock.release()
         if res.status == HTTPCodes.TOO_MANY_REQUESTS:
-            time_to_sleep = (
-                body.get("retry_after")
-                if body.get("retry_after") > res.headers["X-RateLimit-Reset-After"]
+            time_to_sleep: Union[float, int] = (
+                body["retry_after"] # type: ignore
+                if body["retry_after"] > res.headers["X-RateLimit-Reset-After"] # type: ignore
                 else res.headers["X-RateLimit-Reset-After"]
             )
 
             logger.critical(f"Rate limited. Reset in {time_to_sleep} seconds")
             if res.headers["X-RateLimit-Scope"] == "global":
-                await self.global_ratelimit.clear()
+                await self.global_ratelimit.clear() # type: ignore
 
             await asyncio.sleep(time_to_sleep)
 
-            await self.global_ratelimit.set()
-            bucket.lock.release()
+            await self.global_ratelimit.set() # type: ignore
 
             return await self.request(method, url, *args, **kwargs, attempt=attempt + 1)
 
@@ -199,9 +199,9 @@ class HTTPClient(ClientSession):
         elif not 300 > res.status >= 200:
             raise DiscordAPIError(body)
 
-        if bucket.lock.locked():
+        if not bucket.event.is_set():
             try:
-                bucket.lock.release()
+                bucket.event.set()
             except Exception as e:
                 logger.exception(e)
 
@@ -213,7 +213,10 @@ class HTTPClient(ClientSession):
 
         bucket.close_task.cancel()
 
-        bucket.close_task = asyncio.get_event_loop().create_task(dispose())
+        bucket.close_task = asyncio.get_event_loop().create_task(dispose()) # type: ignore
+
+        bucket.event.set()
+        self.global_ratelimit.set()
 
         return res
 
@@ -240,7 +243,7 @@ class HTTPClient(ClientSession):
         finally:
             logger.debug("".join(message))
 
-    async def get(
+    async def get( # type: ignore
         self,
         url,
         *args,
@@ -251,24 +254,24 @@ class HTTPClient(ClientSession):
             return await self.request("GET", url, *args, **kwargs)
         return await super().get(url, *args, **kwargs)
 
-    async def post(self, url, *args, to_discord: bool = True, **kwargs):
+    async def post(self, url, *args, to_discord: bool = True, **kwargs): # type: ignore
         if to_discord:
             return await self.request("POST", url, *args, **kwargs)
         return await super().post(url, *args, **kwargs)
 
-    async def patch(self, url, *args, to_discord: bool = True, **kwargs):
+    async def patch(self, url, *args, to_discord: bool = True, **kwargs): # type: ignore
         if to_discord:
             res = await self.request("PATCH", url, *args, **kwargs)
             return res
         return await super().patch(url, *args, **kwargs)
 
-    async def delete(self, url, *args, to_discord: bool = True, **kwargs):
+    async def delete(self, url, *args, to_discord: bool = True, **kwargs): # type: ignore
         if to_discord:
             res = await self.request("DELETE", url, *args, **kwargs)
             return res
         return await super().delete(url, **kwargs)
 
-    async def put(self, url, *args, to_discord: bool = True, **kwargs):
+    async def put(self, url, *args, to_discord: bool = True, **kwargs): # type: ignore
         if to_discord:
             res = await self.request("PUT", url, *args, **kwargs)
             return res
