@@ -8,6 +8,7 @@ build
 
 # Python environment
 __pycache__
+venv
 .py[cod]
 dist
 
@@ -18,5 +19,7 @@ config.json
 RoboEpikLogs.log
 *.mp3
 *.mp4
+
+# Mypy cache
 .mypy_cache
 .dmypy.json
