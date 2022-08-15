@@ -99,7 +99,7 @@ class HTTPClient(ClientSession):
         self.global_ratelimit.set()
         self.buckets: Dict[str, Bucket] = {}
 
-    async def request(
+    async def request( # type: ignore
         self,
         method,
         url,
