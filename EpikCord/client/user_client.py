@@ -102,4 +102,5 @@ class UserClient:
 
         return [PartialGuild(d) for d in guilds]
 
+
 __all__ = ("UserClient",)

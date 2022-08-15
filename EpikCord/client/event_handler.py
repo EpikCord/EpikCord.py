@@ -417,4 +417,5 @@ class EventHandler(CommandHandler):
     async def command_error(self, interaction, error: Exception):
         logger.exception(error)
 
+
 __all__ = ("Event", "EventHandler")

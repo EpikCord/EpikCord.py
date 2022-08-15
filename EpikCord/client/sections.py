@@ -24,4 +24,5 @@ class Section:
 
         super().__init_subclass__(**kwargs)
 
+
 __all__ = ("Section",)
