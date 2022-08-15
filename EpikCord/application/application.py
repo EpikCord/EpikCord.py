@@ -2,6 +2,7 @@ from typing import Optional
 from ..partials import PartialUser
 from .team import Team
 
+from ..utils import Utils
 
 class Application:
     def __init__(self, data: dict):
@@ -22,5 +23,7 @@ class Application:
         self.cover_image: Optional[str] = data.get("cover_image")
         self.flags: int = data.get("flags")
 
+    def to_dict(self):
+        return Utils.filter_values_dynamic(lambda i: not i.startswith("_") and bool(i), self.__dict__) # A dict of things that aren't private and return a Truthy value.
 
 __all__ = ("Application",)
