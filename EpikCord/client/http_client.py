@@ -22,7 +22,7 @@ if _ORJSON:
     import orjson as json
 
 else:
-    import json # type: ignore
+    import json  # type: ignore
 
 
 class _FakeTask:
@@ -126,7 +126,9 @@ class HTTPClient(ClientSession):
         url = f"{self.base_uri}/{url}"
 
         bucket_hash = f"{guild_id}:{channel_id}:{url}"
-        bucket: Union[Bucket, UnknownBucket] = self.buckets.get(bucket_hash, UnknownBucket())
+        bucket: Union[Bucket, UnknownBucket] = self.buckets.get(
+            bucket_hash, UnknownBucket()
+        )
 
         await bucket.event.wait()
         await self.global_ratelimit.wait()
@@ -146,7 +148,7 @@ class HTTPClient(ClientSession):
                 if b in self.buckets.values():
                     self.buckets[bucket_hash] = {v: k for k, v in self.buckets.items()}[
                         b
-                    ] # type: ignore
+                    ]  # type: ignore
                 else:
                     self.buckets[bucket_hash] = b
         body: Union[Dict, str] = {}
@@ -172,24 +174,23 @@ class HTTPClient(ClientSession):
             await asyncio.sleep(float(res.headers["X-RateLimit-Reset-After"]))
         if res.status == HTTPCodes.TOO_MANY_REQUESTS:
             time_to_sleep: Union[float, int] = (
-                body["retry_after"] # type: ignore
-                if body["retry_after"] > res.headers["X-RateLimit-Reset-After"] # type: ignore
+                body["retry_after"]  # type: ignore
+                if body["retry_after"] > res.headers["X-RateLimit-Reset-After"]  # type: ignore
                 else res.headers["X-RateLimit-Reset-After"]
             )
 
             logger.critical(f"Rate limited. Reset in {time_to_sleep} seconds")
             if res.headers["X-RateLimit-Scope"] == "global":
-                await self.global_ratelimit.clear() # type: ignore
+                await self.global_ratelimit.clear()  # type: ignore
 
             await asyncio.sleep(time_to_sleep)
 
-            await self.global_ratelimit.set() # type: ignore
+            await self.global_ratelimit.set()  # type: ignore
 
             return await self.request(method, url, *args, **kwargs, attempt=attempt + 1)
 
         if res.status >= HTTPCodes.SERVER_ERROR:
             raise DiscordServerError5xx(body)
-
 
         elif res.status == HTTPCodes.NOT_FOUND:
             raise NotFound404(body)
@@ -214,7 +215,7 @@ class HTTPClient(ClientSession):
 
         bucket.close_task.cancel()
 
-        bucket.close_task = asyncio.get_event_loop().create_task(dispose()) # type: ignore
+        bucket.close_task = asyncio.get_event_loop().create_task(dispose())  # type: ignore
 
         bucket.event.set()
         self.global_ratelimit.set()
@@ -244,7 +245,7 @@ class HTTPClient(ClientSession):
         finally:
             logger.debug("".join(message))
 
-    async def get( # type: ignore
+    async def get(  # type: ignore
         self,
         url,
         *args,
@@ -255,24 +256,24 @@ class HTTPClient(ClientSession):
             return await self.request("GET", url, *args, **kwargs)
         return await super().get(url, *args, **kwargs)
 
-    async def post(self, url, *args, to_discord: bool = True, **kwargs): # type: ignore
+    async def post(self, url, *args, to_discord: bool = True, **kwargs):  # type: ignore
         if to_discord:
             return await self.request("POST", url, *args, **kwargs)
         return await super().post(url, *args, **kwargs)
 
-    async def patch(self, url, *args, to_discord: bool = True, **kwargs): # type: ignore
+    async def patch(self, url, *args, to_discord: bool = True, **kwargs):  # type: ignore
         if to_discord:
             res = await self.request("PATCH", url, *args, **kwargs)
             return res
         return await super().patch(url, *args, **kwargs)
 
-    async def delete(self, url, *args, to_discord: bool = True, **kwargs): # type: ignore
+    async def delete(self, url, *args, to_discord: bool = True, **kwargs):  # type: ignore
         if to_discord:
             res = await self.request("DELETE", url, *args, **kwargs)
             return res
         return await super().delete(url, **kwargs)
 
-    async def put(self, url, *args, to_discord: bool = True, **kwargs): # type: ignore
+    async def put(self, url, *args, to_discord: bool = True, **kwargs):  # type: ignore
         if to_discord:
             res = await self.request("PUT", url, *args, **kwargs)
             return res
