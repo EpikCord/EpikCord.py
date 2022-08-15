@@ -28,7 +28,7 @@ class Status:
         if status not in {"online", "dnd", "idle", "invisible", "offline"}:
             raise InvalidStatus("That is an invalid status.")
 
-        self.status = status if status != "offline" else "invisible"
+        self.status: str = status if status != "offline" else "invisible"
 
 
 class Activity:
@@ -116,7 +116,7 @@ class Presence:
             The status of the user.
         """
         self.activity: Optional[Activity] = activity
-        self.status: Status = status.status if isinstance(status, Status) else status
+        self.status: Optional[str] = status.status if isinstance(status, Status) else status
 
     def to_dict(self):
         """
