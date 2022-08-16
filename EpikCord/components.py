@@ -211,7 +211,7 @@ class Button(BaseComponent):
             return self
 
         elif isinstance(style, ButtonStyle):
-            style = style.value # type: ignore
+            style = style.value  # type: ignore
             return self
 
         elif style in [1, 2, 3, 4, 5]:
