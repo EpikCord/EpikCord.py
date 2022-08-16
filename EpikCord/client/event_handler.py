@@ -368,12 +368,12 @@ class EventHandler(CommandHandler):
 
         self.user: ClientUser = ClientUser(self, data["user"])
         self.session_id: Optional[str] = data["session_id"]
-        application_response = await self.http.get("/oauth2/applications/@me") # type: ignore
+        application_response = await self.http.get("/oauth2/applications/@me")  # type: ignore
         application_data = await application_response.json()
 
         self.application: ClientApplication = ClientApplication(self, application_data)
 
-        if not self.overwrite_commands_on_ready: # type: ignore
+        if not self.overwrite_commands_on_ready:  # type: ignore
             return None
 
         command_sorter = defaultdict(list)
