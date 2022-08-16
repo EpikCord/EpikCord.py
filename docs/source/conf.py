@@ -12,10 +12,10 @@
 #
 import os
 import sys
+from importlib import import_module
 
-sys.path.insert(0, os.path.abspath("../../EpikCord"))
-sys.path.insert(0, os.path.abspath("../../EpikCord/managers"))
-
+for dir in os.listdir("../../EpikCord"):
+    sys.path.insert(0, os.path.abspath(os.path.join("..", "..", "EpikCord", dir)))
 
 # -- Project information -----------------------------------------------------
 
@@ -25,7 +25,7 @@ author = "EpikCord"
 
 # The full version, including alpha/beta/rc tags
 
-release = "0.5.4"
+release = import_module("EpikCord").__version__
 
 
 # -- General configuration ---------------------------------------------------
