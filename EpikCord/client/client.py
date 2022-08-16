@@ -84,13 +84,12 @@ class Client(WebsocketClient):
     async def fetch_sticker(self, sticker_id: str) -> Sticker:
         response = await self.http.get(f"/stickers/{sticker_id}")
         json = await response.json()
-        return Sticker(self, json) # TODO: Possibly cache this?
+        return Sticker(self, json)  # TODO: Possibly cache this?
 
     async def list_nitro_sticker_packs(self) -> List[StickerPack]:
         response = await self.http.get("/sticker-packs")
         json = await response.json()
         return [StickerPack(self, pack) for pack in json["sticker_packs"]]
 
-    
 
 __all__ = ("Client",)
