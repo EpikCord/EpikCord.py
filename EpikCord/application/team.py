@@ -5,17 +5,17 @@ from typing import List
 class TeamMember:
     def __init__(self, data: dict):
         self.data = data
-        self.membership_state: int = data.get("membership_state")
-        self.team_id: str = data.get("team_id")
-        self.user: PartialUser = PartialUser(data.get("user"))
+        self.membership_state: int = data["membership_state"]
+        self.team_id: str = data["team_id"]
+        self.user: PartialUser = PartialUser(data["user"])
 
 
 class Team:
     def __init__(self, data: dict):
         self.data = data
-        self.icon: str = data.get("icon")
-        self.id: str = data.get("id")
-        self.members: List[TeamMember] = data.get("members")
+        self.icon: str = data["icon"]
+        self.id: str = data["id"]
+        self.members: List[TeamMember] = [TeamMember(m) for m in data.get("members", [])]
 
 
 __all__ = ("Team", "TeamMember")
