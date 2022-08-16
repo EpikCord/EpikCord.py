@@ -50,14 +50,14 @@ class SelectMenu(BaseComponent):
     def __init__(
         self,
         *,
-        min_values: Optional[int] = 1,
-        max_values: Optional[int] = 1,
-        disabled: Optional[bool] = False,
+        min_values: int = 1,
+        max_values: int = 1,
+        disabled: bool = False,
         custom_id: str
     ):
         super().__init__(custom_id=custom_id)
-        self.options: List[Union[SelectMenuOption, dict]] = []
-        self.type: str = 3
+        self.options: List[SelectMenuOption] = []
+        self.type: int = 3
         self.min_values = min_values
         self.max_values = max_values
         self.disabled: bool = disabled
@@ -65,7 +65,7 @@ class SelectMenu(BaseComponent):
     def to_dict(self):
         return {
             "type": self.type,
-            "options": self.options,
+            "options": [o.to_dict() for o in self.options],
             "min_values": self.min_values,
             "max_values": self.max_values,
             "disabled": self.disabled,
@@ -87,21 +87,21 @@ class SelectMenu(BaseComponent):
         if not isinstance(placeholder, str):
             raise InvalidArgumentType("Placeholder must be a string.")
 
-        self.settings["placeholder"] = placeholder
+        self.placeholder = placeholder
         return self
 
     def set_min_values(self, min: int):
         if not isinstance(min, int):
             raise InvalidArgumentType("Min must be an integer.")
 
-        self.options["min_values"] = min
+        self.min_values = min
         return self
 
     def set_max_values(self, max: int):
         if not isinstance(max, int):
             raise InvalidArgumentType("Max must be an integer.")
 
-        self.options["max_values"] = max
+        self.max_values = max
         return self
 
     def set_disabled(self, disabled: bool):
@@ -115,9 +115,9 @@ class TextInput(BaseComponent):
         custom_id: str,
         style: Union[int, str] = 1,
         label: str,
-        min_length: Optional[int] = 1,
-        max_length: Optional[int] = 4000,
-        required: Optional[bool] = True,
+        min_length: int = 1,
+        max_length: int = 4000,
+        required: bool = True,
         value: Optional[str] = None,
         placeholder: Optional[str] = None
     ):
@@ -211,7 +211,7 @@ class Button(BaseComponent):
             return self
 
         elif isinstance(style, ButtonStyle):
-            style = style.value
+            style = style.value # type: ignore
             return self
 
         elif style in [1, 2, 3, 4, 5]:
