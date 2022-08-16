@@ -15,7 +15,9 @@ class Team:
         self.data = data
         self.icon: str = data["icon"]
         self.id: str = data["id"]
-        self.members: List[TeamMember] = [TeamMember(m) for m in data.get("members", [])]
+        self.members: List[TeamMember] = [
+            TeamMember(m) for m in data.get("members", [])
+        ]
 
 
 __all__ = ("Team", "TeamMember")
