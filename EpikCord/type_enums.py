@@ -81,6 +81,14 @@ class ChannelType(IntEnum):
     GUILD_DIRECTORY = 14
     GUILD_FORUM = 15
 
+class StickerType(IntEnum):
+    STANDARD = 1
+    GUILD = 2
+
+class StickerFormatType(IntEnum):
+    PNG = 1
+    APNG = 2
+    LOTTIE = 3
 
 __all__ = (
     "VisibilityType",
@@ -88,6 +96,8 @@ __all__ = (
     "Locale",
     "AutoModActionType",
     "AutoModEventType",
+    "StickerFormatType",
+    "StickerType",
     "AutoModTriggerType",
     "AutoModKeywordPresetType",
     "ChannelType",
