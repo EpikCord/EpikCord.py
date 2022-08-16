@@ -5,6 +5,7 @@ from .websocket_client import WebsocketClient
 from logging import getLogger
 from importlib import import_module
 from ..managers import ChannelManager, GuildManager
+from ..sticker import Sticker, StickerPack
 from collections import deque
 from typing import Optional, List, Any, TYPE_CHECKING, Union
 from ..flags import Intents
@@ -80,5 +81,16 @@ class Client(WebsocketClient):
             if issubclass(possible_section, Section):
                 self.load_section(possible_section)
 
+    async def fetch_sticker(self, sticker_id: str) -> Sticker:
+        response = await self.http.get(f"/stickers/{sticker_id}")
+        json = await response.json()
+        return Sticker(self, json) # TODO: Possibly cache this?
+
+    async def list_nitro_sticker_packs(self) -> List[StickerPack]:
+        response = await self.http.get("/sticker-packs")
+        json = await response.json()
+        return [StickerPack(self, pack) for pack in json["sticker_packs"]]
+
+    
 
 __all__ = ("Client",)
