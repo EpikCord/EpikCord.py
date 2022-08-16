@@ -8,16 +8,16 @@ class MentionedUser(User):
 
         super().__init__(client, data)
         self.member: Optional[GuildMember] = (
-            GuildMember(client, data.get("member")) if data.get("member") else None
+            GuildMember(client, data["member"]) if data.get("member") else None
         )
 
 
 class MentionedChannel:
     def __init__(self, data: dict):
-        self.id: str = data.get("id")
-        self.guild_id: str = data.get("guild_id")
-        self.type: int = data.get("type")
-        self.name: str = data.get("name")
+        self.id: str = data["id"]
+        self.guild_id: str = data["guild_id"]
+        self.type: int = data["type"]
+        self.name: str = data["name"]
 
 
 __all__ = ("MentionedUser", "MentionedChannel")
