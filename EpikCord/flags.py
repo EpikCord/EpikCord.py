@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 
 class Flag:
@@ -7,11 +7,10 @@ class Flag:
 
     def __init_subclass__(cls) -> None:
         cls.class_flags = {k: v for k, v in cls.__dict__.items() if isinstance(v, int)}
-        return cls
 
     def __init__(self, value: int = 0, **kwargs):
         self.value = value
-        self.turned_on: "list[str]" = [k for k, a in kwargs.items() if a]
+        self.turned_on: List[str] = [k for k, a in kwargs.items() if a]
 
         for k, v in self.class_flags.items():
             if v & value and k not in self.turned_on:
