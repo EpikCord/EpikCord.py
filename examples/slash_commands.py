@@ -10,7 +10,7 @@ intents = Intents.all()
 client = Client("token", intents)
 
 
-@client.event
+@client.event()
 async def ready():
     print("Ready!")
 
