@@ -6,12 +6,12 @@ from ..localizations import Localization
 
 class ApplicationCommand:
     def __init__(self, data: dict):
-        self.id: str = data.get("id")
-        self.type: int = data.get("type")
-        self.application_id: str = data.get("application_id")
+        self.id: str = data["id"]
+        self.type: int = data["type"]
+        self.application_id: str = data["application_id"]
         self.guild_id: Optional[str] = data.get("guild_id")
-        self.name: str = data.get("name")
-        self.description: str = data.get("description")
+        self.name: str = data["name"]
+        self.description: str = data["description"]
         conversion_type = {
             1: Subcommand,
             2: SubCommandGroup,
@@ -26,7 +26,7 @@ class ApplicationCommand:
             11: AttachmentOption,
         }
         self.options: List[AnyOption] = [
-            conversion_type[option["type"]] for option in data.get("options", [])
+            conversion_type[option["type"]] for option in data["options"]
         ]
         self.default_member_permissions: str = data.get("default_permissions")
         self.version: str = data.get("version")
