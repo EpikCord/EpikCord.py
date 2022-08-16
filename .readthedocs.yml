@@ -7,7 +7,6 @@ build:
     python: "3.9"
   commands:
     - pip install sphinx sphinx_rtd_theme
-    - mkdir html
     - sphinx-build -b html docs/source /html
 
 
