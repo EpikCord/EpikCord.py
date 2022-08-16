@@ -2,12 +2,12 @@ from __future__ import annotations
 from importlib.util import find_spec, module_from_spec, resolve_name
 from sys import modules
 from .websocket_client import WebsocketClient
-from .http_client import HTTPClient
 from logging import getLogger
 from importlib import import_module
 from ..managers import ChannelManager, GuildManager
 from collections import deque
-from typing import Optional, List, Any, TYPE_CHECKING
+from typing import Optional, List, Any, TYPE_CHECKING, Union
+from ..flags import Intents
 
 if TYPE_CHECKING:
     from EpikCord import Status, Activity, Section, Presence
@@ -19,7 +19,7 @@ class Client(WebsocketClient):
     def __init__(
         self,
         token: str,
-        intents: int = 0,
+        intents: Union[Intents, int] = 0,
         *,
         status: Optional[Status] = None,
         activity: Optional[Activity] = None,

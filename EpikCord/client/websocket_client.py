@@ -11,9 +11,10 @@ from ..exceptions import (
 )
 import asyncio
 from sys import platform
+from ..flags import Intents
 from ..close_event_codes import GatewayCECode
 from ..opcodes import GatewayOpcode
-from typing import Optional, List, TYPE_CHECKING
+from typing import Optional, List, TYPE_CHECKING, Union
 from logging import getLogger
 from .event_handler import EventHandler
 from .http_client import HTTPClient
@@ -28,7 +29,7 @@ class WebsocketClient(EventHandler):
     def __init__(
         self,
         token: str,
-        intents: int,
+        intents: Union[Intents, int],
         presence: Optional[Presence],
         discord_endpoint: str = "https://discord.com/api/v10",
     ):
@@ -59,7 +60,7 @@ class WebsocketClient(EventHandler):
         self.session_id: Optional[str] = None
         self.sequence = None
 
-    async def change_presence(self, *, presence: Optional[Presence]):
+    async def change_presence(self, *, presence: Presence):
         payload = {"op": GatewayOpcode.PRESENCE_UPDATE, "d": presence.to_dict()}
         await self.send_json(payload)
 
@@ -87,7 +88,7 @@ class WebsocketClient(EventHandler):
         user_ids: Optional[List[str]] = None,
         nonce: Optional[str] = None,
     ):
-        payload = {
+        payload: dict = {
             "op": GatewayOpcode.REQUEST_GUILD_MEMBERS,
             "d": {"guild_id": guild_id},
         }
