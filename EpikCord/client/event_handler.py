@@ -366,14 +366,14 @@ class EventHandler(CommandHandler):
     async def ready(self, data: dict):
         from EpikCord import ClientUser, ClientApplication
 
-        self.user: ClientUser = ClientUser(self, data.get("user"))
-        self.session_id: str = data["session_id"]
-        application_response = await self.http.get("/oauth2/applications/@me")
+        self.user: ClientUser = ClientUser(self, data["user"])
+        self.session_id: Optional[str] = data["session_id"]
+        application_response = await self.http.get("/oauth2/applications/@me") # type: ignore
         application_data = await application_response.json()
 
         self.application: ClientApplication = ClientApplication(self, application_data)
 
-        if not self.overwrite_commands_on_ready:
+        if not self.overwrite_commands_on_ready: # type: ignore
             return None
 
         command_sorter = defaultdict(list)

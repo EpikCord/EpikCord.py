@@ -29,7 +29,7 @@ class WebsocketClient(EventHandler):
         self,
         token: str,
         intents: int,
-        presence: Presence,
+        presence: Optional[Presence],
         discord_endpoint: str = "https://discord.com/api/v10",
     ):
         super().__init__()
