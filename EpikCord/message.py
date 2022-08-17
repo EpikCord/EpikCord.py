@@ -1,18 +1,19 @@
-import os
-import io
 import datetime
-from .colour import Colour
+import io
+import os
 from logging import getLogger
-from .thread import Thread
-from typing import Union, Optional, List, Dict, Any
+from typing import Any, Dict, List, Optional, Union
 from urllib.parse import quote as _quote
-from .sticker import *
-from .partials import PartialEmoji
+
 from .application import Application
+from .colour import Colour
 from .components import *
+from .mentioned import MentionedChannel
+from .partials import PartialEmoji
+from .sticker import *
+from .thread import Thread
 from .user import User
 from .webhooks import WebhookUser
-from .mentioned import MentionedChannel
 
 logger = getLogger(__name__)
 
@@ -329,10 +330,7 @@ class Message:
     """
 
     def __init__(self, client, data: dict):
-        from EpikCord import (
-            GuildMember,
-            Reaction,
-        )
+        from EpikCord import GuildMember, Reaction
 
         self.client = client
         self.id: int = int(data["id"])

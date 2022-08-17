@@ -1,17 +1,19 @@
 from __future__ import annotations
-from importlib.util import find_spec, module_from_spec, resolve_name
-from sys import modules
-from .websocket_client import WebsocketClient
-from logging import getLogger
+
+from collections import deque
 from importlib import import_module
+from importlib.util import find_spec, module_from_spec, resolve_name
+from logging import getLogger
+from sys import modules
+from typing import TYPE_CHECKING, Any, List, Optional, Union
+
+from ..flags import Intents
 from ..managers import ChannelManager, GuildManager
 from ..sticker import Sticker, StickerPack
-from collections import deque
-from typing import Optional, List, Any, TYPE_CHECKING, Union
-from ..flags import Intents
+from .websocket_client import WebsocketClient
 
 if TYPE_CHECKING:
-    from EpikCord import Status, Activity, Section, Presence
+    from EpikCord import Activity, Presence, Section, Status
 
 logger = getLogger(__name__)
 
@@ -29,7 +31,7 @@ class Client(WebsocketClient):
         presence: Presence = None,
     ):
         super().__init__(token, intents, presence, discord_endpoint=discord_endpoint)
-        from EpikCord import Presence, ClientUser, ClientApplication, Utils
+        from EpikCord import ClientApplication, ClientUser, Presence, Utils
 
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready or False
         self.guilds: GuildManager = GuildManager(self)

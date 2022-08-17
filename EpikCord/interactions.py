@@ -1,11 +1,13 @@
 from __future__ import annotations
+
+from typing import TYPE_CHECKING, List, Optional, Union
+
 from .abstract import BaseInteraction
 from .components import *
 from .options import *
-from typing import Optional, Union, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .message import Embed, Attachment
+    from .message import Attachment, Embed
 
 
 class Modal:

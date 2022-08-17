@@ -1,8 +1,10 @@
 from __future__ import annotations
-from typing import Optional, Union, List
+
+from typing import List, Optional, Union
+
+from .abstract import BaseSlashCommandOption
 from .localizations import Localization
 from .type_enums import ChannelType
-from .abstract import BaseSlashCommandOption
 
 
 class StringOption(BaseSlashCommandOption):

@@ -6,13 +6,13 @@ import struct
 from abc import abstractmethod
 from importlib.util import find_spec
 from logging import getLogger
-from typing import Optional, List, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 from aiohttp import ClientWebSocketResponse
 
 from .close_event_codes import GatewayCECode
-from .exceptions import ClosedWebSocketConnection, InvalidArgumentType, CustomIdIsTooBig
-from .opcodes import VoiceOpcode, GatewayOpcode
+from .exceptions import ClosedWebSocketConnection, CustomIdIsTooBig, InvalidArgumentType
+from .opcodes import GatewayOpcode, VoiceOpcode
 
 logger = getLogger("EpikCord.channels")
 
@@ -32,16 +32,17 @@ else:
 
 if TYPE_CHECKING:
     from EpikCord import (
-        Message,
-        File,
-        AllowedMention,
-        Check,
-        VoiceChannel,
         ActionRow,
-        Embed,
+        AllowedMention,
         Attachment,
+        Check,
+        Embed,
+        File,
+        Message,
         Modal,
+        VoiceChannel,
     )
+
     from .components import *
 
 
