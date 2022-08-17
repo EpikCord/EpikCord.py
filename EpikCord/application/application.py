@@ -1,9 +1,10 @@
-from typing import List, Optional
+from typing import List, Optional, Callable
 
 from ..partials import PartialUser
-from ..utils import Utils
 from .team import Team
 
+def _filter_values(dictionary: dict) -> dict:
+    return {k: v for k, v in dictionary.items() if v is not None}
 
 class Application:
     def __init__(self, data: dict):
@@ -25,9 +26,19 @@ class Application:
         self.flags: Optional[int] = data.get("flags")
 
     def to_dict(self):
-        return Utils.filter_values_dynamic(
-            lambda i: not i.startswith("_") and bool(i), self.__dict__
-        )  # A dict of things that aren't private and return a Truthy value.
-
+        return _filter_values({
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "rpc_origins": self.rpc_origins,
+            "bot_public": self.bot_public,
+            "bot_require_code_grant": self.bot_require_code_grant,
+            "terms_of_service_url": self.terms_of_service_url,
+            "privacy_policy_url": self.privacy_policy_url,
+            "verify_key": self.verify_key.to_dict(),
+            "team": self.team.to_dict() if self.team else None,
+            "cover_image": self.cover_image,
+            "flags": self.flags,
+        })  # A dict of things that aren't private and return a Truthy value.
 
 __all__ = ("Application",)
