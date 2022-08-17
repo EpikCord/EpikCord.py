@@ -66,6 +66,8 @@ class Client(WebsocketClient):
             raise ImportError(f"Could not find module {name}")
         sections_spec = module_from_spec(spec)
 
+        modules[filename] = sections_spec
+
         try:
             spec.loader.exec_module(sections_spec) # type: ignore
         except Exception as e:
@@ -73,7 +75,6 @@ class Client(WebsocketClient):
 
         # sections = import_module(filename, package)
 
-        modules[filename] = sections_spec
 
         from EpikCord import Section
 
