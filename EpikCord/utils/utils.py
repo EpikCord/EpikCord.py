@@ -190,7 +190,7 @@ class Utils:
         self, when: Union[datetime.datetime, int, float], result: Optional[T] = None
     ) -> Optional[T]:
         if when == datetime.datetime:
-            delta = self.compute_timedelta(when)
+            delta = self.compute_timedelta(when) # type: ignore
 
         return await asyncio.sleep(delta if when == datetime.datetime else when, result)
 

@@ -59,6 +59,7 @@ class AutoModTriggerType(IntEnum):
     KEYWORD = 1
     SPAM = 3
     KEYWORD_PRESENT = 4
+    MENTION_SPAM = 5
 
 
 class AutoModKeywordPresetType(IntEnum):

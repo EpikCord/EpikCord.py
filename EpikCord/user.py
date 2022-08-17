@@ -26,5 +26,7 @@ class User(Messageable):
         self.premium_type: int = data["premium_type"]
         self.public_flags: int = data["public_flags"]
 
+    def to_dict(self) -> dict:
+        return self.data
 
 __all__ = ("User",)
