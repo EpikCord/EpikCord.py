@@ -181,7 +181,7 @@ class Utils:
 
     @staticmethod
     def compute_timedelta(dt: datetime.datetime):
-        if dt.tzinfo is None:   
+        if dt.tzinfo is None:
             dt = dt.astimezone()
         now = datetime.datetime.now(datetime.timezone.utc)
         return max((dt - now).total_seconds(), 0)
