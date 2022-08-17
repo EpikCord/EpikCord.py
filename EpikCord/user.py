@@ -29,4 +29,5 @@ class User(Messageable):
     def to_dict(self) -> dict:
         return self.data
 
+
 __all__ = ("User",)
