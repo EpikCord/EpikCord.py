@@ -85,7 +85,7 @@ class ShardManager(EventHandler):
             }
         )
         self.intents: Intents = (
-            intents if isinstance(intents, Intents) else Intents(intents) # type: ignore
+            intents if isinstance(intents, Intents) else Intents(intents)  # type: ignore
         )
         self.desired_shards: Optional[int] = shards
         self.shards: List[Shard] = []
