@@ -18,12 +18,12 @@ from .presence import Presence
 class Shard(WebsocketClient):
     def __init__(
         self,
-        token,
-        intents,
+        token: str,
+        intents: Intents,
         shard_id,
         number_of_shards,
         presence: Optional[Presence] = None,
-        discord_endpoint: Optional[str] = None,
+        discord_endpoint: str = "https://discord.com/api/v10",
     ):
         super().__init__(token, intents, presence, discord_endpoint)
         self.shard_id = [shard_id, number_of_shards]
@@ -66,7 +66,7 @@ class ShardManager(EventHandler):
     def __init__(
         self,
         token: str,
-        intents: Optional[Union[Intents, int]],
+        intents: Intents,
         *,
         shards: Optional[int] = None,
         overwrite_commands_on_ready: bool = False,
@@ -85,11 +85,11 @@ class ShardManager(EventHandler):
             }
         )
         self.intents: Intents = (
-            intents if isinstance(intents, Intents) else Intents(intents)
+            intents if isinstance(intents, Intents) else Intents(intents) # type: ignore
         )
         self.desired_shards: Optional[int] = shards
         self.shards: List[Shard] = []
-        self.presence: Presence = presence
+        self.presence: Optional[Presence] = presence
         self.discord_endpoint: Optional[str] = discord_endpoint
         super().__init__()
 
