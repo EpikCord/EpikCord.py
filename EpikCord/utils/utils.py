@@ -144,7 +144,7 @@ class Utils:
         return fmt.format(mime=mime, data=b64)
 
     def component_from_type(self, component_data: dict):
-        component_type = component_data.get("type")
+        component_type = component_data["type"]
         component_cls = self.component_types.get(component_type)
 
         if not component_cls:
@@ -172,7 +172,7 @@ class Utils:
         return interaction_cls(self.client, data)
 
     def channel_from_type(self, channel_data: dict):
-        channel_type = channel_data.get("type")
+        channel_type = channel_data["type"]
 
         if channel_cls := self.channels_types.get(channel_type):
             return channel_cls(self.client, channel_data)
@@ -181,7 +181,7 @@ class Utils:
 
     @staticmethod
     def compute_timedelta(dt: datetime.datetime):
-        if dt.tzinfo is None:
+        if dt.tzinfo is None:   
             dt = dt.astimezone()
         now = datetime.datetime.now(datetime.timezone.utc)
         return max((dt - now).total_seconds(), 0)
