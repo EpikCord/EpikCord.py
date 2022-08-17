@@ -1,4 +1,4 @@
-from typing import Tuple, Type, TypeVar, Any
+from typing import Any, Tuple, Type, TypeVar
 
 CT = TypeVar("CT", bound="Colour")
 

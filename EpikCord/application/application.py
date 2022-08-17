@@ -1,9 +1,8 @@
 from typing import List, Optional
 
 from ..partials import PartialUser
-from .team import Team
-
 from ..utils import Utils
+from .team import Team
 
 
 class Application:

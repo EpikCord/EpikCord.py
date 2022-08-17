@@ -1,18 +1,18 @@
-from typing import Optional, Union, List
 import asyncio
 from sys import platform
-from .flags import Intents
-from .utils import Utils
+from typing import List, Optional, Union
+
 from .client import (
-    ClientUser,
     ClientApplication,
-    WebsocketClient,
+    ClientUser,
     EventHandler,
     HTTPClient,
+    WebsocketClient,
 )
+from .flags import Intents
 from .opcodes import GatewayOpcode
-
 from .presence import Presence
+from .utils import Utils
 
 
 class Shard(WebsocketClient):

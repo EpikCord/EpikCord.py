@@ -1,13 +1,13 @@
 from enum import IntEnum
-from typing import Union, Optional, List
+from typing import List, Optional, Union
 
 from .abstract import BaseComponent
 from .exceptions import (
     InvalidArgumentType,
     InvalidComponentStyle,
-    TooManySelectMenuOptions,
-    TooManyComponents,
     LabelIsTooBig,
+    TooManyComponents,
+    TooManySelectMenuOptions,
 )
 from .partials import PartialEmoji
 
