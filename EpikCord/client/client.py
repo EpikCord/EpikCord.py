@@ -91,6 +91,4 @@ class Client(WebsocketClient):
         json = await response.json()
         return [StickerPack(self, pack) for pack in json["sticker_packs"]]
 
-    w
-
 __all__ = ("Client",)
