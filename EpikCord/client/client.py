@@ -67,11 +67,11 @@ class Client(WebsocketClient):
         sections_spec = module_from_spec(spec)
 
         try:
-            spec.loader.exec_module(sections_spec)
+            spec.loader.exec_module(sections_spec) # type: ignore
         except Exception as e:
             raise ImportError(f"Could not load module {name}") from e
 
-        sections = import_module(filename, package)
+        # sections = import_module(filename, package)
 
         modules[filename] = sections_spec
 
