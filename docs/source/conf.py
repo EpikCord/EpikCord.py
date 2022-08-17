@@ -9,12 +9,13 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
+
 import os
 import sys
-from ...EpikCord import __version__
-for dir in os.listdir("../../EpikCord"):
-    sys.path.insert(0, os.path.abspath(os.path.join("..", "..", "EpikCord", dir)))
+from EpikCord import __version__
+
+sys.path.append(os.path.abspath(".."))
+sys.path.append(os.path.abspath("../.."))
 
 # -- Project information -----------------------------------------------------
 
@@ -23,7 +24,7 @@ copyright = "2022, EpikCord"
 author = "EpikCord"
 
 # The full version, including alpha/beta/rc tags
-
+os.system("pip install -e .")
 release = __version__
 
 # -- General configuration ---------------------------------------------------
