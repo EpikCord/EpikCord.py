@@ -12,8 +12,7 @@
 #
 import os
 import sys
-from importlib import import_module
-
+from ...EpikCord import __version__
 for dir in os.listdir("../../EpikCord"):
     sys.path.insert(0, os.path.abspath(os.path.join("..", "..", "EpikCord", dir)))
 
@@ -25,8 +24,7 @@ author = "EpikCord"
 
 # The full version, including alpha/beta/rc tags
 
-release = import_module("EpikCord").__version__
-
+release = __version__
 
 # -- General configuration ---------------------------------------------------
 
