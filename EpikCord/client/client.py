@@ -77,7 +77,6 @@ class Client(WebsocketClient):
 
         # sections = import_module(filename, package)
 
-
         from EpikCord import Section
 
         for possible_section in sections.__dict__.values():
