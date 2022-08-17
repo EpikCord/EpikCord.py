@@ -57,7 +57,6 @@ class AutoModEventType(IntEnum):
 
 class AutoModTriggerType(IntEnum):
     KEYWORD = 1
-    HARMFUL_LINK = 2
     SPAM = 3
     KEYWORD_PRESENT = 4
 
