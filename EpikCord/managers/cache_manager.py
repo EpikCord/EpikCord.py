@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Any, Iterator, Optional, Dict
+
+from typing import Any, Dict, Iterator, Optional
 
 
 class CacheManager:
@@ -21,7 +22,7 @@ class CacheManager:
     def clear_cache(self):
         self.cache = {}
 
-    def __dict__(self) -> Dict: # type: ignore
+    def __dict__(self) -> Dict:  # type: ignore
         return self.cache
 
     def __str__(self) -> str:
@@ -54,10 +55,10 @@ class CacheManager:
     def __next__(self) -> Any:
         return next(self.cache)
 
-    def __eq__(self, other: CacheManager) -> bool: # type: ignore
+    def __eq__(self, other: CacheManager) -> bool:  # type: ignore
         return self.cache == other.cache
 
-    def __ne__(self, other: CacheManager) -> bool: # type: ignore
+    def __ne__(self, other: CacheManager) -> bool:  # type: ignore
         return self.cache != other.cache
 
     def __gt__(self, other: CacheManager) -> bool:
