@@ -69,7 +69,7 @@ class Messageable:
         if isinstance(channel_id, (int, str)):
             self.id: str = channel_id
         elif isinstance(channel_id, dict):
-            self.id: str = channel_id.get("id")
+            self.id: str = channel_id.get("id") # type: ignore
         else:
             raise TypeError(f"Expected str, int or dict, got {type(channel_id)}")
 
