@@ -15,8 +15,8 @@ class Status:
     def __init__(self, status: str):
         """Represents a Status.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         status : str
             The status of the user.
             Either ``online``, ``idle``, ``dnd`` or ``invisible``.
@@ -50,8 +50,8 @@ class Activity:
     def __init__(self, *, name: str, type: int, url: Optional[str] = None):
         """Represents a Discord Activity object.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         name : str
             The name of the activity.
         type : int
@@ -109,8 +109,8 @@ class Presence:
         status: Optional[Status] = None,
     ):
         """
-        Arguments
-        ---------
+        Parameters
+        ----------
         activity : Optional[Activity]
             The activity of the user.
         status : Status

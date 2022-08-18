@@ -188,8 +188,8 @@ class EventHandler(CommandHandler):
         """The function which is the handler for interactions.
         Change this if you want to, to change how your "command handler" works
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         interaction: Union[ApplicationCommandInteraction, MessageComponentInteraction, AutoCompleteInteraction, ModalSubmitInteraction]
             A subclass of BaseInteraction which represents the Interaction
         """
