@@ -86,8 +86,8 @@ class UserClient:
     async def fetch_guilds(
         self,
         *,
-        before: Optional[str] = None,
-        after: Optional[str] = None,
+        before: Optional[int] = None,
+        after: Optional[int] = None,
         limit: int = 200,
     ) -> List[PartialGuild]:
         params = {"limit": limit}
