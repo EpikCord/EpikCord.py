@@ -135,9 +135,9 @@ class EventHandler(CommandHandler):
     async def dispatch(self, event_name: str, *args, **kwargs):
 
         callbacks = self.events.get(event_name.lower())
-        logger.info(f"Calling {len(callbacks)} for {event_name}")
+        logger.info(f"Calling {len(callbacks)} for {event_name}")# type: ignore
 
-        for callback in callbacks:
+        for callback in callbacks: # type: ignore
             await callback(*args, **kwargs)
 
         if not (wait_for_callbacks := self.wait_for_events.get(event_name.lower())):
