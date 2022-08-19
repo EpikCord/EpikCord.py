@@ -203,12 +203,13 @@ class EventHandler(CommandHandler):
     async def _guild_create(self, data):
         from EpikCord import Guild, Thread, UnavailableGuild
 
+        if data.get("unavailable") is None:
+            return # TODO: Maybe a different event where the name says the Bot is removed on startup.
+
         guild = (
             UnavailableGuild(data)
             if data.get("unavailable") is True
             else Guild(self, data)
-            if data.get("unavailable") is False
-            else None
         )
 
         if not guild:
@@ -216,8 +217,6 @@ class EventHandler(CommandHandler):
 
         self.guilds.add_to_cache(guild.id, guild)
 
-        if data.get("unavailable") is None:
-            return # TODO: Maybe a different event where the name says the Bot is removed on startup.
 
         for channel in data["channels"]:
             self.channels.add_to_cache(
