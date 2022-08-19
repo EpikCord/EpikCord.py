@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from ..localizations import Localization
 from ..options import *
@@ -6,7 +6,7 @@ from ..type_enums import ApplicationCommandPermissionType
 
 
 class ApplicationCommand:
-    def __init__(self, data: dict):
+    def __init__(self, data: Dict):
         self.id: str = data["id"]
         self.type: int = data["type"]
         self.application_id: str = data["application_id"]
