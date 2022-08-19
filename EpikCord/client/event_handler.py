@@ -1,9 +1,8 @@
 import asyncio
 from collections import defaultdict, deque
-from inspect import iscoroutinefunction
 from logging import getLogger
 from time import perf_counter_ns
-from typing import Callable, Optional
+from typing import Callable, DefaultDict, Deque, Optional, Dict, Union
 
 from ..opcodes import GatewayOpcode
 from .command_handler import CommandHandler
@@ -23,12 +22,12 @@ class EventHandler(CommandHandler):
 
     def __init__(self):
         super().__init__()
-        self.events = defaultdict(list)
-        self.wait_for_events = defaultdict(list)
-        self.latencies = deque(maxlen=5)
+        self.events: DefaultDict = defaultdict(list)
+        self.wait_for_events: DefaultDict = defaultdict(list)
+        self.latencies: Deque = deque(maxlen=5)
 
     def wait_for(
-        self, event_name: str, *, check: Optional[Callable] = None, timeout: int = None
+        self, event_name: str, *, check: Optional[Callable] = None, timeout: Union[float, int] = 0
     ):
         """
         Waits for the event to be triggered.
@@ -44,7 +43,6 @@ class EventHandler(CommandHandler):
             The amount of time to wait for the event.
             If not specified, it'll wait forever.
         """
-        timeout = timeout or 0
         future: asyncio.Future = asyncio.Future()
         if not check:
 
@@ -54,8 +52,103 @@ class EventHandler(CommandHandler):
         self.wait_for_events[event_name.lower()].append((future, check))
         return asyncio.wait_for(future, timeout=timeout)
 
+    def event(self, event_name: Optional[str] = None):
+        def register_event(func):
+            func_name = event_name or func.__name__.lower()
+
+            if func_name.startswith("on_"):
+                func_name = func_name[3:]
+
+            self.events[func_name].append(func)
+
+            return Event(func, event_name=func_name)
+
+        return register_event
+
+    def component(self, custom_id: str):
+        """
+        Execute this function when a component with the `custom_id` is interacted with.
+        """
+
+        def wrapper(func):
+            self._components[custom_id] = func
+
+        return wrapper
+
+    async def handle_hello(self, event: Dict):
+        self.interval = event["d"]["heartbeat_interval"]
+
+        async def wrapper():
+            while True:
+                await self.heartbeat(False)
+
+        asyncio.create_task(wrapper())
+        await self.identify() # type: ignore
+
+    def handle_heartbeat_ack(self, event):
+        heartbeat_ack_time = perf_counter_ns()
+        self.discord_latency: int = heartbeat_ack_time - self.heartbeat_time
+        self.latencies.append(self.discord_latency)
+        self.heartbeats.append(event["d"])
+
+    async def handle_events(self):
+        async for event in self.ws:
+            event = event.json()
+            logger.debug(f"Received {event} from Discord.")
+
+            if event["op"] == GatewayOpcode.HELLO:
+                await self.handle_hello()
+
+            elif event["op"] == GatewayOpcode.DISPATCH:
+                await self.handle_event(event)
+
+            elif event["op"] == GatewayOpcode.HEARTBEAT:
+                await self.heartbeat(True)
+
+            elif event["op"] == GatewayOpcode.HEARTBEAT_ACK:
+                self.handle_heartbeat_ack(event)
+
+            elif event["op"] == GatewayOpcode.RECONNECT:
+                await self.reconnect()
+
+            elif event["op"] == GatewayOpcode.RESUMED:
+                logger.debug(
+                    "Connection successfully resumed and all proceeding events are new."
+                )
+
+        await self.handle_close()
+
+    async def handle_event(self, event: dict):
+
+        self.sequence = event["s"]
+
+        results_from_event = event["d"]
+
+        if hasattr(self, event["t"].lower()):
+            try:
+                await getattr(self, f"_{event['t'].lower()}")(results_from_event) # type: ignore
+            except Exception as e:
+                logger.exception(f"Error handling event {event['t']}: {e}")
+        else:
+            logger.warning(f"EpikCord has no event handler for event {event['t']}, meaning that none of your event handlers are going to be called.")
+
+    async def dispatch(self, event_name: str, *args, **kwargs):
+
+        callbacks = self.events.get(event_name.lower())
+        logger.info(f"Calling {len(callbacks)} for {event_name}")
+
+        for callback in callbacks:
+            await callback(*args, **kwargs)
+
+        if not (wait_for_callbacks := self.wait_for_events.get(event_name.lower())):
+            return
+
+        for future, check in wait_for_callbacks:
+            if check(*args):
+                future.set_result(args)
+
     @staticmethod
-    async def voice_server_update(data: dict):
+    async def _voice_server_update(data: Dict):
         voice_data = data["d"]
         payload = {
             "token": voice_data["token"],
@@ -68,253 +161,46 @@ class EventHandler(CommandHandler):
 
         return payload
 
-    async def voice_state_update(self, data: dict):
+    async def _voice_state_update(self, data: dict):
         from EpikCord import VoiceState
 
         return VoiceState(
             self, data
         )  # TODO: Make this return something like (VoiceState, Member) or make VoiceState get Member from member_id
 
-    def component(self, custom_id: str):
-        """
-        Execute this function when a component with the `custom_id` is interacted with.
-        """
 
-        def wrapper(func):
-            self._components[custom_id] = func
-
-        return wrapper
-
-    async def guild_members_chunk(self, data: dict):
+    async def _guild_members_chunk(self, data: dict):
         ...
 
-    async def guild_delete(self, data: dict):
-        return self.guilds.get(data["id"])  # type: ignore
+    async def _guild_delete(self, data: dict):
+        guild = self.guilds.remove_from_cache(data["id"])  # type: ignore
 
-    async def handle_events(self):
-        async for event in self.ws:
-            event = event.json()
-            logger.debug(f"Received {event} from Discord.")
+        if guild:
+            await self.dispatch("guild_delete", guild)
 
-            if event["op"] == GatewayOpcode.HELLO:
-                self.interval = event["d"]["heartbeat_interval"]
-
-                async def wrapper():
-                    while True:
-                        await self.heartbeat(False)
-
-                asyncio.create_task(wrapper())
-                await self.identify()
-
-            elif event["op"] == GatewayOpcode.DISPATCH:
-                await self.handle_event(event)
-
-            elif event["op"] == GatewayOpcode.HEARTBEAT:
-                # I shouldn't wait the remaining delay according to the docs.
-                await self.heartbeat(True)
-
-            elif event["op"] == GatewayOpcode.HEARTBEAT_ACK:
-                heartbeat_ack_time = perf_counter_ns()
-                self.discord_latency: int = heartbeat_ack_time - self.heartbeat_time
-                self.latencies.append(self.discord_latency)
-                try:
-                    self.heartbeats.append(event["d"])
-                except AttributeError:
-                    self.heartbeats = [event["d"]]
-
-            elif event["op"] == GatewayOpcode.RECONNECT:
-                await self.reconnect()
-
-            elif event["op"] == GatewayOpcode.RESUMED:
-                logger.debug(
-                    "Connection successfully resumed and all proceeding events are new."
-                )
-
-            if event["op"] != GatewayOpcode.DISPATCH:  # TODO: find op code
-                logger.debug(f"Received OPCODE: {event['op']}")
-
-        await self.handle_close()
-
-    async def handle_event(self, event: dict):
-        from EpikCord import UnavailableGuild
-
-        self.sequence = event["s"]
-        logger.info(f"Received event {event['t']} with data {event['d']}")
-
-        results_from_event = event["d"]
-
-        try:
-            results_from_event = (
-                await getattr(self, event["t"].lower())(results_from_event)
-                if hasattr(self, event["t"].lower())
-                else None
-            )
-            if not results_from_event:
-                results_from_event = []
-        except Exception as e:
-            logger.exception(f"Error handling event {event['t']}: {e}")
-
-        if isinstance(results_from_event, UnavailableGuild):
-            return  # This is their lazy backfill which I dislike.
-
-        logger.debug(f"Emitting user event {event['t']}")
-        try:
-            if results_from_event != event["d"]:
-
-                results_from_event = [results_from_event] if results_from_event else []
-                if callbacks := self.events.get(event["t"].lower()):
-                    logger.info(
-                        f"Calling {len(callbacks)} callbacks for {event['t']} with data {results_from_event}"
-                    )
-                    for callback in callbacks:
-                        await callback(*results_from_event)
-            else:
-                logger.warning(f"{event['t']} is going to receive unparsed data.")
-
-                if callbacks := self.events.get(event["t"].lower()):
-                    for callback in callbacks:
-                        await callback(results_from_event)
-        except Exception as e:
-            logger.exception(f"Error handling user-defined event {event['t']}: {e}")
-
-        if not (callbacks := self.wait_for_events.get(event["t"].lower())):
-            return
-
-        for future, check in callbacks:
-            if check(*results_from_event):
-                future.set_result(results_from_event)
-
-    async def handle_interaction(self, interaction):
-        """The function which is the handler for interactions.
-        Change this if you want to, to change how your "command handler" works
-
-        Parameters
-        ----------
-        interaction: Union[ApplicationCommandInteraction, MessageComponentInteraction, AutoCompleteInteraction, ModalSubmitInteraction]
-            A subclass of BaseInteraction which represents the Interaction
-        """
-
-        if interaction.is_ping:
-            return await self.http.post(
-                f"interactions/{interaction.id}/{interaction.token}/callback",
-                json={"type": 1},
-            )
-
-        elif interaction.is_application_command:
-            command = self.commands.get(interaction.command_name)
-
-            if not command:
-                logger.warning(
-                    f"Command {interaction.command_name} is not registered in "
-                    f"this code, but is registered with Discord. "
-                )
-                return  # TODO Possibly add an error which people can handle?
-
-            options = []
-
-            if command.is_user_command() or command.is_message_command():
-                options.append(interaction.target_id)
-
-            if command.is_slash_command():
-                for check in command.checks:
-                    try:
-                        if iscoroutinefunction(check.callback):
-                            await check.callback(interaction)
-                        else:
-                            check.callback(interaction)
-                    except RuntimeError:
-                        ...  # Suppress.
-                options.extend(option.get("value") for option in interaction.options)
-
-            try:
-                return await command.callback(interaction, *options)
-
-            except Exception as e:
-                await self.command_error(interaction, e)
-
-        if interaction.is_message_component:  # If it's a message component interaction
-
-            if not self._components.get(
-                interaction.custom_id
-            ):  # If it's registered with the bot
-                logger.warning(
-                    f"A user tried to interact with a component with the "
-                    f"custom id {interaction.custom_id}, but it is not "
-                    f"registered in this code, but is on Discord. "
-                )
-
-            if interaction.is_button():  # If it's a button
-                component = None
-                for action_row in interaction.message.components:
-                    for component in action_row.components:
-                        if component.custom_id == interaction.custom_id:
-                            component = component
-
-                return await self._components[interaction.custom_id](
-                    interaction, component
-                )  # Call the callback
-
-            elif interaction.is_select_menu():
-
-                if not self._components.get(interaction.custom_id):
-                    logger.warning(
-                        f"A user tried to interact with a component with the "
-                        f"custom id {interaction.custom_id}, but it is not "
-                        f"registered in this code, but is on Discord. "
-                    )
-                    return
-
-                component = None
-                for action_row in interaction.message.components:
-                    for possible_component in action_row.components:
-                        if possible_component.custom_id == interaction.custom_id:
-                            component = possible_component
-                            break
-
-                return await self._components[interaction.custom_id](
-                    interaction, component, *interaction.values
-                )
-
-        if interaction.is_autocomplete:
-            command = self.commands.get(interaction.command_name)
-            if not command:
-                return
-
-        if interaction.is_modal_submit:
-            action_rows = interaction._components
-            component_object_list = []
-            for action_row in action_rows:
-                component_object_list.extend(
-                    component["value"] for component in action_row.get("components")
-                )
-
-            await self._components.get(interaction.custom_id)(
-                interaction, *component_object_list
-            )
-
-    async def interaction_create(self, data):
+    async def _interaction_create(self, data):
         interaction = self.utils.interaction_from_type(data)
         await self.handle_interaction(interaction)
         return interaction
 
-    async def channel_create(self, data: dict):
-        channel = self.utils.channel_from_type(data)
-        self.channels.add_to_cache(channel.id, channel)
+    async def _channel_create(self, data: dict):
+        channel = self.utils.channel_from_type(data) # type: ignore
+        self.channels.add_to_cache(channel.id, channel) # type: ignore
         return channel
 
-    async def message_create(self, data: dict):
+    async def _message_create(self, data: dict):
         """Event fired when messages are created"""
         from EpikCord import Message
 
         message = Message(self, data)
-        message.channel = self.channels.get(
+        message0.channel = self.channels.get( # type: ignore
             message.channel_id
-        ) or await self.channels.fetch(message.channel_id)
+        ) or await self.channels.fetch(message.channel_id) # type: ignore
         message.channel.last_message = message
 
         return message
 
-    async def guild_create(self, data):
+    async def _guild_create(self, data):
         from EpikCord import Guild, Thread, UnavailableGuild
 
         guild = (
@@ -331,7 +217,7 @@ class EventHandler(CommandHandler):
         self.guilds.add_to_cache(guild.id, guild)
 
         if data.get("unavailable") is None:
-            return  # Bot was removed
+            return # TODO: Maybe a different event where the name says the Bot is removed on startup.
 
         for channel in data["channels"]:
             self.channels.add_to_cache(
@@ -345,26 +231,14 @@ class EventHandler(CommandHandler):
 
         # TODO: Add other attributes to cache
 
-    def event(self, event_name: Optional[str] = None):
-        def register_event(func):
-            func_name = event_name or func.__name__.lower()
 
-            if func_name.startswith("on_"):
-                func_name = func_name[3:]
-
-            self.events[func_name].append(func)
-
-            return Event(func, event_name=func_name)
-
-        return register_event
-
-    async def guild_member_update(self, data):
+    async def _guild_member_update(self, data):
         from EpikCord import GuildMember
 
         guild_member = GuildMember(self, data)
-        return self.members.fetch(data["id"]), guild_member
+        return self.members.get(data["id"]), guild_member
 
-    async def ready(self, data: dict):
+    async def _ready(self, data: dict):
         from EpikCord import ClientApplication, ClientUser
 
         self.user: ClientUser = ClientUser(self, data["user"])
@@ -375,45 +249,9 @@ class EventHandler(CommandHandler):
         self.application: ClientApplication = ClientApplication(self, application_data)
 
         if not self.overwrite_commands_on_ready:  # type: ignore
-            return None
+            return
 
-        command_sorter = defaultdict(list)
-
-        for command in self.commands.values():
-            cmd_payload = {"name": command.name, "type": command.type}
-
-            if cmd_payload["type"] == 1:
-                cmd_payload["description"] = command.description
-                cmd_payload["options"] = [
-                    option.to_dict() for option in getattr(command, "options", [])
-                ]
-
-                if command.name_localizations:
-                    cmd_payload["name_localizations"] = {}
-                    for name_localization in command.name_localizations:
-                        cmd_payload["name_localizations"][
-                            name_localization
-                        ] = command.name_localizations[name_localization.to_dict()]
-
-                if command.description_localizations:
-                    cmd_payload["description_localizations"] = {}
-                    for desc_loc in command.description_localizations:
-                        cmd_payload["description_localizations"][
-                            desc_loc.to_dict()
-                        ] = command.description_localizations[desc_loc]
-
-            for guild_id in command.guild_ids or []:
-                command_sorter[guild_id].append(cmd_payload)
-            command_sorter["global"].append(cmd_payload)
-
-        for guild_id, commands in command_sorter.items():
-            if guild_id == "global":
-                await self.application.bulk_overwrite_global_app_commands(commands)
-                continue
-
-            await self.application.bulk_overwrite_guild_application_commands(
-                guild_id, commands
-            )
+        await self.utils.overwrite_commands() # type: ignore
 
     async def command_error(self, interaction, error: Exception):
         logger.exception(error)
