@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
-from logging import getLogger
 from inspect import iscoroutinefunction
+from logging import getLogger
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
+
 from ..localizations import *
 from ..options import AnyOption
 
@@ -10,6 +11,7 @@ if TYPE_CHECKING:
     from .. import Check
 
 logger = getLogger(__name__)
+
 
 class CommandHandler:
     def __init__(self):
@@ -200,5 +202,6 @@ class CommandHandler:
             await self._components.get(interaction.custom_id)(
                 interaction, *component_object_list
             )
+
 
 __all__ = ("CommandHandler",)

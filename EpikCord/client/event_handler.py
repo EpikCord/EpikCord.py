@@ -2,7 +2,7 @@ import asyncio
 from collections import defaultdict, deque
 from logging import getLogger
 from time import perf_counter_ns
-from typing import Callable, DefaultDict, Deque, Optional, Dict, Union
+from typing import Callable, DefaultDict, Deque, Dict, Optional, Union
 
 from ..opcodes import GatewayOpcode
 from .command_handler import CommandHandler
@@ -27,7 +27,11 @@ class EventHandler(CommandHandler):
         self.latencies: Deque = deque(maxlen=5)
 
     def wait_for(
-        self, event_name: str, *, check: Optional[Callable] = None, timeout: Union[float, int] = 0
+        self,
+        event_name: str,
+        *,
+        check: Optional[Callable] = None,
+        timeout: Union[float, int] = 0,
     ):
         """
         Waits for the event to be triggered.
@@ -83,7 +87,7 @@ class EventHandler(CommandHandler):
                 await self.heartbeat(False)
 
         asyncio.create_task(wrapper())
-        await self.identify() # type: ignore
+        await self.identify()  # type: ignore
 
     def handle_heartbeat_ack(self, event):
         heartbeat_ack_time = perf_counter_ns()
@@ -126,18 +130,20 @@ class EventHandler(CommandHandler):
 
         if hasattr(self, event["t"].lower()):
             try:
-                await getattr(self, f"_{event['t'].lower()}")(results_from_event) # type: ignore
+                await getattr(self, f"_{event['t'].lower()}")(results_from_event)  # type: ignore
             except Exception as e:
                 logger.exception(f"Error handling event {event['t']}: {e}")
         else:
-            logger.warning(f"EpikCord has no event handler for event {event['t']}, meaning that none of your event handlers are going to be called.")
+            logger.warning(
+                f"EpikCord has no event handler for event {event['t']}, meaning that none of your event handlers are going to be called."
+            )
 
     async def dispatch(self, event_name: str, *args, **kwargs):
 
         callbacks = self.events.get(event_name.lower())
-        logger.info(f"Calling {len(callbacks)} for {event_name}")# type: ignore
+        logger.info(f"Calling {len(callbacks)} for {event_name}")  # type: ignore
 
-        for callback in callbacks: # type: ignore
+        for callback in callbacks:  # type: ignore
             await callback(*args, **kwargs)
 
         if not (wait_for_callbacks := self.wait_for_events.get(event_name.lower())):
@@ -168,7 +174,6 @@ class EventHandler(CommandHandler):
             self, data
         )  # TODO: Make this return something like (VoiceState, Member) or make VoiceState get Member from member_id
 
-
     async def _guild_members_chunk(self, data: dict):
         ...
 
@@ -184,8 +189,8 @@ class EventHandler(CommandHandler):
         return interaction
 
     async def _channel_create(self, data: dict):
-        channel = self.utils.channel_from_type(data) # type: ignore
-        self.channels.add_to_cache(channel.id, channel) # type: ignore
+        channel = self.utils.channel_from_type(data)  # type: ignore
+        self.channels.add_to_cache(channel.id, channel)  # type: ignore
         return channel
 
     async def _message_create(self, data: dict):
@@ -193,9 +198,11 @@ class EventHandler(CommandHandler):
         from EpikCord import Message
 
         message = Message(self, data)
-        message.channel = self.channels.get( # type: ignore
+        message.channel = self.channels.get(  # type: ignore
             message.channel_id
-        ) or await self.channels.fetch(message.channel_id) # type: ignore
+        ) or await self.channels.fetch(
+            message.channel_id
+        )  # type: ignore
         message.channel.last_message = message
 
         return message
@@ -217,7 +224,7 @@ class EventHandler(CommandHandler):
         self.guilds.add_to_cache(guild.id, guild)
 
         if data.get("unavailable") is None:
-            return # TODO: Maybe a different event where the name says the Bot is removed on startup.
+            return  # TODO: Maybe a different event where the name says the Bot is removed on startup.
 
         for channel in data["channels"]:
             self.channels.add_to_cache(
@@ -230,7 +237,6 @@ class EventHandler(CommandHandler):
         return guild
 
         # TODO: Add other attributes to cache
-
 
     async def _guild_member_update(self, data):
         from EpikCord import GuildMember
@@ -251,7 +257,7 @@ class EventHandler(CommandHandler):
         if not self.overwrite_commands_on_ready:  # type: ignore
             return
 
-        await self.utils.overwrite_commands() # type: ignore
+        await self.utils.overwrite_commands()  # type: ignore
 
     async def command_error(self, interaction, error: Exception):
         logger.exception(error)
