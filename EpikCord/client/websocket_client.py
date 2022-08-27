@@ -4,7 +4,7 @@ import asyncio
 from logging import getLogger
 from sys import platform
 from time import perf_counter_ns
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union, Dict
 
 from ..close_event_codes import GatewayCECode
 from ..exceptions import (
@@ -48,7 +48,7 @@ class WebsocketClient(EventHandler):
 
         self._closed = True
         self.presence = presence
-        self.heartbeats = []
+        self.heartbeats: List[Dict] = []
         self.http: HTTPClient = HTTPClient(
             headers={
                 "Authorization": f"Bot {token}",
