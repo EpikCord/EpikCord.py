@@ -190,6 +190,9 @@ class CommandHandler:
             command = self.commands.get(interaction.command_name)
             if not command:
                 return
+            option = list(filter(lambda option: option.focused == True, interaction.options))[0]
+            if auto_complete_callback := command.autocomplete_options.get(option):
+                await auto_complete_callback(interaction, option)
 
         if interaction.is_modal_submit:
             action_rows = interaction._components
