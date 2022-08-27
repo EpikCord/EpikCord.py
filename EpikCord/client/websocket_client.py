@@ -4,7 +4,7 @@ import asyncio
 from logging import getLogger
 from sys import platform
 from time import perf_counter_ns
-from typing import TYPE_CHECKING, List, Optional, Union, Dict
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 from ..close_event_codes import GatewayCECode
 from ..exceptions import (

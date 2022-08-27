@@ -211,7 +211,7 @@ class EventHandler(CommandHandler):
         from EpikCord import Guild, Thread, UnavailableGuild
 
         if data.get("unavailable") is None:
-            return # TODO: Maybe a different event where the name says the Bot is removed on startup.
+            return  # TODO: Maybe a different event where the name says the Bot is removed on startup.
 
         guild = (
             UnavailableGuild(data)
