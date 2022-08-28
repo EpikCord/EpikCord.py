@@ -140,7 +140,9 @@ class CommandHandler:
                 options.extend(ReceivedOption(option) for option in interaction.options)
 
             try:
-                return await command.callback(interaction, *[option.value for option in options])
+                return await command.callback(
+                    interaction, *[option.value for option in options]
+                )
             except Exception as e:
                 await self.command_error(interaction, e)
 
