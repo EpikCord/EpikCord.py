@@ -688,10 +688,11 @@ class BaseInteraction:
 
 
 class BaseSlashCommandOption:
-    def __init__(self, *, name: str, description: str, required: bool = False):
+    def __init__(self, *, name: str, description: str, required: bool = False, value: Optional[str] = None):
         self.name = name
         self.description = description
         self.required = required
+        self.value = value
         self.type: Optional[int] = None
         # ! Needs to be set by the subclass
         # ! People shouldn't use this class, this is just a base class for other

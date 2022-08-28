@@ -249,6 +249,13 @@ class SubCommandGroup(BaseSlashCommandOption):
         usual_dict["options"] = [option.to_dict() for option in self.options]
         return usual_dict
 
+class ReceivedOption:
+    def __init__(self, data):
+        self.data = data
+        self.type = data["type"]
+        self.value: Optional[str] = data.get("value")
+        self.focused: Optional[bool] = data.get("focused")
+        self.options: Optional[List[ReceivedOption]] = [ReceivedOption(data) for data in data["options"]] if data.get("options") else None
 
 AnyOption = Union[
     Subcommand,
@@ -277,4 +284,5 @@ __all__ = (
     "AttachmentOption",
     "SlashCommandOptionChoice",
     "AnyOption",
+    "ReceivedOption",
 )

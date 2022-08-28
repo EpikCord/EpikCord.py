@@ -5,7 +5,7 @@ from logging import getLogger
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 from ..localizations import *
-from ..options import AnyOption
+from ..options import AnyOption, ReceivedOption
 
 if TYPE_CHECKING:
     from .. import Check
@@ -128,18 +128,19 @@ class CommandHandler:
 
             if command.is_slash_command():
                 for check in command.checks:
-                    try:
-                        if iscoroutinefunction(check.callback):
-                            await check.callback(interaction)
-                        else:
-                            check.callback(interaction)
-                    except RuntimeError:
-                        ...  # Suppress.
-                options.extend(option.get("value") for option in interaction.options)
+                    if iscoroutinefunction(check.callback):
+                        if not await check.callback(interaction):
+                            return await check.failure_callback(interaction)
+                        await check.success_callback(interaction)
+                    else:
+                        if not check.callback(interaction):
+                            await check.failure_callback(interaction)
+                        await check.success_callback(interaction)
+
+                options.extend(ReceivedOption(option) for option in interaction.options)
 
             try:
-                return await command.callback(interaction, *options)
-
+                return await command.callback(interaction, *[option.value for option in options])
             except Exception as e:
                 await self.command_error(interaction, e)
 
@@ -195,7 +196,7 @@ class CommandHandler:
             except IndexError:
                 logger.warning(f"No option was focused for {interaction.command_name} but we still received an autocomplete interaction.")
             if auto_complete_callback := command.autocomplete_options.get(option):
-                await auto_complete_callback(interaction, option)
+                await auto_complete_callback(interaction, ReceivedOption(option))
 
 
         if interaction.is_modal_submit:
