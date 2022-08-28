@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections import deque
-from importlib import import_module
 from importlib.util import find_spec, module_from_spec, resolve_name
 from logging import getLogger
 from sys import modules
@@ -52,12 +51,13 @@ class Client(WebsocketClient):
     def average_latency(self):
         return sum(self.latencies) / len(self.latencies)
 
-    def load_section(self, section: Section):
-
+    def load_section(self, section_class: Section):
+        section = section_class(self) # type: ignore
         for event in section._events.values():
             self.events[event.name] = event.callback
 
         for command in section._commands.values():
+
             self.commands[command.name] = command
 
     def load_sections_from_file(self, filename: str, *, package: str = None):
