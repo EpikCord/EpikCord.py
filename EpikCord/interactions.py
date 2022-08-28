@@ -132,7 +132,7 @@ class AutoCompleteInteraction(BaseInteraction):
         ]
 
     async def reply(self, choices: List[SlashCommandOptionChoice]) -> None:
-        payload = {"type": 9, "data": []}
+        payload = {"type": 9, "data": {"choices": []}}
 
         for choice in choices:
             if not isinstance(choice, SlashCommandOptionChoice):
