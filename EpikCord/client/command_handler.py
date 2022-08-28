@@ -191,12 +191,15 @@ class CommandHandler:
             if not command:
                 return
             try:
-                option = list(filter(lambda option: option.focused == True, interaction.options))[0]
+                option = list(
+                    filter(lambda option: option.focused == True, interaction.options)
+                )[0]
             except IndexError:
-                logger.warning(f"No option was focused for {interaction.command_name} but we still received an autocomplete interaction.")
+                logger.warning(
+                    f"No option was focused for {interaction.command_name} but we still received an autocomplete interaction."
+                )
             if auto_complete_callback := command.autocomplete_options.get(option):
                 await auto_complete_callback(interaction, option)
-
 
         if interaction.is_modal_submit:
             action_rows = interaction._components
