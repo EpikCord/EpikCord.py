@@ -217,7 +217,7 @@ class HTTPClient(ClientSession):
 
         bucket.close_task.cancel()
 
-        bucket.close_task = asyncio.get_event_loop().create_task(dispose())  # type: ignore
+        bucket.close_task = asyncio.create_task(dispose())  # type: ignore
 
         bucket.event.set()
         self.global_ratelimit.set()
