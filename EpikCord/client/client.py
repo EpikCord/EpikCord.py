@@ -52,7 +52,7 @@ class Client(WebsocketClient):
         return sum(self.latencies) / len(self.latencies)
 
     def load_section(self, section_class: Section):
-        section = section_class(self) # type: ignore
+        section = section_class(self)  # type: ignore
         for event in section._events.values():
             self.events[event.name] = event.callback
 
