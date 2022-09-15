@@ -185,7 +185,7 @@ class ClientApplication(Application):
         )
         return ApplicationCommand(await response.json())
 
-    async def edit_global_application_command(
+    async def edit_guild_application_command(
         self,
         guild_id: str,
         command_id: str,
