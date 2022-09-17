@@ -263,7 +263,6 @@ class JsonErrorCodes(StatusCode):
     CANNOT_UPLOAD_FINISHED_EVENT = 180000
 
     STAGE_CREATION_ON_STAGE_EVENT_FAILED = 180002
-    # I want to die :)
 
     @classmethod
     def _missing_(cls, value: object) -> JsonErrorCodes:
