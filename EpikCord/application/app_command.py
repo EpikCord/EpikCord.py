@@ -1,16 +1,20 @@
-from typing import Dict, List, Optional
+from __future__ import annotations
+from typing import List, Optional, TYPE_CHECKING
 
+from ..flags import Permissions
 from ..localizations import Localization
 from ..options import *
 from ..type_enums import ApplicationCommandPermissionType
 
+if TYPE_CHECKING:
+    import discord_typings
 
 class ApplicationCommand:
-    def __init__(self, data: Dict):
-        self.id: str = data["id"]
+    def __init__(self, data: discord_typings.ApplicationCommandData):
+        self.id: int = int(data["id"])
         self.type: int = data["type"]
-        self.application_id: str = data["application_id"]
-        self.guild_id: Optional[str] = data.get("guild_id")
+        self.application_id: int = int(data["application_id"])
+        self.guild_id: Optional[int] = int(data["guild_id"]) if data.get("guild_id") else None
         self.name: str = data["name"]
         self.description: str = data["description"]
         conversion_type = {
@@ -27,9 +31,9 @@ class ApplicationCommand:
             11: AttachmentOption,
         }
         self.options: List[AnyOption] = [
-            conversion_type[option["type"]] for option in data["options"]
+            conversion_type[option["type"]] for option in data["options"] # type: ignore
         ]
-        self.default_member_permissions: str = data.get("default_permissions")
+        self.default_member_permissions:  Permissions = Permissions(data["default_member_permissions"])
         self.version: str = data.get("version")
         self.name_localizations: List[Localization] = data.get("name_localizations")
         self.description_localizations: List[Localization] = [

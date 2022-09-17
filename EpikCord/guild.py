@@ -24,13 +24,14 @@ class UnavailableGuild:
 
 
 class Invite:
-    def __init__(self, data: dict):
-        self.code: str = data.get("code")
+    def __init__(self, client, data: dict):
+        self.code: str = data["code"]
+        self.client = client
         self.guild: Optional[PartialGuild] = (
-            PartialGuild(data.get("guild")) if data.get("guild") else None
+            PartialGuild(data["guild"]) if data.get("guild") else None
         )
         self.channel: AnyChannel = (
-            Utils.channel_from_type(data.get("channel"))
+            Utils(client).channel_from_type(data["channel"])
             if data.get("channel")
             else None
         )
