@@ -100,10 +100,7 @@ class ShardManager(EventHandler):
 
             max_concurrency = endpoint_data["session_start_limit"]["max_concurrency"]
 
-            shards = self.desired_shards
-
-            if not shards:
-                shards = endpoint_data["shards"]
+            shards = self.desired_shards or endpoint_data["shards"]
 
             for shard_id in range(shards):
                 self.shards.append(
@@ -121,9 +118,8 @@ class ShardManager(EventHandler):
 
             for shard in self.shards:
                 shard.events = self.events
-                coro = shard.wait_for("ready")
                 await shard.login()
-                await coro()
+                await shard.wait_for("ready")
 
                 current_iteration += 1
 
