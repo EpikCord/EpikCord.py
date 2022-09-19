@@ -1,18 +1,21 @@
-from typing import List, Optional
+from __future__ import annotations
+from typing import List, Optional, TYPE_CHECKING
 
 from .type_enums import StickerFormatType, StickerType
 from .user import User
 
+if TYPE_CHECKING:
+    import discord_typings
 
 class StickerItem:
-    def __init__(self, data: dict):
-        self.id: str = data["id"]
+    def __init__(self, data: discord_typings.StickerItemData):
+        self.id: int = int(data["id"])
         self.name: str = data["name"]
         self.format_type: StickerFormatType = StickerFormatType(data["format_type"])
 
 
 class Sticker:
-    def __init__(self, client, data: dict):
+    def __init__(self, client, data: discord_typings.StickerData):
         self.client = client
         self.id: int = int(data["id"])
         self.pack_id: Optional[int] = (
@@ -24,7 +27,7 @@ class Sticker:
         self.type: StickerType = StickerType(data["type"])
         self.format_type: StickerFormatType = StickerFormatType(data["format_type"])
         self.available: Optional[bool] = data.get("available")
-        self.guild_id: Optional[int] = data.get("guild_id")
+        self.guild_id: Optional[int] = int(data["guild_id"]) if data.get("guild_id") else None
         self.user: Optional[User] = (
             User(self.client, data["user"]) if data.get("user") else None
         )

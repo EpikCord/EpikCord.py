@@ -1,16 +1,18 @@
 from __future__ import annotations
 
 import datetime
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 from .abstract import Messageable
 from .exceptions import NotFound404, ThreadArchived
 
+if TYPE_CHECKING:
+    import discord_typings
 
 class ThreadMember:
-    def __init__(self, data: dict):
-        self.id: str = data.get("user_id")
-        self.thread_id: str = data.get("thread_id")
+    def __init__(self, data: discord_typings.ThreadMemberData):
+        self.id: int = int(data["user_id"])
+        self.thread_id: int = int(data["id"])
         self.join_timestamp: datetime.datetime = datetime.datetime.fromisoformat(
             data["join_timestamp"]
         )
@@ -18,7 +20,7 @@ class ThreadMember:
 
 
 class Thread(Messageable):
-    def __init__(self, client, data: dict):
+    def __init__(self, client, data: discord_typings.ThreadChannelData):
         super().__init__(client, data)
         self.owner_id: str = data.get("owner_id")
         self.message_count: int = data.get("message_count")
