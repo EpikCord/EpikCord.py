@@ -190,6 +190,10 @@ class VoiceChannel(GuildChannel, Messageable, Connectable):
         self.rtc_region: str = data.get("rtc_region")
 
 
+class ForumChannel(GuildChannel):
+    def __init__(self, client, data):
+        raise NotImplementedError("Forum channels are not implemented yet.")
+
 AnyChannel = Union[
     GuildTextChannel,
     VoiceChannel,
@@ -198,6 +202,7 @@ AnyChannel = Union[
     GuildNewsThread,
     Thread,
     GuildStageChannel,
+    ForumChannel
 ]
 
 __all__ = (
@@ -210,5 +215,6 @@ __all__ = (
     "GuildNewsThread",
     "GuildStageChannel",
     "VoiceChannel",
+    "ForumChannel",
     "AnyChannel",
 )
