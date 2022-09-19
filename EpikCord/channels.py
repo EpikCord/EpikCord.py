@@ -15,21 +15,19 @@ if TYPE_CHECKING:
 
 class Overwrite:
     def __init__(self, data: dict):
-        self.id: str = data.get("id")
-        self.type: int = data.get("type")
-        self.allow: str = data.get("allow")
-        self.deny: str = data.get("deny")
+        self.id: str = data["id"]
+        self.type: int = data["type"]
+        self.allow: str = data["allow"]
+        self.deny: str = data["deny"]
 
 
 class GuildTextChannel(GuildChannel, Messageable):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.topic: str = data.get("topic")
-        self.rate_limit_per_user: int = data.get("rate_limit_per_user")
-        self.last_message_id: str = data.get("last_message_id")
-        self.default_auto_archive_duration: int = data.get(
-            "default_auto_archive_duration"
-        )
+        self.topic: str = data["topic"]
+        self.rate_limit_per_user: int = data["rate_limit_per_user"]
+        self.last_message_id: str = data["last_message_id"]
+        self.default_auto_archive_duration: int = data["default_auto_archive_duration"]
 
     async def start_thread(
         self,
@@ -81,17 +79,16 @@ class GuildTextChannel(GuildChannel, Messageable):
         )
         return await response.json()
 
-    # It returns a List of Threads but I can't typehint that...
     async def list_public_archived_threads(
         self, *, before: Optional[str] = None, limit: Optional[int] = None
-    ) -> Dict[str, Union[List[Messageable], List[ThreadMember], bool]]:
+    ) -> List[Thread]:
 
-        params = {}
+        params: Dict[str, Union[int, str]] = {}
 
         if before:
             params["before"] = before
 
-        if limit is not None:
+        if limit:
             params["limit"] = limit
 
         response = await self.client.http.get(
@@ -99,13 +96,12 @@ class GuildTextChannel(GuildChannel, Messageable):
             params=params,
             channel_id=self.id,
         )
-        return await response.json()
+        return [Thread(self.client, data) for data in await response.json()]
 
-    # It returns a List of Threads but I can't typehint that...
     async def list_private_archived_threads(
         self, *, before: Optional[str], limit: Optional[int]
-    ) -> Union[List[Messageable], List[ThreadMember], bool]:
-        params = {}
+    ) -> List[Thread]:
+        params: Dict[str, Union[int, str]] = {}
 
         if before:
             params["before"] = before
@@ -118,12 +114,12 @@ class GuildTextChannel(GuildChannel, Messageable):
             params=params,
             channel_id=self.id,
         )
-        return await response.json()
+        return [Thread(self.client, data) for data in await response.json()]
 
     async def list_joined_private_archived_threads(
         self, *, before: Optional[str], limit: Optional[int]
-    ) -> Dict[str, Union[List[Messageable], List[ThreadMember], bool]]:
-        params = {}
+    ) -> List[Thread]:
+        params: Dict[str, Union[int, str]] = {}
 
         if before:
             params["before"] = before
@@ -136,15 +132,15 @@ class GuildTextChannel(GuildChannel, Messageable):
             params=params,
             channel_id=self.id,
         )
-        return await response.json()
+        return [Thread(self.client, data) for data in await response.json()]
 
 
 class GuildNewsChannel(GuildTextChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.default_auto_archive_duration: int = data.get(
+        self.default_auto_archive_duration: int = data[
             "default_auto_archive_duration"
-        )
+        ]
 
     async def follow(self, webhook_channel_id: str):
         response = await self.client.http.post(
@@ -158,8 +154,8 @@ class GuildNewsChannel(GuildTextChannel):
 class DMChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.recipient: Optional[List[PartialUser]] = (
-            PartialUser(data.get("recipient")) if data.get("recipient") else None
+        self.recipient: Optional[PartialUser] = (
+            PartialUser(data["recipient"]) if data.get("recipient") else None
         )
 
 
@@ -176,18 +172,18 @@ class GuildNewsThread(Thread, GuildNewsChannel):
 class GuildStageChannel(BaseChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.guild_id: str = data.get("guild_id")
-        self.channel_id: str = data.get("channel_id")
-        self.privacy_level: int = data.get("privacy_level")
-        self.discoverable_disabled: bool = data.get("discoverable_disabled")
+        self.guild_id: str = data["guild_id"]
+        self.channel_id: str = data["channel_id"]
+        self.privacy_level: int = data["privacy_level"]
+        self.discoverable_disabled: bool = data["discoverable_disabled"]
 
 
 class VoiceChannel(GuildChannel, Messageable, Connectable):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.bitrate: int = data.get("bitrate")
-        self.user_limit: int = data.get("user_limit")
-        self.rtc_region: str = data.get("rtc_region")
+        self.bitrate: int = data["bitrate"]
+        self.user_limit: int = data["user_limit"]
+        self.rtc_region: str = data["rtc_region"]
 
 
 class ForumChannel(GuildChannel):
