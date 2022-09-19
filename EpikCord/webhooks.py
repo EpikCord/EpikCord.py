@@ -15,6 +15,7 @@ class SourceChannel:
         self.id: str = data["id"]
         self.name: str = data["name"]
 
+
 class Webhook:  # Not used for making webhooks
     def __init__(self, client, data: dict):
         self.id: str = data["id"]
@@ -35,12 +36,14 @@ class Webhook:  # Not used for making webhooks
         self.avatar: Optional[str] = data.get("avatar")
         self.token: Optional[str] = data.get("token")
         self.application_id: Optional[str] = data.get("application_id")
-        self.source_guild: Optional[PartialGuild] = PartialGuild(
-            data["source_guild"]
-        ) if data.get("source_guild") else None
-        self.source_channel: Optional[SourceChannel] = SourceChannel(
-            data["source_channel"]
-        ) if data.get("source_channel") else None
+        self.source_guild: Optional[PartialGuild] = (
+            PartialGuild(data["source_guild"]) if data.get("source_guild") else None
+        )
+        self.source_channel: Optional[SourceChannel] = (
+            SourceChannel(data["source_channel"])
+            if data.get("source_channel")
+            else None
+        )
         self.url: Optional[str] = data.get("url")
 
 
