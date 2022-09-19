@@ -30,20 +30,20 @@ class Invite:
         self.guild: Optional[PartialGuild] = (
             PartialGuild(data["guild"]) if data.get("guild") else None
         )
-        self.channel: AnyChannel = (
+        self.channel: Optional[AnyChannel] = (
             Utils(client).channel_from_type(data["channel"])
             if data.get("channel")
             else None
         )
         self.inviter: Optional[User] = (
-            User(data.get("inviter")) if data.get("inviter") else None
+            User(self.client, data["inviter"]) if data.get("inviter") else None
         )
-        self.target_type: int = data.get("target_type")
+        self.target_type: Optional[int] = data.get("target_type")
         self.target_user: Optional[User] = (
-            User(data.get("target_user")) if data.get("target_user") else None
+            User(self.client, data["target_user"]) if data.get("target_user") else None
         )
         self.target_application: Optional[Application] = (
-            Application(data.get("target_application"))
+            Application(data["target_application"])
             if data.get("target_application")
             else None
         )
@@ -55,18 +55,18 @@ class Invite:
         )
         self.expires_at: Optional[str] = data.get("expires_at")
         self.stage_instance: Optional[GuildStageChannel] = (
-            GuildStageChannel(data.get("stage_instance"))
+            GuildStageChannel(self.client, data["stage_instance"])
             if data.get("stage_instance")
             else None
         )
         self.guild_scheduled_event: Optional[GuildScheduledEvent] = GuildScheduledEvent(
-            data.get("guild_scheduled_event")
-        )
+            self.client, data["guild_scheduled_event"]
+        ) if data.get("guild_scheduled_event") else None
 
 
 class GuildMember(User):
     def __init__(self, client, data: dict):
-        super().__init__(client, data.get("user"))
+        super().__init__(client, data["user"])
         self.data = data
         self.client = client
         self.nick: Optional[str] = data.get("nick")
