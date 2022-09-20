@@ -1,10 +1,12 @@
 from __future__ import annotations
-from typing import Optional, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, Optional
 
 from .abstract import Messageable
 
 if TYPE_CHECKING:
     import discord_typings
+
 
 class User(Messageable):
     def __init__(self, client, data: discord_typings.UserData):
@@ -24,7 +26,7 @@ class User(Messageable):
         self.accent_color: Optional[int] = data.get("accent_color")
         self.locale: Optional[str] = data.get("locale")
         self.verified: bool = data["verified"]
-        self.email: Optional[str] = data.get("email") # type: ignore
+        self.email: Optional[str] = data.get("email")  # type: ignore
         self.flags: int = data["flags"]
         self.premium_type: int = data["premium_type"]
         self.public_flags: int = data["public_flags"]

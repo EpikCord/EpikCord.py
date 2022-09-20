@@ -138,9 +138,7 @@ class GuildTextChannel(GuildChannel, Messageable):
 class GuildNewsChannel(GuildTextChannel):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
-        self.default_auto_archive_duration: int = data[
-            "default_auto_archive_duration"
-        ]
+        self.default_auto_archive_duration: int = data["default_auto_archive_duration"]
 
     async def follow(self, webhook_channel_id: str):
         response = await self.client.http.post(
@@ -190,6 +188,7 @@ class ForumChannel(GuildChannel):
     def __init__(self, client, data):
         raise NotImplementedError("Forum channels are not implemented yet.")
 
+
 AnyChannel = Union[
     GuildTextChannel,
     VoiceChannel,
@@ -198,7 +197,7 @@ AnyChannel = Union[
     GuildNewsThread,
     Thread,
     GuildStageChannel,
-    ForumChannel
+    ForumChannel,
 ]
 
 __all__ = (

@@ -256,7 +256,7 @@ class WebsocketClient(EventHandler):
 
         future = asyncio.ensure_future(runner(), loop=loop)
         future.add_done_callback(stop_loop_on_completion)
-        
+
         try:
             loop.run_forever()
         except KeyboardInterrupt:

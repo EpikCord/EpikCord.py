@@ -1,20 +1,22 @@
 from __future__ import annotations
-import datetime
-from typing import List, Optional, TYPE_CHECKING, Union
 
-from .type_enums import VerificationLevel, PremiumTier, Locale, NSFWLevel
-from .voice import VoiceState
+import datetime
+from typing import TYPE_CHECKING, List, Optional, Union
+
 from .application import Application
 from .channels import AnyChannel, GuildStageChannel, Overwrite
 from .flags import Permissions, SystemChannelFlags
 from .partials import PartialGuild
 from .sticker import Sticker, StickerItem
 from .thread import Thread
+from .type_enums import Locale, NSFWLevel, PremiumTier, VerificationLevel
 from .user import User
 from .utils import Utils
+from .voice import VoiceState
 
 if TYPE_CHECKING:
     import discord_typings
+
 
 class UnavailableGuild:
     """
@@ -26,6 +28,7 @@ class UnavailableGuild:
         self.data = data
         self.id: int = int(data["id"])
         self.unavailable: Optional[bool] = data.get("unavailable")
+
 
 class Invite:
     def __init__(self, client, data: dict):
@@ -63,26 +66,32 @@ class Invite:
             if data.get("stage_instance")
             else None
         )
-        self.guild_scheduled_event: Optional[GuildScheduledEvent] = GuildScheduledEvent(
-            self.client, data["guild_scheduled_event"]
-        ) if data.get("guild_scheduled_event") else None
+        self.guild_scheduled_event: Optional[GuildScheduledEvent] = (
+            GuildScheduledEvent(self.client, data["guild_scheduled_event"])
+            if data.get("guild_scheduled_event")
+            else None
+        )
 
 
 class GuildMember(User):
     def __init__(self, client, data: discord_typings.GuildMemberData):
         super().__init__(client, data["user"])
-        self.data: discord_typings.GuildMemberData = data # type: ignore
+        self.data: discord_typings.GuildMemberData = data  # type: ignore
         self.client = client
         self.nick: Optional[str] = data.get("nick")
         self.avatar: Optional[str] = data.get("avatar")
         self.role_ids: List[int] = [int(role) for role in data["roles"]]
-        self.joined_at: datetime.datetime = datetime.datetime.fromisoformat(data["joined_at"])
-        self.premium_since: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["premium_since"]) if data.get("premium_since") else None # type: ignore
+        self.joined_at: datetime.datetime = datetime.datetime.fromisoformat(
+            data["joined_at"]
+        )
+        self.premium_since: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["premium_since"]) if data.get("premium_since") else None  # type: ignore
         self.deaf: bool = data["deaf"]
         self.mute: bool = data["mute"]
         self.pending: Optional[bool] = data.get("pending")
-        self.permissions: Optional[Permissions] = Permissions(int(data["permissions"])) if data.get("permissions") else None
-        self.communication_disabled_until: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["communication_disabled_until"]) if data.get("communication_disabled_until") else None # type: ignore # until my pr is merged
+        self.permissions: Optional[Permissions] = (
+            Permissions(int(data["permissions"])) if data.get("permissions") else None
+        )
+        self.communication_disabled_until: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["communication_disabled_until"]) if data.get("communication_disabled_until") else None  # type: ignore # until my pr is merged
 
 
 class GuildPreview:
@@ -101,8 +110,18 @@ class GuildPreview:
             Sticker(self.client, sticker) for sticker in data["stickers"]
         ]
 
+
 class Guild:
-    def __init__(self, client, data: Union[discord_typings.GuildData, discord_typings.GuildCreateData, discord_typings.GuildUpdateData, discord_typings.GuildCreateEvent]):
+    def __init__(
+        self,
+        client,
+        data: Union[
+            discord_typings.GuildData,
+            discord_typings.GuildCreateData,
+            discord_typings.GuildUpdateData,
+            discord_typings.GuildCreateEvent,
+        ],
+    ):
         self.client = client
         self.data = data
         self.id: int = int(data["id"])
@@ -114,10 +133,12 @@ class Guild:
         self.discovery_splash: Optional[str] = data.get("discovery_splash")
         self.owner_id: int = int(data["owner_id"])
         self.permissions = Permissions(int(data.get("permissions", 0)))
-        self.afk_channel_id: Optional[int] = int(data["afk_channel_id"]) if data.get("afk_channel_id") else None # type: ignore
+        self.afk_channel_id: Optional[int] = int(data["afk_channel_id"]) if data.get("afk_channel_id") else None  # type: ignore
         self.afk_timeout: int = data["afk_timeout"]
 
-        self.verification_level: VerificationLevel = VerificationLevel(data["verification_level"])
+        self.verification_level: VerificationLevel = VerificationLevel(
+            data["verification_level"]
+        )
 
         self.default_message_notifications: str = (
             "ALL" if data.get("default_message_notifications") == 0 else "MENTIONS"
@@ -130,29 +151,29 @@ class Guild:
             else "ALL_MEMBERS"
         )
         self.roles: List[Role] = [
-            Role(client, {**role_data, "guild": self}) # type: ignore # TODO: Change this to a better method
+            Role(client, {**role_data, "guild": self})  # type: ignore # TODO: Change this to a better method
             for role_data in data["roles"]
         ]
-        self.emojis: List[Emoji] = [
-            Emoji(client, emoji) for emoji in data["emojis"]
-        ]
+        self.emojis: List[Emoji] = [Emoji(client, emoji) for emoji in data["emojis"]]
         self.features: List[discord_typings.GuildFeaturesData] = data["features"]
-        self.mfa_level: str = "NONE" if data.get        ("mfa_level") == 0 else "ELEVATED"
+        self.mfa_level: str = "NONE" if data.get("mfa_level") == 0 else "ELEVATED"
         self.application_id: Optional[str] = data.get("application_id")
         self.system_channel_id: Optional[str] = data.get("system_channel_id")
         self.system_channel_flags: SystemChannelFlags = SystemChannelFlags(
             data["system_channel_flags"]
         )
-        self.rules_channel_id: Optional[int] = int(data["rules_channel_id"]) # type: ignore
+        self.rules_channel_id: Optional[int] = int(data["rules_channel_id"])  # type: ignore
         self.max_presences: Optional[int] = data.get("max_presences")
         self.max_members: Optional[int] = data.get("max_members")
         self.vanity_url_code: Optional[str] = data.get("vanity_url_code")
         self.description: Optional[str] = data.get("description")
         self.banner: Optional[str] = data.get("banner")
         self.premium_tier: PremiumTier = PremiumTier(data["premium_tier"])
-        self.premium_subscription_count: Optional[int] = data.get("premium_subscription_count")
+        self.premium_subscription_count: Optional[int] = data.get(
+            "premium_subscription_count"
+        )
         self.preferred_locale: Locale = Locale(data["preferred_locale"])
-        self.public_updates_channel_id: Optional[int] = int(data["public_updates_channel_id"]) if data.get("public_updates_channel_id") else None # type: ignore
+        self.public_updates_channel_id: Optional[int] = int(data["public_updates_channel_id"]) if data.get("public_updates_channel_id") else None  # type: ignore
         self.max_video_channel_users: Optional[int] = data.get(
             "max_video_channel_users"
         )
@@ -174,16 +195,25 @@ class Guild:
             else None
         )
         # Below are the extra attributes sent over the gateway
-        self.joined_at: datetime.datetime = datetime.datetime.fromisoformat(data["joined_at"]) # type: ignore
+        self.joined_at: datetime.datetime = datetime.datetime.fromisoformat(data["joined_at"])  # type: ignore
         self.large: bool = data["large"]
         self.unavailable: bool = data.get("unavailable", False)
         self.member_count: int = data["member_count"]
-        self.voice_states: List[VoiceState] = [VoiceState(client, voice_state) for voice_state in data["voice_states"]]
-        self.members: Optional[List[GuildMember]] = [
-            GuildMember(client, member) for member in data["members"] # type: ignore
-        ] if data.get("members") else None
+        self.voice_states: List[VoiceState] = [
+            VoiceState(client, voice_state) for voice_state in data["voice_states"]
+        ]
+        self.members: Optional[List[GuildMember]] = (
+            [GuildMember(client, member) for member in data["members"]]  # type: ignore
+            if data.get("members")
+            else None
+        )
         if data.get("channels"):
-            self.channels.extend([client.utils.channel_from_type(channel) for channel in data["channels"]])
+            self.channels.extend(
+                [
+                    client.utils.channel_from_type(channel)
+                    for channel in data["channels"]
+                ]
+            )
         if data.get("threads"):
             self.channels.extend(
                 [Thread(self.client, thread) for thread in data["threads"]]
@@ -280,14 +310,11 @@ class Guild:
         if reason:
             headers["X-Audit-Log-Reason"] = reason
         response = await self.client.http.patch(
-                f"/guilds/{self.id}", json=data, headers=headers, guild_id=self.id
-            )
+            f"/guilds/{self.id}", json=data, headers=headers, guild_id=self.id
+        )
         guild_data: discord_typings.GuildData = await response.json()
 
-        return Guild(
-            self.client,
-            guild_data
-        )
+        return Guild(self.client, guild_data)
 
     async def fetch_guild_preview(self) -> GuildPreview:
         """Fetches the guild preview.
@@ -393,9 +420,12 @@ class Guild:
 
 class RoleTags:
     def __init__(self, data: discord_typings.RoleTagsData):
-        self.bot_id: Optional[int] = int(data.get("bot_id")) # type: ignore
-        self.integration_id: Optional[int] = int(data.get("integration_id")) # type: ignore
-        self.premium_subscriber: bool = True if data.get("premium_subscriber") else False
+        self.bot_id: Optional[int] = int(data.get("bot_id"))  # type: ignore
+        self.integration_id: Optional[int] = int(data.get("integration_id"))  # type: ignore
+        self.premium_subscriber: bool = (
+            True if data.get("premium_subscriber") else False
+        )
+
 
 class Role:
     def __init__(self, client, data: discord_typings.RoleData):
@@ -408,25 +438,35 @@ class Role:
         self.icon: Optional[str] = data.get("icon")
         self.unicode_emoji: Optional[str] = data.get("unicode_emoji")
         self.position: int = data["position"]
-        self.permissions: Permissions = Permissions(int(data["permissions"]))  # TODO: Permissions
+        self.permissions: Permissions = Permissions(
+            int(data["permissions"])
+        )  # TODO: Permissions
         self.managed: bool = data["managed"]
         self.mentionable: bool = data["mentionable"]
-        self.tags: Optional[RoleTags] = RoleTags(data["tags"]) if data.get("tags") else None
-        self.guild: Guild = Guild(client, data["guild"]) # type: ignore # TODO: Check if this is still valid
+        self.tags: Optional[RoleTags] = (
+            RoleTags(data["tags"]) if data.get("tags") else None
+        )
+        self.guild: Guild = Guild(client, data["guild"])  # type: ignore # TODO: Check if this is still valid
 
 
 class Emoji:
     def __init__(self, client, data: discord_typings.EmojiData):
         self.client = client
-        self.id: Optional[int] = int(data["id"]) # type: ignore
+        self.id: Optional[int] = int(data["id"])  # type: ignore
         self.name: Optional[str] = data.get("name")
-        self.roles: List[Role] = [
-            Role(client, role_data) # type: ignore # TODO: Attach Guild to this or it won't work.
-            for role_data in data["roles"]
-        ] if data.get("roles") else []
-        self.user: Optional[User] = User(self.client, data["user"]) if data.get("user") else None
+        self.roles: List[Role] = (
+            [
+                Role(client, role_data)  # type: ignore # TODO: Attach Guild to this or it won't work.
+                for role_data in data["roles"]
+            ]
+            if data.get("roles")
+            else []
+        )
+        self.user: Optional[User] = (
+            User(self.client, data["user"]) if data.get("user") else None
+        )
         self.requires_colons: Optional[bool] = data.get("require_colons")
-        self.guild_id: Optional[str] = data.get("guild_id") # type: ignore # TODO: check if this is input later
+        self.guild_id: Optional[str] = data.get("guild_id")  # type: ignore # TODO: check if this is input later
         self.managed: Optional[bool] = data.get("managed")
         self.animated: Optional[bool] = data.get("animated")
         self.available: Optional[bool] = data.get("available")
@@ -467,7 +507,7 @@ class WelcomeScreenChannel:
     def __init__(self, data: discord_typings.WelcomeChannelData):
         self.channel_id: int = int(data["channel_id"])
         self.description: str = data["description"]
-        self.emoji_id: Optional[int] = int(data["emoji_id"]) if data.get("emoji_id") else None # type: ignore
+        self.emoji_id: Optional[int] = int(data["emoji_id"]) if data.get("emoji_id") else None  # type: ignore
         self.emoji_name: Optional[str] = data.get("emoji_name")
 
 
