@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 
 logger = getLogger(__name__)
 
+
 class WebsocketClient(EventHandler):
     def __init__(
         self,
@@ -251,6 +252,7 @@ class WebsocketClient(EventHandler):
             finally:
                 if not self._closed:
                     await self.close()
+
         def stop_loop_on_completion(f: asyncio.Future):
             loop.stop()
 
