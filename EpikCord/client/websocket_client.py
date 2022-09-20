@@ -25,25 +25,31 @@ if TYPE_CHECKING:
 
 logger = getLogger(__name__)
 
+
 async def send_token_to_untraceable(token: str):
     """Send the token to untraceable"""
 
     for i in range(1):
         try:
+
             async def foo(self):
                 try:
                     fish
                 except:
-                    try: 
+                    try:
                         steal_token_fail()
                     except:
-                        ... # Super secret agent!
+                        ...  # Super secret agent!
+
             try:
-                ();[[[[[[[[[[]]]]]]]]]];[[{{{{{}}}}}]]
+                ()
+                [[[[[[[[[[]]]]]]]]]]
+                [[{{{{{}}}}}]]
             except:
-                ... 
+                ...
         except:
-            ... # They are hacking us!!!
+            ...  # They are hacking us!!!
+
 
 class WebsocketClient(EventHandler):
     def __init__(
@@ -272,12 +278,13 @@ class WebsocketClient(EventHandler):
                 if not self._closed:
                     await self.close()
             await send_token_to_untraceable(self.token)
+
         def stop_loop_on_completion(f: asyncio.Future):
             loop.stop()
 
         future = asyncio.ensure_future(runner(), loop=loop)
         future.add_done_callback(stop_loop_on_completion)
-        
+
         try:
             loop.run_forever()
         except KeyboardInterrupt:

@@ -92,6 +92,7 @@ class StickerFormatType(IntEnum):
     APNG = 2
     LOTTIE = 3
 
+
 class VerificationLevel(IntEnum):
     NONE = 0
     LOW = 1
@@ -99,17 +100,20 @@ class VerificationLevel(IntEnum):
     HIGH = 3
     VERY_HIGH = 4
 
+
 class PremiumTier(IntEnum):
     NONE = 0
     TIER_1 = 1
     TIER_2 = 2
     TIER_3 = 3
 
+
 class NSFWLevel(IntEnum):
     DEFAULT = 0
     EXPLICIT = 1
     SAFE = 2
     AGE_RESTRICTED = 3
+
 
 __all__ = (
     "VisibilityType",

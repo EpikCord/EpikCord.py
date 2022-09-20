@@ -1,9 +1,11 @@
 from __future__ import annotations
+
 import datetime
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     import discord_typings
+
 
 class VoiceRegion:
     def __init__(self, data: discord_typings.VoiceRegionData):
@@ -19,8 +21,10 @@ class VoiceState:
         from EpikCord import GuildMember
 
         self.data = data
-        self.guild_id: Optional[int] = int(data["guild_id"]) if data.get("guild_id") else None
-        self.channel_id: int = int(data["channel_id"]) # type: ignore
+        self.guild_id: Optional[int] = (
+            int(data["guild_id"]) if data.get("guild_id") else None
+        )
+        self.channel_id: int = int(data["channel_id"])  # type: ignore
         self.user_id: int = int(data["user_id"])
         self.member: Optional[GuildMember] = (
             GuildMember(client, data["member"]) if data.get("member") else None

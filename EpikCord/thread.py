@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import datetime
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
 from .abstract import Messageable
 from .exceptions import NotFound404, ThreadArchived
 
 if TYPE_CHECKING:
     import discord_typings
+
 
 class ThreadMember:
     def __init__(self, data: discord_typings.ThreadMemberData):

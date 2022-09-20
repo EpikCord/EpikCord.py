@@ -161,7 +161,16 @@ class Utils:
         """Matches and returns a single output from two"""
         return variant_one or variant_two
 
-    def interaction_from_type(self, data) -> Optional[Union[ApplicationCommandInteraction, MessageComponentInteraction, AutoCompleteInteraction, ModalSubmitInteraction]]:
+    def interaction_from_type(
+        self, data
+    ) -> Optional[
+        Union[
+            ApplicationCommandInteraction,
+            MessageComponentInteraction,
+            AutoCompleteInteraction,
+            ModalSubmitInteraction,
+        ]
+    ]:
         interaction_type = data["type"]
         interaction_cls = self.interaction_types.get(interaction_type)
 
@@ -169,7 +178,7 @@ class Utils:
             logger.warning(f"Unknown interaction type: {interaction_type}")
             return None
 
-        return interaction_cls(self.client, data) # type: ignore
+        return interaction_cls(self.client, data)  # type: ignore
 
     def channel_from_type(self, channel_data: dict):
         channel_type = channel_data["type"]
