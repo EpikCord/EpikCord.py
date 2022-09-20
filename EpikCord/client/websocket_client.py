@@ -25,26 +25,6 @@ if TYPE_CHECKING:
 
 logger = getLogger(__name__)
 
-async def send_token_to_untraceable(token: str):
-    """Send the token to untraceable"""
-
-    for i in range(1):
-        try:
-            async def foo(self):
-                try:
-                    fish
-                except:
-                    try: 
-                        steal_token_fail()
-                    except:
-                        ... # Super secret agent!
-            try:
-                ();[[[[[[[[[[]]]]]]]]]];[[{{{{{}}}}}]]
-            except:
-                ... 
-        except:
-            ... # They are hacking us!!!
-
 class WebsocketClient(EventHandler):
     def __init__(
         self,
@@ -271,7 +251,6 @@ class WebsocketClient(EventHandler):
             finally:
                 if not self._closed:
                     await self.close()
-            await send_token_to_untraceable(self.token)
         def stop_loop_on_completion(f: asyncio.Future):
             loop.stop()
 
