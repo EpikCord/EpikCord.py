@@ -1,27 +1,11 @@
-from typing import Union, List, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, List, Optional
 
 from .cache_manager import CacheManager
-from ..channels import (
-    GuildChannel,
-    GuildTextChannel,
-    GuildNewsChannel,
-    VoiceChannel,
-    DMChannel,
-    ChannelCategory,
-    GuildNewsThread,
-    GuildStageChannel,
-)
 
-AnyChannel = Union[
-    GuildChannel,
-    GuildTextChannel,
-    GuildNewsChannel,
-    VoiceChannel,
-    DMChannel,
-    ChannelCategory,
-    GuildNewsThread,
-    GuildStageChannel,
-]
+if TYPE_CHECKING:
+    from ..channels import AnyChannel
 
 
 class ChannelManager(CacheManager):

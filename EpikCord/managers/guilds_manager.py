@@ -1,12 +1,16 @@
 from __future__ import annotations
-from typing import List, Union, Optional
+
+from typing import List, Optional, Union
 
 from .cache_manager import CacheManager
 
 
 class GuildManager(CacheManager):
-    def __init__(self, client, guilds=[]):
-        from EpikCord import UnavailableGuild, Guild
+    def __init__(self, client, guilds=None):
+        if guilds is None:
+            guilds = []
+
+        from EpikCord import Guild, UnavailableGuild
 
         super().__init__()
         self.client = client

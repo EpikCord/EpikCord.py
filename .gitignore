@@ -8,8 +8,14 @@ build
 
 # Python environment
 __pycache__
+venv
 .py[cod]
 dist
+.nox
+
+# Mypy cache
+.mypy_cache
+.dmypy.json
 
 # Other
 _build

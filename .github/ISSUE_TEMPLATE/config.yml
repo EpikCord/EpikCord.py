@@ -1,4 +1,4 @@
-blank_issues_enabled: false
+blank_issues_enabled: true
 contact_links:
   - name: Development Discord Server
     about: Use our development Discord server to ask for questions.

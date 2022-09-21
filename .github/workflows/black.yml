@@ -3,6 +3,7 @@ name: Black
 on:
   workflow_dispatch:
   push:
+    branches: [ master ]
 
 jobs:
   deploy:
@@ -22,12 +23,9 @@ jobs:
       with:
         python-version: '3.8'
 
-    - name: Install Black
-      run: pip install black
-
     - name: run Formatter
       run: |
-        black .
+        make pretty
     - name: Push changes
       run: |
         git commit -m ":art: Format code automatically" -a || echo "No changes to commit"

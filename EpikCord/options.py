@@ -1,24 +1,10 @@
 from __future__ import annotations
-from typing import Optional, Union, List
-from .type_enums import ChannelTypes, Locale
 
+from typing import List, Optional, Union
 
-class BaseSlashCommandOption:
-    def __init__(self, *, name: str, description: str, required: Optional[bool] = True):
-        self.name: str = name
-        self.description: str = description
-        self.required: bool = required
-        self.type: Optional[int] = None  #! Needs to be set by the subclass
-        #! People shouldn't use this class, this is just a base class for other
-        #! options, but they can use this for other options we are yet to account for.
-
-    def to_dict(self):
-        return {
-            "name": self.name,
-            "description": self.description,
-            "required": self.required,
-            "type": self.type,
-        }
+from .abstract import BaseSlashCommandOption
+from .localizations import Localization
+from .type_enums import ChannelType
 
 
 class StringOption(BaseSlashCommandOption):
@@ -99,7 +85,7 @@ class ChannelOption(BaseSlashCommandOption):
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 7
-        self.channel_types: List[ChannelTypes] = []
+        self.channel_types: List[ChannelType] = []
 
     def to_dict(self):
         usual_dict: dict = super().to_dict()
@@ -159,10 +145,18 @@ class AttachmentOption(BaseSlashCommandOption):
 
 
 class SlashCommandOptionChoice:
-    def __init__(self, *, name: str, value: Union[float, int, str]):
+    def __init__(
+        self,
+        *,
+        name: str,
+        value: Union[float, int, str],
+        name_localization: Optional[List[Localization]],
+    ):
         self.name: str = name
         self.value: Union[float, int, str] = value
-        self.name_localizations: Dict[Locale, str] = data.get("name_localizations")
+        self.name_localizations: List[Localization] = [
+            Localization(k, v) for k, v in name_localization.items()
+        ]
         self.name_localisations = self.name_localizations
 
     def to_dict(self):
@@ -256,6 +250,19 @@ class SubCommandGroup(BaseSlashCommandOption):
         return usual_dict
 
 
+class ReceivedOption:
+    def __init__(self, data):
+        self.data = data
+        self.type = data["type"]
+        self.value: Optional[str] = data.get("value")
+        self.focused: Optional[bool] = data.get("focused")
+        self.options: Optional[List[ReceivedOption]] = (
+            [ReceivedOption(data) for data in data["options"]]
+            if data.get("options")
+            else None
+        )
+
+
 AnyOption = Union[
     Subcommand,
     SubCommandGroup,
@@ -268,3 +275,20 @@ AnyOption = Union[
     MentionableOption,
     NumberOption,
 ]
+
+__all__ = (
+    "Subcommand",
+    "SubCommandGroup",
+    "StringOption",
+    "IntegerOption",
+    "BooleanOption",
+    "UserOption",
+    "ChannelOption",
+    "RoleOption",
+    "MentionableOption",
+    "NumberOption",
+    "AttachmentOption",
+    "SlashCommandOptionChoice",
+    "AnyOption",
+    "ReceivedOption",
+)

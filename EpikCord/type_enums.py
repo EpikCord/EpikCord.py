@@ -1,14 +1,16 @@
-from enum import IntEnum, Enum
+from enum import Enum, IntEnum
 
 
 class VisibilityType(IntEnum):
     NONE = 0
     EVERYONE = 1
 
+
 class ApplicationCommandPermissionType(IntEnum):
     ROLE = 1
     USER = 2
     CHANNEL = 3
+
 
 class Locale(Enum):
     DANISH = "da"
@@ -43,30 +45,30 @@ class Locale(Enum):
     KOREAN = "ko"
 
 
-class AutoModerationActionType(IntEnum):
+class AutoModActionType(IntEnum):
     BLOCK_MESSAGE = 1
     SEND_ALERT_MESSAGE = 2
     TIMEOUT = 3
 
 
-class AutoModerationEventType(IntEnum):
+class AutoModEventType(IntEnum):
     MESSAGE_SEND = 1
 
 
-class AutoModerationTriggerType(IntEnum):
+class AutoModTriggerType(IntEnum):
     KEYWORD = 1
-    HARMFUL_LINK = 2
     SPAM = 3
     KEYWORD_PRESENT = 4
+    MENTION_SPAM = 5
 
 
-class AutoModerationKeywordPresetTypes(IntEnum):
+class AutoModKeywordPresetType(IntEnum):
     PROFANITY = 1
     SEXUAL_CONTENT = 2
     SLURS = 3
 
 
-class ChannelTypes(IntEnum):
+class ChannelType(IntEnum):
     GUILD_TEXT = 0
     DM = 1
     GUILD_VOICE = 2
@@ -78,3 +80,53 @@ class ChannelTypes(IntEnum):
     GUILD_STAGE_VOICE = 13
     GUILD_DIRECTORY = 14
     GUILD_FORUM = 15
+
+
+class StickerType(IntEnum):
+    STANDARD = 1
+    GUILD = 2
+
+
+class StickerFormatType(IntEnum):
+    PNG = 1
+    APNG = 2
+    LOTTIE = 3
+
+
+class VerificationLevel(IntEnum):
+    NONE = 0
+    LOW = 1
+    MEDIUM = 2
+    HIGH = 3
+    VERY_HIGH = 4
+
+
+class PremiumTier(IntEnum):
+    NONE = 0
+    TIER_1 = 1
+    TIER_2 = 2
+    TIER_3 = 3
+
+
+class NSFWLevel(IntEnum):
+    DEFAULT = 0
+    EXPLICIT = 1
+    SAFE = 2
+    AGE_RESTRICTED = 3
+
+
+__all__ = (
+    "VisibilityType",
+    "ApplicationCommandPermissionType",
+    "Locale",
+    "AutoModActionType",
+    "AutoModEventType",
+    "StickerFormatType",
+    "StickerType",
+    "AutoModTriggerType",
+    "AutoModKeywordPresetType",
+    "ChannelType",
+    "VerificationLevel",
+    "PremiumTier",
+    "NSFWLevel",
+)

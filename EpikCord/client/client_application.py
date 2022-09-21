@@ -1,10 +1,4 @@
-from ..exceptions import (
-    InvalidApplicationCommandType,
-    InvalidApplicationCommandOptionType,
-)
-from typing import List, Optional, Dict
-
-from ..options import *
+from typing import Dict, List, Optional
 
 from ..application import (
     Application,
@@ -12,6 +6,12 @@ from ..application import (
     ApplicationCommandPermission,
     GuildApplicationCommandPermission,
 )
+from ..exceptions import (
+    InvalidApplicationCommandOptionType,
+    InvalidApplicationCommandType,
+)
+from ..flags import Permissions
+from ..options import *
 
 
 class ClientApplication(Application):
@@ -24,9 +24,13 @@ class ClientApplication(Application):
         data: dict = await response.json()
         return Application(data)
 
-    async def fetch_global_application_commands(self, *, with_localizations: bool = False, with_localisations: bool = False) -> List[ApplicationCommand]:
+    async def fetch_global_application_commands(
+        self, *, with_localizations: bool = False, with_localisations: bool = False
+    ) -> List[ApplicationCommand]:
         with_localisation = with_localisations or with_localizations
-        response = await self.client.http.get(f"/applications/{self.id}/commands?with_localizations={with_localization}")
+        response = await self.client.http.get(
+            f"/applications/{self.id}/commands?with_localizations={with_localisation}"
+        )
         payload = [ApplicationCommand(command) for command in await response.json()]
         self.client.application_commands = payload
         return payload
@@ -37,14 +41,15 @@ class ClientApplication(Application):
         name: str,
         description: str,
         options: Optional[List[AnyOption]],
-        default_member_permission: Optional[str] = None,
+        default_member_permission: Optional[Permissions] = None,
         command_type: Optional[int] = 1,
-        dm_permission: bool = True
+        dm_permission: bool = True,
     ):
         payload = {
             "name": name,
             "description": description,
-            "default_permissions": default_permission,
+            "default_permissions": default_member_permission,
+            "dm_permissions": dm_permission,
         }
 
         if command_type not in range(1, 4):
@@ -110,19 +115,19 @@ class ClientApplication(Application):
             f"/applications/{self.id}/commands/{command_id}", json=payload
         )
 
-    async def delete_global_application_command(self, command_id: str):
+    async def delete_global_app_command(self, command_id: str):
         await self.client.http.delete(f"/applications/{self.id}/commands/{command_id}")
 
-    async def bulk_overwrite_global_application_commands(self, commands: List[Dict]):
+    async def bulk_overwrite_global_app_commands(self, commands: List[Dict]):
         await self.client.http.put(f"/applications/{self.id}/commands", json=commands)
 
-    async def fetch_guild_application_commands(self, guild_id: str):
+    async def fetch_guild_app_commands(self, guild_id: str):
         response = await self.client.http.get(
             f"/applications/{self.id}/guilds/{guild_id}/commands"
         )
         return [ApplicationCommand(command) for command in await response.json()]
 
-    async def create_guild_application_command(
+    async def create_guild_app_command(
         self,
         guild_id: str,
         *,
@@ -180,7 +185,7 @@ class ClientApplication(Application):
         )
         return ApplicationCommand(await response.json())
 
-    async def edit_global_application_command(
+    async def edit_guild_application_command(
         self,
         guild_id: str,
         command_id: str,
@@ -240,3 +245,6 @@ class ClientApplication(Application):
             f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}/permissions",
             json=payload,
         )
+
+
+__all__ = ("ClientApplication",)

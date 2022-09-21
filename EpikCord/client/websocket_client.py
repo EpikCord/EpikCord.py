@@ -1,21 +1,24 @@
 from __future__ import annotations
+
+import asyncio
+from logging import getLogger
+from sys import platform
 from time import perf_counter_ns
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
+
+from ..close_event_codes import GatewayCECode
 from ..exceptions import (
+    ClosedWebSocketConnection,
+    DisallowedIntents,
     InvalidIntents,
     InvalidToken,
-    ShardingRequired,
     Ratelimited429,
-    DisallowedIntents,
-    InvalidToken,
-    ClosedWebSocketConnection,
+    ShardingRequired,
 )
-import asyncio
-from sys import platform
-from ..close_event_codes import GatewayCECode
+from ..flags import Intents
 from ..opcodes import GatewayOpcode
-from typing import Optional, List, TYPE_CHECKING
-from logging import getLogger
 from .event_handler import EventHandler
+from .http_client import HTTPClient
 
 if TYPE_CHECKING:
     from EpikCord import Presence
@@ -24,9 +27,15 @@ logger = getLogger(__name__)
 
 
 class WebsocketClient(EventHandler):
-    def __init__(self, token: str, intents: int):
+    def __init__(
+        self,
+        token: str,
+        intents: Union[Intents, int],
+        presence: Optional[Presence],
+        discord_endpoint: str = "https://discord.com/api/v10",
+    ):
         super().__init__()
-        from EpikCord import Intents
+        from EpikCord import Intents, __version__
 
         self.token = token
         if not token:
@@ -38,13 +47,21 @@ class WebsocketClient(EventHandler):
             self.intents = intents
 
         self._closed = True
-        self.heartbeats = []
-
+        self.presence = presence
+        self.heartbeats: List[Dict] = []
+        self.http: HTTPClient = HTTPClient(
+            headers={
+                "Authorization": f"Bot {token}",
+                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
+                "Content-Type": "application/json",
+            },
+            discord_endpoint=discord_endpoint,
+        )
         self.interval = None  # How frequently to heartbeat
-        self.session_id = None
+        self.session_id: Optional[str] = None
         self.sequence = None
 
-    async def change_presence(self, *, presence: Optional[Presence]):
+    async def change_presence(self, *, presence: Presence):
         payload = {"op": GatewayOpcode.PRESENCE_UPDATE, "d": presence.to_dict()}
         await self.send_json(payload)
 
@@ -72,7 +89,7 @@ class WebsocketClient(EventHandler):
         user_ids: Optional[List[str]] = None,
         nonce: Optional[str] = None,
     ):
-        payload = {
+        payload: dict = {
             "op": GatewayOpcode.REQUEST_GUILD_MEMBERS,
             "d": {"guild_id": guild_id},
         }
@@ -171,6 +188,7 @@ class WebsocketClient(EventHandler):
         res = await self.http.get("/gateway")
         data = await res.json()
         url = data["url"]
+
         self.ws = await self.http.ws_connect(
             f"{url}?v=10&encoding=json&compress=zlib-stream"
         )
@@ -179,6 +197,7 @@ class WebsocketClient(EventHandler):
 
     async def resume(self):
         logger.critical("Reconnecting...")
+
         await self.connect()
         await self.send_json(
             {
@@ -190,6 +209,7 @@ class WebsocketClient(EventHandler):
                 },
             }
         )
+
         self._closed = False
 
     async def identify(self):
@@ -205,20 +225,15 @@ class WebsocketClient(EventHandler):
                 },
             },
         }
+
         if self.presence:
             payload["d"]["presence"] = self.presence.to_dict()
+
         return await self.send_json(payload)
 
     async def close(self) -> None:
         if self._closed:
             return
-
-        # for voice in self.voice_clients:
-        #     try:
-        #         await voice.disconnect(force=True)
-        #     except Exception:
-        #         # if an error happens during disconnects, disregard it.
-        #         pass
 
         if self.ws is not None and not self.ws.closed:
             await self.ws.close(code=4000)
@@ -229,7 +244,6 @@ class WebsocketClient(EventHandler):
         self._closed = True
 
     def login(self):
-
         loop = asyncio.get_event_loop()
 
         async def runner():
@@ -252,3 +266,6 @@ class WebsocketClient(EventHandler):
         finally:
             future.remove_done_callback(stop_loop_on_completion)
             self.utils.cleanup_loop(loop)
+
+
+__all__ = ("WebsocketClient",)

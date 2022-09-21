@@ -1,22 +1,37 @@
 from __future__ import annotations
-from .exceptions import ThreadArchived, NotFound404
-from typing import List, Optional, TYPE_CHECKING
+
 import datetime
+from typing import TYPE_CHECKING, List, Optional
+
+from .abstract import Messageable
+from .exceptions import NotFound404, ThreadArchived
 
 if TYPE_CHECKING:
-    from EpikCord import ThreadMember
+    import discord_typings
 
 
-class Thread:
-    def __init__(self, client, data: dict):
+class ThreadMember:
+    def __init__(self, data: discord_typings.ThreadMemberData):
+        self.id: int = int(data["user_id"])
+        self.thread_id: int = int(data["id"])
+        self.join_timestamp: datetime.datetime = datetime.datetime.fromisoformat(
+            data["join_timestamp"]
+        )
+        self.flags: int = data.get("flags")
+
+
+class Thread(Messageable):
+    def __init__(self, client, data: discord_typings.ThreadChannelData):
         super().__init__(client, data)
         self.owner_id: str = data.get("owner_id")
         self.message_count: int = data.get("message_count")
         self.member_count: int = data.get("member_count")
         self.archived: bool = data.get("archived")
         self.auto_archive_duration: int = data.get("auto_archive_duration")
-        self.archive_timestamp: datetime.datetime = datetime.datetime.fromisoformat(
-            data["archive_timestamp"]
+        self.archive_timestamp: Optional[datetime.datetime] = (
+            datetime.datetime.fromisoformat(data.get("archive_timestamp"))
+            if data.get("archive_timestamp")
+            else None
         )
         self.locked: bool = data.get("locked")
 
@@ -93,3 +108,6 @@ class Thread:
             channel_id=self.id,
         )
         return await response.json()
+
+
+__all__ = ("Thread", "ThreadMember")

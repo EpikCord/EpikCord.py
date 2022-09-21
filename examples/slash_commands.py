@@ -1,16 +1,16 @@
 import asyncio
 import datetime
 import time
-
+import humanize
 
 from EpikCord import Client, Intents, StringOption, NumberOption
 
-intents = Intents().all()
+intents = Intents.all()
 
-client: Client = Client("token", intents)
+client = Client("token", intents)
 
 
-@client.event
+@client.event()
 async def ready():
     print("Ready!")
 

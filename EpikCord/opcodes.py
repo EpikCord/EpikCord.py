@@ -36,3 +36,6 @@ class VoiceOpcode(Opcode):
     RESUMED = 9
 
     CLIENT_DISCONNECT = 13
+
+
+__all__ = ("GatewayOpcode", "VoiceOpcode")

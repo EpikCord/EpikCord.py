@@ -16,6 +16,7 @@ See the [Contributing](./CONTRIBUTING.md) page for more information.
 
 ## Where are your docs?
 [![Documentation Status](https://readthedocs.org/projects/epikcord/badge/?version=latest)](https://epikcord.readthedocs.io/en/latest/?badge=latest)
+
 Have functions and attributes you not sure about? Check our docs [here](https://epikcordpy.readthedocs.io)
 
 ## I need help!

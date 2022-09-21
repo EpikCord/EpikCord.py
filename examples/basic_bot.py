@@ -1,11 +1,11 @@
 from EpikCord import Client, Intents
 
-intents = Intents().all()
+intents = Intents.all()
 
-client: Client = Client("token", intents)
+client = Client("token", intents)
 
 
-@client.event
+@client.event()
 async def ready():
     print("Ready!")
 
