@@ -10,7 +10,7 @@ from .thread import Thread
 logger = getLogger(__name__)
 
 if TYPE_CHECKING:
-    from EpikCord import ThreadMember
+    import discord_typings
 
 
 class Overwrite:
@@ -163,7 +163,7 @@ class CategoryChannel(GuildChannel):
 
 
 class GuildNewsThread(Thread, GuildNewsChannel):
-    def __init__(self, client, data: dict):
+    def __init__(self, client, data):
         super().__init__(client, data)
 
 
