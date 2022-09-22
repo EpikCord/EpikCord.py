@@ -83,7 +83,6 @@ class Messageable:
         after: Optional[str] = None,
         limit: Optional[int] = None,
     ) -> List[Message]:
-        from EpikCord import Message
 
         response = await self.client.http.get(
             f"channels/{self.id}/messages",
@@ -93,7 +92,6 @@ class Messageable:
         return [Message(self.client, message) for message in data]
 
     async def fetch_message(self, *, message_id: str) -> Message:
-        from EpikCord import Message
 
         response = await self.client.http.get(
             f"channels/{self.id}/messages/{message_id}"
@@ -113,7 +111,6 @@ class Messageable:
         attachments: List[File] = None,
         suppress_embeds: bool = False,
     ) -> Message:
-        from EpikCord import Message
 
         payload = self.client.utils.filter_values(
             {
