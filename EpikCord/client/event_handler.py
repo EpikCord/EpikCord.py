@@ -3,7 +3,6 @@ from collections import defaultdict, deque
 from logging import getLogger
 from time import perf_counter_ns
 from typing import Callable, DefaultDict, Deque, Dict, Optional, Union
-
 from ..opcodes import GatewayOpcode
 from .command_handler import CommandHandler
 
@@ -153,8 +152,7 @@ class EventHandler(CommandHandler):
             if check(*args):
                 future.set_result(args)
 
-    @staticmethod
-    async def _voice_server_update(data: Dict):
+    async def _voice_server_update(self, data: Dict):
         voice_data = data["d"]
         payload = {
             "token": voice_data["token"],
@@ -165,14 +163,14 @@ class EventHandler(CommandHandler):
         if voice_data["endpoint"]:
             payload["endpoint"] = voice_data["endpoint"]
 
-        return payload
+        return await self.dispatch("voice_server_update", payload)
 
     async def _voice_state_update(self, data: dict):
         from EpikCord import VoiceState
 
-        return VoiceState(
+        return await self.dispatch("voice_state_update", VoiceState(
             self, data
-        )  # TODO: Make this return something like (VoiceState, Member) or make VoiceState get Member from member_id
+        ))  # TODO: Make this return something like (VoiceState, Member) or make VoiceState get Member from member_id
 
     async def _guild_members_chunk(self, data: dict):
         ...
