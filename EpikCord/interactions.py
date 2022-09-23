@@ -185,6 +185,7 @@ class MessageInteraction:
         )
         self.user = User(client, data.get("user"))
 
+
 AnyInteraction = Union[
     MessageComponentInteraction,
     ModalSubmitInteraction,
