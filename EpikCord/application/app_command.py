@@ -50,22 +50,22 @@ class ApplicationCommand:
 
 
 class ApplicationCommandPermission:
-    def __init__(self, data):
-        self.id: str = data.get("id")
+    def __init__(self, data: discord_typings.ApplicationCommandPermissionsData):
+        self.id: int = int(data["id"])
         self.type: ApplicationCommandPermissionType = ApplicationCommandPermissionType(
-            data.get("type")
+            data["type"]
         )
-        self.permission: bool = data.get("permission")
+        self.permission: bool = data["permission"]
 
 
 class GuildApplicationCommandPermission:
-    def __init__(self, data: dict):
-        self.id: str = data.get("id")
-        self.application_id: str = data.get("application_id")
-        self.guild_id: str = data.get("guild_id")
-        self.permissions: ApplicationCommandPermission = ApplicationCommandPermission(
-            data.get("permissions")
-        )
+    def __init__(self, data: discord_typings.GuildApplicationCommandPermissionData):
+        self.id: int = int(data["id"])
+        self.application_id: int = int(data["application_id"])
+        self.guild_id: int = int(data["guild_id"])
+        self.permissions: List[ApplicationCommandPermission] = [ApplicationCommandPermission(
+            permissions
+        ) for permissions in data["permissions"]]
 
     def to_dict(self):
         return {
