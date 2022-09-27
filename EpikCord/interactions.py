@@ -29,7 +29,6 @@ class ResolvedDataHandler:
         self.data: dict = resolved_data
         ...
 
-
 class MessageComponentInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
         from EpikCord import Message
@@ -145,7 +144,7 @@ class AutoCompleteInteraction(BaseInteraction):
 
 
 class ApplicationCommandInteraction(BaseInteraction):
-    def __init__(self, client, data: dict):
+    def __init__(self, client, data: discord_typings.ApplicationCommandInteractionData):
         super().__init__(client, data)
         self.command_id: str = self.interaction_data.get("id")
         self.command_name: str = self.interaction_data.get("name")
@@ -155,7 +154,7 @@ class ApplicationCommandInteraction(BaseInteraction):
 
 
 class UserCommandInteraction(ApplicationCommandInteraction):
-    def __init__(self, client, data: dict):
+    def __init__(self, client, data):
         super().__init__(client, data)
         self.target_id: str = data.get("target_id")
 

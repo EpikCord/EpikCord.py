@@ -32,7 +32,6 @@ else:
 
 if TYPE_CHECKING:
     from EpikCord import (
-        ActionRow,
         AllowedMention,
         Attachment,
         Check,
@@ -42,7 +41,7 @@ if TYPE_CHECKING:
         Modal,
         VoiceChannel,
     )
-
+    import discord_typings
     from .components import *
 
 
@@ -433,15 +432,15 @@ class BaseComponent:
 
 
 class BaseInteraction:
-    def __init__(self, client, data: dict):
+    def __init__(self, client, data):
         from EpikCord import GuildMember, User
 
-        self.id: str = data.get("id")
+        self.id: int = int(data["id"])
+        self.data: discord_typings.InteractionData = data
         self.client = client
-        self.type: int = data.get("type")
-        self.application_id: int = data.get("application_id")
-        self.data: dict = data
-        self.interaction_data: Optional[dict] = data.get("data")
+        self.type: int = data["type"]
+        self.application_id: int = int(data["application_id"])
+        self.interaction_data: Optional[discord_typings.InteractionData] = data.get("data")
         self.guild_id: Optional[str] = data.get("guild_id")
         self.channel_id: Optional[str] = data.get("channel_id")
         self.author: Optional[Union[User, GuildMember]] = (

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional
 
 from ..flags import Permissions
-from ..localizations import Localization
+from ..localizations import Localization, Locale
 from ..options import *
 from ..type_enums import ApplicationCommandPermissionType
 
@@ -40,11 +40,11 @@ class ApplicationCommand:
         self.default_member_permissions: Permissions = Permissions(
             data["default_member_permissions"]
         )
-        self.version: str = data.get("version")
-        self.name_localizations: List[Localization] = data.get("name_localizations")
-        self.description_localizations: List[Localization] = [
-            Localization(k, v) for k, v in data.get("description_localizations").items()
-        ]
+        self.version: int = int(data["version"])
+        self.name_localizations: Optional[List[Localization]] = [Localization(Locale(k), v) for (k, v) in data["name_localizations"].items()] if data.get("name_localizations") else None # type: ignore
+        self.description_localizations: Optional[List[Localization]] = [
+            Localization(Locale(k), v) for k, v in data["description_localizations"].items() # type: ignore
+        ] if data.get("description_localizations") else None
         self.name_localisations = self.name_localizations
         self.description_localisations = self.description_localizations
 
