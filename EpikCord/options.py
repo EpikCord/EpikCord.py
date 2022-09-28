@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import List, Optional, Union
 
+from EpikCord.exceptions import InvalidData
+
 from .abstract import BaseSlashCommandOption
 from .localizations import Localization
 from .type_enums import ChannelType
@@ -12,7 +14,7 @@ class StringOption(BaseSlashCommandOption):
         self,
         *,
         name: str,
-        description: Optional[str] = None,
+        description: str,
         required: bool = True,
         autocomplete: Optional[bool] = False,
         min_length: Optional[int] = None,
@@ -41,7 +43,7 @@ class IntegerOption(BaseSlashCommandOption):
         self,
         *,
         name: str,
-        description: Optional[str] = None,
+        description: str,
         required: bool = True,
         autocomplete: Optional[bool] = False,
         min_value: Optional[int] = None,
@@ -65,7 +67,7 @@ class IntegerOption(BaseSlashCommandOption):
 
 class BooleanOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = True
+        self, *, name: str, description: str, required: bool = True
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 5
@@ -73,7 +75,7 @@ class BooleanOption(BaseSlashCommandOption):
 
 class UserOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = True
+        self, *, name: str, description: str, required: bool = True
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 6
@@ -81,7 +83,7 @@ class UserOption(BaseSlashCommandOption):
 
 class ChannelOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = True
+        self, *, name: str, description: str, required: bool = True
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 7
@@ -95,7 +97,7 @@ class ChannelOption(BaseSlashCommandOption):
 
 class RoleOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = True
+        self, *, name: str, description: str, required: bool = True
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 8
@@ -103,7 +105,7 @@ class RoleOption(BaseSlashCommandOption):
 
 class MentionableOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = True
+        self, *, name: str, description: str, required: bool = True
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 9
@@ -114,7 +116,7 @@ class NumberOption(BaseSlashCommandOption):
         self,
         *,
         name: str,
-        description: Optional[str] = None,
+        description: str,
         required: bool = True,
         autocomplete: Optional[bool] = False,
         min_value: Optional[int] = None,
@@ -138,7 +140,7 @@ class NumberOption(BaseSlashCommandOption):
 
 class AttachmentOption(BaseSlashCommandOption):
     def __init__(
-        self, *, name: str, description: Optional[str] = None, required: bool = True
+        self, *, name: str, description: str, required: bool = True
     ):
         super().__init__(name=name, description=description, required=required)
         self.type = 11
@@ -150,12 +152,12 @@ class SlashCommandOptionChoice:
         *,
         name: str,
         value: Union[float, int, str],
-        name_localization: Optional[List[Localization]],
+        name_localization: List[Localization] = [],
     ):
         self.name: str = name
         self.value: Union[float, int, str] = value
         self.name_localizations: List[Localization] = [
-            Localization(k, v) for k, v in name_localization.items()
+            l.to_dict() for l in name_localization
         ]
         self.name_localisations = self.name_localizations
 
@@ -164,44 +166,25 @@ class SlashCommandOptionChoice:
 
 
 class Subcommand(BaseSlashCommandOption):
-    conversion_type = {
-        3: StringOption,
-        4: IntegerOption,
-        5: BooleanOption,
-        6: UserOption,
-        7: ChannelOption,
-        8: RoleOption,
-        9: MentionableOption,
-        10: NumberOption,
-        11: AttachmentOption,
-    }
-
     def __init__(
         self,
         *,
         name: str,
-        description: str = None,
+        description: str,
         options: Optional[List[AnyOption]] = None,
     ):
         super().__init__(name=name, description=description)
         self.type = 1
-        converted_options = []
-
-        if not options:
-            options = []
-
-        for option in [option.to_dict() for option in options]:
-            if option["type"] == 1:
-                converted_options.append(StringOption(**option))
-
-            elif option["type"] == 2:
-                converted_options.append(SubCommandGroup(**option))
-
-            else:
-                option_type = option.pop("type", None)
-                converted_options.append(self.conversion_type[option_type](**option))
-
-        self.options: List[AnyOption] = converted_options
+        self.options = options or []
+        for option in self.options:
+            if option.type == 1:
+                raise InvalidData(
+                    "You cannot have a subcommand in a subcommand group."
+                )
+            elif option.type == 2:
+                raise InvalidData(
+                    "You cannot have a subcommand group in a subcommand group."
+                )
 
     def to_dict(self):
         usual_dict = super().to_dict()
@@ -211,37 +194,21 @@ class Subcommand(BaseSlashCommandOption):
 
 
 class SubCommandGroup(BaseSlashCommandOption):
-    conversion_type = {
-        1: Subcommand,
-        3: StringOption,
-        4: IntegerOption,
-        5: BooleanOption,
-        6: UserOption,
-        7: ChannelOption,
-        8: RoleOption,
-        9: MentionableOption,
-        10: NumberOption,
-        11: AttachmentOption,
-    }
-
     def __init__(
         self,
         *,
         name: str,
-        description: str = None,
+        description: str,
         options: Optional[List[AnyOption]] = None,
     ):
         super().__init__(name=name, description=description)
         self.type = 2
-        converted_options = []
-        for option in [option.to_dict() for option in options]:
-            if option["type"] == 2:
-                converted_options.append(SubCommandGroup(**option))
-            else:
-                option_type = option.pop("type", None)
-                converted_options.append(self.conversion_type[option_type](**option))
-
-        self.options: List[AnyOption] = converted_options
+        self.options = options or []
+        for option in self.options:
+            if option.type == 2:
+                raise InvalidData(
+                    "You cannot have a subcommand group in a subcommand group."
+                )
 
     def to_dict(self):
         usual_dict = super().to_dict()
