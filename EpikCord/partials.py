@@ -1,12 +1,17 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional, TYPE_CHECKING
+
+from EpikCord.flags import Permissions
+
+if TYPE_CHECKING:
+    import discord_typings
 
 
 class PartialEmoji:
-    def __init__(self, data: Dict[str, Any]):
+    def __init__(self, data: discord_typings.Partial):
         self.data: dict = data
-        self.name: str = data.get("name")
-        self.id: str = data.get("id")
-        self.animated: bool = data.get("animated")
+        self.name: str = data["name"]
+        self.id: str = data["id"]
+        self.animated: Optional[bool] = data.get("animated")
 
     def to_dict(self):
         payload = {
@@ -21,20 +26,20 @@ class PartialEmoji:
 
 
 class PartialUser:
-    def __init__(self, data: Dict[str, Any]):
-        self.data: dict = data
-        self.id: str = data.get("id")
-        self.username: str = data.get("username")
-        self.discriminator: str = data.get("discriminator")
+    def __init__(self, data: discord_typings.UserData): # I can't find the PartialUser data type, doesn't exist?
+        self.data = data
+        self.id: int = int(data["id"])
+        self.username: str = data["username"]
+        self.discriminator: str = data["discriminator"]
         self.avatar: Optional[str] = data.get("avatar")
 
 
 class PartialGuild:
-    def __init__(self, data: Dict[str, Any]):
-        self.data: dict = data
-        self.id: str = data.get("id")
-        self.name: str = data.get("name")
-        self.permissions: int = int(data.get("permissions"))
+    def __init__(self, data: discord_typings.PartialGuildData):
+        self.data = data
+        self.id: int = int(data["id"])
+        self.name: str = data["name"]
+        self.permissions: Permissions = Permissions(int(data["permissions"]))
         self.features: List[str] = data.get("features")
 
 
