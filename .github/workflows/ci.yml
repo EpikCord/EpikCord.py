@@ -25,8 +25,8 @@ jobs:
       - name: Update Pip
         run: pip install -U pip
 
-      - name: Install nox
-        run: pip install nox
+      - name: Install dependencies
+        run: pip install nox git+https://github.com/Bluenix2/discord-typings
 
       - name: Run nox
         run: nox -s lint mypy

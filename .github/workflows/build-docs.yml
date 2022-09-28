@@ -31,8 +31,8 @@ jobs:
       run: |
         cd docs
         sphinx-apidoc -o ./source ../EpikCord
-        make html 
+        make html
     - name: Push changes
       run: |
-        git commit -m ":art: Format code automatically" -a || echo "No changes to commit"
+        git commit -m "📝 Create documentation automatically" -a || echo "No changes to commit"
         git push || echo "No changes to push"

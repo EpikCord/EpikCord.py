@@ -1,4 +1,5 @@
-from typing import Any, List, Optional, TYPE_CHECKING
+from __future__ import annotations
+from typing import List, Optional, TYPE_CHECKING
 
 from EpikCord.flags import Permissions
 
@@ -7,8 +8,8 @@ if TYPE_CHECKING:
 
 
 class PartialEmoji:
-    def __init__(self, data: discord_typings.Partial):
-        self.data: dict = data
+    def __init__(self, data):
+        self.data = data
         self.name: str = data["name"]
         self.id: str = data["id"]
         self.animated: Optional[bool] = data.get("animated")
@@ -26,7 +27,7 @@ class PartialEmoji:
 
 
 class PartialUser:
-    def __init__(self, data: discord_typings.UserData): # I can't find the PartialUser data type, doesn't exist?
+    def __init__(self, data: discord_typings.UserData): # I can't find a PartialUser data type, doesn't exist?
         self.data = data
         self.id: int = int(data["id"])
         self.username: str = data["username"]
@@ -40,7 +41,7 @@ class PartialGuild:
         self.id: int = int(data["id"])
         self.name: str = data["name"]
         self.permissions: Permissions = Permissions(int(data["permissions"]))
-        self.features: List[str] = data.get("features")
+        self.features: Optional[List[discord_typings.GuildFeaturesData]] = data.get("features")
 
 
 __all__ = ("PartialEmoji", "PartialUser", "PartialGuild")
