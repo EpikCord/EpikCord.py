@@ -31,7 +31,9 @@ class AllowedMention:
         roles: List[int] = [],
         users: List[int] = [],
     ):
-        self.allowed_mentions: Union[List[AllowedMentionTypes], AllowedMentionTypes] = allowed_mentions
+        self.allowed_mentions: Union[
+            List[AllowedMentionTypes], AllowedMentionTypes
+        ] = allowed_mentions
         self.replied_user: bool = replied_user
         self.roles: List[int] = roles
         self.users: List[int] = users

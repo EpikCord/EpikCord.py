@@ -3,12 +3,11 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING, List, Optional, Union
 
-
 from .application import Application
-from .presence import Presence
 from .channels import AnyChannel, GuildStageChannel, Overwrite
 from .flags import Permissions, SystemChannelFlags
 from .partials import PartialGuild
+from .presence import Presence
 from .sticker import Sticker
 from .thread import Thread
 from .type_enums import Locale, NSFWLevel, PremiumTier, VerificationLevel
@@ -199,13 +198,19 @@ class Guild:
 
         # Below are the extra attributes sent over the gateway
 
-        self.joined_at: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["joined_at"]) if data.get("joined_at") else None
+        self.joined_at: Optional[datetime.datetime] = (
+            datetime.datetime.fromisoformat(data["joined_at"])
+            if data.get("joined_at")
+            else None
+        )
         self.large: Optional[bool] = data.get("large")
         self.unavailable: Optional[bool] = data.get("unavailable")
         self.member_count: Optional[int] = data.get("member_count")
-        self.voice_states: Optional[List[VoiceState]] = [
-            VoiceState(client, voice_state) for voice_state in data["voice_states"]
-        ] if data.get("voice_states") else None
+        self.voice_states: Optional[List[VoiceState]] = (
+            [VoiceState(client, voice_state) for voice_state in data["voice_states"]]
+            if data.get("voice_states")
+            else None
+        )
         self.members: Optional[List[GuildMember]] = (
             [GuildMember(client, member) for member in data["members"]]  # type: ignore
             if data.get("members")

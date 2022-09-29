@@ -172,7 +172,9 @@ class GuildStageChannel(BaseChannel):
         super().__init__(client, data)
         self.guild_id: int = int(data["guild_id"])
         self.channel_id: int = int(data["channel_id"])
-        self.privacy_level: discord_typings.StageInstancePrivacyLevels = data["privacy_level"]
+        self.privacy_level: discord_typings.StageInstancePrivacyLevels = data[
+            "privacy_level"
+        ]
         self.discoverable_disabled: bool = data["discoverable_disabled"]
 
 
