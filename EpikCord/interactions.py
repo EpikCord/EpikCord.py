@@ -7,8 +7,10 @@ from .components import *
 from .options import *
 
 if TYPE_CHECKING:
-    from .message import Attachment, Embed
     import discord_typings
+
+    from .message import Attachment, Embed
+
 
 class Modal:
     def __init__(self, *, title: str, custom_id: str, components: List[ActionRow]):
