@@ -177,7 +177,7 @@ class GuildStageChannel(BaseChannel):
 
 
 class VoiceChannel(GuildChannel, Messageable, Connectable):
-    def __init__(self, client, data: dict):
+    def __init__(self, client, data: discord_typings.VoiceChannelData):
         super().__init__(client, data)
         self.bitrate: int = data["bitrate"]
         self.user_limit: int = data["user_limit"]

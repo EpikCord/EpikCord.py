@@ -136,7 +136,7 @@ class Messageable:
 
 
 class BaseCommand:
-    def __init__(self, checks: Optional[List[Check]]):
+    def __init__(self, checks: List[Check] = []):
         self.checks: List[Check] = checks
 
     def is_slash_command(self):
@@ -155,10 +155,10 @@ class BaseCommand:
 
 
 class BaseChannel:
-    def __init__(self, client, data: dict):
-        self.id: str = data.get("id")
+    def __init__(self, client, data: discord_typings.ChannelData):
+        self.id: int = int(data["id"])
         self.client = client
-        self.type = data.get("type")
+        self.type: int = data["type"]
 
 
 class Connectable:
@@ -166,8 +166,6 @@ class Connectable:
         self,
         client,
         *,
-        guild_id: Optional[str] = None,
-        channel_id: Optional[str] = None,
         channel: Optional[VoiceChannel] = None,
     ):
         self.client = client

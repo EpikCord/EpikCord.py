@@ -32,7 +32,7 @@ class ThreadMetaData:
         self.locked: bool = data["locked"]
         self.invitable: Optional[bool] = data.get("invitable")
         self.create_timestamp: Optional[datetime.datetime] = (
-            datetime.datetime.fromisoformat(data["create_timestamp"])
+            datetime.datetime.fromisoformat(data["create_timestamp"]) # type: ignore # Will be removed after PR is accepted in discord_typings
             if data.get("create_timestamp")
             else None
         )
