@@ -114,11 +114,13 @@ class NSFWLevel(IntEnum):
     SAFE = 2
     AGE_RESTRICTED = 3
 
+
 class AllowedMentionTypes(Enum):
     ROLE = "roles"
     USER = "users"
     EVERYONE = "everyone"
     ALL = ["roles", "users", "everyone"]
+
 
 __all__ = (
     "VisibilityType",
@@ -134,5 +136,5 @@ __all__ = (
     "VerificationLevel",
     "PremiumTier",
     "NSFWLevel",
-    "AllowedMentionTypes"
+    "AllowedMentionTypes",
 )

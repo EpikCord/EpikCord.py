@@ -66,25 +66,19 @@ class IntegerOption(BaseSlashCommandOption):
 
 
 class BooleanOption(BaseSlashCommandOption):
-    def __init__(
-        self, *, name: str, description: str, required: bool = True
-    ):
+    def __init__(self, *, name: str, description: str, required: bool = True):
         super().__init__(name=name, description=description, required=required)
         self.type = 5
 
 
 class UserOption(BaseSlashCommandOption):
-    def __init__(
-        self, *, name: str, description: str, required: bool = True
-    ):
+    def __init__(self, *, name: str, description: str, required: bool = True):
         super().__init__(name=name, description=description, required=required)
         self.type = 6
 
 
 class ChannelOption(BaseSlashCommandOption):
-    def __init__(
-        self, *, name: str, description: str, required: bool = True
-    ):
+    def __init__(self, *, name: str, description: str, required: bool = True):
         super().__init__(name=name, description=description, required=required)
         self.type = 7
         self.channel_types: List[ChannelType] = []
@@ -96,17 +90,13 @@ class ChannelOption(BaseSlashCommandOption):
 
 
 class RoleOption(BaseSlashCommandOption):
-    def __init__(
-        self, *, name: str, description: str, required: bool = True
-    ):
+    def __init__(self, *, name: str, description: str, required: bool = True):
         super().__init__(name=name, description=description, required=required)
         self.type = 8
 
 
 class MentionableOption(BaseSlashCommandOption):
-    def __init__(
-        self, *, name: str, description: str, required: bool = True
-    ):
+    def __init__(self, *, name: str, description: str, required: bool = True):
         super().__init__(name=name, description=description, required=required)
         self.type = 9
 
@@ -139,9 +129,7 @@ class NumberOption(BaseSlashCommandOption):
 
 
 class AttachmentOption(BaseSlashCommandOption):
-    def __init__(
-        self, *, name: str, description: str, required: bool = True
-    ):
+    def __init__(self, *, name: str, description: str, required: bool = True):
         super().__init__(name=name, description=description, required=required)
         self.type = 11
 
@@ -178,9 +166,7 @@ class Subcommand(BaseSlashCommandOption):
         self.options = options or []
         for option in self.options:
             if option.type == 1:
-                raise InvalidData(
-                    "You cannot have a subcommand in a subcommand group."
-                )
+                raise InvalidData("You cannot have a subcommand in a subcommand group.")
             elif option.type == 2:
                 raise InvalidData(
                     "You cannot have a subcommand group in a subcommand group."

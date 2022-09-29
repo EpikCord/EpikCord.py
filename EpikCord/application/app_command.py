@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional
 
 from ..flags import Permissions
-from ..localizations import Localization, Locale
+from ..localizations import Locale, Localization
 from ..options import *
 from ..type_enums import ApplicationCommandPermissionType
 
@@ -41,10 +41,14 @@ class ApplicationCommand:
             data["default_member_permissions"]
         )
         self.version: int = int(data["version"])
-        self.name_localizations: Optional[List[Localization]] = [Localization(Locale(k), v) for (k, v) in data["name_localizations"].items()] if data.get("name_localizations") else None # type: ignore
-        self.description_localizations: Optional[List[Localization]] = [
-            Localization(Locale(k), v) for k, v in data["description_localizations"].items() # type: ignore
-        ] if data.get("description_localizations") else None
+        self.name_localizations: Optional[List[Localization]] = [Localization(Locale(k), v) for (k, v) in data["name_localizations"].items()] if data.get("name_localizations") else None  # type: ignore
+        self.description_localizations: Optional[List[Localization]] = (
+            [
+                Localization(Locale(k), v) for k, v in data["description_localizations"].items()  # type: ignore
+            ]
+            if data.get("description_localizations")
+            else None
+        )
         self.name_localisations = self.name_localizations
         self.description_localisations = self.description_localizations
 
@@ -63,9 +67,10 @@ class GuildApplicationCommandPermission:
         self.id: int = int(data["id"])
         self.application_id: int = int(data["application_id"])
         self.guild_id: int = int(data["guild_id"])
-        self.permissions: List[ApplicationCommandPermission] = [ApplicationCommandPermission(
-            permissions
-        ) for permissions in data["permissions"]]
+        self.permissions: List[ApplicationCommandPermission] = [
+            ApplicationCommandPermission(permissions)
+            for permissions in data["permissions"]
+        ]
 
     def to_dict(self):
         return {

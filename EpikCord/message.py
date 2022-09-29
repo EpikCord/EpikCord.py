@@ -12,15 +12,16 @@ from .mentioned import MentionedChannel
 from .partials import PartialEmoji
 from .sticker import *
 from .thread import Thread
+from .type_enums import AllowedMentionTypes
 from .user import User
 from .webhooks import WebhookUser
-from .type_enums import AllowedMentionTypes
 
 logger = getLogger(__name__)
 
 
 def _filter_values(dictionary: dict) -> dict:
     return {k: v for k, v in dictionary.items() if v is not None}
+
 
 class AllowedMention:
     def __init__(
@@ -40,7 +41,7 @@ class AllowedMention:
             "parse": self.allowed_mentions,
             "roles": self.roles,
             "users": self.users,
-            "replied_user": self.replied_user
+            "replied_user": self.replied_user,
         }
 
 

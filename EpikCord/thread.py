@@ -17,7 +17,10 @@ class ThreadMember:
         self.join_timestamp: datetime.datetime = datetime.datetime.fromisoformat(
             data["join_timestamp"]
         )
-        self.flags: int = data["flags"] # Currently I don't know what the Flag is, so it's int for now.
+        self.flags: int = data[
+            "flags"
+        ]  # Currently I don't know what the Flag is, so it's int for now.
+
 
 class ThreadMetaData:
     def __init__(self, data: discord_typings.ThreadMetadata):
@@ -28,14 +31,17 @@ class ThreadMetaData:
         )
         self.locked: bool = data["locked"]
         self.invitable: Optional[bool] = data.get("invitable")
-        self.create_timestamp: Optional[datetime.datetime] = datetime.datetime.fromisoformat(
-            data["create_timestamp"]
-        ) if data.get("create_timestamp") else None
+        self.create_timestamp: Optional[datetime.datetime] = (
+            datetime.datetime.fromisoformat(data["create_timestamp"])
+            if data.get("create_timestamp")
+            else None
+        )
+
 
 class Thread(Messageable):
     def __init__(self, client, data: discord_typings.ThreadChannelData):
         super().__init__(client, int(data["id"]))
-        
+
         self.owner_id: int = int(data["owner_id"])
         self.message_count: Optional[int] = data.get("message_count")
         self.member_count: Optional[int] = data.get("member_count")
@@ -55,7 +61,7 @@ class Thread(Messageable):
             raise ThreadArchived(
                 "This thread has been archived so it is no longer joinable"
             )
-        
+
         response = await self.client.http.put(
             f"/channels/{self.id}/thread-members/{member_id}", channel_id=self.id
         )

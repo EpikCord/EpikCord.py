@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import List, Optional, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, List, Optional
 
 from EpikCord.flags import Permissions
 
@@ -27,7 +28,9 @@ class PartialEmoji:
 
 
 class PartialUser:
-    def __init__(self, data: discord_typings.UserData): # I can't find a PartialUser data type, doesn't exist?
+    def __init__(
+        self, data: discord_typings.UserData
+    ):  # I can't find a PartialUser data type, doesn't exist?
         self.data = data
         self.id: int = int(data["id"])
         self.username: str = data["username"]
@@ -41,7 +44,9 @@ class PartialGuild:
         self.id: int = int(data["id"])
         self.name: str = data["name"]
         self.permissions: Permissions = Permissions(int(data["permissions"]))
-        self.features: Optional[List[discord_typings.GuildFeaturesData]] = data.get("features")
+        self.features: Optional[List[discord_typings.GuildFeaturesData]] = data.get(
+            "features"
+        )
 
 
 __all__ = ("PartialEmoji", "PartialUser", "PartialGuild")

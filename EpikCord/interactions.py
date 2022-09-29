@@ -31,6 +31,7 @@ class ResolvedDataHandler:
         self.data: dict = resolved_data
         ...
 
+
 class MessageComponentInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
         from EpikCord import Message

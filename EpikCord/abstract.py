@@ -32,6 +32,8 @@ else:
 
 
 if TYPE_CHECKING:
+    import discord_typings
+
     from EpikCord import (
         AllowedMention,
         Attachment,
@@ -42,7 +44,7 @@ if TYPE_CHECKING:
         Modal,
         VoiceChannel,
     )
-    import discord_typings
+
     from .components import *
 
 
@@ -100,7 +102,9 @@ class Messageable:
         embeds: List[Embed] = [],
         components: List[ActionRow] = [],
         tts: bool = False,
-        allowed_mention: AllowedMention = AllowedMention(allowed_mentions=AllowedMentionTypes.ALL),
+        allowed_mention: AllowedMention = AllowedMention(
+            allowed_mentions=AllowedMentionTypes.ALL
+        ),
         sticker_ids: Optional[List[str]] = None,
         attachments: List[Attachment] = [],
         suppress_embeds: bool = False,
@@ -435,7 +439,9 @@ class BaseInteraction:
         self.client = client
         self.type: int = data["type"]
         self.application_id: int = int(data["application_id"])
-        self.interaction_data: Optional[discord_typings.InteractionData] = data.get("data")
+        self.interaction_data: Optional[discord_typings.InteractionData] = data.get(
+            "data"
+        )
         self.guild_id: Optional[str] = data.get("guild_id")
         self.channel_id: Optional[str] = data.get("channel_id")
         self.author: Optional[Union[User, GuildMember]] = (
