@@ -168,11 +168,11 @@ class GuildNewsThread(Thread, GuildNewsChannel):
 
 
 class GuildStageChannel(BaseChannel):
-    def __init__(self, client, data: dict):
+    def __init__(self, client, data: discord_typings.StageInstanceData):
         super().__init__(client, data)
-        self.guild_id: str = data["guild_id"]
-        self.channel_id: str = data["channel_id"]
-        self.privacy_level: int = data["privacy_level"]
+        self.guild_id: int = int(data["guild_id"])
+        self.channel_id: int = int(data["channel_id"])
+        self.privacy_level: discord_typings.StageInstancePrivacyLevels = data["privacy_level"]
         self.discoverable_disabled: bool = data["discoverable_disabled"]
 
 
@@ -181,7 +181,7 @@ class VoiceChannel(GuildChannel, Messageable, Connectable):
         super().__init__(client, data)
         self.bitrate: int = data["bitrate"]
         self.user_limit: int = data["user_limit"]
-        self.rtc_region: str = data["rtc_region"]
+        self.rtc_region: Optional[str] = data.get("rtc_region")
 
 
 class ForumChannel(GuildChannel):

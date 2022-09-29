@@ -3,11 +3,13 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING, List, Optional, Union
 
+
 from .application import Application
+from .presence import Presence
 from .channels import AnyChannel, GuildStageChannel, Overwrite
 from .flags import Permissions, SystemChannelFlags
 from .partials import PartialGuild
-from .sticker import Sticker, StickerItem
+from .sticker import Sticker
 from .thread import Thread
 from .type_enums import Locale, NSFWLevel, PremiumTier, VerificationLevel
 from .user import User
@@ -118,8 +120,8 @@ class Guild:
         data: Union[
             discord_typings.GuildData,
             discord_typings.GuildCreateData,
-            discord_typings.GuildUpdateData,
             discord_typings.GuildCreateEvent,
+            discord_typings.GuildUpdateData,
         ],
     ):
         self.client = client
@@ -194,19 +196,22 @@ class Guild:
             if data.get("stickers")
             else None
         )
+
         # Below are the extra attributes sent over the gateway
-        self.joined_at: datetime.datetime = datetime.datetime.fromisoformat(data["joined_at"])  # type: ignore
-        self.large: bool = data["large"]
-        self.unavailable: bool = data.get("unavailable", False)
-        self.member_count: int = data["member_count"]
-        self.voice_states: List[VoiceState] = [
+
+        self.joined_at: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["joined_at"]) if data.get("joined_at") else None
+        self.large: Optional[bool] = data.get("large")
+        self.unavailable: Optional[bool] = data.get("unavailable")
+        self.member_count: Optional[int] = data.get("member_count")
+        self.voice_states: Optional[List[VoiceState]] = [
             VoiceState(client, voice_state) for voice_state in data["voice_states"]
-        ]
+        ] if data.get("voice_states") else None
         self.members: Optional[List[GuildMember]] = (
             [GuildMember(client, member) for member in data["members"]]  # type: ignore
             if data.get("members")
             else None
         )
+
         if data.get("channels"):
             self.channels.extend(
                 [
@@ -214,11 +219,13 @@ class Guild:
                     for channel in data["channels"]
                 ]
             )
+
         if data.get("threads"):
             self.channels.extend(
                 [Thread(self.client, thread) for thread in data["threads"]]
             )
-        self.presences: List[dict] = data.get("presences")
+
+        self.presences: Optional[List[Presence]] = data.get("presences")
         self.stage_instances: List[GuildStageChannel] = [
             GuildStageChannel(client, channel)
             for channel in data.get("stage_instances")
