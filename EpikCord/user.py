@@ -10,10 +10,10 @@ if TYPE_CHECKING:
 
 class User(Messageable):
     def __init__(self, client, data: discord_typings.UserData):
-        super().__init__(client, data["id"])
+        super().__init__(client, int(data["id"]))
         self.data = data
         self.client = client
-        self.id: str = data["id"]
+        self.id: int = int(data["id"])
         self.username: str = data["username"]
         self.discriminator: str = data["discriminator"]
         self.avatar: Optional[str] = data.get("avatar")

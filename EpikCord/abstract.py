@@ -13,6 +13,7 @@ from aiohttp import ClientWebSocketResponse
 from .close_event_codes import GatewayCECode
 from .exceptions import ClosedWebSocketConnection, CustomIdIsTooBig, InvalidArgumentType
 from .opcodes import GatewayOpcode, VoiceOpcode
+from .type_enums import AllowedMentionTypes
 
 logger = getLogger("EpikCord.channels")
 
@@ -64,22 +65,16 @@ class TypingContextManager:
 
 
 class Messageable:
-    def __init__(self, client, channel_id: str):
-        if isinstance(channel_id, (int, str)):
-            self.id: str = channel_id
-        elif isinstance(channel_id, dict):
-            self.id: str = channel_id.get("id")  # type: ignore
-        else:
-            raise TypeError(f"Expected str, int or dict, got {type(channel_id)}")
-
+    def __init__(self, client, channel_id: int):
+        self.id: int = channel_id
         self.client = client
 
     async def fetch_messages(
         self,
         *,
-        around: Optional[str] = None,
-        before: Optional[str] = None,
-        after: Optional[str] = None,
+        around: Optional[int] = None,
+        before: Optional[int] = None,
+        after: Optional[int] = None,
         limit: Optional[int] = None,
     ) -> List[Message]:
 
@@ -102,12 +97,12 @@ class Messageable:
         self,
         content: Optional[str] = None,
         *,
-        embeds: Optional[List[dict]] = None,
-        components: List[ActionRow] = None,
-        tts: Optional[bool] = False,
-        allowed_mention: AllowedMention = None,
+        embeds: List[Embed] = [],
+        components: List[ActionRow] = [],
+        tts: bool = False,
+        allowed_mention: AllowedMention = AllowedMention(allowed_mentions=AllowedMentionTypes.ALL),
         sticker_ids: Optional[List[str]] = None,
-        attachments: List[File] = None,
+        attachments: List[Attachment] = [],
         suppress_embeds: bool = False,
     ) -> Message:
 

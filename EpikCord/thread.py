@@ -17,40 +17,45 @@ class ThreadMember:
         self.join_timestamp: datetime.datetime = datetime.datetime.fromisoformat(
             data["join_timestamp"]
         )
-        self.flags: int = data.get("flags")
+        self.flags: int = data["flags"] # Currently I don't know what the Flag is, so it's int for now.
 
+class ThreadMetaData:
+    def __init__(self, data: discord_typings.ThreadMetadata):
+        self.archived: bool = data["archived"]
+        self.auto_archive_duration: int = data["auto_archive_duration"]
+        self.archive_timestamp: datetime.datetime = datetime.datetime.fromisoformat(
+            data["archive_timestamp"]
+        )
+        self.locked: bool = data["locked"]
+        self.invitable: Optional[bool] = data.get("invitable")
+        self.create_timestamp: Optional[datetime.datetime] = datetime.datetime.fromisoformat(
+            data["create_timestamp"]
+        ) if data.get("create_timestamp") else None
 
 class Thread(Messageable):
     def __init__(self, client, data: discord_typings.ThreadChannelData):
-        super().__init__(client, data)
-        self.owner_id: str = data.get("owner_id")
-        self.message_count: int = data.get("message_count")
-        self.member_count: int = data.get("member_count")
-        self.archived: bool = data.get("archived")
-        self.auto_archive_duration: int = data.get("auto_archive_duration")
-        self.archive_timestamp: Optional[datetime.datetime] = (
-            datetime.datetime.fromisoformat(data.get("archive_timestamp"))
-            if data.get("archive_timestamp")
-            else None
-        )
-        self.locked: bool = data.get("locked")
+        super().__init__(client, int(data["id"]))
+        
+        self.owner_id: int = int(data["owner_id"])
+        self.message_count: Optional[int] = data.get("message_count")
+        self.member_count: Optional[int] = data.get("member_count")
+        self.metadata: ThreadMetaData = ThreadMetaData(data["thread_metadata"])
 
     async def join(self):
         if self.archived:
             raise ThreadArchived(
                 "This thread has been archived so it is no longer joinable"
             )
-        response = await self.client.http.put(
+        await self.client.http.put(
             f"/channels/{self.id}/thread-members/@me", channel_id=self.id
         )
-        return await response.json()
 
     async def add_member(self, member_id: str):
-        if self.archived:
+        if self.metadata.archived:
             raise ThreadArchived(
                 "This thread has been archived so it is no longer joinable"
             )
-
+        
         response = await self.client.http.put(
             f"/channels/{self.id}/thread-members/{member_id}", channel_id=self.id
         )
@@ -67,7 +72,7 @@ class Thread(Messageable):
         return await response.json()
 
     async def remove_member(self, member_id: str):
-        if self.archived:
+        if self.metadata.archived:
             raise ThreadArchived(
                 "This thread has been archived so it is no longer leaveable"
             )

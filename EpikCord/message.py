@@ -14,6 +14,7 @@ from .sticker import *
 from .thread import Thread
 from .user import User
 from .webhooks import WebhookUser
+from .type_enums import AllowedMentionTypes
 
 logger = getLogger(__name__)
 
@@ -21,26 +22,25 @@ logger = getLogger(__name__)
 def _filter_values(dictionary: dict) -> dict:
     return {k: v for k, v in dictionary.items() if v is not None}
 
-
 class AllowedMention:
     def __init__(
         self,
-        allowed_mentions: List[str],
-        replied_user: bool,
-        roles: List[str],
-        users: List[str],
+        allowed_mentions: Union[List[AllowedMentionTypes], AllowedMentionTypes] = [],
+        replied_user: bool = True,
+        roles: List[int] = [],
+        users: List[int] = [],
     ):
-        self.allowed_mentions: List[str] = allowed_mentions
+        self.allowed_mentions: List[AllowedMentionTypes] = allowed_mentions
         self.replied_user: bool = replied_user
-        self.roles: List[str] = roles
-        self.users: List[str] = users
+        self.roles: List[int] = roles
+        self.users: List[int] = users
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "allowed_mentions": self.allowed_mentions,
-            "replied_user": self.replied_user,
+            "parse": self.allowed_mentions,
             "roles": self.roles,
             "users": self.users,
+            "replied_user": self.replied_user
         }
 
 
