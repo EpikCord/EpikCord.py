@@ -254,9 +254,10 @@ class Utils:
         logger.debug(f"Cancelled {len(tasks)} tasks")
         loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
 
-    def cleanup_loop(self, loop) -> None:
+    @staticmethod
+    def cleanup_loop(loop) -> None:
         try:
-            self.cancel_tasks(loop)
+            Utils.cancel_tasks(loop)
             logger.debug("Shutting down async generators.")
             loop.run_until_complete(loop.shutdown_asyncgens())
         finally:
