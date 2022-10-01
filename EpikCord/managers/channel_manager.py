@@ -6,10 +6,11 @@ from .cache_manager import CacheManager
 
 if TYPE_CHECKING:
     from ..channels import AnyChannel
+    from ..client.client import Client
 
 
 class ChannelManager(CacheManager):
-    def __init__(self, client):
+    def __init__(self, client: Client):
         super().__init__()
         self.client = client
 

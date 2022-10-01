@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from typing import List, Optional, Union
+from typing import Optional, TYPE_CHECKING
 
 from .cache_manager import CacheManager
 
+if TYPE_CHECKING:
+    from ..client.client import Client
 
 class GuildManager(CacheManager):
     def __init__(self, client):

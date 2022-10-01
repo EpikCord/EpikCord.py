@@ -5,7 +5,7 @@ from collections import defaultdict, deque
 from logging import getLogger
 from typing import TYPE_CHECKING, Coroutine, DefaultDict, Deque, Dict, List, Optional, Union, Callable, Any
 
-from EpikCord.managers.guilds_manager import GuildManager
+from EpikCord.managers import GuildManager, ChannelManager
 
 from ..close_event_codes import GatewayCECode
 from ..exceptions import (
@@ -19,6 +19,8 @@ from ..exceptions import (
 from ..flags import Intents
 from ..opcodes import GatewayOpcode
 from .http_client import HTTPClient
+from ..utils import Utils
+
 
 if TYPE_CHECKING:
     from EpikCord import Presence
@@ -70,7 +72,8 @@ class WebsocketClient:
         self.websocket: Optional[DiscordGatewayWebsocket] = None
 
         # Managers
-        self.guilds: GuildManager = GuildManager(self)    
+        self.guilds: GuildManager = GuildManager(self)
+        self.channels: ChannelManager = ChannelManager(self)
 
     async def heartbeat(self, forced: bool = False):
         if not self.heartbeat_interval:
@@ -300,7 +303,7 @@ class WebsocketClient:
             pass
         finally:
             future.remove_done_callback(stop_loop_on_completion)
-            self.utils.cleanup_loop(loop)
+            Utils.cleanup_loop(loop)
 
 
 
