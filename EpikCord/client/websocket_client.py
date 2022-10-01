@@ -20,7 +20,8 @@ from ..flags import Intents
 from ..opcodes import GatewayOpcode
 from .http_client import HTTPClient
 from ..utils import Utils
-
+from .client_user import ClientUser
+from .client_application import ClientApplication
 
 if TYPE_CHECKING:
     from EpikCord import Presence
@@ -71,9 +72,13 @@ class WebsocketClient:
         self.reconnect_url: Optional[str] = None
         self.websocket: Optional[DiscordGatewayWebsocket] = None
 
+        self.utils = Utils(self)
         # Managers
         self.guilds: GuildManager = GuildManager(self)
         self.channels: ChannelManager = ChannelManager(self)
+
+        self.user: Optional[ClientUser] = None
+        self.application: Optional[ClientApplication] = None
 
     async def heartbeat(self, forced: bool = False):
         if not self.heartbeat_interval:
@@ -338,8 +343,7 @@ class WebsocketClient:
 
     async def _interaction_create(self, data: discord_typings.InteractionCreateEvent):
         interaction = Utils.interaction_from_type(data)
-        await self.handle_interaction(interaction)
-        return interaction
+        await self.dispatch("interaction_create", interaction)
 
     async def _channel_create(self, data: discord_typings.ChannelCreateEvent):
         channel = self.utils.channel_from_type(data)  # type: ignore
@@ -399,16 +403,16 @@ class WebsocketClient:
         from EpikCord import ClientApplication, ClientUser
 
         self.user = ClientUser(self, data["user"])
-        self.session_id: Optional[str] = data["session_id"]
-        application_response = await self.http.get("/oauth2/applications/@me")  # type: ignore
+        self.session_id = data["session_id"]
+        application_response = await self.http.get("/oauth2/applications/@me")
         application_data = await application_response.json()
 
         self.application = ClientApplication(self, application_data)
 
-        if not self.overwrite_commands_on_ready:  # type: ignore
+        if not self.overwrite_commands_on_ready:
             return
 
-        await self.utils.overwrite_commands()  # type: ignore
+        await self.utils.overwrite_commands()
         await self.dispatch("ready")
 
 __all__ = ("WebsocketClient",)

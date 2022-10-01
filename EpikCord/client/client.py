@@ -10,6 +10,7 @@ from ..sticker import Sticker, StickerPack
 from .websocket_client import WebsocketClient
 
 if TYPE_CHECKING:
+    import discord_typings 
     from EpikCord import Activity, Presence, Section, Status
 
 logger = getLogger(__name__)
@@ -59,5 +60,9 @@ class Client(WebsocketClient):
         json = await response.json()
         return [StickerPack(self, pack) for pack in json["sticker_packs"]]
 
+
+    async def _interaction_create(self, data: discord_typings.InteractionCreateEvent):
+        await super()._interaction_create(data)
+        await self.handle_interaction()
 
 __all__ = ("Client",)

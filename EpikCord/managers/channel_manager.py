@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union, Optional
-
+from ..utils import Utils
 from .cache_manager import CacheManager
 
 if TYPE_CHECKING:
@@ -14,7 +14,7 @@ class ChannelManager(CacheManager):
         super().__init__()
         self.client = client
 
-    async def fetch(self, channel_id: str) -> Optional[AnyChannel]:
+    async def fetch(self, channel_id: int) -> Optional[AnyChannel]:
         channel = await self.client.http.get(
             f"channels/{channel_id}", channel_id=channel_id
         )

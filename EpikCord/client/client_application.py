@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     import discord_typings
 
 class ClientApplication(Application):
-    def __init__(self, client, data: dict):
+    def __init__(self, client, data: discord_typings.ApplicationData):
         super().__init__(data)
         self.client = client
 
