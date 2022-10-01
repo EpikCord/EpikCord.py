@@ -102,9 +102,7 @@ class Messageable:
         embeds: List[Embed] = [],
         components: List[ActionRow] = [],
         tts: bool = False,
-        allowed_mention: AllowedMention = AllowedMention(
-            allowed_mentions=AllowedMentionTypes.ALL
-        ),
+        allowed_mention: Optional[AllowedMention] = None,
         sticker_ids: Optional[List[str]] = None,
         attachments: List[Attachment] = [],
         suppress_embeds: bool = False,
@@ -116,7 +114,7 @@ class Messageable:
                 "embeds": [embed.to_dict() for embed in embeds],
                 "components": [component.to_dict() for component in components],
                 "tts": tts,
-                "allowed_mentions": allowed_mention.to_dict(),
+                "allowed_mentions": allowed_mention.to_dict() if allowed_mention else None,
                 "sticker_ids": sticker_ids,
                 "attachments": [attachment.to_dict() for attachment in attachments],
             }
