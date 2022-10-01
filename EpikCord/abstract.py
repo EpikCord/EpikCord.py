@@ -15,6 +15,7 @@ from .exceptions import ClosedWebSocketConnection, CustomIdIsTooBig, InvalidArgu
 from .opcodes import GatewayOpcode, VoiceOpcode
 from .type_enums import AllowedMentionTypes
 
+
 logger = getLogger("EpikCord.channels")
 
 _NACL = find_spec("nacl")
@@ -35,7 +36,6 @@ if TYPE_CHECKING:
     import discord_typings
 
     from EpikCord import (
-        AllowedMention,
         Attachment,
         Check,
         Embed,
@@ -45,6 +45,7 @@ if TYPE_CHECKING:
     )
 
     from .components import *
+    from .message import AllowedMention
 
 
 class TypingContextManager:
@@ -101,21 +102,19 @@ class Messageable:
         embeds: List[Embed] = [],
         components: List[ActionRow] = [],
         tts: bool = False,
-        allowed_mention: AllowedMention = AllowedMention(
-            allowed_mentions=AllowedMentionTypes.ALL
-        ),
+        allowed_mention: Optional[AllowedMention] = None,
         sticker_ids: Optional[List[str]] = None,
         attachments: List[Attachment] = [],
         suppress_embeds: bool = False,
     ) -> Message:
-
+        from .message import AllowedMention
         payload = self.client.utils.filter_values(
             {
                 "content": content,
                 "embeds": [embed.to_dict() for embed in embeds],
                 "components": [component.to_dict() for component in components],
                 "tts": tts,
-                "allowed_mentions": allowed_mention.to_dict(),
+                "allowed_mentions": allowed_mention.to_dict() if isinstance(allowed_mention, AllowedMention) else None,
                 "sticker_ids": sticker_ids,
                 "attachments": [attachment.to_dict() for attachment in attachments],
             }
@@ -165,10 +164,10 @@ class Connectable:
         self,
         client,
         *,
-        channel: Optional[VoiceChannel] = None,
+        channel: VoiceChannel,
     ):
         self.client = client
-        self.ld_id = channel.guild.id
+        self.guild_id = channel.guild.id
         self.channel_id = channel.id
         self._closed = True
 
@@ -654,7 +653,7 @@ class BaseInteraction:
         ephemeral: Optional[bool] = False,
     ) -> None:
 
-        message_data: discord_typings.Message = {"tts": tts, "flags": 0}
+        message_data = {"tts": tts, "flags": 0}
 
         if suppress_embeds:
             message_data["flags"] += 1 << 2

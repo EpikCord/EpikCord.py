@@ -1,4 +1,7 @@
-from typing import Dict, List, Optional
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Literal, Optional
+
+from discord_typings import ApplicationCommandPayload
 
 from ..application import (
     Application,
@@ -13,6 +16,8 @@ from ..exceptions import (
 from ..flags import Permissions
 from ..options import *
 
+if TYPE_CHECKING:
+    import discord_typings
 
 class ClientApplication(Application):
     def __init__(self, client, data: dict):
@@ -40,15 +45,15 @@ class ClientApplication(Application):
         *,
         name: str,
         description: str,
-        options: Optional[List[AnyOption]],
-        default_member_permission: Optional[Permissions] = None,
-        command_type: Optional[int] = 1,
+        options: List[AnyOption] = [],
+        default_member_permissions: Optional[Permissions] = None,
+        command_type: Literal[1, 2, 3] = 1,
         dm_permission: bool = True,
     ):
-        payload = {
+        payload: ApplicationCommandPayload = {
             "name": name,
             "description": description,
-            "default_permissions": default_member_permission,
+            "default_member_permissions": default_member_permissions,
             "dm_permissions": dm_permission,
         }
 
