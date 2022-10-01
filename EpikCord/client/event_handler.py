@@ -1,11 +1,17 @@
+from __future__ import annotations
 import asyncio
 from collections import defaultdict, deque
 from logging import getLogger
 from time import perf_counter_ns
-from typing import Callable, DefaultDict, Deque, Dict, Optional, Union
+from typing import Callable, DefaultDict, Deque, Dict, Optional, Union, TYPE_CHECKING
+
+from discord_typings import GuildCreateEvent, GuildMemberUpdateEvent
 
 from ..opcodes import GatewayOpcode
 from .command_handler import CommandHandler
+
+if TYPE_CHECKING:
+    import discord_typings
 
 logger = getLogger(__name__)
 
@@ -79,7 +85,7 @@ class EventHandler(CommandHandler):
 
         return wrapper
 
-    async def handle_hello(self, event: Dict):
+    async def handle_hello(self, event: discord_typings.HelloEvent):
         self.interval = event["d"]["heartbeat_interval"]
 
         async def wrapper():
@@ -89,7 +95,7 @@ class EventHandler(CommandHandler):
         asyncio.create_task(wrapper())
         await self.identify()  # type: ignore
 
-    def handle_heartbeat_ack(self, event):
+    def handle_heartbeat_ack(self, event: discord_typings.HeartbeatACKEvent):
         heartbeat_ack_time = perf_counter_ns()
         self.discord_latency: int = heartbeat_ack_time - self.heartbeat_time
         self.latencies.append(self.discord_latency)
@@ -153,8 +159,8 @@ class EventHandler(CommandHandler):
             if check(*args):
                 future.set_result(args)
 
-    async def _voice_server_update(self, data: Dict):
-        voice_data = data["d"]
+    async def _voice_server_update(self, data: discord_typings.VoiceServerUpdateEvent):
+        voice_data: discord_typings.VoiceServerUpdateEvent = data["d"]
         payload = {
             "token": voice_data["token"],
             "endpoint": voice_data["endpoint"],
@@ -166,33 +172,33 @@ class EventHandler(CommandHandler):
 
         return await self.dispatch("voice_server_update", payload)
 
-    async def _voice_state_update(self, data: dict):
+    async def _voice_state_update(self, data: discord_typings.VoiceStateUpdateEvent):
         from EpikCord import VoiceState
 
         return await self.dispatch(
             "voice_state_update", VoiceState(self, data)
         )  # TODO: Make this return something like (VoiceState, Member) or make VoiceState get Member from member_id
 
-    async def _guild_members_chunk(self, data: dict):
+    async def _guild_members_chunk(self, data: discord_typings.GuildMembersChunkEvent):
         ...
 
-    async def _guild_delete(self, data: dict):
+    async def _guild_delete(self, data: discord_typings.GuildDeleteEvent):
         guild = self.guilds.remove_from_cache(data["id"])  # type: ignore
 
         if guild:
             await self.dispatch("guild_delete", guild)
 
-    async def _interaction_create(self, data):
+    async def _interaction_create(self, data: discord_typings.InteractionCreateEvent):
         interaction = self.utils.interaction_from_type(data)
         await self.handle_interaction(interaction)
         return interaction
 
-    async def _channel_create(self, data: dict):
+    async def _channel_create(self, data: discord_typings.ChannelCreateEvent):
         channel = self.utils.channel_from_type(data)  # type: ignore
         self.channels.add_to_cache(channel.id, channel)  # type: ignore
         return channel
 
-    async def _message_create(self, data: dict):
+    async def _message_create(self, data: discord_typings.MessageCreateEvent):
         """Event fired when messages are created"""
         from EpikCord import Message
 
@@ -206,7 +212,7 @@ class EventHandler(CommandHandler):
 
         return message
 
-    async def _guild_create(self, data):
+    async def _guild_create(self, data: GuildCreateEvent):
         from EpikCord import Guild, Thread, UnavailableGuild
 
         if data.get("unavailable") is None:
@@ -235,13 +241,13 @@ class EventHandler(CommandHandler):
 
         # TODO: Add other attributes to cache
 
-    async def _guild_member_update(self, data):
+    async def _guild_member_update(self, data: GuildMemberUpdateEvent):
         from EpikCord import GuildMember
 
         guild_member = GuildMember(self, data)
         return self.members.get(data["id"]), guild_member
 
-    async def _ready(self, data: dict):
+    async def _ready(self, data: discord_typings.ReadyEvent):
         from EpikCord import ClientApplication, ClientUser
 
         self.user: ClientUser = ClientUser(self, data["user"])
@@ -249,12 +255,13 @@ class EventHandler(CommandHandler):
         application_response = await self.http.get("/oauth2/applications/@me")  # type: ignore
         application_data = await application_response.json()
 
-        self.application: ClientApplication = ClientApplication(self, application_data)
+        self.application = ClientApplication(self, application_data)
 
         if not self.overwrite_commands_on_ready:  # type: ignore
             return
 
         await self.utils.overwrite_commands()  # type: ignore
+        await self.dispatch("ready")
 
     async def command_error(self, interaction, error: Exception):
         logger.exception(error)

@@ -23,7 +23,7 @@ class ThreadMember:
 
 
 class ThreadMetaData:
-    def __init__(self, data: discord_typings.ThreadMetadata):
+    def __init__(self, data: discord_typings.ThreadMetadataData):
         self.archived: bool = data["archived"]
         self.auto_archive_duration: int = data["auto_archive_duration"]
         self.archive_timestamp: datetime.datetime = datetime.datetime.fromisoformat(

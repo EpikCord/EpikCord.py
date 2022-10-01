@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from collections import deque
-from importlib.util import find_spec, module_from_spec, resolve_name
 from logging import getLogger
-from sys import modules
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 from ..flags import Intents
@@ -39,9 +37,9 @@ class Client(WebsocketClient):
         self._components = {}
         self.utils = Utils(self)
         self.latencies = deque(maxlen=5)
-        self.user: ClientUser = None
+        self.user: Optional[ClientUser] = None
         self.application: Optional[ClientApplication] = None
-        self.sections: List[Any] = []
+        self.sections: List[Section] = []
 
     @property
     def latency(self):
@@ -59,29 +57,6 @@ class Client(WebsocketClient):
         for command in section._commands.values():
 
             self.commands[command.name] = command
-
-    def load_sections_from_file(self, filename: str, *, package: str = None):
-        name = resolve_name(filename, package)
-        spec = find_spec(name)
-
-        if not spec:
-            raise ImportError(f"Could not find module {name}")
-        sections = module_from_spec(spec)
-
-        modules[filename] = sections
-
-        try:
-            spec.loader.exec_module(sections)  # type: ignore
-        except Exception as e:
-            raise ImportError(f"Could not load module {name}") from e
-
-        # sections = import_module(filename, package)
-
-        from EpikCord import Section
-
-        for possible_section in sections.__dict__.values():
-            if issubclass(possible_section, Section):
-                self.load_section(possible_section)
 
     async def fetch_sticker(self, sticker_id: str) -> Sticker:
         response = await self.http.get(f"/stickers/{sticker_id}")
