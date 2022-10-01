@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Union, Optional
 
 from .cache_manager import CacheManager
 
 if TYPE_CHECKING:
     from ..channels import AnyChannel
-    from ..client.client import Client
+    from ..client.client import Client, WebsocketClient
 
 
 class ChannelManager(CacheManager):
-    def __init__(self, client: Client):
+    def __init__(self, client: Union[Client, WebsocketClient]):
         super().__init__()
         self.client = client
 

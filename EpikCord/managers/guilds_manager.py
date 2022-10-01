@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, Union
 
 from .cache_manager import CacheManager
 
 if TYPE_CHECKING:
-    from ..client.client import Client
+    from ..client.client import Client, WebsocketClient
 
 class GuildManager(CacheManager):
-    def __init__(self, client):
+    def __init__(self, client: Union[Client, WebsocketClient]):
         super().__init__()
         self.client = client
 
