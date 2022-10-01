@@ -43,15 +43,6 @@ class Utils:
         13: GuildStageChannel,
     }
 
-    component_types = {2: Button, 3: SelectMenu, 4: TextInput}
-
-    interaction_types = {
-        2: ApplicationCommandInteraction,
-        3: MessageComponentInteraction,
-        4: AutoCompleteInteraction,
-        5: ModalSubmitInteraction,
-    }
-
     def __init__(self, client):
         self.client = client
         self._MARKDOWN_ESCAPE_SUBREGEX = "|".join(
@@ -137,15 +128,18 @@ class Utils:
 
         raise InvalidArgumentType("Unsupported image type given")
 
-    def _bytes_to_base64_data(self, data: bytes) -> str:
+    @staticmethod
+    def _bytes_to_base64_data(data: bytes) -> str:
         fmt = "data:{mime};base64,{data}"
-        mime = self.get_mime_type_for_image(data)
+        mime = Utils.get_mime_type_for_image(data)
         b64 = b64encode(data).decode("ascii")
         return fmt.format(mime=mime, data=b64)
 
-    def component_from_type(self, component_data: dict):
+    @staticmethod
+    def component_from_type(component_data: dict):
+        component_types = {2: Button, 3: SelectMenu, 4: TextInput}
         component_type = component_data["type"]
-        component_cls = self.component_types.get(component_type)
+        component_cls = component_types.get(component_type)
 
         if not component_cls:
             logger.warning(f"Unknown component type: {component_type}")
@@ -153,16 +147,19 @@ class Utils:
 
         return component_cls(**component_data)
 
-    def filter_values_dynamic(self, check: Callable, dictionary: dict):
+    @staticmethod
+    def filter_values_dynamic(check: Callable, dictionary: dict):
         """Returns a filtered dictionary of values that pass the check."""
         return {k: v for k, v in dictionary.items() if check(v)}
 
-    def match_mixed(self, variant_one: str, variant_two: str):
+    @staticmethod
+    def match_mixed(variant_one: str, variant_two: str):
         """Matches and returns a single output from two"""
         return variant_one or variant_two
 
+    @staticmethod
     def interaction_from_type(
-        self, data
+        data
     ) -> Optional[
         Union[
             ApplicationCommandInteraction,
@@ -171,8 +168,15 @@ class Utils:
             ModalSubmitInteraction,
         ]
     ]:
+        interaction_types = {
+            2: ApplicationCommandInteraction,
+            3: MessageComponentInteraction,
+            4: AutoCompleteInteraction,
+            5: ModalSubmitInteraction,
+        }
+
         interaction_type = data["type"]
-        interaction_cls = self.interaction_types.get(interaction_type)
+        interaction_cls = interaction_types.get(interaction_type)
 
         if not interaction_cls:
             logger.warning(f"Unknown interaction type: {interaction_type}")

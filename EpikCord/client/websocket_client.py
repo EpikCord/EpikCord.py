@@ -337,7 +337,7 @@ class WebsocketClient:
             await self.dispatch("guild_delete", guild)
 
     async def _interaction_create(self, data: discord_typings.InteractionCreateEvent):
-        interaction = self.utils.interaction_from_type(data)
+        interaction = Utils.interaction_from_type(data)
         await self.handle_interaction(interaction)
         return interaction
 
