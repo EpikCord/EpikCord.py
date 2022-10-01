@@ -155,21 +155,18 @@ class HTTPClient:
             else:
                 b = Bucket(discord_hash=res.headers["X-RateLimit-Bucket"])
                 if b in self.buckets.values():
-                    self.buckets[bucket_hash] = {v: k for k, v in self.buckets.items()}[
+                    self.buckets[bucket_hash] = {v: k for k, v in self.buckets.items()}[ # type: ignore
                         b
-                    ]  # type: ignore
+                    ]
                 else:
                     self.buckets[bucket_hash] = b
+
         body: Union[Dict, str] = {}
+
         if res.headers["Content-Type"] == "application/json":
             body = await res.json()
         else:
             body = await res.text()
-
-        if res.status in range(200, 299):
-            bucket.event.set()
-            self.global_ratelimit.set()
-            return res
 
         if (
             int(res.headers.get("X-RateLimit-Remaining", 1)) == 0
@@ -189,12 +186,16 @@ class HTTPClient:
             )
 
             logger.critical(f"Rate limited. Reset in {time_to_sleep} seconds")
+
             if res.headers["X-RateLimit-Scope"] == "global":
                 await self.global_ratelimit.clear()  # type: ignore
 
+            await bucket.event.clear()
+
             await asyncio.sleep(time_to_sleep)
 
-            await self.global_ratelimit.set()  # type: ignore
+            self.global_ratelimit.set()  # type: ignore
+            bucket.event.set()
 
             return await self.request(method, url, *args, **kwargs, attempt=attempt + 1)
 
@@ -210,11 +211,6 @@ class HTTPClient:
         elif not 300 > res.status >= 200:
             raise DiscordAPIError(body)
 
-        if not bucket.event.is_set():
-            try:
-                bucket.event.set()
-            except Exception as e:
-                logger.exception(e)
 
         async def dispose():
             await asyncio.sleep(300)
@@ -225,9 +221,6 @@ class HTTPClient:
         bucket.close_task.cancel()
 
         bucket.close_task = asyncio.create_task(dispose())  # type: ignore
-
-        bucket.event.set()
-        self.global_ratelimit.set()
 
         return res
 
