@@ -1,31 +1,29 @@
+from __future__ import annotations
 from logging import getLogger
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
+from ..user import User
+
+if TYPE_CHECKING:
+    from .client import Client
+    import discord_typings
 
 logger = getLogger(__name__)
 
 
-class ClientUser:
-    def __init__(self, client, data: dict):
-        self.client = client
-        self.data = data
-        self.verified: bool = data.get("verified")
-        self.username: str = data.get("username")
-        self.mfa_enabled: bool = data.get("mfa_enabled")
-        self.id: str = data.get("id")
-        self.flags: int = data.get("flags")
-        self.email: Optional[str] = data.get("email")
-        self.discriminator: str = data.get("discriminator")
-        self.bot: bool = data.get("bot")
-        self.avatar: str = data.get("avatar")
+class ClientUser(User):
+    def __init__(self, client: Client, data: discord_typings.UserData):
+        super().__init__(client, data)
         if not self.bot:  # if they're a user account
-            logger.warning(
-                "Warning: Self botting is against Discord ToS." " You can get banned. "
+            logger.critical(
+                "Self botting is against Discord ToS." " You can get banned. "
             )
+            exit(1)
+
 
     async def fetch(self):
         response = await self.client.http.get("users/@me")
         data = await response.json()
-        self.__init__(self.client, data)
+        return ClientUser(self.client, data)
         # Reinitialize the class with the new data.
 
     async def edit(
@@ -37,8 +35,8 @@ class ClientUser:
         if avatar:
             payload["avatar"] = self.client.utils.bytes_to_base64_data(avatar)
         response = await self.client.http.patch("users/@me", json=payload)
-        data = await response.json()
-        self.__init__(self.client, data)
+        data: discord_typings.UserData = await response.json()
+        return ClientUser(self.client, data)
 
 
 __all__ = ("ClientUser",)
