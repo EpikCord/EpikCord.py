@@ -114,7 +114,9 @@ class Messageable:
                 "embeds": [embed.to_dict() for embed in embeds],
                 "components": [component.to_dict() for component in components],
                 "tts": tts,
-                "allowed_mentions": allowed_mention.to_dict() if allowed_mention else None,
+                "allowed_mentions": allowed_mention.to_dict()
+                if allowed_mention
+                else None,
                 "sticker_ids": sticker_ids,
                 "attachments": [attachment.to_dict() for attachment in attachments],
             }
