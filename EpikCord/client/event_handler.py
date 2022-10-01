@@ -1,8 +1,10 @@
 from __future__ import annotations
+
 import asyncio
 from collections import defaultdict, deque
 from logging import getLogger
 from time import perf_counter_ns
+
 from typing import Callable, DefaultDict, Deque, Dict, List, Optional, Union, TYPE_CHECKING
 
 from discord_typings import GuildCreateEvent, GuildMemberUpdateEvent
