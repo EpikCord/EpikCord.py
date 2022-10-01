@@ -204,7 +204,6 @@ AnyChannel = Union[
 
 __all__ = (
     "Overwrite",
-    "GuildChannel",
     "GuildTextChannel",
     "GuildNewsChannel",
     "DMChannel",

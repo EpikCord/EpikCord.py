@@ -3,8 +3,9 @@ import contextlib
 import zlib
 from importlib.util import find_spec
 from logging import getLogger
+from functools import partialmethod
 from typing import Any, Dict, Optional, Union
-
+from EpikCord import __version__
 from aiohttp import ClientSession, ClientWebSocketResponse
 
 from ..exceptions import (
@@ -84,18 +85,24 @@ class DiscordGatewayWebsocket(ClientWebSocketResponse):
         )
 
 
-class HTTPClient(ClientSession):
-    def __init__(self, *args, **kwargs):
+class HTTPClient:
+    def __init__(self, token, *args, **kwargs):
         self.base_uri: str = kwargs.pop(
             "discord_endpoint", "https://discord.com/api/v10"
         )
-        super().__init__(
+        self.session = ClientSession(
             *args,
             **kwargs,
             json_serialize=lambda x, *__, **___: json.dumps(x).decode()
             if _ORJSON
             else json.dumps(x),
             ws_response_class=DiscordGatewayWebsocket,
+            headers={
+                "Authorization": f"Bot {token}",
+                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
+                "Content-Type": "application/json",
+            },
+
         )
         self.global_ratelimit: asyncio.Event = asyncio.Event()
         self.global_ratelimit.set()
@@ -117,7 +124,7 @@ class HTTPClient(ClientSession):
             return
 
         if url.startswith("ws") or not to_discord:
-            return await super().request(method, url, *args, **kwargs)
+            return await self.session.request(method, url, *args, **kwargs)
 
         if url.startswith("/"):
             url = url[1:]
@@ -135,7 +142,7 @@ class HTTPClient(ClientSession):
         await bucket.event.wait()
         await self.global_ratelimit.wait()
 
-        res = await super().request(method, url, *args, **kwargs)
+        res = await self.session.request(method, url, *args, **kwargs)
 
         await self.log_request(res, kwargs.get("json", kwargs.get("data", None)))
 
@@ -247,39 +254,26 @@ class HTTPClient(ClientSession):
         finally:
             logger.debug("".join(message))
 
-    async def get(  # type: ignore
+
+    def base(  # type: ignore
         self,
+        method,
         url,
         *args,
         to_discord: bool = True,
         **kwargs,
     ):
         if to_discord:
-            return await self.request("GET", url, *args, **kwargs)
-        return await super().get(url, *args, **kwargs)
+            return self.request(method, url, *args, **kwargs)
+        return self.session.request(method, url, *args, **kwargs)
 
-    async def post(self, url, *args, to_discord: bool = True, **kwargs):  # type: ignore
-        if to_discord:
-            return await self.request("POST", url, *args, **kwargs)
-        return await super().post(url, *args, **kwargs)
-
-    async def patch(self, url, *args, to_discord: bool = True, **kwargs):  # type: ignore
-        if to_discord:
-            res = await self.request("PATCH", url, *args, **kwargs)
-            return res
-        return await super().patch(url, *args, **kwargs)
-
-    async def delete(self, url, *args, to_discord: bool = True, **kwargs):  # type: ignore
-        if to_discord:
-            res = await self.request("DELETE", url, *args, **kwargs)
-            return res
-        return await super().delete(url, **kwargs)
-
-    async def put(self, url, *args, to_discord: bool = True, **kwargs):  # type: ignore
-        if to_discord:
-            res = await self.request("PUT", url, *args, **kwargs)
-            return res
-        return await super().put(url, *args, **kwargs)
+    get  = partialmethod(base, "GET") 
+    post = partialmethod(base, "POST")
+    put = partialmethod(base, "PUT")
+    patch = partialmethod(base, "PATCH")
+    delete = partialmethod(base, "DELETE")
+    head = partialmethod(base, "HEAD")
+    options = partialmethod(base, "OPTIONS")
 
 
 __all__ = ("HTTPClient",)

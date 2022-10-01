@@ -49,14 +49,7 @@ class WebsocketClient(EventHandler):
         self._closed = True
         self.presence = presence
         self.heartbeats: List[Dict] = []
-        self.http: HTTPClient = HTTPClient(
-            headers={
-                "Authorization": f"Bot {token}",
-                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
-                "Content-Type": "application/json",
-            },
-            discord_endpoint=discord_endpoint,
-        )
+        self.http: HTTPClient = HTTPClient(discord_endpoint=discord_endpoint)
         self.interval = None  # How frequently to heartbeat
         self.session_id: Optional[str] = None
         self.sequence = None
@@ -183,53 +176,6 @@ class WebsocketClient(EventHandler):
     async def send_json(self, json: dict):
         await self.ws.send_json(json)
         logger.debug(f"Sent {json} to the Websocket Connection to Discord.")
-
-    async def connect(self):
-        res = await self.http.get("/gateway")
-        data = await res.json()
-        url = data["url"]
-
-        self.ws = await self.http.ws_connect(
-            f"{url}?v=10&encoding=json&compress=zlib-stream"
-        )
-        self._closed = False
-        await self.handle_events()
-
-    async def resume(self):
-        logger.critical("Reconnecting...")
-
-        await self.connect()
-        await self.send_json(
-            {
-                "op": GatewayOpcode.RESUME,
-                "d": {
-                    "seq": self.sequence,
-                    "session_id": self.session_id,
-                    "token": self.token,
-                },
-            }
-        )
-
-        self._closed = False
-
-    async def identify(self):
-        payload = {
-            "op": GatewayOpcode.IDENTIFY,
-            "d": {
-                "token": self.token,
-                "intents": self.intents.value,
-                "properties": {
-                    "os": platform,
-                    "browser": "EpikCord.py",
-                    "device": "EpikCord.py",
-                },
-            },
-        }
-
-        if self.presence:
-            payload["d"]["presence"] = self.presence.to_dict()
-
-        return await self.send_json(payload)
 
     async def close(self) -> None:
         if self._closed:

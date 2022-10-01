@@ -39,7 +39,6 @@ if TYPE_CHECKING:
         Attachment,
         Check,
         Embed,
-        File,
         Message,
         Modal,
         VoiceChannel,
@@ -169,7 +168,7 @@ class Connectable:
         channel: Optional[VoiceChannel] = None,
     ):
         self.client = client
-        self.guild_id = channel.guild.id
+        self.ld_id = channel.guild.id
         self.channel_id = channel.id
         self._closed = True
 
@@ -347,11 +346,16 @@ class Connectable:
 
 
 class GuildChannel(BaseChannel):
-    def __init__(self, client, data: dict):
+    def __init__(self, client, data: Union[
+        discord_typings.VoiceChannelData,
+        discord_typings.TextChannelData,
+        discord_typings.CategoryChannelData,
+        discord_typings.NewsChannelData,
+    ]):
         super().__init__(client, data)
-        self.guild_id: str = data.get("guild_id")
-        self.position: int = data.get("position")
-        self.nsfw: bool = data.get("nsfw")
+        self.guild_id: int = int(data["guild_id"])
+        self.position: int = data["position"]
+        self.nsfw: bool = data["nsfw"]
         self.permission_overwrites: List[dict] = data.get("permission_overwrites")
         self.parent_id: str = data.get("parent_id")
         self.name: str = data.get("name")
@@ -650,7 +654,7 @@ class BaseInteraction:
         ephemeral: Optional[bool] = False,
     ) -> None:
 
-        message_data = {"tts": tts, "flags": 0}
+        message_data: discord_typings.Message = {"tts": tts, "flags": 0}
 
         if suppress_embeds:
             message_data["flags"] += 1 << 2

@@ -79,6 +79,7 @@ class ShardManager(EventHandler):
         from EpikCord import __version__
 
         self.http: HTTPClient = HTTPClient(
+            token,
             headers={
                 "Authorization": f"Bot {token}",
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
