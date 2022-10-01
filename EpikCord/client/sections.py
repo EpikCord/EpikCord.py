@@ -2,7 +2,7 @@ from collections import defaultdict
 from typing import DefaultDict, List, Union
 
 from ..commands import ClientMessageCommand, ClientSlashCommand, ClientUserCommand
-from .event_handler import Event
+from .websocket_client import Event
 
 
 class Section:

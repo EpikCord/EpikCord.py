@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import deque
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, List, Optional, Union
+from typing import TYPE_CHECKING, Coroutine, Dict, List, Optional, Union
 
 from ..flags import Intents
 from ..managers import ChannelManager, GuildManager
@@ -23,9 +23,9 @@ class Client(WebsocketClient):
         *,
         status: Optional[Status] = None,
         activity: Optional[Activity] = None,
-        overwrite_commands_on_ready: Optional[bool] = None,
+        overwrite_commands_on_ready: bool = False,
         discord_endpoint: str = "https://discord.com/api/v10",
-        presence: Presence = None,
+        presence: Optional[Presence] = None,
     ):
         super().__init__(token, intents, presence, discord_endpoint=discord_endpoint)
         from EpikCord import ClientApplication, ClientUser, Presence, Utils
@@ -34,20 +34,11 @@ class Client(WebsocketClient):
         self.guilds: GuildManager = GuildManager(self)
         self.channels: ChannelManager = ChannelManager(self)
         self.presence: Presence = Presence(status=status, activity=activity)
-        self._components = {}
+        self._components: Dict[str, Coroutine] = {}
         self.utils = Utils(self)
-        self.latencies = deque(maxlen=5)
         self.user: Optional[ClientUser] = None
         self.application: Optional[ClientApplication] = None
         self.sections: List[Section] = []
-
-    @property
-    def latency(self):
-        return self.discord_latency
-
-    @property
-    def average_latency(self):
-        return sum(self.latencies) / len(self.latencies)
 
     def load_section(self, section_class: Section):
         section = section_class(self)  # type: ignore

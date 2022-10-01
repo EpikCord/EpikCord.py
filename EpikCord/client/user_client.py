@@ -58,10 +58,7 @@ class UserClient:
         from EpikCord import __version__
 
         self._http: HTTPClient = HTTPClient(
-            headers={
-                "Authorization": f"Bearer {token}",
-                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
-            },
+            token,
             discord_endpoint=discord_endpoint,
         )
         self.application: Optional[Application] = None

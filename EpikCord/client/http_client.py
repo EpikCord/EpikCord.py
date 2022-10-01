@@ -4,7 +4,7 @@ import zlib
 from importlib.util import find_spec
 from logging import getLogger
 from functools import partialmethod
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 from EpikCord import __version__
 from aiohttp import ClientSession, ClientWebSocketResponse
 
@@ -27,6 +27,8 @@ if _ORJSON:
 else:
     import json  # type: ignore
 
+if TYPE_CHECKING:
+    import discord_typings
 
 class _FakeTask:
     def cancel(self):
@@ -268,5 +270,13 @@ class HTTPClient:
     head = partialmethod(base, "HEAD")
     options = partialmethod(base, "OPTIONS")
 
+
+    async def get_gateway(self) -> discord_typings.GetGatewayData:
+        res = await self.get("/gateway")
+        return await res.json()
+    
+    async def get_gateway_bot(self) -> discord_typings.GetGatewayBotData:
+        res = await self.get("/gateway/bot")
+        return await res.json()
 
 __all__ = ("HTTPClient",)
