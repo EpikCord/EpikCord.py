@@ -9,10 +9,9 @@ if TYPE_CHECKING:
 
 
 class ChannelManager(CacheManager):
-    def __init__(self, client, channels: Optional[List[AnyChannel]] = None):
+    def __init__(self, client):
         super().__init__()
         self.client = client
-        self.cache = {channel.id: channel for channel in channels} if channels else {}
 
     async def fetch(self, channel_id: str) -> Optional[AnyChannel]:
         channel = await self.client.http.get(

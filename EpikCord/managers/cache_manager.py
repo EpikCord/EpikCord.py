@@ -79,5 +79,4 @@ class CacheManager:
     def __call__(self) -> Dict:
         return self.cache
 
-
-# This is the base cache manager, people can extend this to make their own cache managers
+# !  This is the base cache manager, people can extend this to make their own cache managers

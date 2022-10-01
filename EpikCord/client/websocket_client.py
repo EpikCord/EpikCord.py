@@ -5,6 +5,8 @@ from collections import defaultdict, deque
 from logging import getLogger
 from typing import TYPE_CHECKING, Coroutine, DefaultDict, Deque, Dict, List, Optional, Union, Callable, Any
 
+from EpikCord.managers.guilds_manager import GuildManager
+
 from ..close_event_codes import GatewayCECode
 from ..exceptions import (
     ClosedWebSocketConnection,
@@ -66,7 +68,9 @@ class WebsocketClient:
         self.gateway_url: Optional[str] = None
         self.reconnect_url: Optional[str] = None
         self.websocket: Optional[DiscordGatewayWebsocket] = None
-    
+
+        # Managers
+        self.guilds: GuildManager = GuildManager(self)    
 
     async def heartbeat(self, forced: bool = False):
         if not self.heartbeat_interval:
@@ -298,5 +302,110 @@ class WebsocketClient:
             future.remove_done_callback(stop_loop_on_completion)
             self.utils.cleanup_loop(loop)
 
+
+
+    async def _voice_server_update(self, data: discord_typings.VoiceServerUpdateEvent):
+        voice_data: discord_typings.VoiceServerUpdateEvent = data["d"]
+        payload = {
+            "token": voice_data["token"],
+            "endpoint": voice_data["endpoint"],
+            "guild_id": voice_data["guild_id"],
+        }
+
+        if voice_data["endpoint"]:
+            payload["endpoint"] = voice_data["endpoint"]
+
+        return await self.dispatch("voice_server_update", payload)
+
+    async def _voice_state_update(self, data: discord_typings.VoiceStateUpdateEvent):
+        from EpikCord import VoiceState
+
+        return await self.dispatch(
+            "voice_state_update", VoiceState(self, data)
+        )  # TODO: Make this return something like (VoiceState, Member) or make VoiceState get Member from member_id
+
+    async def _guild_members_chunk(self, data: discord_typings.GuildMembersChunkEvent):
+        ...
+
+    async def _guild_delete(self, data: discord_typings.GuildDeleteEvent):
+        guild = self.guilds.remove_from_cache(data["id"])  # type: ignore
+
+        if guild:
+            await self.dispatch("guild_delete", guild)
+
+    async def _interaction_create(self, data: discord_typings.InteractionCreateEvent):
+        interaction = self.utils.interaction_from_type(data)
+        await self.handle_interaction(interaction)
+        return interaction
+
+    async def _channel_create(self, data: discord_typings.ChannelCreateEvent):
+        channel = self.utils.channel_from_type(data)  # type: ignore
+        self.channels.add_to_cache(channel.id, channel)  # type: ignore
+        return channel
+
+    async def _message_create(self, data: discord_typings.MessageCreateEvent):
+        """Event fired when messages are created"""
+        from EpikCord import Message
+
+        message = Message(self, data)
+        message.channel = self.channels.get(  # type: ignore
+            message.channel_id
+        ) or await self.channels.fetch(
+            message.channel_id
+        )  # type: ignore
+        message.channel.last_message = message
+
+        return message
+
+    async def _guild_create(self, data: discord_typings.GuildCreateEvent):
+        from EpikCord import Guild, Thread, UnavailableGuild
+
+        if data.get("unavailable") is None:
+            return  # TODO: Maybe a different event where the name says the Bot is removed on startup.
+
+        guild = (
+            UnavailableGuild(data)
+            if data.get("unavailable") is True
+            else Guild(self, data)
+        )
+
+        if not guild:
+            return
+
+        self.guilds.add_to_cache(guild.id, guild)
+
+        for channel in data["channels"]:
+            self.channels.add_to_cache(
+                data["id"], self.utils.channel_from_type(channel)
+            )
+
+        for thread in data["threads"]:
+            self.channels.add_to_cache(data["id"], Thread(self, thread))
+
+        return guild
+
+        # TODO: Add other attributes to cache
+
+    async def _guild_member_update(self, data: discord_typings.GuildMemberUpdateEvent):
+        from EpikCord import GuildMember
+
+        guild_member = GuildMember(self, data)
+        return self.members.get(data["id"]), guild_member
+
+    async def _ready(self, data: discord_typings.ReadyEvent):
+        from EpikCord import ClientApplication, ClientUser
+
+        self.user = ClientUser(self, data["user"])
+        self.session_id: Optional[str] = data["session_id"]
+        application_response = await self.http.get("/oauth2/applications/@me")  # type: ignore
+        application_data = await application_response.json()
+
+        self.application = ClientApplication(self, application_data)
+
+        if not self.overwrite_commands_on_ready:  # type: ignore
+            return
+
+        await self.utils.overwrite_commands()  # type: ignore
+        await self.dispatch("ready")
 
 __all__ = ("WebsocketClient",)
