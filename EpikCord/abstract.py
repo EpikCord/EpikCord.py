@@ -101,7 +101,6 @@ class Messageable:
         attachments: List[Attachment] = [],
         suppress_embeds: bool = False,
     ) -> Message:
-        from .message import AllowedMention
 
         payload = self.client.utils.filter_values(
             {
@@ -131,7 +130,7 @@ class Messageable:
 
 
 class BaseCommand:
-    def __init__(self, checks: List[Check] = None):
+    def __init__(self, checks: Optional[List[Check]] = None):
         self.checks: List[Check] = checks or []
 
     def is_slash_command(self):
