@@ -199,7 +199,7 @@ class Guild:
         # Below are the extra attributes sent over the gateway
 
         self.joined_at: Optional[datetime.datetime] = (
-            datetime.datetime.fromisoformat(data["joined_at"])
+            datetime.datetime.fromisoformat(data["joined_at"]) # type: ignore
             if data.get("joined_at")
             else None
         )
@@ -207,7 +207,7 @@ class Guild:
         self.unavailable: Optional[bool] = data.get("unavailable")
         self.member_count: Optional[int] = data.get("member_count")
         self.voice_states: Optional[List[VoiceState]] = (
-            [VoiceState(client, voice_state) for voice_state in data["voice_states"]]
+            [VoiceState(client, voice_state) for voice_state in data["voice_states"]] # type: ignore
             if data.get("voice_states")
             else None
         )
@@ -534,8 +534,8 @@ class WelcomeScreen:
 
 class GuildWidgetSettings:
     def __init__(self, data: dict):
-        self.enabled: bool = data.get("enabled")
-        self.channel_id: Optional[str] = data.get("channel_id")
+        self.enabled: bool = data["enabled"]
+        self.channel_id: Optional[int] = int(data.get("channel_id"))
 
 
 class GuildWidget:

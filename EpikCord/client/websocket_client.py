@@ -155,7 +155,11 @@ class WebsocketClient:
             await callback(self, data)
         
         for wait_for_callback in self.wait_for_events[event_name]:
-            if await wait_for_callback[1](data):
+            try: 
+                check_results = await wait_for_callback[1](data)
+            except:
+                return
+            if check_results:
                 wait_for_callback[0].set_result(data)
                 self.wait_for_events[event_name].remove(wait_for_callback)
 
@@ -310,8 +314,6 @@ class WebsocketClient:
             future.remove_done_callback(stop_loop_on_completion)
             Utils.cleanup_loop(loop)
 
-
-
     async def _voice_server_update(self, data: discord_typings.VoiceServerUpdateEvent):
         voice_data: discord_typings.VoiceServerUpdateEvent = data["d"]
         payload = {
@@ -323,23 +325,21 @@ class WebsocketClient:
         if voice_data["endpoint"]:
             payload["endpoint"] = voice_data["endpoint"]
 
-        return await self.dispatch("voice_server_update", payload)
+        await self.dispatch("voice_server_update", payload)
 
     async def _voice_state_update(self, data: discord_typings.VoiceStateUpdateEvent):
         from EpikCord import VoiceState
 
-        return await self.dispatch(
+        await self.dispatch(
             "voice_state_update", VoiceState(self, data)
         )  # TODO: Make this return something like (VoiceState, Member) or make VoiceState get Member from member_id
-
-    async def _guild_members_chunk(self, data: discord_typings.GuildMembersChunkEvent):
-        ...
 
     async def _guild_delete(self, data: discord_typings.GuildDeleteEvent):
         guild = self.guilds.remove_from_cache(data["id"])  # type: ignore
 
         if guild:
             await self.dispatch("guild_delete", guild)
+
 
     async def _interaction_create(self, data: discord_typings.InteractionCreateEvent):
         interaction = Utils.interaction_from_type(data)
@@ -348,15 +348,13 @@ class WebsocketClient:
     async def _channel_create(self, data: discord_typings.ChannelCreateEvent):
         channel = self.utils.channel_from_type(data)  # type: ignore
         self.channels.add_to_cache(channel.id, channel)  # type: ignore
-        return channel
+        await self.dispatch("channel_create", channel)
 
     async def _message_create(self, data: discord_typings.MessageCreateEvent):
         """Event fired when messages are created"""
         from EpikCord import Message
 
-        message = Message(self, data)
-
-        return message
+        await self.dispatch("message_create", Message(self, data))
 
     async def _guild_create(self, data: discord_typings.GuildCreateEvent):
         from EpikCord import Guild, Thread, UnavailableGuild
@@ -391,6 +389,11 @@ class WebsocketClient:
         from EpikCord import GuildMember
 
         guild_member = GuildMember(self, data)
+        guild = self.guilds.get(guild_member.guild)
+        if not guild:
+            guild = await self.guilds.fetch(guild_member.guild_id)
+            if not guild:
+                logger.critical(f"Guild was not found in cache, nor API. I")
         return self.members.get(data["id"]), guild_member
 
     async def _ready(self, data: discord_typings.ReadyEvent):
