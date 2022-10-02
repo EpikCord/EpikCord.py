@@ -53,8 +53,8 @@ class ClientApplication(Application):
         payload: ApplicationCommandPayload = {
             "name": name,
             "description": description,
-            "default_member_permissions": default_member_permissions,
-            "dm_permissions": dm_permission,
+            "default_member_permissions": default_member_permissions, # type: ignore
+            "dm_permission": dm_permission,
         }
 
         if command_type not in range(1, 4):
