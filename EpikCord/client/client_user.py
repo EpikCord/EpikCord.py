@@ -1,9 +1,10 @@
 from __future__ import annotations
 from logging import getLogger
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, Union
 from ..user import User
 
 if TYPE_CHECKING:
+    from .websocket_client import WebsocketClient
     from .client import Client
     import discord_typings
 
@@ -11,7 +12,7 @@ logger = getLogger(__name__)
 
 
 class ClientUser(User):
-    def __init__(self, client: Client, data: discord_typings.UserData):
+    def __init__(self, client: Union[Client, WebsocketClient], data: discord_typings.UserData):
         super().__init__(client, data)
         if not self.bot:  # if they're a user account
             logger.critical(

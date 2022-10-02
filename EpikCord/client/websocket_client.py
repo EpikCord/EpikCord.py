@@ -362,7 +362,7 @@ class WebsocketClient:
         if data.get("unavailable") is None:
             return  # TODO: Maybe a different event where the name says the Bot is removed on startup.
 
-        guild = (
+        guild: Union[UnavailableGuild, Guild] = (
             UnavailableGuild(data)
             if data.get("unavailable")
             else Guild(self, data)
@@ -389,12 +389,14 @@ class WebsocketClient:
         from EpikCord import GuildMember
 
         guild_member = GuildMember(self, data)
-        guild = self.guilds.get(guild_member.guild)
+        guild = self.guilds.get(data["guild_id"])
         if not guild:
-            guild = await self.guilds.fetch(guild_member.guild_id)
+            guild = await self.guilds.fetch(data["guild_id"])
             if not guild:
-                logger.critical(f"Guild was not found in cache, nor API. I")
-        return self.members.get(data["id"]), guild_member
+                logger.critical(f"Guild was not found in cache, and could not be fetched.")
+
+        guild.members.cache[guild_member.id] = guild_member
+        await self.dispatch("guild_member_update", guild_member)
 
     async def _ready(self, data: discord_typings.ReadyEvent):
         from EpikCord import ClientApplication, ClientUser
@@ -406,10 +408,10 @@ class WebsocketClient:
 
         self.application = ClientApplication(self, application_data)
 
-        if not self.overwrite_commands_on_ready:
+        if not self.override_commands_on_ready: # type: ignore
             return
 
-        await self.utils.overwrite_commands()
+        await self.utils.override_commands()
         await self.dispatch("ready")
 
 __all__ = ("WebsocketClient", "Event")

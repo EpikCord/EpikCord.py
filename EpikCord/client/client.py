@@ -9,7 +9,7 @@ from .websocket_client import WebsocketClient
 
 if TYPE_CHECKING:
     import discord_typings 
-    from EpikCord import Activity, Presence, Section, Status
+    from EpikCord import Presence, Section
 
 logger = getLogger(__name__)
 
@@ -20,8 +20,6 @@ class Client(WebsocketClient):
         token: str,
         intents: Union[Intents, int] = 0,
         *,
-        status: Optional[Status] = None,
-        activity: Optional[Activity] = None,
         overwrite_commands_on_ready: bool = False,
         discord_endpoint: str = "https://discord.com/api/v10",
         presence: Optional[Presence] = None,

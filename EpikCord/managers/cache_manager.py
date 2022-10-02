@@ -7,7 +7,7 @@ class CacheManager:
     def __init__(self):
         self.cache = {}
 
-    def add_to_cache(self, key: str, value: Any):
+    def add_to_cache(self, key: Union[int, str], value: Any):
         self.cache[key] = value
 
     def remove_from_cache(self, key):
