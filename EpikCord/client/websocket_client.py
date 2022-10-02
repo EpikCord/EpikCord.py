@@ -65,7 +65,7 @@ class WebsocketClient:
         self.wait_for_events: DefaultDict[str, List] = defaultdict(list)
 
         self.heartbeats: Deque = deque(maxlen=10)
-        self.heartbeat_interval: Optional[Union[float, int]] = None
+        self.heartbeat_interval: Optional[float] = None
         self.session_id: Optional[str] = None
         self.sequence: Optional[int] = None
         self.gateway_url: Optional[str] = None
