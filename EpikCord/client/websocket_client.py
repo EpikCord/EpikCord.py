@@ -168,7 +168,7 @@ class WebsocketClient:
         event_name: str,
         *,
         check: Optional[Callback] = None,
-        timeout: Union[float, int] = 0,
+        timeout: float = 0,
     ):
         """
         Waits for the event to be triggered.
