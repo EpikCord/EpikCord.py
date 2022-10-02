@@ -65,7 +65,7 @@ class WebsocketClient:
         self.wait_for_events: DefaultDict[str, List] = defaultdict(list)
 
         self.heartbeats: Deque = deque(maxlen=10)
-        self.heartbeat_interval: Optional[Union[float, int]] = None
+        self.heartbeat_interval: Optional[float] = None
         self.session_id: Optional[str] = None
         self.sequence: Optional[int] = None
         self.gateway_url: Optional[str] = None
@@ -172,7 +172,7 @@ class WebsocketClient:
         event_name: str,
         *,
         check: Optional[Callback] = None,
-        timeout: Union[float, int] = 0,
+        timeout: float = 0,
     ):
         """
         Waits for the event to be triggered.
@@ -364,7 +364,7 @@ class WebsocketClient:
 
         guild = (
             UnavailableGuild(data)
-            if data.get("unavailable") is True
+            if data.get("unavailable")
             else Guild(self, data)
         )
 
