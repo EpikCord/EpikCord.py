@@ -372,7 +372,7 @@ class WebsocketClient:
 
         guild = (
             UnavailableGuild(data)
-            if data.get("unavailable") is True
+            if data.get("unavailable")
             else Guild(self, data)
         )
 
