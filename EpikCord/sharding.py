@@ -5,7 +5,6 @@ from typing import List, Optional, Union
 from .client import (
     ClientApplication,
     ClientUser,
-    EventHandler,
     HTTPClient,
     WebsocketClient,
 )
