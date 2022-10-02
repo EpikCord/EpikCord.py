@@ -1,15 +1,17 @@
-from typing import Callable, List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 from ..partials import PartialUser
 from .team import Team
 
+if TYPE_CHECKING:
+    import discord_typings
 
 def _filter_values(dictionary: dict) -> dict:
     return {k: v for k, v in dictionary.items() if v is not None}
 
 
 class Application:
-    def __init__(self, data: dict):
+    def __init__(self, data: discord_typings.ApplicationData):
         self.id: int = int(data["id"])
         self.name: str = data["name"]
         self.icon: Optional[str] = data.get("icon")
@@ -20,7 +22,7 @@ class Application:
         self.terms_of_service_url: Optional[str] = data.get("terms_of_service")
         self.privacy_policy_url: Optional[str] = data.get("privacy_policy")
         self.owner: Optional[PartialUser] = (
-            PartialUser(data["user"]) if "user" in data else None
+            PartialUser(data["owner"]) if "user" in data else None
         )
         self.verify_key: str = data["verify_key"]
         self.team: Optional[Team] = Team(data["team"]) if data["team"] else None
