@@ -17,6 +17,7 @@ from ..exceptions import (
 from ..flags import Intents
 from ..opcodes import GatewayOpcode
 from ..utils import Utils
+from ..ws_events import setup_ws_event_handler
 
 if TYPE_CHECKING:
     from EpikCord import Presence
@@ -77,6 +78,8 @@ class WebsocketClient:
         self.user: Optional[ClientUser] = None
         self.application: Optional[ClientApplication] = None
 
+        self.wse_handler = setup_ws_event_handler(self)
+
     async def heartbeat(self, forced: bool = False):
         if not self.heartbeat_interval:
             logger.critical("Cannot heartbeat without an interval.")
@@ -95,6 +98,18 @@ class WebsocketClient:
             "d": self.sequence,
         })
 
+    async def handle_ws_event(self, event_data):
+        raw_op_code = event_data["op"]
+
+        try:
+            op_code = GatewayOpcode[raw_op_code]
+        except KeyError:
+            logger.critical("Unknown op code: %s", raw_op_code)
+            return
+
+        handler = self.wse_handler.get(op_code)
+        handler(event_data)
+
     async def connect(self):
         if not self.gateway_url:
             self.gateway_url = await self.http.get_gateway()["url"]
@@ -105,33 +120,7 @@ class WebsocketClient:
         async for event in self.websocket:
             event_data = event.json()
             logger.debug(f"Received {event_data} from the Websocket Connection to Discord.")
-
-            if event_data["op"] == GatewayOpcode.DISPATCH:
-                self.sequence = event_data["s"]
-                await self.handle_event(event_data["t"], event_data["d"])
-
-            elif event_data["op"] == GatewayOpcode.HEARTBEAT:
-                await self.heartbeat(True)
-
-            elif event_data["op"] == GatewayOpcode.RECONNECT:
-                await self.reconnect()
-                await self.resume()
-                return
-
-            elif event_data["op"] == GatewayOpcode.INVALID_SESSION:
-                if event_data["d"]:
-                    await self.reconnect()
-                    await self.resume()
-                    return
-                await self.reconnect()
-                return
-
-            elif event_data["op"] == GatewayOpcode.HELLO:
-                self.heartbeat_interval = event_data["d"]["heartbeat_interval"] / 1000
-                await self.identify()
-
-            elif event_data["op"] == GatewayOpcode.HEARTBEAT_ACK:
-                self.heartbeats.append(event_data)
+            await self.handle_ws_event(event_data)
 
     async def reconnect(self):
         await self.close()
