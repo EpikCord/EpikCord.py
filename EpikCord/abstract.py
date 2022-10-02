@@ -138,8 +138,8 @@ class Messageable:
 
 
 class BaseCommand:
-    def __init__(self, checks: List[Check] = []):
-        self.checks: List[Check] = checks
+    def __init__(self, checks: List[Check] = None):
+        self.checks: List[Check] = checks or []
 
     def is_slash_command(self):
         return self.type == 1

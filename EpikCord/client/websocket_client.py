@@ -32,10 +32,12 @@ logger = getLogger(__name__)
 
 Callback = Callable[..., Coroutine[Any, Any, Any]]
 
+
 class Event:
     def __init__(self, callback: Callback, *, event_name: str):
         self.callback = callback
         self.event_name = event_name or callback.__name__
+
 
 class WebsocketClient:
     def __init__(
@@ -58,7 +60,7 @@ class WebsocketClient:
 
         self._closed = True
         self.presence = presence
-        
+
         self.http: HTTPClient = HTTPClient(token, discord_endpoint=discord_endpoint)
 
         self.events: DefaultDict[str, List] = defaultdict(list)
@@ -82,7 +84,7 @@ class WebsocketClient:
 
     async def heartbeat(self, forced: bool = False):
         if not self.heartbeat_interval:
-            logger.critical(f"Cannot heartbeat without an interval.")
+            logger.critical("Cannot heartbeat without an interval.")
             return
 
         if forced:
@@ -104,7 +106,7 @@ class WebsocketClient:
 
         self.websocket = await self.http.ws_connect(f"{self.gateway_url}?v=10&encoding=json&compress=zlib-stream")
         self._closed = False
-        
+
         async for event in self.websocket:
             event_data = event.json()
             logger.debug(f"Received {event_data} from the Websocket Connection to Discord.")
@@ -122,7 +124,7 @@ class WebsocketClient:
                 return
 
             elif event_data["op"] == GatewayOpcode.INVALID_SESSION:
-                if event_data["d"] == True:
+                if event_data["d"]:
                     await self.reconnect()
                     await self.resume()
                     return
@@ -132,7 +134,7 @@ class WebsocketClient:
             elif event_data["op"] == GatewayOpcode.HELLO:
                 self.heartbeat_interval = event_data["d"]["heartbeat_interval"] / 1000
                 await self.identify()
-            
+
             elif event_data["op"] == GatewayOpcode.HEARTBEAT_ACK:
                 self.heartbeats.append(event_data)
 
@@ -153,11 +155,11 @@ class WebsocketClient:
     async def handle_event(self, event_name: str, data: Dict):
         if callback := getattr(self, f"_{event_name}", None):
             await callback(self, data)
-        
+
         for wait_for_callback in self.wait_for_events[event_name]:
-            try: 
+            try:
                 check_results = await wait_for_callback[1](data)
-            except:
+            except Exception:  # TODO: use a more specific exception
                 return
             if check_results:
                 wait_for_callback[0].set_result(data)
@@ -335,11 +337,8 @@ class WebsocketClient:
         )  # TODO: Make this return something like (VoiceState, Member) or make VoiceState get Member from member_id
 
     async def _guild_delete(self, data: discord_typings.GuildDeleteEvent):
-        guild = self.guilds.remove_from_cache(data["id"])  # type: ignore
-
-        if guild:
+        if guild := self.guilds.remove_from_cache(data["id"]):
             await self.dispatch("guild_delete", guild)
-
 
     async def _interaction_create(self, data: discord_typings.InteractionCreateEvent):
         interaction = Utils.interaction_from_type(data)
@@ -392,8 +391,8 @@ class WebsocketClient:
         guild = self.guilds.get(data["guild_id"])
         if not guild:
             guild = await self.guilds.fetch(data["guild_id"])
-            if not guild:
-                logger.critical(f"Guild was not found in cache, and could not be fetched.")
+        if not guild:
+            logger.critical("Guild was not found in cache, and could not be fetched.")
 
         guild.members.cache[guild_member.id] = guild_member
         await self.dispatch("guild_member_update", guild_member)
@@ -413,5 +412,6 @@ class WebsocketClient:
 
         await self.utils.override_commands()
         await self.dispatch("ready")
+
 
 __all__ = ("WebsocketClient", "Event")

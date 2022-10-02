@@ -434,9 +434,7 @@ class RoleTags:
     def __init__(self, data: discord_typings.RoleTagsData):
         self.bot_id: Optional[int] = int(data.get("bot_id"))  # type: ignore
         self.integration_id: Optional[int] = int(data.get("integration_id"))  # type: ignore
-        self.premium_subscriber: bool = (
-            True if data.get("premium_subscriber") else False
-        )
+        self.premium_subscriber: bool = bool(data.get("premium_subscriber"))
 
 
 class Role:

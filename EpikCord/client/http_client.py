@@ -249,7 +249,6 @@ class HTTPClient:
         finally:
             logger.debug("".join(message))
 
-
     def base(  # type: ignore
         self,
         method,
@@ -262,14 +261,13 @@ class HTTPClient:
             return self.request(method, url, *args, **kwargs)
         return self.session.request(method, url, *args, **kwargs)
 
-    get  = partialmethod(base, "GET") 
+    get = partialmethod(base, "GET")
     post = partialmethod(base, "POST")
     put = partialmethod(base, "PUT")
     patch = partialmethod(base, "PATCH")
     delete = partialmethod(base, "DELETE")
     head = partialmethod(base, "HEAD")
     options = partialmethod(base, "OPTIONS")
-
 
     async def get_gateway(self) -> discord_typings.GetGatewayData:
         res = await self.get("/gateway")
@@ -278,5 +276,6 @@ class HTTPClient:
     async def get_gateway_bot(self) -> discord_typings.GetGatewayBotData:
         res = await self.get("/gateway/bot")
         return await res.json()
+
 
 __all__ = ("HTTPClient",)

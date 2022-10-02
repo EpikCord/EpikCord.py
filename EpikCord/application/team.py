@@ -5,6 +5,7 @@ from ..partials import PartialUser
 if TYPE_CHECKING:
     import discord_typings
 
+
 class TeamMember:
     def __init__(self, data: discord_typings.TeamMemberData):
         self.data = data
