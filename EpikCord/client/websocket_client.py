@@ -3,25 +3,37 @@ from __future__ import annotations
 import asyncio
 from collections import defaultdict, deque
 from logging import getLogger
-from typing import TYPE_CHECKING, Coroutine, DefaultDict, Deque, Dict, List, Optional, Union, Callable, Any
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Coroutine,
+    DefaultDict,
+    Deque,
+    Dict,
+    List,
+    Optional,
+    Union,
+)
 
-from EpikCord.managers import GuildManager, ChannelManager
-from .client_application import ClientApplication
-from .client_user import ClientUser
-from .http_client import HTTPClient
+from EpikCord.managers import ChannelManager, GuildManager
+
 from ..close_event_codes import GatewayCECode
 from ..close_handler import CloseHandlerLog, CloseHandlerRaise, close_dispatcher
-from ..exceptions import (
-    ClosedWebSocketConnection,
-)
+from ..exceptions import ClosedWebSocketConnection
 from ..flags import Intents
 from ..opcodes import GatewayOpcode
 from ..utils import Utils
 from ..ws_events import setup_ws_event_handler
+from .client_application import ClientApplication
+from .client_user import ClientUser
+from .http_client import HTTPClient
 
 if TYPE_CHECKING:
-    from EpikCord import Presence
     import discord_typings
+
+    from EpikCord import Presence
+
     from .http_client import DiscordGatewayWebsocket
 
 logger = getLogger(__name__)
@@ -86,17 +98,21 @@ class WebsocketClient:
             return
 
         if forced:
-            await self.send_json({
-                "op": GatewayOpcode.HEARTBEAT,
-                "d": self.sequence,
-            })
+            await self.send_json(
+                {
+                    "op": GatewayOpcode.HEARTBEAT,
+                    "d": self.sequence,
+                }
+            )
             return
 
-        await asyncio.sleep(self.heartbeat_interval) # type: ignore
-        await self.send_json({
-            "op": GatewayOpcode.HEARTBEAT,
-            "d": self.sequence,
-        })
+        await asyncio.sleep(self.heartbeat_interval)  # type: ignore
+        await self.send_json(
+            {
+                "op": GatewayOpcode.HEARTBEAT,
+                "d": self.sequence,
+            }
+        )
 
     async def handle_ws_event(self, event_data):
         raw_op_code = event_data["op"]
@@ -114,12 +130,16 @@ class WebsocketClient:
         if not self.gateway_url:
             self.gateway_url = await self.http.get_gateway()["url"]
 
-        self.websocket = await self.http.ws_connect(f"{self.gateway_url}?v=10&encoding=json&compress=zlib-stream")
+        self.websocket = await self.http.ws_connect(
+            f"{self.gateway_url}?v=10&encoding=json&compress=zlib-stream"
+        )
         self._closed = False
 
         async for event in self.websocket:
             event_data = event.json()
-            logger.debug(f"Received {event_data} from the Websocket Connection to Discord.")
+            logger.debug(
+                f"Received {event_data} from the Websocket Connection to Discord."
+            )
             await self.handle_ws_event(event_data)
 
     async def reconnect(self):
@@ -127,14 +147,16 @@ class WebsocketClient:
         await self.connect()
 
     async def resume(self):
-        await self.send_json({
-            "op": GatewayOpcode.RESUME,
-            "d": {
-                "token": self.token,
-                "session_id": self.session_id,
-                "seq": self.sequence,
-            },
-        })
+        await self.send_json(
+            {
+                "op": GatewayOpcode.RESUME,
+                "d": {
+                    "token": self.token,
+                    "session_id": self.session_id,
+                    "seq": self.sequence,
+                },
+            }
+        )
 
     async def handle_event(self, event_name: str, data: Dict):
         if callback := getattr(self, f"_{event_name}", None):
@@ -178,7 +200,7 @@ class WebsocketClient:
 
         if not check:
 
-            async def check(*_, **__): # type: ignore
+            async def check(*_, **__):  # type: ignore
                 return True
 
         self.wait_for_events[event_name.lower()].append((future, check))
@@ -305,9 +327,7 @@ class WebsocketClient:
             return  # TODO: Maybe a different event where the name says the Bot is removed on startup.
 
         guild: Union[UnavailableGuild, Guild] = (
-            UnavailableGuild(data)
-            if data.get("unavailable")
-            else Guild(self, data)
+            UnavailableGuild(data) if data.get("unavailable") else Guild(self, data)
         )
 
         if not guild:
@@ -350,7 +370,7 @@ class WebsocketClient:
 
         self.application = ClientApplication(self, application_data)
 
-        if not self.override_commands_on_ready: # type: ignore
+        if not self.override_commands_on_ready:  # type: ignore
             return
 
         await self.utils.override_commands()

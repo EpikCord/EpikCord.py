@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Dict, Callable, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Callable, Dict, Union
 
 from .opcodes import GatewayOpcode
 
@@ -10,7 +10,6 @@ if TYPE_CHECKING:
 
 
 class WSEHandler:
-
     @staticmethod
     def dispatch(ws_client, event_data):
         ws_client.sequence = event_data["s"]

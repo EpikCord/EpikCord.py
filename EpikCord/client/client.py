@@ -8,7 +8,8 @@ from ..sticker import Sticker, StickerPack
 from .websocket_client import WebsocketClient
 
 if TYPE_CHECKING:
-    import discord_typings 
+    import discord_typings
+
     from EpikCord import Presence, Section
 
 logger = getLogger(__name__)

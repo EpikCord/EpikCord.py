@@ -1,25 +1,29 @@
 from __future__ import annotations
+
 from logging import getLogger
-from typing import Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Optional, Union
+
 from ..user import User
 
 if TYPE_CHECKING:
-    from .websocket_client import WebsocketClient
-    from .client import Client
     import discord_typings
+
+    from .client import Client
+    from .websocket_client import WebsocketClient
 
 logger = getLogger(__name__)
 
 
 class ClientUser(User):
-    def __init__(self, client: Union[Client, WebsocketClient], data: discord_typings.UserData):
+    def __init__(
+        self, client: Union[Client, WebsocketClient], data: discord_typings.UserData
+    ):
         super().__init__(client, data)
         if not self.bot:  # if they're a user account
             logger.critical(
                 "Self botting is against Discord ToS." " You can get banned. "
             )
             exit(1)
-
 
     async def fetch(self):
         response = await self.client.http.get("users/@me")

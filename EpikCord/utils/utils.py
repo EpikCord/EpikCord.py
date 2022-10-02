@@ -159,7 +159,7 @@ class Utils:
 
     @staticmethod
     def interaction_from_type(
-        data
+        data,
     ) -> Optional[
         Union[
             ApplicationCommandInteraction,

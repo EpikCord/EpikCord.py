@@ -37,9 +37,11 @@ class ApplicationCommand:
         self.options: List[AnyOption] = [
             conversion_type[option["type"]] for option in data["options"]  # type: ignore
         ]
-        self.default_member_permissions: Optional[Permissions] = Permissions(
-            int(data["default_member_permissions"]) # type: ignore
-        ) if data.get("default_member_permissions") else None
+        self.default_member_permissions: Optional[Permissions] = (
+            Permissions(int(data["default_member_permissions"]))  # type: ignore
+            if data.get("default_member_permissions")
+            else None
+        )
         self.version: int = int(data["version"])
         self.name_localizations: Optional[List[Localization]] = [Localization(Locale(k), v) for (k, v) in data["name_localizations"].items()] if data.get("name_localizations") else None  # type: ignore
         self.description_localizations: Optional[List[Localization]] = (

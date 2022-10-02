@@ -1,10 +1,11 @@
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
 from ..partials import PartialUser
 from .team import Team
 
 if TYPE_CHECKING:
     import discord_typings
+
 
 def _filter_values(dictionary: dict) -> dict:
     return {k: v for k, v in dictionary.items() if v is not None}

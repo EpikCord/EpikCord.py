@@ -2,12 +2,7 @@ import asyncio
 from sys import platform
 from typing import List, Optional, Union
 
-from .client import (
-    ClientApplication,
-    ClientUser,
-    HTTPClient,
-    WebsocketClient,
-)
+from .client import ClientApplication, ClientUser, HTTPClient, WebsocketClient
 from .flags import Intents
 from .opcodes import GatewayOpcode
 from .presence import Presence
@@ -82,7 +77,7 @@ class ShardManager(EventHandler):
             headers={
                 "Authorization": f"Bot {token}",
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
-            }
+            },
         )
         self.intents: Intents = (
             intents if isinstance(intents, Intents) else Intents(intents)  # type: ignore

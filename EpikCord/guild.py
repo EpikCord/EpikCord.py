@@ -199,7 +199,7 @@ class Guild:
         # Below are the extra attributes sent over the gateway
 
         self.joined_at: Optional[datetime.datetime] = (
-            datetime.datetime.fromisoformat(data["joined_at"]) # type: ignore
+            datetime.datetime.fromisoformat(data["joined_at"])  # type: ignore
             if data.get("joined_at")
             else None
         )
@@ -207,7 +207,7 @@ class Guild:
         self.unavailable: Optional[bool] = data.get("unavailable")
         self.member_count: Optional[int] = data.get("member_count")
         self.voice_states: Optional[List[VoiceState]] = (
-            [VoiceState(client, voice_state) for voice_state in data["voice_states"]] # type: ignore
+            [VoiceState(client, voice_state) for voice_state in data["voice_states"]]  # type: ignore
             if data.get("voice_states")
             else None
         )
