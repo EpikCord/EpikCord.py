@@ -6,22 +6,17 @@ from logging import getLogger
 from typing import TYPE_CHECKING, Coroutine, DefaultDict, Deque, Dict, List, Optional, Union, Callable, Any
 
 from EpikCord.managers import GuildManager, ChannelManager
-
+from .client_application import ClientApplication
+from .client_user import ClientUser
+from .http_client import HTTPClient
 from ..close_event_codes import GatewayCECode
+from ..close_handler import CloseHandlerLog, CloseHandlerRaise, close_dispatcher
 from ..exceptions import (
     ClosedWebSocketConnection,
-    DisallowedIntents,
-    InvalidIntents,
-    InvalidToken,
-    Ratelimited429,
-    ShardingRequired,
 )
 from ..flags import Intents
 from ..opcodes import GatewayOpcode
-from .http_client import HTTPClient
 from ..utils import Utils
-from .client_user import ClientUser
-from .client_application import ClientApplication
 
 if TYPE_CHECKING:
     from EpikCord import Presence
@@ -214,67 +209,26 @@ class WebsocketClient:
         return register_event
 
     async def handle_close(self):
-        if self.websocket.close_code == GatewayCECode.DisallowedIntents:
-            raise DisallowedIntents(
-                "You cannot use privileged intents with this token, go to "
-                "the developer portal and allow the privileged intents "
-                "needed. "
-            )
-        elif self.websocket.close_code == 1006:
-            await self.resume()
-        elif self.websocket.close_code == GatewayCECode.AuthenticationFailed:
-            raise InvalidToken("The token you provided is invalid.")
-        elif self.websocket.close_code == GatewayCECode.RateLimited:
-            raise Ratelimited429(
-                "You've been rate limited. Try again in a few minutes."
-            )
-        elif self.websocket.close_code == GatewayCECode.ShardingRequired:
-            raise ShardingRequired("You need to shard the bot.")
-        elif self.websocket.close_code == GatewayCECode.InvalidAPIVersion:
-            raise DeprecationWarning(
-                "The gateway you're connecting to is deprecated and does not "
-                "work, upgrade EpikCord.py. "
-            )
-        elif self.websocket.close_code == GatewayCECode.InvalidIntents:
-            raise InvalidIntents("The intents you provided are invalid.")
-        elif self.websocket.close_code == GatewayCECode.UnknownError:
-            await self.resume()
-        elif self.websocket.close_code == GatewayCECode.UnknownOpcode:
-            logger.critical(
-                "EpikCord.py sent an invalid OPCODE to the Gateway. "
-                "Report this immediately. "
-            )
-            await self.resume()
-        elif self.websocket.close_code == GatewayCECode.DecodeError:
-            logger.critical(
-                "EpikCord.py sent an invalid payload to the Gateway."
-                " Report this immediately. "
-            )
-            await self.resume()
-        elif self.websocket.close_code == GatewayCECode.NotAuthenticated:
-            logger.critical(
-                "EpikCord.py has sent a payload prior to identifying."
-                " Report this immediately. "
-            )
+        close_code = self.websocket.close_code
 
-        elif self.websocket.close_code == GatewayCECode.AlreadyAuthenticated:
-            logger.critical(
-                "EpikCord.py tried to authenticate again." " Report this immediately. "
-            )
-            await self.resume()
-        elif self.websocket.close_code == GatewayCECode.InvalidSequence:
-            logger.critical(
-                "EpikCord.py sent an invalid sequence number."
-                " Report this immediately."
-            )
-            await self.resume()
-        elif self.websocket.close_code == GatewayCECode.SessionTimeout:
-            logger.critical("Session timed out.")
-            await self.resume()
-        else:
+        try:
+            gce_code = GatewayCECode(close_code)
+            ch_ins = close_dispatcher[gce_code]
+
+        except (ValueError, KeyError) as e:
             raise ClosedWebSocketConnection(
                 f"Connection has been closed with code {self.websocket.close_code}"
-            )
+            ) from e
+
+        if isinstance(ch_ins, CloseHandlerRaise):
+            raise ch_ins.exception(ch_ins.message)
+
+        if isinstance(ch_ins, CloseHandlerLog):
+            report_msg = "\n\nReport this immediately" * ch_ins.need_report
+            logger.critical(ch_ins.message + report_msg)
+
+        if ch_ins.resumable:
+            await self.resume()
 
     async def send_json(self, json: dict):
         if not self.websocket:
