@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from collections import deque
 from logging import getLogger
 from typing import TYPE_CHECKING, Coroutine, Dict, List, Optional, Union
 
 from ..flags import Intents
-from ..managers import ChannelManager, GuildManager
 from ..sticker import Sticker, StickerPack
 from .websocket_client import WebsocketClient
 
@@ -32,13 +30,9 @@ class Client(WebsocketClient):
         from EpikCord import ClientApplication, ClientUser, Presence, Utils
 
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready or False
-        self.guilds: GuildManager = GuildManager(self)
-        self.channels: ChannelManager = ChannelManager(self)
-        self.presence: Presence = Presence(status=status, activity=activity)
         self._components: Dict[str, Coroutine] = {}
         self.utils = Utils(self)
-        self.user: Optional[ClientUser] = None
-        self.application: Optional[ClientApplication] = None
+
         self.sections: List[Section] = []
 
     def load_section(self, section_class: Section):

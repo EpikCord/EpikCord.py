@@ -409,4 +409,4 @@ class WebsocketClient:
         await self.utils.overwrite_commands()
         await self.dispatch("ready")
 
-__all__ = ("WebsocketClient",)
+__all__ = ("WebsocketClient", "Event")
