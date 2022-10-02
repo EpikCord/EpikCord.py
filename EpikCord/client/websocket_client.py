@@ -355,12 +355,6 @@ class WebsocketClient:
         from EpikCord import Message
 
         message = Message(self, data)
-        message.channel = self.channels.get(  # type: ignore
-            message.channel_id
-        ) or await self.channels.fetch(
-            message.channel_id
-        )  # type: ignore
-        message.channel.last_message = message
 
         return message
 

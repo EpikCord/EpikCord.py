@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING, List, Optional, Union
 
 from aiohttp import ClientWebSocketResponse
 
+from EpikCord.utils.utils import Utils
+
 from .close_event_codes import GatewayCECode
 from .exceptions import ClosedWebSocketConnection, CustomIdIsTooBig, InvalidArgumentType
 from .opcodes import GatewayOpcode, VoiceOpcode
@@ -381,23 +383,23 @@ class GuildChannel(BaseChannel):
     async def create_invite(
         self,
         *,
-        max_age: Optional[int],
-        max_uses: Optional[int],
-        temporary: Optional[bool],
-        unique: Optional[bool],
-        target_type: Optional[int],
-        target_user_id: Optional[str],
-        target_application_id: Optional[str],
+        max_age: Optional[int] = None,
+        max_uses: Optional[int] = None,
+        temporary: Optional[bool] = None, 
+        unique: Optional[bool] = None,
+        target_type: Optional[int] = None,
+        target_user_id: Optional[str] = None,
+        target_application_id: Optional[str] = None,
     ):
-        data = {
-            "max_age": max_age or None,
-            "max_uses": max_uses or None,
-            "temporary": temporary or None,
-            "unique": unique or None,
-            "target_type": target_type or None,
-            "target_user_id": target_user_id or None,
-            "target_application_id": target_application_id or None,
-        }
+        data = Utils.filter_values({
+            "max_age": max_age,
+            "max_uses": max_uses,
+            "temporary": temporary,
+            "unique": unique,
+            "target_type": target_type,
+            "target_user_id": target_user_id,
+            "target_application_id": target_application_id
+        })
 
         await self.client.http.post(
             f"/channels/{self.id}/invites", json=data, channel_id=self.id
