@@ -34,7 +34,7 @@ class CloseHandlerLog(CloseHandler):
 
 ignore = CloseHandler()
 close_dispatcher: Dict[GatewayCECode, CloseHandler] = {
-    GatewayCECode.WEBSOCKET_ERROR: ignore,
+    GatewayCECode.WSCloseAbnormal: ignore,
     GatewayCECode.UnknownError: ignore,
     GatewayCECode.DisallowedIntents: CloseHandlerRaise(
         DisallowedIntents,
