@@ -42,7 +42,7 @@ class WebsocketClient:
         self,
         token: str,
         intents: Union[Intents, int],
-        presence: Optional[Presence],
+        presence: Optional[Presence] = None,
         discord_endpoint: str = "https://discord.com/api/v10",
     ):
         from EpikCord import Intents
