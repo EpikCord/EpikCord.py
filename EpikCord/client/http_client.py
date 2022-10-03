@@ -91,10 +91,16 @@ class DiscordGatewayWebsocket(ClientWebSocketResponse):
 
 
 class HTTPClient:
-    def __init__(self, token, *args, **kwargs):
+    def __init__(self, token: Optional[str] = None, *args, **kwargs):
         self.base_uri: str = kwargs.pop(
             "discord_endpoint", "https://discord.com/api/v10"
         )
+        headers = {
+                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
+                "Content-Type": "application/json",
+            }
+        if token:
+            headers["Authorization"] = f"Bot {token}"
         self.session = ClientSession(
             *args,
             **kwargs,
@@ -102,11 +108,7 @@ class HTTPClient:
             if _ORJSON
             else json.dumps(x),
             ws_response_class=DiscordGatewayWebsocket,
-            headers={
-                "Authorization": f"Bot {token}",
-                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
-                "Content-Type": "application/json",
-            },
+            headers=headers,
         )
         self.global_ratelimit: asyncio.Event = asyncio.Event()
         self.global_ratelimit.set()
