@@ -99,6 +99,7 @@ class HTTPClient:
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
                 "Content-Type": "application/json",
             }
+
         if token:
             headers["Authorization"] = f"Bot {token}"
         self.session = ClientSession(
