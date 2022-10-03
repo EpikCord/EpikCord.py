@@ -1,9 +1,10 @@
-from typing import List, TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from ..partials import PartialUser
 
 if TYPE_CHECKING:
     import discord_typings
+
 
 class TeamMember:
     def __init__(self, data: discord_typings.TeamMemberData):

@@ -55,7 +55,6 @@ class UserClient:
 
     def __init__(self, token: str, *, discord_endpoint: str):
         self.token = token
-        from EpikCord import __version__
 
         self._http: HTTPClient = HTTPClient(
             token,

@@ -17,7 +17,6 @@ from .exceptions import ClosedWebSocketConnection, CustomIdIsTooBig, InvalidArgu
 from .opcodes import GatewayOpcode, VoiceOpcode
 from .type_enums import AllowedMentionTypes
 
-
 logger = getLogger("EpikCord.channels")
 
 _NACL = find_spec("nacl")
@@ -37,14 +36,7 @@ else:
 if TYPE_CHECKING:
     import discord_typings
 
-    from EpikCord import (
-        Attachment,
-        Check,
-        Embed,
-        Message,
-        Modal,
-        VoiceChannel,
-    )
+    from EpikCord import Attachment, Check, Embed, Message, Modal, VoiceChannel
 
     from .components import *
     from .message import AllowedMention
@@ -109,7 +101,7 @@ class Messageable:
         attachments: List[Attachment] = [],
         suppress_embeds: bool = False,
     ) -> Message:
-        from .message import AllowedMention
+
         payload = self.client.utils.filter_values(
             {
                 "content": content,
@@ -138,8 +130,8 @@ class Messageable:
 
 
 class BaseCommand:
-    def __init__(self, checks: List[Check] = []):
-        self.checks: List[Check] = checks
+    def __init__(self, checks: Optional[List[Check]] = None):
+        self.checks: List[Check] = checks or []
 
     def is_slash_command(self):
         return self.type == 1
@@ -349,12 +341,16 @@ class Connectable:
 
 
 class GuildChannel(BaseChannel):
-    def __init__(self, client, data: Union[
-        discord_typings.VoiceChannelData,
-        discord_typings.TextChannelData,
-        discord_typings.CategoryChannelData,
-        discord_typings.NewsChannelData,
-    ]):
+    def __init__(
+        self,
+        client,
+        data: Union[
+            discord_typings.VoiceChannelData,
+            discord_typings.TextChannelData,
+            discord_typings.CategoryChannelData,
+            discord_typings.NewsChannelData,
+        ],
+    ):
         super().__init__(client, data)
         self.guild_id: int = int(data["guild_id"])
         self.position: int = data["position"]
@@ -385,21 +381,23 @@ class GuildChannel(BaseChannel):
         *,
         max_age: Optional[int] = None,
         max_uses: Optional[int] = None,
-        temporary: Optional[bool] = None, 
+        temporary: Optional[bool] = None,
         unique: Optional[bool] = None,
         target_type: Optional[int] = None,
         target_user_id: Optional[str] = None,
         target_application_id: Optional[str] = None,
     ):
-        data = Utils.filter_values({
-            "max_age": max_age,
-            "max_uses": max_uses,
-            "temporary": temporary,
-            "unique": unique,
-            "target_type": target_type,
-            "target_user_id": target_user_id,
-            "target_application_id": target_application_id
-        })
+        data = Utils.filter_values(
+            {
+                "max_age": max_age,
+                "max_uses": max_uses,
+                "temporary": temporary,
+                "unique": unique,
+                "target_type": target_type,
+                "target_user_id": target_user_id,
+                "target_application_id": target_application_id,
+            }
+        )
 
         await self.client.http.post(
             f"/channels/{self.id}/invites", json=data, channel_id=self.id

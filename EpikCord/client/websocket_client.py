@@ -3,39 +3,49 @@ from __future__ import annotations
 import asyncio
 from collections import defaultdict, deque
 from logging import getLogger
-from typing import TYPE_CHECKING, Coroutine, DefaultDict, Deque, Dict, List, Optional, Union, Callable, Any
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Coroutine,
+    DefaultDict,
+    Deque,
+    Dict,
+    List,
+    Optional,
+    Union,
+)
 
-from EpikCord.managers import GuildManager, ChannelManager
+from EpikCord.managers import ChannelManager, GuildManager
 
 from ..close_event_codes import GatewayCECode
-from ..exceptions import (
-    ClosedWebSocketConnection,
-    DisallowedIntents,
-    InvalidIntents,
-    InvalidToken,
-    Ratelimited429,
-    ShardingRequired,
-)
+from ..close_handler import CloseHandlerLog, CloseHandlerRaise, close_dispatcher
+from ..exceptions import ClosedWebSocketConnection
 from ..flags import Intents
 from ..opcodes import GatewayOpcode
-from .http_client import HTTPClient
 from ..utils import Utils
-from .client_user import ClientUser
+from ..ws_events import setup_ws_event_handler
 from .client_application import ClientApplication
+from .client_user import ClientUser
+from .http_client import HTTPClient
 
 if TYPE_CHECKING:
-    from EpikCord import Presence
     import discord_typings
+
+    from EpikCord import Presence
+
     from .http_client import DiscordGatewayWebsocket
 
 logger = getLogger(__name__)
 
 Callback = Callable[..., Coroutine[Any, Any, Any]]
 
+
 class Event:
     def __init__(self, callback: Callback, *, event_name: str):
         self.callback = callback
         self.event_name = event_name or callback.__name__
+
 
 class WebsocketClient:
     def __init__(
@@ -58,7 +68,7 @@ class WebsocketClient:
 
         self._closed = True
         self.presence = presence
-        
+
         self.http: HTTPClient = HTTPClient(token, discord_endpoint=discord_endpoint)
 
         self.events: DefaultDict[str, List] = defaultdict(list)
@@ -80,84 +90,82 @@ class WebsocketClient:
         self.user: Optional[ClientUser] = None
         self.application: Optional[ClientApplication] = None
 
+        self.wse_handler = setup_ws_event_handler(self)
+
     async def heartbeat(self, forced: bool = False):
         if not self.heartbeat_interval:
-            logger.critical(f"Cannot heartbeat without an interval.")
+            logger.critical("Cannot heartbeat without an interval.")
             return
 
         if forced:
-            await self.send_json({
-                "op": GatewayOpcode.HEARTBEAT,
-                "d": self.sequence,
-            })
+            await self.send_json(
+                {
+                    "op": GatewayOpcode.HEARTBEAT,
+                    "d": self.sequence,
+                }
+            )
             return
 
-        await asyncio.sleep(self.heartbeat_interval) # type: ignore
-        await self.send_json({
-            "op": GatewayOpcode.HEARTBEAT,
-            "d": self.sequence,
-        })
+        await asyncio.sleep(self.heartbeat_interval)  # type: ignore
+        await self.send_json(
+            {
+                "op": GatewayOpcode.HEARTBEAT,
+                "d": self.sequence,
+            }
+        )
+
+    async def handle_ws_event(self, event_data):
+        raw_op_code = event_data["op"]
+
+        try:
+            op_code = GatewayOpcode[raw_op_code]
+        except KeyError:
+            logger.critical("Unknown op code: %s", raw_op_code)
+            return
+
+        handler = self.wse_handler.get(op_code)
+        handler(event_data)
 
     async def connect(self):
         if not self.gateway_url:
             self.gateway_url = await self.http.get_gateway()["url"]
 
-        self.websocket = await self.http.ws_connect(f"{self.gateway_url}?v=10&encoding=json&compress=zlib-stream")
+        self.websocket = await self.http.ws_connect(
+            f"{self.gateway_url}?v=10&encoding=json&compress=zlib-stream"
+        )
         self._closed = False
-        
+
         async for event in self.websocket:
             event_data = event.json()
-            logger.debug(f"Received {event_data} from the Websocket Connection to Discord.")
-
-            if event_data["op"] == GatewayOpcode.DISPATCH:
-                self.sequence = event_data["s"]
-                await self.handle_event(event_data["t"], event_data["d"])
-
-            elif event_data["op"] == GatewayOpcode.HEARTBEAT:
-                await self.heartbeat(True)
-
-            elif event_data["op"] == GatewayOpcode.RECONNECT:
-                await self.reconnect()
-                await self.resume()
-                return
-
-            elif event_data["op"] == GatewayOpcode.INVALID_SESSION:
-                if event_data["d"] == True:
-                    await self.reconnect()
-                    await self.resume()
-                    return
-                await self.reconnect()
-                return
-
-            elif event_data["op"] == GatewayOpcode.HELLO:
-                self.heartbeat_interval = event_data["d"]["heartbeat_interval"] / 1000
-                await self.identify()
-            
-            elif event_data["op"] == GatewayOpcode.HEARTBEAT_ACK:
-                self.heartbeats.append(event_data)
+            logger.debug(
+                f"Received {event_data} from the Websocket Connection to Discord."
+            )
+            await self.handle_ws_event(event_data)
 
     async def reconnect(self):
         await self.close()
         await self.connect()
 
     async def resume(self):
-        await self.send_json({
-            "op": GatewayOpcode.RESUME,
-            "d": {
-                "token": self.token,
-                "session_id": self.session_id,
-                "seq": self.sequence,
-            },
-        })
+        await self.send_json(
+            {
+                "op": GatewayOpcode.RESUME,
+                "d": {
+                    "token": self.token,
+                    "session_id": self.session_id,
+                    "seq": self.sequence,
+                },
+            }
+        )
 
     async def handle_event(self, event_name: str, data: Dict):
         if callback := getattr(self, f"_{event_name}", None):
             await callback(self, data)
-        
+
         for wait_for_callback in self.wait_for_events[event_name]:
-            try: 
+            try:
                 check_results = await wait_for_callback[1](data)
-            except:
+            except Exception:  # TODO: use a more specific exception
                 return
             if check_results:
                 wait_for_callback[0].set_result(data)
@@ -192,7 +200,7 @@ class WebsocketClient:
 
         if not check:
 
-            async def check(*_, **__): # type: ignore
+            async def check(*_, **__):  # type: ignore
                 return True
 
         self.wait_for_events[event_name.lower()].append((future, check))
@@ -212,67 +220,26 @@ class WebsocketClient:
         return register_event
 
     async def handle_close(self):
-        if self.websocket.close_code == GatewayCECode.DisallowedIntents:
-            raise DisallowedIntents(
-                "You cannot use privileged intents with this token, go to "
-                "the developer portal and allow the privileged intents "
-                "needed. "
-            )
-        elif self.websocket.close_code == 1006:
-            await self.resume()
-        elif self.websocket.close_code == GatewayCECode.AuthenticationFailed:
-            raise InvalidToken("The token you provided is invalid.")
-        elif self.websocket.close_code == GatewayCECode.RateLimited:
-            raise Ratelimited429(
-                "You've been rate limited. Try again in a few minutes."
-            )
-        elif self.websocket.close_code == GatewayCECode.ShardingRequired:
-            raise ShardingRequired("You need to shard the bot.")
-        elif self.websocket.close_code == GatewayCECode.InvalidAPIVersion:
-            raise DeprecationWarning(
-                "The gateway you're connecting to is deprecated and does not "
-                "work, upgrade EpikCord.py. "
-            )
-        elif self.websocket.close_code == GatewayCECode.InvalidIntents:
-            raise InvalidIntents("The intents you provided are invalid.")
-        elif self.websocket.close_code == GatewayCECode.UnknownError:
-            await self.resume()
-        elif self.websocket.close_code == GatewayCECode.UnknownOpcode:
-            logger.critical(
-                "EpikCord.py sent an invalid OPCODE to the Gateway. "
-                "Report this immediately. "
-            )
-            await self.resume()
-        elif self.websocket.close_code == GatewayCECode.DecodeError:
-            logger.critical(
-                "EpikCord.py sent an invalid payload to the Gateway."
-                " Report this immediately. "
-            )
-            await self.resume()
-        elif self.websocket.close_code == GatewayCECode.NotAuthenticated:
-            logger.critical(
-                "EpikCord.py has sent a payload prior to identifying."
-                " Report this immediately. "
-            )
+        close_code = self.websocket.close_code
 
-        elif self.websocket.close_code == GatewayCECode.AlreadyAuthenticated:
-            logger.critical(
-                "EpikCord.py tried to authenticate again." " Report this immediately. "
-            )
-            await self.resume()
-        elif self.websocket.close_code == GatewayCECode.InvalidSequence:
-            logger.critical(
-                "EpikCord.py sent an invalid sequence number."
-                " Report this immediately."
-            )
-            await self.resume()
-        elif self.websocket.close_code == GatewayCECode.SessionTimeout:
-            logger.critical("Session timed out.")
-            await self.resume()
-        else:
+        try:
+            gce_code = GatewayCECode(close_code)
+            ch_ins = close_dispatcher[gce_code]
+
+        except (ValueError, KeyError) as e:
             raise ClosedWebSocketConnection(
                 f"Connection has been closed with code {self.websocket.close_code}"
-            )
+            ) from e
+
+        if isinstance(ch_ins, CloseHandlerRaise):
+            raise ch_ins.exception(ch_ins.message)
+
+        if isinstance(ch_ins, CloseHandlerLog):
+            report_msg = "\n\nReport this immediately" * ch_ins.need_report
+            logger.critical(ch_ins.message + report_msg)
+
+        if ch_ins.resumable:
+            await self.resume()
 
     async def send_json(self, json: dict):
         if not self.websocket:
@@ -335,11 +302,8 @@ class WebsocketClient:
         )  # TODO: Make this return something like (VoiceState, Member) or make VoiceState get Member from member_id
 
     async def _guild_delete(self, data: discord_typings.GuildDeleteEvent):
-        guild = self.guilds.remove_from_cache(data["id"])  # type: ignore
-
-        if guild:
+        if guild := self.guilds.remove_from_cache(data["id"]):
             await self.dispatch("guild_delete", guild)
-
 
     async def _interaction_create(self, data: discord_typings.InteractionCreateEvent):
         interaction = Utils.interaction_from_type(data)
@@ -363,9 +327,7 @@ class WebsocketClient:
             return  # TODO: Maybe a different event where the name says the Bot is removed on startup.
 
         guild: Union[UnavailableGuild, Guild] = (
-            UnavailableGuild(data)
-            if data.get("unavailable")
-            else Guild(self, data)
+            UnavailableGuild(data) if data.get("unavailable") else Guild(self, data)
         )
 
         if not guild:
@@ -392,8 +354,8 @@ class WebsocketClient:
         guild = self.guilds.get(data["guild_id"])
         if not guild:
             guild = await self.guilds.fetch(data["guild_id"])
-            if not guild:
-                logger.critical(f"Guild was not found in cache, and could not be fetched.")
+        if not guild:
+            logger.critical("Guild was not found in cache, and could not be fetched.")
 
         guild.members.cache[guild_member.id] = guild_member
         await self.dispatch("guild_member_update", guild_member)
@@ -408,10 +370,11 @@ class WebsocketClient:
 
         self.application = ClientApplication(self, application_data)
 
-        if not self.override_commands_on_ready: # type: ignore
+        if not self.override_commands_on_ready:  # type: ignore
             return
 
         await self.utils.override_commands()
         await self.dispatch("ready")
+
 
 __all__ = ("WebsocketClient", "Event")

@@ -1,12 +1,14 @@
 import asyncio
 import contextlib
 import zlib
+from functools import partialmethod
 from importlib.util import find_spec
 from logging import getLogger
-from functools import partialmethod
-from typing import Any, Dict, Optional, Union, TYPE_CHECKING
-from EpikCord import __version__
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+
 from aiohttp import ClientSession, ClientWebSocketResponse
+
+from EpikCord import __version__
 
 from ..exceptions import (
     DiscordAPIError,
@@ -29,6 +31,7 @@ else:
 
 if TYPE_CHECKING:
     import discord_typings
+
 
 class _FakeTask:
     def cancel(self):
@@ -104,7 +107,6 @@ class HTTPClient:
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
                 "Content-Type": "application/json",
             },
-
         )
         self.global_ratelimit: asyncio.Event = asyncio.Event()
         self.global_ratelimit.set()
@@ -157,7 +159,7 @@ class HTTPClient:
             else:
                 b = Bucket(discord_hash=res.headers["X-RateLimit-Bucket"])
                 if b in self.buckets.values():
-                    self.buckets[bucket_hash] = {v: k for k, v in self.buckets.items()}[ # type: ignore
+                    self.buckets[bucket_hash] = {v: k for k, v in self.buckets.items()}[  # type: ignore
                         b
                     ]
                 else:
@@ -213,7 +215,6 @@ class HTTPClient:
         elif not 300 > res.status >= 200:
             raise DiscordAPIError(body)
 
-
         async def dispose():
             await asyncio.sleep(300)
 
@@ -249,7 +250,6 @@ class HTTPClient:
         finally:
             logger.debug("".join(message))
 
-
     def base(  # type: ignore
         self,
         method,
@@ -262,7 +262,7 @@ class HTTPClient:
             return self.request(method, url, *args, **kwargs)
         return self.session.request(method, url, *args, **kwargs)
 
-    get  = partialmethod(base, "GET") 
+    get = partialmethod(base, "GET")
     post = partialmethod(base, "POST")
     put = partialmethod(base, "PUT")
     patch = partialmethod(base, "PATCH")
@@ -270,13 +270,13 @@ class HTTPClient:
     head = partialmethod(base, "HEAD")
     options = partialmethod(base, "OPTIONS")
 
-
     async def get_gateway(self) -> discord_typings.GetGatewayData:
         res = await self.get("/gateway")
         return await res.json()
-    
+
     async def get_gateway_bot(self) -> discord_typings.GetGatewayBotData:
         res = await self.get("/gateway/bot")
         return await res.json()
+
 
 __all__ = ("HTTPClient",)

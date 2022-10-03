@@ -137,14 +137,14 @@ class Utils:
 
     @staticmethod
     def component_from_type(component_data: dict):
-        component_types = {2: Button, 3: SelectMenu, 4: TextInput}
+        component_types = [Button, SelectMenu, TextInput]
         component_type = component_data["type"]
-        component_cls = component_types.get(component_type)
 
-        if not component_cls:
+        if component_type < 2 or component_type > 4:
             logger.warning(f"Unknown component type: {component_type}")
             return
 
+        component_cls = component_types[component_type - 2]
         return component_cls(**component_data)
 
     @staticmethod
@@ -159,7 +159,7 @@ class Utils:
 
     @staticmethod
     def interaction_from_type(
-        data
+        data,
     ) -> Optional[
         Union[
             ApplicationCommandInteraction,

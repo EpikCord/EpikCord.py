@@ -131,11 +131,10 @@ class CommandHandler:
                     if iscoroutinefunction(check.callback):
                         if not await check.callback(interaction):
                             return await check.failure_callback(interaction)
-                        await check.success_callback(interaction)
-                    else:
-                        if not check.callback(interaction):
-                            await check.failure_callback(interaction)
-                        await check.success_callback(interaction)
+
+                    elif not check.callback(interaction):
+                        await check.failure_callback(interaction)
+                    await check.success_callback(interaction)
 
                 options.extend(ReceivedOption(option) for option in interaction.options)
 

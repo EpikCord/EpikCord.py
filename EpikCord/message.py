@@ -417,10 +417,8 @@ class Message:
         ] or None
 
         self.channel = client.channels.get(self.channel_id)
-        if not self.channel: # Cache miss
+        if not self.channel:  # Cache miss
             self.channel = asyncio.create_task(client.channels.fetch(self.channel_id))
-            
-        
 
     async def add_reaction(self, emoji: str):
         emoji = _quote(emoji)
@@ -503,11 +501,13 @@ class Message:
         auto_archive_duration: Optional[int] = None,
         rate_limit_per_user: Optional[int] = None,
     ):
-        payload = Utils.filter_values({
+        payload = Utils.filter_values(
+            {
                 "name": name,
                 "auto_archive_duration": auto_archive_duration,
                 "rate_limit_per_user": rate_limit_per_user,
-            })
+            }
+        )
 
         response = await self.client.http.post(
             f"channels/{self.channel_id}/messages/{self.id}/threads",
@@ -534,4 +534,3 @@ __all__ = (
     "File",
     "Message",
 )
-0
