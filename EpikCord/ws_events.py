@@ -49,10 +49,13 @@ WSEHandlerMapping = Dict[GatewayOpcode, Callable[[Dict], None]]
 
 def setup_ws_event_handler(ws_client: WebsocketClient) -> WSEHandlerMapping:
     return {
-        GatewayOpcode.DISPATCH: partial(WSEHandler.dispatch, ws_client),
-        GatewayOpcode.HEARTBEAT: partial(WSEHandler.heartbeat, ws_client),
-        GatewayOpcode.RECONNECT: partial(WSEHandler.reconnect, ws_client),
-        GatewayOpcode.INVALID_SESSION: partial(WSEHandler.invalid_session, ws_client),
-        GatewayOpcode.HELLO: partial(WSEHandler.hello, ws_client),
-        GatewayOpcode.HEARTBEAT_ACK: partial(WSEHandler.heartbeat_hack, ws_client),
+        g_opcode: partial(method, ws_client)
+        for g_opcode, method in (
+            (GatewayOpcode.DISPATCH, WSEHandler.dispatch),
+            (GatewayOpcode.HEARTBEAT, WSEHandler.heartbeat),
+            (GatewayOpcode.RECONNECT, WSEHandler.reconnect),
+            (GatewayOpcode.INVALID_SESSION, WSEHandler.invalid_session),
+            (GatewayOpcode.HELLO, WSEHandler.hello),
+            (GatewayOpcode.HEARTBEAT_ACK, WSEHandler.heartbeat_hack),
+        )
     }
