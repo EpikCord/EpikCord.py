@@ -105,7 +105,7 @@ class HTTPClient:
         self.session = ClientSession(
             *args,
             **kwargs,
-            json_serialize=lambda x, *__, **___: json.dumps(x).decode()
+            json_serialize=lambda x, *__, **___: json.dumps(x).decode() # type: ignore
             if _ORJSON
             else json.dumps(x),
             ws_response_class=DiscordGatewayWebsocket,

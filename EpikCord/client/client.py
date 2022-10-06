@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Coroutine, Dict, List, Optional, Union
 from ..flags import Intents
 from ..sticker import Sticker, StickerPack
 from .websocket_client import WebsocketClient
+from .command_handler import CommandHandler
 
 if TYPE_CHECKING:
     import discord_typings
@@ -14,8 +15,7 @@ if TYPE_CHECKING:
 
 logger = getLogger(__name__)
 
-
-class Client(WebsocketClient):
+class Client(WebsocketClient, CommandHandler):
     def __init__(
         self,
         token: str,
@@ -26,7 +26,7 @@ class Client(WebsocketClient):
         presence: Optional[Presence] = None,
     ):
         super().__init__(token, intents, presence, discord_endpoint=discord_endpoint)
-        from EpikCord import ClientApplication, ClientUser, Presence, Utils
+        from EpikCord import Utils
 
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready or False
         self._components: Dict[str, Coroutine] = {}
@@ -55,7 +55,7 @@ class Client(WebsocketClient):
 
     async def _interaction_create(self, data: discord_typings.InteractionCreateEvent):
         await super()._interaction_create(data)
-        await self.handle_interaction()
-
+        interaction = self.utils.interaction_from_type(data)
+        await self.handle_interaction(interaction)
 
 __all__ = ("Client",)
