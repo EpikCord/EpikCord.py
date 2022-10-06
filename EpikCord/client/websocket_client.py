@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from collections import defaultdict, deque
 from logging import getLogger
+from time import perf_counter_ns
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -91,10 +92,20 @@ class WebsocketClient:
         self.application: Optional[ClientApplication] = None
 
         self.wse_handler = setup_ws_event_handler(self)
+        self.latencies: Deque = deque(maxlen=10)
+
+    @property
+    def latency(self) -> Optional[int]:
+        if not self.latencies:
+            return None
+        return sum(self.latencies) / len(self.latencies)
 
     async def heartbeat(self, forced: bool = False):
         if not self.heartbeat_interval:
             logger.critical("Cannot heartbeat without an interval.")
+            return
+        if not self.websocket:
+            logger.critical("Cannot heartbeat without a websocket.")
             return
 
         if forced:
@@ -113,6 +124,13 @@ class WebsocketClient:
                 "d": self.sequence,
             }
         )
+
+        start = perf_counter_ns()
+        async for event in self.websocket:
+            if event.json()["op"] == GatewayOpcode.HEARTBEAT_ACK:
+                end = perf_counter_ns()
+                break
+        self.latencies.append(end - start)
 
     async def handle_ws_event(self, event_data):
         raw_op_code = event_data["op"]
