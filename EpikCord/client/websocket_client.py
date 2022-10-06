@@ -361,8 +361,7 @@ class WebsocketClient:
         for thread in data["threads"]:
             self.channels.add_to_cache(data["id"], Thread(self, thread))
 
-        return guild
-
+        await self.dispatch("guild_create", guild)
         # TODO: Add other attributes to cache
 
     async def _guild_member_update(self, data: discord_typings.GuildMemberUpdateEvent):
