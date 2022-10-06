@@ -274,10 +274,17 @@ class HTTPClient:
     options = partialmethod(base, "OPTIONS")
 
     async def get_gateway(self) -> discord_typings.GetGatewayData:
+        """
+        Get the gateway url.
+        """
         res = await self.get("/gateway")
         return await res.json()
 
     async def get_gateway_bot(self) -> discord_typings.GetGatewayBotData:
+        """
+        Get information about the bot logging in, including the gateway url.
+        This is useful when sharding.
+        """
         res = await self.get("/gateway/bot")
         return await res.json()
 
