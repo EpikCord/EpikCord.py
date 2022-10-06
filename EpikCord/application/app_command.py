@@ -63,6 +63,13 @@ class ApplicationCommandPermission:
         )
         self.permission: bool = data["permission"]
 
+    def to_dict(self) -> discord_typings.ApplicationCommandPermissionsData:
+        return {
+            "id": self.id,
+            "type": self.type.value,
+            "permission": self.permission,
+        }
+
 
 class GuildApplicationCommandPermission:
     def __init__(self, data: discord_typings.GuildApplicationCommandPermissionData):

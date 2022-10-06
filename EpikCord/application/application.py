@@ -20,8 +20,8 @@ class Application:
         self.rpc_origins: Optional[List[str]] = data.get("rpc_origins")
         self.bot_public: bool = data["bot_public"]
         self.bot_require_code_grant: bool = data["bot_require_code_grant"]
-        self.terms_of_service_url: Optional[str] = data.get("terms_of_service")
-        self.privacy_policy_url: Optional[str] = data.get("privacy_policy")
+        self.terms_of_service_url: Optional[str] = data.get("terms_of_service") # type: ignore
+        self.privacy_policy_url: Optional[str] = data.get("privacy_policy") # type: ignore
         self.owner: Optional[PartialUser] = (
             PartialUser(data["owner"]) if "user" in data else None
         )
