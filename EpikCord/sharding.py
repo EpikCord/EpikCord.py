@@ -55,7 +55,7 @@ class Shard(WebsocketClient):
         await self.resume()
 
 
-class ShardManager(EventHandler):
+class ShardManager:
     def __init__(
         self,
         token: str,
@@ -85,7 +85,6 @@ class ShardManager(EventHandler):
         self.shards: List[Shard] = []
         self.presence: Optional[Presence] = presence
         self.discord_endpoint: Optional[str] = discord_endpoint
-        super().__init__()
 
     def run(self):
         async def wrapper():

@@ -189,7 +189,7 @@ class WebsocketClient:
                 wait_for_callback[0].set_result(data)
                 self.wait_for_events[event_name].remove(wait_for_callback)
 
-    async def dispatch(self, event_name: str, *args, **kwargs):
+    async def dispatch(self, event_name: str, *args: Any, **kwargs: Any):
         for callback in self.events[event_name]:
             await callback(*args, **kwargs)
 
