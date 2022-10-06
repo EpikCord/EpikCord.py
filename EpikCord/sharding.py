@@ -1,13 +1,16 @@
+from __future__ import annotations
 import asyncio
 from sys import platform
-from typing import List, Optional, Union
+from typing import List, Optional, TYPE_CHECKING
 
-from .client import ClientApplication, ClientUser, HTTPClient, WebsocketClient
+from .client import HTTPClient, WebsocketClient
 from .flags import Intents
 from .opcodes import GatewayOpcode
 from .presence import Presence
 from .utils import Utils
 
+if TYPE_CHECKING:
+    import discord_typings
 
 class Shard(WebsocketClient):
     def __init__(
@@ -23,11 +26,7 @@ class Shard(WebsocketClient):
         self.shard_id = [shard_id, number_of_shards]
 
     async def ready(self, data: dict):
-        self.user: ClientUser = ClientUser(self, data["user"])
         self.session_id: str = data["session_id"]
-        application_response = await self.http.get("/oauth2/applications/@me")
-        application_data = await application_response.json()
-        self.application: ClientApplication = ClientApplication(self, application_data)
 
     async def identify(self):
         payload = {
