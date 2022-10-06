@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from logging import getLogger
-from typing import TYPE_CHECKING, Coroutine, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Coroutine, Dict, List, Optional, Union, Callable, Any
 
 from ..flags import Intents
 from ..sticker import Sticker, StickerPack
@@ -14,6 +14,8 @@ if TYPE_CHECKING:
     from EpikCord import Presence, Section
 
 logger = getLogger(__name__)
+
+Callback = Callable[..., Coroutine[Any, Any, Any]]
 
 class Client(WebsocketClient, CommandHandler):
     def __init__(
@@ -29,7 +31,7 @@ class Client(WebsocketClient, CommandHandler):
         from EpikCord import Utils
 
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready or False
-        self._components: Dict[str, Coroutine] = {}
+        self._components: Dict[str, Callback] = {}
         self.utils = Utils(self)
 
         self.sections: List[Section] = []
