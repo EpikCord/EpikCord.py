@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
     from EpikCord import Presence
 
-    from .http_client import DiscordGatewayWebsocket
+    from .http_client import GatewayWebsocket
 
 logger = getLogger(__name__)
 
@@ -81,7 +81,7 @@ class WebsocketClient:
         self.sequence: Optional[int] = None
         self.gateway_url: Optional[str] = None
         self.reconnect_url: Optional[str] = None
-        self.websocket: Optional[DiscordGatewayWebsocket] = None
+        self.websocket: Optional[GatewayWebsocket] = None
 
         self.utils = Utils(self)
         # Managers

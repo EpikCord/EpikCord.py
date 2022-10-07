@@ -63,7 +63,7 @@ class DiscordWSMessage:
         return json.loads(self.data)
 
 
-class DiscordGatewayWebsocket(ClientWebSocketResponse):
+class GatewayWebsocket(ClientWebSocketResponse):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.buffer: bytearray = bytearray()
@@ -108,7 +108,7 @@ class HTTPClient:
             json_serialize=lambda x, *__, **___: json.dumps(x).decode() # type: ignore
             if _ORJSON
             else json.dumps(x),
-            ws_response_class=DiscordGatewayWebsocket,
+            ws_response_class=GatewayWebsocket,
             headers=headers,
         )
         self.global_ratelimit: asyncio.Event = asyncio.Event()
