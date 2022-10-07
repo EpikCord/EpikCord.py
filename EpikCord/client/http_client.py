@@ -1,3 +1,4 @@
+from __future__ import annotations
 import asyncio
 import contextlib
 import zlib
@@ -8,7 +9,6 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from aiohttp import ClientSession, ClientWebSocketResponse
 
-from EpikCord import __version__
 
 from ..exceptions import (
     DiscordAPIError,
@@ -92,6 +92,7 @@ class GatewayWebsocket(ClientWebSocketResponse):
 
 class HTTPClient:
     def __init__(self, token: Optional[str] = None, *args, **kwargs):
+        from EpikCord import __version__
         self.base_uri: str = kwargs.pop(
             "discord_endpoint", "https://discord.com/api/v10"
         )

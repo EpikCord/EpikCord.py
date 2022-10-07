@@ -10,8 +10,6 @@ from typing import TYPE_CHECKING, List, Optional, Union
 
 from aiohttp import ClientWebSocketResponse
 
-from EpikCord.utils.utils import Utils
-
 from .close_event_codes import GatewayCECode
 from .exceptions import ClosedWebSocketConnection, CustomIdIsTooBig, InvalidArgumentType
 from .opcodes import GatewayOpcode, VoiceOpcode
@@ -388,7 +386,7 @@ class GuildChannel(BaseChannel):
         target_user_id: Optional[str] = None,
         target_application_id: Optional[str] = None,
     ):
-        data = Utils.filter_values(
+        data = self.client.utils.filter_values(
             {
                 "max_age": max_age,
                 "max_uses": max_uses,

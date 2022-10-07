@@ -24,7 +24,6 @@ from ..close_handler import CloseHandlerLog, CloseHandlerRaise, close_dispatcher
 from ..exceptions import ClosedWebSocketConnection
 from ..flags import Intents
 from ..opcodes import GatewayOpcode
-from ..utils import Utils
 from ..ws_events import setup_ws_event_handler
 from .client_application import ClientApplication
 from .client_user import ClientUser
@@ -56,7 +55,7 @@ class WebsocketClient:
         presence: Optional[Presence] = None,
         discord_endpoint: str = "https://discord.com/api/v10",
     ):
-        from EpikCord import Intents
+        from EpikCord import Intents, Utils
 
         self.token = token
         if not token:
@@ -297,7 +296,7 @@ class WebsocketClient:
             pass
         finally:
             future.remove_done_callback(stop_loop_on_completion)
-            Utils.cleanup_loop(loop)
+            self.utils.cleanup_loop(loop)
 
     async def _voice_server_update(self, data: discord_typings.VoiceServerUpdateEvent):
         voice_data: discord_typings.VoiceServerUpdateEvent = data["d"]
@@ -324,7 +323,7 @@ class WebsocketClient:
             await self.dispatch("guild_delete", guild)
 
     async def _interaction_create(self, data: discord_typings.InteractionCreateEvent):
-        interaction = Utils.interaction_from_type(data)
+        interaction = self.utils.interaction_from_type(data)
         await self.dispatch("interaction_create", interaction)
 
     async def _channel_create(self, data: discord_typings.ChannelCreateEvent):
