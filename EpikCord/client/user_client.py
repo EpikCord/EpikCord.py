@@ -1,5 +1,6 @@
+from __future__ import annotations
 import datetime
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 from ..application import Application
 from ..guild import Integration
@@ -8,6 +9,9 @@ from ..type_enums import VisibilityType
 from ..user import User
 from .http_client import HTTPClient
 
+
+if TYPE_CHECKING:
+    import discord_typings
 
 class Connection:
     def __init__(self, data: dict):
@@ -25,7 +29,7 @@ class Connection:
 
 
 class AuthorizationInformation:
-    def __init__(self, data: dict):
+    def __init__(self, data: discord_typings.AuthorizationInformationData):
         self.application: Application = Application(data["application"])
         self.scopes: List[str] = data["scopes"]
         self.expires: datetime.datetime = datetime.datetime.fromisoformat(
@@ -35,8 +39,8 @@ class AuthorizationInformation:
             User(self, data["user"]) if data.get("user") else None
         )
 
-    def to_dict(self) -> dict:
-        payload = {
+    def to_dict(self) -> discord_typings.AuthorizationInformationData:
+        payload: discord_typings.AuthorizationInformationData = {
             "application": self.application.to_dict(),
             "scopes": self.scopes,
             "expires": self.expires.isoformat(),
@@ -53,7 +57,7 @@ class UserClient:
     Not a User Account Token. This does not support Self Bots.
     """
 
-    def __init__(self, token: str, *, discord_endpoint: str):
+    def __init__(self, token: str, *, discord_endpoint: str = "https://discord.com/api/v10"):
         self.token = token
 
         self._http: HTTPClient = HTTPClient(
@@ -62,14 +66,14 @@ class UserClient:
         )
         self.application: Optional[Application] = None
 
-    async def fetch_application(self):
+    async def fetch_application(self) -> Application:
         application = Application(
             await (await self._http.get("/oauth2/applications/@me")).json()
         )
-        self.application: Optional[Application] = application
+        self.application = application
         return application
 
-    async def fetch_authorization_information(self):
+    async def fetch_authorization_information(self) -> AuthorizationInformation:
         data = await (await self._http.get("/oauth2/@me")).json()
         if self.application:
             data["application"] = self.application.to_dict()
