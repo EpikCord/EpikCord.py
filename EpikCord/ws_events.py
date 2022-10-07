@@ -11,21 +11,21 @@ if TYPE_CHECKING:
 
 class WSEHandler:
     @staticmethod
-    def dispatch(ws_client, event_data):
+    async def dispatch(ws_client, event_data):
         ws_client.sequence = event_data["s"]
         await ws_client.handle_event(event_data["t"], event_data["d"])
 
     @staticmethod
-    def heartbeat(ws_client, _event_data):
+    async def heartbeat(ws_client, _event_data):
         await ws_client.heartbeat(True)
 
     @staticmethod
-    def reconnect(ws_client, _event_data):
+    async def reconnect(ws_client, _event_data):
         await ws_client.reconnect()
         await ws_client.resume()
 
     @staticmethod
-    def invalid_session(ws_client, event_data):
+    async def invalid_session(ws_client, event_data):
         if event_data["d"]:
             await ws_client.reconnect()
             await ws_client.resume()
@@ -34,12 +34,12 @@ class WSEHandler:
         await ws_client.reconnect()
 
     @staticmethod
-    def hello(ws_client, event_data):
+    async def hello(ws_client, event_data):
         ws_client.heartbeat_interval = event_data["d"]["heartbeat_interval"] / 1000
         await ws_client.identify()
 
     @staticmethod
-    def heartbeat_hack(ws_client, event_data):
+    def heartbeat_ack(ws_client, event_data):
         ws_client.heartbeats.append(event_data)
 
 
@@ -56,6 +56,6 @@ def setup_ws_event_handler(ws_client: WebsocketClient) -> WSEHandlerMapping:
             (GatewayOpcode.RECONNECT, WSEHandler.reconnect),
             (GatewayOpcode.INVALID_SESSION, WSEHandler.invalid_session),
             (GatewayOpcode.HELLO, WSEHandler.hello),
-            (GatewayOpcode.HEARTBEAT_ACK, WSEHandler.heartbeat_hack),
+            (GatewayOpcode.HEARTBEAT_ACK, WSEHandler.heartbeat_ack),
         )
     }
