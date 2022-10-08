@@ -199,7 +199,9 @@ class WebsocketClient:
     async def dispatch(self, event_name: str, *args: Any, **kwargs: Any):
         for callback in self.events[event_name]:
             await callback(*args, **kwargs)
-        logger.info(f"Dispatched {event_name} to {len(self.events[event_name])} listeners.")
+        logger.info(
+            f"Dispatched {event_name} to {len(self.events[event_name])} listeners."
+        )
 
     def wait_for(
         self,
