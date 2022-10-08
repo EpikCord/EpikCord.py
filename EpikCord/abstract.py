@@ -21,7 +21,7 @@ _NACL = find_spec("nacl")
 
 
 if _NACL:
-    import nacl # type: ignore
+    import nacl  # type: ignore
 
 else:
     logger.warning(
@@ -34,7 +34,16 @@ else:
 if TYPE_CHECKING:
     import discord_typings
 
-    from EpikCord import Attachment, Check, Embed, Message, Modal, VoiceChannel, MessagePayload, AllowedMention
+    from EpikCord import (
+        AllowedMention,
+        Attachment,
+        Check,
+        Embed,
+        Message,
+        MessagePayload,
+        Modal,
+        VoiceChannel,
+    )
 
     from .components import *
 
@@ -566,7 +575,7 @@ class BaseInteraction:
         ephemeral: Optional[bool] = False,
     ) -> Message:
 
-        message_data : MessagePayload = {"tts": tts, "flags": 0}
+        message_data: MessagePayload = {"tts": tts, "flags": 0}
 
         if suppress_embeds:
             message_data["flags"] += 1 << 2

@@ -36,6 +36,7 @@ class BaseComponentInteraction(BaseInteraction):
     def __init__(self, client, data: discord_typings.ComponentInteractionData):
         super().__init__(client, data)
         from EpikCord import Message
+
         self.message: Message = Message(client, data["message"])
         self.custom_id: str = data["data"]["custom_id"]
         self.component_type: int = data["data"]["component_type"]
@@ -95,13 +96,16 @@ class BaseComponentInteraction(BaseInteraction):
             f"/interaction/{self.id}/{self.token}/callback", json={"type": 6}
         )
 
+
 class ButtonInteraction(BaseComponentInteraction):
     ...
+
 
 class SelectMenuInteraction(BaseComponentInteraction):
     def __init__(self, client, data):
         super().__init__(client, data)
         self.values: List[discord_typings.SelectMenuOptionData] = data["data"]["values"]
+
 
 class ModalSubmitInteraction(BaseInteraction):
     def __init__(self, client, data: dict):

@@ -15,8 +15,8 @@ from ..interactions import (
     ApplicationCommandInteraction,
     AutoCompleteInteraction,
     ButtonInteraction,
-    SelectMenuInteraction,
     ModalSubmitInteraction,
+    SelectMenuInteraction,
 )
 from ..thread import Thread
 
@@ -174,7 +174,9 @@ class Utils:
     ]:
         interaction_types = {
             2: ApplicationCommandInteraction,
-            3: lambda client, data: SelectMenuInteraction(client, data) if data["data"]["values"] else ButtonInteraction(client, data),
+            3: lambda client, data: SelectMenuInteraction(client, data)
+            if data["data"]["values"]
+            else ButtonInteraction(client, data),
             4: AutoCompleteInteraction,
             5: ModalSubmitInteraction,
         }
@@ -187,7 +189,6 @@ class Utils:
             return None
 
         return interaction_cls(self.client, data)  # type: ignore
-        
 
     def channel_from_type(self, channel_data: discord_typings.ChannelData):
         channel_type = channel_data["type"]
