@@ -145,11 +145,16 @@ class WebsocketClient:
 
     async def connect(self):
         if not self.gateway_url:
+            logger.info("Getting gateway url...")
             self.gateway_url = (await self.http.get_gateway())["url"]
+            logger.info(f"Received url {self.gateway_url}")
 
+        logger.info("Connecting to gateway...")
         self.websocket = await self.http.ws_connect(
             f"{self.gateway_url}?v=10&encoding=json&compress=zlib-stream"
         )
+        logger.info("Connected to gateway! Listening to events!")
+
         self._closed = False
 
         async for event in self.websocket:
