@@ -17,6 +17,7 @@ logger = getLogger(__name__)
 
 Callback = Callable[..., Coroutine[Any, Any, Any]]
 
+
 class Client(WebsocketClient, CommandHandler):
     def __init__(
         self,
