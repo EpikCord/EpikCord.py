@@ -61,7 +61,7 @@ class DiscordWSMessage:
         self.extra = extra
 
     def json(self) -> Any:
-        return json.dumps(self.data).decode() if _ORJSON else json.dumps(self.data)
+        return json.loads(self.data) if _ORJSON else json.loads(self.data)
 
 
 class GatewayWebsocket(ClientWebSocketResponse):
