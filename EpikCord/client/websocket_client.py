@@ -71,7 +71,7 @@ class WebsocketClient:
 
         self.http: HTTPClient = HTTPClient(token, discord_endpoint=discord_endpoint)
 
-        self.events: DefaultDict[str, List] = defaultdict(list)
+        self.events: DefaultDict[str, List[Callback]] = defaultdict(list)
         self.wait_for_events: DefaultDict[str, List] = defaultdict(list)
 
         self.heartbeats: Deque = deque(maxlen=10)
@@ -171,7 +171,7 @@ class WebsocketClient:
                     "token": self.token,
                     "session_id": self.session_id,
                     "seq": self.sequence,
-                },
+                }
             }
         )
 
