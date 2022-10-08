@@ -21,7 +21,7 @@ _NACL = find_spec("nacl")
 
 
 if _NACL:
-    import nacl
+    import nacl # type: ignore
 
 else:
     logger.warning(
@@ -34,10 +34,9 @@ else:
 if TYPE_CHECKING:
     import discord_typings
 
-    from EpikCord import Attachment, Check, Embed, Message, Modal, VoiceChannel
+    from EpikCord import Attachment, Check, Embed, Message, Modal, VoiceChannel, MessagePayload, AllowedMention
 
     from .components import *
-    from .message import AllowedMention
 
 
 class TypingContextManager:
@@ -100,7 +99,7 @@ class Messageable:
         suppress_embeds: bool = False,
     ) -> Message:
 
-        payload = self.client.utils.filter_values(
+        payload: MessagePayload = self.client.utils.filter_values(
             {
                 "content": content,
                 "embeds": [embed.to_dict() for embed in embeds],
@@ -115,7 +114,7 @@ class Messageable:
         )
 
         if suppress_embeds:
-            payload["suppress_embeds"] = 1 << 2
+            payload["flags"] = 1 << 2
 
         response = await self.client.http.post(
             f"channels/{self.id}/messages", json=payload
@@ -476,7 +475,7 @@ class BaseInteraction:
         ephemeral: Optional[bool] = False,
     ) -> None:
 
-        message_data = {"tts": tts, "flags": 0}
+        message_data: MessagePayload = {"tts": tts, "flags": 0}
 
         if suppress_embeds:
             message_data["flags"] |= 1 << 2
@@ -565,9 +564,9 @@ class BaseInteraction:
         attachments: Optional[List[Attachment]] = None,
         suppress_embeds: Optional[bool] = False,
         ephemeral: Optional[bool] = False,
-    ) -> None:
+    ) -> Message:
 
-        message_data = {"tts": tts, "flags": 0}
+        message_data : MessagePayload = {"tts": tts, "flags": 0}
 
         if suppress_embeds:
             message_data["flags"] += 1 << 2
@@ -612,9 +611,9 @@ class BaseInteraction:
         attachments: Optional[List[Attachment]] = None,
         suppress_embeds: Optional[bool] = False,
         ephemeral: Optional[bool] = False,
-    ) -> None:
+    ) -> Message:
 
-        message_data = {"tts": tts, "flags": 0}
+        message_data: MessagePayload = {"tts": tts, "flags": 0}
 
         if suppress_embeds:
             message_data["flags"] += 1 << 2
@@ -656,7 +655,7 @@ class BaseInteraction:
         ephemeral: Optional[bool] = False,
     ) -> None:
 
-        message_data = {"tts": tts, "flags": 0}
+        message_data: MessagePayload = {"tts": tts, "flags": 0}
 
         if suppress_embeds:
             message_data["flags"] += 1 << 2

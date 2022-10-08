@@ -69,7 +69,7 @@ class Attachment:
         self.height: Optional[int] = data.get("height")
         self.ephemeral: Optional[bool] = data.get("ephemeral")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> discord_typings.AttachmentData:
         return _filter_values(
             {
                 "id": self.id,
@@ -540,12 +540,12 @@ class MessagePayload(TypedDict):
     content: NotRequired[str]
     nonce: NotRequired[Union[int, str]]
     tts: NotRequired[bool]
-    embeds: NotRequired[List[Embed]]
-    allowed_mentions: NotRequired[AllowedMention]
-    message_reference: NotRequired[MessageReference]
-    components: NotRequired[List[ActionRow]]
+    embeds: NotRequired[List[discord_typings.EmbedData]]
+    allowed_mentions: NotRequired[discord_typings.AllowedMentionsData]
+    message_reference: NotRequired[discord_typings.MessageReferenceData]
+    components: NotRequired[List[discord_typings.ActionRowData]]
     sticker_ids: NotRequired[List[int]]
-    attachments: NotRequired[List[Attachment]]
+    attachments: NotRequired[List[discord_typings.AttachmentData]]
     flags: NotRequired[int]
 
 __all__ = (
