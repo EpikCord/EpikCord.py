@@ -132,6 +132,7 @@ class WebsocketClient:
         self.latencies.append(end - start)
 
     async def handle_ws_event(self, event_data):
+        logger.info(f"Got {event_data}")
         raw_op_code = event_data["op"]
 
         try:
@@ -264,10 +265,13 @@ class WebsocketClient:
             await self.resume()
 
     async def send_json(self, json: dict):
+
         if not self.websocket:
             logger.critical(f"Attempted to send {json} to Discord before connecting.")
             return
+
         await self.websocket.send_json(json)
+
         logger.debug(f"Sent {json} to the Websocket Connection to Discord.")
 
     async def close(self) -> None:
