@@ -111,20 +111,27 @@ class ModalSubmitInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
         super().__init__(client, data)
         self.custom_id: str = data["data"]["custom_id"]
-        self._components: List[
-            Union[Button, SelectMenu, TextInput]
-        ] = data["data"]["components"]
+        self._components: List[Union[Button, SelectMenu, TextInput]] = data["data"][
+            "components"
+        ]
 
     async def send_modal(self, *_, **__):
         raise NotImplementedError("ModalSubmitInteractions cannot send modals.")
 
+
 class AutoCompleteInteractionData(TypedDict):
-    choices: List[Union[discord_typings.interactions.commands.StrCommandOptionChoiceData, discord_typings.interactions.commands.IntCommandOptionChoiceData]]
+    choices: List[
+        Union[
+            discord_typings.interactions.commands.StrCommandOptionChoiceData,
+            discord_typings.interactions.commands.IntCommandOptionChoiceData,
+        ]
+    ]
 
 
 class AutoCompleteInteractionResponse(TypedDict):
     type: Literal[9]
     data: AutoCompleteInteractionData
+
 
 class AutoCompleteInteraction(BaseInteraction):
     def __init__(self, client, data: dict):
@@ -143,10 +150,11 @@ class AutoCompleteInteraction(BaseInteraction):
             11: AttachmentOption,
         }
         self.options: List[AnyOption] = [
-            conversion_type[option["type"]](**option) for option in data.get("options", [])
+            conversion_type[option["type"]](**option)
+            for option in data.get("options", [])
         ]
 
-    async def reply(self, choices: List[SlashCommandOptionChoice]) -> None: # type: ignore
+    async def reply(self, choices: List[SlashCommandOptionChoice]) -> None:  # type: ignore
         payload: AutoCompleteInteractionResponse = {"type": 9, "data": {"choices": []}}
 
         for choice in choices:
@@ -166,7 +174,11 @@ class ApplicationCommandInteraction(BaseInteraction):
         self.command_id: int = int(data["data"]["id"])
         self.command_name: str = data["data"]["name"]
         self.command_type: int = data["data"]["type"]
-        self.resolved = ResolvedDataHandler(client, data["data"]["resolved"]) if data.get("resolved") else None
+        self.resolved = (
+            ResolvedDataHandler(client, data["data"]["resolved"])
+            if data.get("resolved")
+            else None
+        )
         self.options: List[dict] | None = data["data"].get("options", [])
 
 
@@ -180,8 +192,6 @@ class MessageCommandInteraction(UserCommandInteraction):
     ...  # Literally the same thing.
 
 
-
-
 class MessageInteraction:
     def __init__(self, client, data: discord_typings.MessageInteractionData):
         from EpikCord import GuildMember, User
@@ -190,7 +200,8 @@ class MessageInteraction:
         self.type: int = data["type"]
         self.name: str = data["name"]
         self.user: User = User(client, data["user"])
-        self.member: Optional[GuildMember] = GuildMember(client, {**data["member"], **data["user"]}) if data.get("member") else None # type: ignore
+        self.member: Optional[GuildMember] = GuildMember(client, {**data["member"], **data["user"]}) if data.get("member") else None  # type: ignore
+
 
 AnyInteraction = Union[
     ButtonInteraction,
