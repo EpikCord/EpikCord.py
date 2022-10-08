@@ -3,8 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional
 
 from ..partials import PartialUser
-from .team import Team
 from ..user import User
+from .team import Team
+
 if TYPE_CHECKING:
     import discord_typings
 
@@ -50,6 +51,7 @@ class Application:
             }
         )  # A dict of things that aren't private and return a Truthy value.
 
+
 class IntegrationApplication:
     def __init__(self, client, data: discord_typings.IntegrationApplicationData):
         self.id: int = int(data["id"])
@@ -57,5 +59,6 @@ class IntegrationApplication:
         self.icon: Optional[str] = data.get("icon")
         self.description: str = data["description"]
         self.bot: Optional[User] = User(client, data["bot"]) if data["bot"] else None
+
 
 __all__ = ("Application", "IntegrationApplication")

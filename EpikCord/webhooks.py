@@ -1,7 +1,10 @@
 from typing import Optional
-from discord_typings import WebhookData, PartialChannelData, UserData
-from .partials import PartialGuild
+
+from discord_typings import PartialChannelData, UserData, WebhookData
 from typing_extensions import TypedDict
+
+from .partials import PartialGuild
+
 
 class WebhookUserData(TypedDict):
     webhook_id: int
@@ -11,7 +14,7 @@ class WebhookUserData(TypedDict):
 
 class WebhookUser:
     def __init__(self, data: UserData):
-        self.webhook_id: str = data["webhook_id"] # type: ignore
+        self.webhook_id: str = data["webhook_id"]  # type: ignore
         self.username: str = data["username"]
         self.avatar: Optional[str] = data.get("avatar")
 
@@ -33,15 +36,15 @@ class Webhook:  # Not used for making webhooks
             if data.get("type") == 2
             else "Application"
         )
-        self.guild_id: Optional[int] = int(data["guild_id"]) if data.get("guild_id") else None # type: ignore
-        self.channel_id: Optional[int] = int(data["channel_id"]) if data.get("channel_id") else None # type: ignore 
+        self.guild_id: Optional[int] = int(data["guild_id"]) if data.get("guild_id") else None  # type: ignore
+        self.channel_id: Optional[int] = int(data["channel_id"]) if data.get("channel_id") else None  # type: ignore
         self.user: Optional[WebhookUser] = (
             WebhookUser(data["user"]) if data.get("user") else None
         )
         self.name: Optional[str] = data.get("name")
         self.avatar: Optional[str] = data.get("avatar")
         self.token: Optional[str] = data.get("token")
-        self.application_id: Optional[int] = int(data["application_id"]) if data.get("application_id") else None # type: ignore
+        self.application_id: Optional[int] = int(data["application_id"]) if data.get("application_id") else None  # type: ignore
         self.source_guild: Optional[PartialGuild] = (
             PartialGuild(data["source_guild"]) if data.get("source_guild") else None
         )

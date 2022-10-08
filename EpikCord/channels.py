@@ -26,7 +26,7 @@ class GuildTextChannel(GuildChannel, Messageable):
         super().__init__(client, data)
         self.topic: Optional[str] = data.get("topic")
         self.rate_limit_per_user: int = data["rate_limit_per_user"]
-        self.last_message_id: int = int(data["last_message_id"]) # type: ignore
+        self.last_message_id: int = int(data["last_message_id"])  # type: ignore
         self.default_auto_archive_duration: int = data["default_auto_archive_duration"]
 
     async def start_thread(
@@ -137,7 +137,7 @@ class GuildTextChannel(GuildChannel, Messageable):
 
 class GuildNewsChannel(GuildTextChannel):
     def __init__(self, client, data: discord_typings.NewsChannelData):
-        super().__init__(client, data) # type: ignore
+        super().__init__(client, data)  # type: ignore
         self.default_auto_archive_duration: int = data["default_auto_archive_duration"]
 
     async def follow(self, webhook_channel_id: str):
