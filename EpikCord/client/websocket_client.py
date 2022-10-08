@@ -132,7 +132,6 @@ class WebsocketClient:
         self.latencies.append(end - start)
 
     async def handle_ws_event(self, event_data):
-        logger.info(f"Got {event_data} of type {type(event_data)}")
         raw_op_code = event_data["op"]
 
         try:
