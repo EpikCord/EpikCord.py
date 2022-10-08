@@ -12,7 +12,8 @@ from ..exceptions import InvalidArgumentType
 from ..interactions import (
     ApplicationCommandInteraction,
     AutoCompleteInteraction,
-    MessageComponentInteraction,
+    ButtonInteraction,
+    SelectMenuInteraction,
     ModalSubmitInteraction,
 )
 from ..thread import Thread
@@ -163,14 +164,15 @@ class Utils:
     ) -> Optional[
         Union[
             ApplicationCommandInteraction,
-            MessageComponentInteraction,
+            ButtonInteraction,
+            SelectMenuInteraction,
             AutoCompleteInteraction,
             ModalSubmitInteraction,
         ]
     ]:
         interaction_types = {
             2: ApplicationCommandInteraction,
-            3: MessageComponentInteraction,
+            3: lambda client, data: SelectMenuInteraction(client, data) if data["data"]["values"] else ButtonInteraction(client, data),
             4: AutoCompleteInteraction,
             5: ModalSubmitInteraction,
         }
@@ -183,6 +185,7 @@ class Utils:
             return None
 
         return interaction_cls(self.client, data)  # type: ignore
+        
 
     def channel_from_type(self, channel_data: dict):
         channel_type = channel_data["type"]

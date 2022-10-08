@@ -70,7 +70,7 @@ class Attachment:
         self.ephemeral: Optional[bool] = data.get("ephemeral")
 
     def to_dict(self) -> discord_typings.AttachmentData:
-        return _filter_values(
+        return _filter_values( # type: ignore
             {
                 "id": self.id,
                 "filename": self.file_name,
