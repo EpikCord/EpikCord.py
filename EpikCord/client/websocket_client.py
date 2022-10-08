@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from collections import defaultdict, deque
 from logging import getLogger
+from sys import platform
 from time import perf_counter_ns
 from typing import (
     TYPE_CHECKING,
@@ -281,6 +282,23 @@ class WebsocketClient:
             await self.websocket.close(code=4000)
 
         self._closed = True
+
+    async def identify(self):
+        await self.send_json(
+            {
+                "op": GatewayOpcode.IDENTIFY,
+                "d": {
+                    "token": self.token,
+                    "intents": self.intents.value,
+                    "properties": {
+                        "os": platform,
+                        "browser": "EpikCord.py",
+                        "device": "EpikCord.py",
+                    }
+
+                }
+            }
+        )
 
     def login(self):
         loop = asyncio.get_event_loop()
