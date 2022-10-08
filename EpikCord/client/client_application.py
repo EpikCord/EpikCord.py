@@ -106,14 +106,23 @@ class ClientApplication(Application):
         options: Optional[List[AnyOption]] = None,
         default_member_permissions: Optional[Permissions] = None,
     ):
-        payload: Dict[str, Optional[Union[List[discord_typings.ApplicationCommandOptionData], str, int]]] = {
+        payload: Dict[
+            str,
+            Optional[
+                Union[List[discord_typings.ApplicationCommandOptionData], str, int]
+            ],
+        ] = {
             "name": name,
             "description": description,
         }
         if options:
             payload["options"] = [option.to_dict() for option in options]
         if default_member_permissions:
-            payload["default_member_permissions"] = default_member_permissions.value if isinstance(default_member_permissions, Permissions) else default_member_permissions
+            payload["default_member_permissions"] = (
+                default_member_permissions.value
+                if isinstance(default_member_permissions, Permissions)
+                else default_member_permissions
+            )
 
         await self.client.http.patch(
             f"/applications/{self.id}/commands/{command_id}", json=payload
@@ -150,7 +159,11 @@ class ClientApplication(Application):
         }
 
         if default_member_permission:
-            payload["default_member_permissions"] = str(default_member_permission.value) if isinstance(default_member_permission, Permissions) else default_member_permission
+            payload["default_member_permissions"] = (
+                str(default_member_permission.value)
+                if isinstance(default_member_permission, Permissions)
+                else default_member_permission
+            )
 
         if command_type not in range(1, 4):
             raise InvalidApplicationCommandType("Command type must be 1, 2, or 3.")
@@ -171,7 +184,7 @@ class ClientApplication(Application):
                     RoleOption,
                     MentionableOption,
                     NumberOption,
-                    AttachmentOption
+                    AttachmentOption,
                 ),
             ):
                 raise InvalidApplicationCommandOptionType(
@@ -202,7 +215,12 @@ class ClientApplication(Application):
         options: Optional[List[AnyOption]] = None,
         default_member_permissions: Optional[Permissions] = None,
     ):
-        payload: Dict[str, Optional[Union[List[discord_typings.ApplicationCommandOptionData], str, int]]]  = {}
+        payload: Dict[
+            str,
+            Optional[
+                Union[List[discord_typings.ApplicationCommandOptionData], str, int]
+            ],
+        ] = {}
         if name:
             payload["name"] = name
         if description:
@@ -210,7 +228,11 @@ class ClientApplication(Application):
         if options:
             payload["options"] = [option.to_dict() for option in options]
         if default_member_permissions:
-            payload["default_member_permissions"] = str(default_member_permissions.value) if isinstance(default_member_permissions, Permissions) else default_member_permissions
+            payload["default_member_permissions"] = (
+                str(default_member_permissions.value)
+                if isinstance(default_member_permissions, Permissions)
+                else default_member_permissions
+            )
 
         await self.client.http.patch(
             f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}",

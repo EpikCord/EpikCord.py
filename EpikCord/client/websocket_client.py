@@ -171,7 +171,7 @@ class WebsocketClient:
                     "token": self.token,
                     "session_id": self.session_id,
                     "seq": self.sequence,
-                }
+                },
             }
         )
 

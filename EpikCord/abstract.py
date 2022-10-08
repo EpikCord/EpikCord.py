@@ -354,8 +354,10 @@ class GuildChannel(BaseChannel):
         self.guild = self.client.guilds.get(self.guild_id)
         self.position: int = data["position"]
         self.nsfw: bool = data["nsfw"]
-        self.permission_overwrites: Optional[List[discord_typings.PermissionOverwriteData]] = data.get("permission_overwrites")
-        self.parent_id: Optional[int] = int(data["parent_id"]) if data.get("parent_id") else None # type: ignore
+        self.permission_overwrites: Optional[
+            List[discord_typings.PermissionOverwriteData]
+        ] = data.get("permission_overwrites")
+        self.parent_id: Optional[int] = int(data["parent_id"]) if data.get("parent_id") else None  # type: ignore
         self.name: str = data["name"]
 
     async def delete(self, *, reason: Optional[str] = None) -> None:

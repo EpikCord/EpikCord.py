@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import asyncio
 import contextlib
 import zlib
@@ -8,7 +9,6 @@ from logging import getLogger
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from aiohttp import ClientSession, ClientWebSocketResponse
-
 
 from ..exceptions import (
     DiscordAPIError,
@@ -93,6 +93,7 @@ class GatewayWebsocket(ClientWebSocketResponse):
 class HTTPClient:
     def __init__(self, token: Optional[str] = None, *args, **kwargs):
         from EpikCord import __version__
+
         self.base_uri: str = kwargs.pop(
             "discord_endpoint", "https://discord.com/api/v10"
         )
@@ -106,7 +107,7 @@ class HTTPClient:
         self.session = ClientSession(
             *args,
             **kwargs,
-            json_serialize=lambda x, *__, **___: json.dumps(x).decode() # type: ignore
+            json_serialize=lambda x, *__, **___: json.dumps(x).decode()  # type: ignore
             if _ORJSON
             else json.dumps(x),
             ws_response_class=GatewayWebsocket,

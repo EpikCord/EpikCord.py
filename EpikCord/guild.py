@@ -533,7 +533,9 @@ class WelcomeScreen:
 class GuildWidgetSettings:
     def __init__(self, data: dict):
         self.enabled: bool = data["enabled"]
-        self.channel_id: Optional[int] = int(data["channel_id"]) if data.get("channel_id") else None
+        self.channel_id: Optional[int] = (
+            int(data["channel_id"]) if data.get("channel_id") else None
+        )
 
 
 class GuildWidget:

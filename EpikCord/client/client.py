@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from logging import getLogger
-from typing import TYPE_CHECKING, Coroutine, Dict, List, Optional, Union, Callable, Any
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Optional, Union
 
 from ..flags import Intents
 from ..sticker import Sticker, StickerPack
-from .websocket_client import WebsocketClient
 from .command_handler import CommandHandler
+from .websocket_client import WebsocketClient
 
 if TYPE_CHECKING:
     import discord_typings
@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 logger = getLogger(__name__)
 
 Callback = Callable[..., Coroutine[Any, Any, Any]]
+
 
 class Client(WebsocketClient, CommandHandler):
     def __init__(
@@ -59,5 +60,6 @@ class Client(WebsocketClient, CommandHandler):
         await super()._interaction_create(data)
         interaction = self.utils.interaction_from_type(data)
         await self.handle_interaction(interaction)
+
 
 __all__ = ("Client",)

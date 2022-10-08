@@ -1,6 +1,7 @@
 from __future__ import annotations
+
 import datetime
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
 from ..application import Application
 from ..guild import Integration
@@ -9,9 +10,9 @@ from ..type_enums import VisibilityType
 from ..user import User
 from .http_client import HTTPClient
 
-
 if TYPE_CHECKING:
     import discord_typings
+
 
 class Connection:
     def __init__(self, data: dict):
@@ -57,7 +58,9 @@ class UserClient:
     Not a User Account Token. This does not support Self Bots.
     """
 
-    def __init__(self, token: str, *, discord_endpoint: str = "https://discord.com/api/v10"):
+    def __init__(
+        self, token: str, *, discord_endpoint: str = "https://discord.com/api/v10"
+    ):
         self.token = token
 
         self._http: HTTPClient = HTTPClient(

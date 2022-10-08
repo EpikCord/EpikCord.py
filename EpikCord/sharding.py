@@ -1,7 +1,8 @@
 from __future__ import annotations
+
 import asyncio
 from sys import platform
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
 from .client import HTTPClient, WebsocketClient
 from .flags import Intents
@@ -11,6 +12,7 @@ from .utils import Utils
 
 if TYPE_CHECKING:
     import discord_typings
+
 
 class Shard(WebsocketClient):
     def __init__(
