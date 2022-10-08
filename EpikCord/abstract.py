@@ -161,7 +161,7 @@ class Connectable:
         channel: VoiceChannel,
     ):
         self.client = client
-        self.guild_id = channel.guild.id
+        self.guild_id: int = channel.guild.id
         self.channel_id = channel.id
         self._closed = True
 

@@ -4,7 +4,7 @@ import asyncio
 from collections import defaultdict, deque
 from logging import getLogger
 from sys import platform
-from time import perf_counter_ns
+from time import perf_counter
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -28,6 +28,7 @@ from ..opcodes import GatewayOpcode
 from ..ws_events import setup_ws_event_handler
 from .client_application import ClientApplication
 from .client_user import ClientUser
+from ..ext.tasks import task
 from .http_client import HTTPClient
 
 if TYPE_CHECKING:
@@ -47,6 +48,26 @@ class Event:
         self.callback = callback
         self.event_name = event_name or callback.__name__
 
+class GatewayRateLimiter:
+    def __init__(self):
+
+        self.event = asyncio.Event()
+        self.event.set()
+
+        self.remaining = 120
+        self.limit = 120
+        self.reset.run()
+
+    @task(seconds=60)
+    async def reset(self):
+        self.remaining = self.limit
+        self.event.set()
+
+    async def tick(self):
+        await self.event.wait()
+        self.remaining -= 1
+        if self.remaining == 0:
+            self.event.clear()
 
 class WebsocketClient:
     def __init__(
@@ -80,17 +101,18 @@ class WebsocketClient:
         self.session_id: Optional[str] = None
         self.sequence: Optional[int] = None
         self.gateway_url: Optional[str] = None
-        self.reconnect_url: Optional[str] = None
+        self.resume_gateway_url: Optional[str] = None
         self.websocket: Optional[GatewayWebsocket] = None
 
         self.utils = Utils(self)
-        # Managers
+
         self.guilds: GuildManager = GuildManager(self)
         self.channels: ChannelManager = ChannelManager(self)
 
         self.user: Optional[ClientUser] = None
         self.application: Optional[ClientApplication] = None
 
+        self.websocket_ratelimiter: Optional[GatewayRateLimiter] = None
         self.wse_handler = setup_ws_event_handler(self)
         self.latencies: Deque = deque(maxlen=10)
 
@@ -125,10 +147,10 @@ class WebsocketClient:
             }
         )
 
-        start = perf_counter_ns()
+        start = perf_counter()
         async for event in self.websocket:
             if event.json()["op"] == GatewayOpcode.HEARTBEAT_ACK:
-                end = perf_counter_ns()
+                end = perf_counter()
                 break
         self.latencies.append(end - start)
 
@@ -144,21 +166,26 @@ class WebsocketClient:
         handler = self.wse_handler.get(op_code)
         await handler(event_data)
 
-    async def connect(self):
-        if not self.gateway_url:
-            logger.info("Getting gateway url...")
-            self.gateway_url = (await self.http.get_gateway())["url"]
-            logger.info(f"Received url {self.gateway_url}")
+    async def connect(self, reconnect: bool = False):
+        url = None
+
+        if reconnect:
+            url = self.resume_gateway_url
+        else:
+            if not self.gateway_url:
+                logger.info("Getting gateway url...")
+                self.gateway_url = url = (await self.http.get_gateway())["url"]
+                logger.info(f"Received url {self.gateway_url}")
 
         logger.info("Connecting to gateway...")
-        self.websocket = await self.http.ws_connect(
-            f"{self.gateway_url}?v=10&encoding=json&compress=zlib-stream"
+        self.websocket = await self.http.ws_connect( # type: ignore
+            f"{url}?v=10&encoding=json&compress=zlib-stream"
         )
         logger.info("Connected to gateway! Listening to events!")
-
+        self.websocket_ratelimiter = GatewayRateLimiter()
         self._closed = False
 
-        async for event in self.websocket:
+        async for event in self.websocket: # type: ignore
             event_data = event.json()
             logger.debug(
                 f"Received {event_data} from the Websocket Connection to Discord."
@@ -411,6 +438,7 @@ class WebsocketClient:
 
         self.user = ClientUser(self, data["user"])
         self.session_id = data["session_id"]
+        self.resume_gateway_url = data["resume_gateway_url"]
         application_response = await self.http.get("/oauth2/applications/@me")
         application_data = await application_response.json()
 

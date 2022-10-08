@@ -150,15 +150,15 @@ class GuildNewsChannel(GuildTextChannel):
 
 
 class DMChannel(BaseChannel):
-    def __init__(self, client, data: dict):
+    def __init__(self, client, data: discord_typings.DMChannelData):
         super().__init__(client, data)
-        self.recipient: Optional[PartialUser] = (
-            PartialUser(data["recipient"]) if data.get("recipient") else None
+        self.recipients: Optional[List[PartialUser]] = (
+            [PartialUser(r) for r in data["recipients"]] if data.get("recipient") else None
         )
 
 
 class CategoryChannel(GuildChannel):
-    def __init__(self, client, data: dict):
+    def __init__(self, client, data: discord_typings.CategoryChannelData):
         super().__init__(client, data)
 
 
@@ -168,7 +168,7 @@ class GuildNewsThread(Thread, GuildNewsChannel):
 
 
 class GuildStageChannel(BaseChannel):
-    def __init__(self, client, data: discord_typings.StageInstanceData):
+    def __init__(self, client, data):
         super().__init__(client, data)
         self.guild_id: int = int(data["guild_id"])
         self.channel_id: int = int(data["channel_id"])
