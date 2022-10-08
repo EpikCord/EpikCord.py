@@ -13,7 +13,7 @@ class WSEHandler:
     @staticmethod
     async def dispatch(ws_client, event_data):
         ws_client.sequence = event_data["s"]
-        await ws_client.handle_event(event_data["t"], event_data["d"])
+        await ws_client.handle_event(event_data["t"].lower(), event_data["d"])
 
     @staticmethod
     async def heartbeat(ws_client, _event_data):
