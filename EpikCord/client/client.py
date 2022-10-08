@@ -17,7 +17,6 @@ logger = getLogger(__name__)
 
 Callback = Callable[..., Coroutine[Any, Any, Any]]
 
-
 class Client(WebsocketClient, CommandHandler):
     def __init__(
         self,
@@ -29,6 +28,7 @@ class Client(WebsocketClient, CommandHandler):
         presence: Optional[Presence] = None,
     ):
         super().__init__(token, intents, presence, discord_endpoint=discord_endpoint)
+        CommandHandler.__init__(self)
         from EpikCord import Utils
 
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready or False

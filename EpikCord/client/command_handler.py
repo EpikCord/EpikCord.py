@@ -20,7 +20,6 @@ class CommandHandler:
         self.commands: Dict[
             str, Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]
         ] = {}
-        super().__init__()
 
     def command(
         self,
