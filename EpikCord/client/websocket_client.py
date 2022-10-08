@@ -302,6 +302,10 @@ class WebsocketClient:
             logger.critical(f"Attempted to send {json} to Discord before connecting.")
             return
 
+        if not self.websocket_ratelimiter:
+            self.websocket_ratelimiter = GatewayRateLimiter()
+
+        await self.websocket_ratelimiter.tick()
         await self.websocket.send_json(json)
 
         logger.debug(f"Sent {json} to the Websocket Connection to Discord.")
