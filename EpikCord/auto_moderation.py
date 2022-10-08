@@ -1,4 +1,7 @@
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, TypedDict, Union
+from typing_extensions import NotRequired
+
+import discord_typings
 
 from .type_enums import (
     AutoModActionType,
@@ -45,6 +48,15 @@ class AutoModAction:
             "metadata": self.metadata.to_dict(),
         }
 
+class AutoModRulePayload(TypedDict):
+    name: NotRequired[str]
+    event_type: NotRequired[discord_typings.AutoModerationEventTypes]
+    trigger_metadata: NotRequired[discord_typings.AutoModerationTriggerMetadataData]
+    actions: NotRequired[List[discord_typings.AutoModerationActionData]]
+    enabled: NotRequired[bool]
+    exempt_roles: NotRequired[List[int]]
+    exempt_channels: NotRequired[List[int]]
+
 
 class AutoModRule:
     def __init__(self, client, data: dict):
@@ -69,20 +81,20 @@ class AutoModRule:
         self,
         *,
         name: Optional[str] = None,
-        event_type: Optional[int] = None,
+        event_type: Optional[discord_typings.AutoModerationEventTypes] = None,
         trigger_metadata: Optional[AutoModTriggerMetaData] = None,
         actions: Optional[List[AutoModAction]] = None,
         enabled: Optional[bool] = None,
-        exempt_roles: Optional[List[str]] = None,
-        exempt_channels: Optional[List[str]] = None,
+        exempt_roles: Optional[List[int]] = None,
+        exempt_channels: Optional[List[int]] = None,
     ):
-        payload = {}
+        payload: AutoModRulePayload = {}
 
         if name:
             payload["name"] = name
 
         if event_type:
-            payload["event_type"] = int(event_type)
+            payload["event_type"] = event_type
 
         if enabled is not None:
             payload["enabled"] = enabled
