@@ -6,7 +6,7 @@ import struct
 from abc import abstractmethod
 from importlib.util import find_spec
 from logging import getLogger
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 from aiohttp import ClientWebSocketResponse
 
@@ -284,13 +284,13 @@ class Connectable:
         loop.create_task(wrapper())
 
     async def handle_ready(self, event: dict):
-        self.ssrc: int = event["ssrc"]
+        self.ssrc = event["ssrc"]
         self.mode = event["modes"][0]  # Always has one mode, and I can use any.
-        self.server_ip: str = event["ip"]
-        self.server_port: int = event["port"]
+        self.server_ip = event["ip"]
+        self.server_port = event["port"]
 
     async def handle_session_description(self, event: dict):
-        self.secret_key: str = event["d"]["secret_key"]
+        self.secret_key = event["d"]["secret_key"]
 
     async def identify(self):
         return await self.send_json(
@@ -443,7 +443,7 @@ class BaseInteraction:
         self.client = client
         self.type: int = data["type"]
         self.application_id: int = int(data["application_id"])
-        self.interaction_data: Optional[discord_typings.InteractionData] = data.get(
+        self.interaction_data: Optional[discord_typings.InteractionDataData] = data.get(
             "data"
         )
         self.guild_id: Optional[str] = data.get("guild_id")
@@ -479,7 +479,7 @@ class BaseInteraction:
         message_data = {"tts": tts, "flags": 0}
 
         if suppress_embeds:
-            message_data["flags"] |= +1 << 2
+            message_data["flags"] |= 1 << 2
         if ephemeral:
             message_data["flags"] |= 1 << 6
 
