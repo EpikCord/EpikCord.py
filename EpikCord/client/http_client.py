@@ -100,6 +100,7 @@ class HTTPClient:
         self.base_uri: str = kwargs.pop(
             "discord_endpoint", "https://discord.com/api/v10"
         )
+
         headers = {
             "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
             "Content-Type": "application/json",
@@ -107,6 +108,7 @@ class HTTPClient:
 
         if token:
             headers["Authorization"] = f"Bot {token}"
+
         self.session = ClientSession(
             *args,
             **kwargs,
@@ -116,6 +118,9 @@ class HTTPClient:
             ws_response_class=GatewayWebsocket,
             headers=headers,
         )
+
+        self.ws_connect = self.session.ws_connect
+
         self.global_ratelimit: asyncio.Event = asyncio.Event()
         self.global_ratelimit.set()
         self.buckets: Dict[str, Bucket] = {}
