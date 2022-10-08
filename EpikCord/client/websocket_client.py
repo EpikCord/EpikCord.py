@@ -297,9 +297,8 @@ class WebsocketClient:
                         "os": platform,
                         "browser": "EpikCord.py",
                         "device": "EpikCord.py",
-                    }
-
-                }
+                    },
+                },
             }
         )
 
