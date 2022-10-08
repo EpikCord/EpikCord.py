@@ -186,10 +186,12 @@ class WebsocketClient:
             await callback(self, data)
 
         for wait_for_callback in self.wait_for_events[event_name]:
+
             try:
                 check_results = await wait_for_callback[1](data)
             except Exception:  # TODO: use a more specific exception
                 return
+
             if check_results:
                 wait_for_callback[0].set_result(data)
                 self.wait_for_events[event_name].remove(wait_for_callback)
@@ -197,6 +199,7 @@ class WebsocketClient:
     async def dispatch(self, event_name: str, *args: Any, **kwargs: Any):
         for callback in self.events[event_name]:
             await callback(*args, **kwargs)
+        logger.info(f"Dispatched {event_name} to {len(self.events[event_name])} listeners.")
 
     def wait_for(
         self,
