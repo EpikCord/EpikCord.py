@@ -41,6 +41,7 @@ class _FakeTask:
 class UnknownBucket:
     def __init__(self):
         self.event = asyncio.Event()
+        self.event.set()
         self.close_task: _FakeTask = _FakeTask()
 
 
@@ -60,7 +61,9 @@ class DiscordWSMessage:
         self.extra = extra
 
     def json(self) -> Any:
-        return json.loads(self.data)
+        return json.dumps(self.data).decode() if _ORJSON else json.dumps(self.data),
+
+
 
 
 class GatewayWebsocket(ClientWebSocketResponse):
