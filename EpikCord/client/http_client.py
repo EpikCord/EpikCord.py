@@ -277,6 +277,8 @@ class HTTPClient:
     async def get_gateway(self) -> discord_typings.GetGatewayData:
         """
         Get the gateway url.
+        Returns:
+            :class:`GetGatewayData`
         """
         res = await self.get("/gateway")
         return await res.json()
@@ -285,6 +287,9 @@ class HTTPClient:
         """
         Get information about the bot logging in, including the gateway url.
         This is useful when sharding.
+
+        Returns:
+            :class:`GetGatewayBotData`
         """
         res = await self.get("/gateway/bot")
         return await res.json()
