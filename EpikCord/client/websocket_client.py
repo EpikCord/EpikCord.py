@@ -23,12 +23,12 @@ from EpikCord.managers import ChannelManager, GuildManager
 from ..close_event_codes import GatewayCECode
 from ..close_handler import CloseHandlerLog, CloseHandlerRaise, close_dispatcher
 from ..exceptions import ClosedWebSocketConnection
+from ..ext.tasks import task
 from ..flags import Intents
 from ..opcodes import GatewayOpcode
 from ..ws_events import setup_ws_event_handler
 from .client_application import ClientApplication
 from .client_user import ClientUser
-from ..ext.tasks import task
 from .http_client import HTTPClient
 
 if TYPE_CHECKING:
@@ -47,6 +47,7 @@ class Event:
     def __init__(self, callback: Callback, *, event_name: str):
         self.callback = callback
         self.event_name = event_name or callback.__name__
+
 
 class GatewayRateLimiter:
     def __init__(self):
@@ -68,6 +69,7 @@ class GatewayRateLimiter:
         self.remaining -= 1
         if self.remaining == 0:
             self.event.clear()
+
 
 class WebsocketClient:
     def __init__(
@@ -178,14 +180,14 @@ class WebsocketClient:
                 logger.info(f"Received url {self.gateway_url}")
 
         logger.info("Connecting to gateway...")
-        self.websocket = await self.http.ws_connect( # type: ignore
+        self.websocket = await self.http.ws_connect(  # type: ignore
             f"{url}?v=10&encoding=json&compress=zlib-stream"
         )
         logger.info("Connected to gateway! Listening to events!")
         self.websocket_ratelimiter = GatewayRateLimiter()
         self._closed = False
 
-        async for event in self.websocket: # type: ignore
+        async for event in self.websocket:  # type: ignore
             event_data = event.json()
             logger.debug(
                 f"Received {event_data} from the Websocket Connection to Discord."

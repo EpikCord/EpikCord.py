@@ -153,7 +153,9 @@ class DMChannel(BaseChannel):
     def __init__(self, client, data: discord_typings.DMChannelData):
         super().__init__(client, data)
         self.recipients: Optional[List[PartialUser]] = (
-            [PartialUser(r) for r in data["recipients"]] if data.get("recipient") else None
+            [PartialUser(r) for r in data["recipients"]]
+            if data.get("recipient")
+            else None
         )
 
 
