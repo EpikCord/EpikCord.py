@@ -62,4 +62,10 @@ class Client(WebsocketClient, CommandHandler):
         await self.handle_interaction(interaction)
 
 
+    def component(self, custom_id: str):
+        def wrapper(func):
+            self._components[custom_id] = func
+            return func
+        return wrapper
+
 __all__ = ("Client",)
