@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union, TypedDict
+from typing_extensions import NotRequired
 
 from .application import Application
 from .channels import AnyChannel, GuildStageChannel, Overwrite
@@ -10,7 +11,7 @@ from .partials import PartialGuild
 from .presence import Presence
 from .sticker import Sticker
 from .thread import Thread
-from .type_enums import Locale, NSFWLevel, PremiumTier, VerificationLevel
+from .type_enums import GuildScheduledEventPrivacyLevel, GuildScheduledEventStatus, Locale, NSFWLevel, PremiumTier, VerificationLevel, IntegrationExpireBehavior
 from .user import User
 from .utils import Utils
 from .voice import VoiceState
@@ -32,14 +33,14 @@ class UnavailableGuild:
 
 
 class Invite:
-    def __init__(self, client, data: dict):
+    def __init__(self, client, data: discord_typings.InviteData):
         self.code: str = data["code"]
         self.client = client
         self.guild: Optional[PartialGuild] = (
             PartialGuild(data["guild"]) if data.get("guild") else None
         )
         self.channel: Optional[AnyChannel] = (
-            Utils(client).channel_from_type(data["channel"])
+            Utils(client).channel_from_type(data["channel"]) # type: ignore
             if data.get("channel")
             else None
         )
@@ -159,7 +160,7 @@ class Guild:
         self.features: List[discord_typings.GuildFeaturesData] = data["features"]
         self.mfa_level: str = "NONE" if data.get("mfa_level") == 0 else "ELEVATED"
         self.application_id: Optional[str] = data.get("application_id")
-        self.system_channel_id: Optional[str] = data.get("system_channel_id")
+        self.system_channel_id: Optional[int] = int(data["system_channel_id"]) if data.get("system_channel_id") else None # type: ignore
         self.system_channel_flags: SystemChannelFlags = SystemChannelFlags(
             data["system_channel_flags"]
         )
@@ -258,7 +259,7 @@ class Guild:
         description: Optional[str] = None,
         premium_progress_bar_enabled: Optional[bool] = None,
         reason: Optional[str] = None,
-    ):
+    ) -> Guild:
         """Edits the guild.
 
         Parameters
@@ -458,6 +459,10 @@ class Role:
         )
         self.guild: Guild = Guild(client, data["guild"])  # type: ignore # TODO: Check if this is still valid
 
+class EditEmojiData(TypedDict):
+    name: NotRequired[str]
+    reason: NotRequired[str]
+    roles: NotRequired[Optional[List[int]]]
 
 class Emoji:
     def __init__(self, client, data: discord_typings.EmojiData):
@@ -488,7 +493,7 @@ class Emoji:
         roles: Optional[List[Role]] = None,
         reason: Optional[str] = None,
     ):
-        payload = {}
+        payload: EditEmojiData = {}
         headers = self.client.http.headers.copy()
         if reason:
             headers["X-Audit-Log-Reason"] = reason
@@ -497,12 +502,12 @@ class Emoji:
             payload["name"] = name
 
         if roles:
-            payload["roles"] = [role.id for role in roles]
+            payload["roles"] = [int(role.id) for role in roles]
 
         emoji = await self.client.http.patch(
             f"/guilds/{self.guild_id}/emojis/{self.id}", json=payload, headers=headers
         )
-        return Emoji(self.client, emoji, self.guild_id)
+        return Emoji(self.client, emoji)
 
     async def delete(self, *, reason: Optional[str] = None):
         headers = self.client.http.headers.copy()
@@ -539,35 +544,32 @@ class GuildWidgetSettings:
 
 
 class GuildWidget:
-    def __init__(self, data: dict):
-        self.id: str = data.get("id")
-        self.name: str = data.get("name")
-        self.instant_invite: str = data.get("instant_invite")
+    def __init__(self, client, data: discord_typings.GuildWidgetData):
+        self.client = client
+        self.data = data
+        self.id: int = int(data["id"])
+        self.name: str = data["name"]
+        self.instant_invite: Optional[str] = data["instant_invite"]
         self.channels: List[AnyChannel] = [
-            Utils.channel_from_type(channel) for channel in data.get("channels", [])
+            self.client.utils.channel_from_type(channel) for channel in data.get("channels", [])
         ]
-        self.users: List[User] = [User(user) for user in data.get("members", [])]
-        self.presence_count: int = data.get("presence_count")
+        self.users: List[User] = [User(client, user) for user in data["members"]]
+        self.presence_count: int = data["presence_count"]
 
 
 class GuildScheduledEvent:
-    def __init__(self, client, data: dict):
-        self.id: str = data.get("id")
+    def __init__(self, client, data: discord_typings.GuildScheduledEventData):
         self.client = client
-        self.guild_id: str = data.get("guild_id")
-        self.channel_id: Optional[str] = data.get("channel_id")
-        self.creator_id: Optional[str] = data.get("creator_id")
-        self.name: str = data.get("name")
+        self.id: int = int(data["id"])
+        self.guild_id: int = int(data["guild_id"])
+        self.channel_id: Optional[int] = int(data["channel_id"]) if data.get("channel_id") else None # type: ignore
+        self.creator_id: Optional[int] = int(data["creator_id"]) if data.get("creator_id") else None
+        self.name: str = data["name"]
         self.description: Optional[str] = data.get("description")
-        self.scheduled_start_time: str = data.get("scheduled_start_time")
-        self.scheduled_end_time: Optional[str] = data.get("scheduled_end_time")
-        self.privacy_level: int = data.get("privacy_level")
-
-        self.status = {
-            "SCHEDULED": 1,
-            "ACTIVE": 2,
-            "COMPLETED": 3,
-        }.get(data.get("status"), "CANCELLED")
+        self.scheduled_start_time: datetime.datetime = datetime.datetime.fromisoformat(data["scheduled_start_time"])
+        self.scheduled_end_time: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["scheduled_end_time"]) if data.get("scheduled_end_time") else None
+        self.privacy_level: GuildScheduledEventPrivacyLevel = GuildScheduledEventPrivacyLevel(data["privacy_level"]) 
+        self.status = GuildScheduledEventStatus(data["status"])
 
         self.entity_type: str = (
             "STAGE_INSTANCE"
@@ -576,47 +578,44 @@ class GuildScheduledEvent:
             if data.get("entity_type") == 2
             else "EXTERNAL"
         )
-        self.entity_id: str = data.get("entity_id")
-        self.entity_metadata: dict = data.get("entity_metadata")
-        self.creator: Optional[User] = User(data.get("creator"))
+        self.entity_id: Optional[int] = int(data["entity_id"]) if data.get("entity_id") else None # type: ignore
+        self.entity_metadata: discord_typings.GuildScheduledEventEntityMetadata = data.get("entity_metadata")
+        self.creator: Optional[User] = User(client, data["creator"]) if data.get("creator") else None
         self.user_count: Optional[int] = data.get("user_count")
 
 
 class IntegrationAccount:
-    def __init__(self, data: dict):
+    def __init__(self, data: discord_typings.IntegrationAccountData):
         self.id: str = data.get("id")
-        self.name: str = data.get("name")
+        self.name: str = data["name"]
 
 
 class GuildBan:
-    def __init__(self, data: dict):
+    def __init__(self, client, data: discord_typings.BanData):
         self.reason: Optional[str] = data.get("reason")
-        self.user: User = User(data.get("user"))
+        self.client = client
+        self.user: User = User(client, data["user"])
 
 
 class Integration:
-    def __init__(self, data: dict):
-        self.id: str = data.get("id")
-        self.name: str = data.get("name")
-        self.type: str = data.get("type")
-        self.enabled: bool = data.get("enabled")
+    def __init__(self, client, data: discord_typings.IntegrationData):
+        self.id: str = data["id"]
+        self.client = client
+        self.name: str = data["name"]
+        self.type: str = data["type"]
+        self.enabled: bool = data["enabled"] # type: ignore
         self.syncing: Optional[bool] = data.get("syncing")
         self.role_id: Optional[str] = data.get("role_id")
-        self.expire_behavior: str = (
-            "REMOVE_ROLE"
-            if data.get("expire_behavior") == 1
-            else "REMOVE_ACCOUNT"
-            if data.get("expire_behavior") == 2
-            else None
-        )
+        self.enable_emoticons: Optional[bool] = data.get("enable_emoticons")
+        self.expire_behavior: IntegrationExpireBehavior = IntegrationExpireBehavior(data["expire_behavior"]) if data.get("expire_behavior") else None
         self.expire_grace_period: Optional[int] = data.get("expire_grace_period")
-        self.user: Optional[User] = User(data.get("user")) if data.get("user") else None
+        self.user: Optional[User] = User(client, data["user"]) if data.get("user") else None
         self.account: IntegrationAccount = IntegrationAccount(data.get("account"))
         self.synced_at: datetime.datetime = datetime.datetime.fromioformat(
-            data.get("synced_at")
+            data["synced_at"]
         )
-        self.subscriber_count: int = data.get("subscriber_count")
-        self.revoked: bool = data.get("revoked")
+        self.subscriber_count: int = data["subscriber_count"]
+        self.revoked: bool = data.get["revoked"]
         self.application: Optional[Application] = (
             Application(data.get("application")) if data.get("application") else None
         )

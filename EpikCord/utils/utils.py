@@ -6,6 +6,8 @@ from collections import defaultdict
 from logging import getLogger
 from typing import Callable, Optional, TypeVar, Union
 
+import discord_typings
+
 from ..channels import *
 from ..components import *
 from ..exceptions import InvalidArgumentType
@@ -187,7 +189,7 @@ class Utils:
         return interaction_cls(self.client, data)  # type: ignore
         
 
-    def channel_from_type(self, channel_data: dict):
+    def channel_from_type(self, channel_data: discord_typings.ChannelData):
         channel_type = channel_data["type"]
 
         if channel_cls := self.channels_types.get(channel_type):

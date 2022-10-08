@@ -15,13 +15,14 @@ if TYPE_CHECKING:
 
 
 class Connection:
-    def __init__(self, data: dict):
+    def __init__(self, client: UserClient, data: dict):
         self.id: str = data["id"]
+        self.client = client
         self.name: str = data["name"]
         self.type: str = data["type"]
         self.revoked: Optional[bool] = data["revoked"]
         self.integrations: Optional[List[Integration]] = [
-            Integration(data) for data in data.get("integrations", [])
+            Integration(client, data) for data in data.get("integrations", [])
         ]
         self.verified: bool = data["verified"]
         self.friend_sync: bool = data["friend_sync"]
@@ -84,7 +85,7 @@ class UserClient:
 
     async def fetch_connections(self) -> List[Connection]:
         data = await (await self._http.get("/users/@me/connections")).json()
-        return [Connection(d) for d in data]
+        return [Connection(self, d) for d in data]
 
     async def fetch_guilds(
         self,
