@@ -121,18 +121,22 @@ class AllowedMentionTypes(Enum):
     EVERYONE = "everyone"
     ALL = ["roles", "users", "everyone"]
 
+
 class GuildScheduledEventStatus(IntEnum):
     SCHEDULED = 1
     ACTIVE = 2
     COMPLETED = 3
     CANCELED = 4
 
+
 class IntegrationExpireBehavior(IntEnum):
     REMOVE_ROLE = 0
     KICK = 1
 
+
 class GuildScheduledEventPrivacyLevel(IntEnum):
     GUILD_ONLY = 2
+
 
 __all__ = (
     "VisibilityType",
