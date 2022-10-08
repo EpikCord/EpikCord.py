@@ -135,13 +135,13 @@ class WebsocketClient:
         raw_op_code = event_data["op"]
 
         try:
-            op_code = GatewayOpcode[raw_op_code]
-        except KeyError:
+            op_code = GatewayOpcode(raw_op_code)
+        except ValueError:
             logger.critical("Unknown op code: %s", raw_op_code)
             return
 
         handler = self.wse_handler.get(op_code)
-        handler(event_data)
+        await handler(event_data)
 
     async def connect(self):
         if not self.gateway_url:
