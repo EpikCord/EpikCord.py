@@ -5,11 +5,11 @@ from typing import TYPE_CHECKING, List, Optional, TypedDict, Union
 
 from typing_extensions import NotRequired
 
-from .application import Application
+from .application import Application, IntegrationApplication
 from .channels import AnyChannel, GuildStageChannel, Overwrite
 from .flags import Permissions, SystemChannelFlags
 from .partials import PartialGuild
-from .presence import Presence
+from .presence import Presence, Status, Activity
 from .sticker import Sticker
 from .thread import Thread
 from .type_enums import (
@@ -126,12 +126,7 @@ class Guild:
     def __init__(
         self,
         client,
-        data: Union[
-            discord_typings.GuildData,
-            discord_typings.GuildCreateData,
-            discord_typings.GuildCreateEvent,
-            discord_typings.GuildUpdateData,
-        ],
+        data: discord_typings.GuildCreateData
     ):
         self.client = client
         self.data = data
@@ -240,14 +235,16 @@ class Guild:
                 [Thread(self.client, thread) for thread in data["threads"]]
             )
 
-        self.presences: Optional[List[Presence]] = data.get("presences")
+        self.presences: Optional[List[Presence]] = [
+            Presence(activity=p["activities"][-1], status=Status(p["status"])) for p in data["presences"] # type: ignore
+        ] if data.get("presences") else None
         self.stage_instances: List[GuildStageChannel] = [
             GuildStageChannel(client, channel)
-            for channel in data.get("stage_instances")
+            for channel in data.get("stage_instances", [])
         ]
-        self.guild_schedulded_events: List[GuildScheduledEvent] = [
+        self.guild_scheduled_events: List[GuildScheduledEvent] = [
             GuildScheduledEvent(client, event)
-            for event in data.get("guild_schedulded_events", [])
+            for event in data.get("guild_scheduled_events", [])
         ]
 
     async def edit(
@@ -334,7 +331,7 @@ class Guild:
         response = await self.client.http.patch(
             f"/guilds/{self.id}", json=data, headers=headers, guild_id=self.id
         )
-        guild_data: discord_typings.GuildData = await response.json()
+        guild_data = await response.json()
 
         return Guild(self.client, guild_data)
 
@@ -568,6 +565,9 @@ class GuildWidget:
         self.users: List[User] = [User(client, user) for user in data["members"]]
         self.presence_count: int = data["presence_count"]
 
+class GuildScheduledEventEntityMetadata:
+    def __init__(self, data: discord_typings.GuildScheduledEventEntityMetadata):
+        self.location: Optional[str] = data.get("location")
 
 class GuildScheduledEvent:
     def __init__(self, client, data: discord_typings.GuildScheduledEventData):
@@ -601,9 +601,7 @@ class GuildScheduledEvent:
             else "EXTERNAL"
         )
         self.entity_id: Optional[int] = int(data["entity_id"]) if data.get("entity_id") else None  # type: ignore
-        self.entity_metadata: discord_typings.GuildScheduledEventEntityMetadata = (
-            data.get("entity_metadata")
-        )
+        self.entity_metadata: Optional[GuildScheduledEventEntityMetadata] = GuildScheduledEventEntityMetadata(data["entity_metadata"]) if data.get("entity_metadata") else None # type: ignore
         self.creator: Optional[User] = (
             User(client, data["creator"]) if data.get("creator") else None
         )
@@ -612,7 +610,7 @@ class GuildScheduledEvent:
 
 class IntegrationAccount:
     def __init__(self, data: discord_typings.IntegrationAccountData):
-        self.id: str = data.get("id")
+        self.id: str = data["id"]
         self.name: str = data["name"]
 
 
@@ -624,32 +622,34 @@ class GuildBan:
 
 
 class Integration:
-    def __init__(self, client, data: discord_typings.IntegrationData):
-        self.id: str = data["id"]
+    def __init__(self, client, data: Union[discord_typings.StreamingIntegrationData, discord_typings.DiscordIntegrationData]):
+        self.id: str = str(data["id"])
         self.client = client
         self.name: str = data["name"]
         self.type: str = data["type"]
-        self.enabled: bool = data["enabled"]  # type: ignore
-        self.syncing: Optional[bool] = data.get("syncing")
-        self.role_id: Optional[str] = data.get("role_id")
-        self.enable_emoticons: Optional[bool] = data.get("enable_emoticons")
-        self.expire_behavior: IntegrationExpireBehavior = (
-            IntegrationExpireBehavior(data["expire_behavior"])
+
+        self.enabled: Optional[bool] = data.get("enabled") # type: ignore
+        self.syncing: Optional[bool] = data.get("syncing") # type: ignore
+        self.role_id: Optional[int] = int(data["role_id"]) if data.get("role_id") else None # type: ignore
+        self.subscriber_count: Optional[int] = data.get("subscriber_count") # type: ignore
+        self.revoked: Optional[bool] = data.get("revoked") # type: ignore
+        self.enable_emoticons: Optional[bool] = data.get("enable_emoticons") # type: ignore
+        self.expire_grace_period: Optional[int] = data.get("expire_grace_period") # type: ignore
+
+        self.expire_behavior: Optional[IntegrationExpireBehavior] = (
+            IntegrationExpireBehavior(data["expire_behavior"]) # type: ignore
             if data.get("expire_behavior")
             else None
         )
-        self.expire_grace_period: Optional[int] = data.get("expire_grace_period")
         self.user: Optional[User] = (
-            User(client, data["user"]) if data.get("user") else None
+            User(client, data["user"]) if data.get("user") else None # type: ignore
         )
-        self.account: IntegrationAccount = IntegrationAccount(data.get("account"))
-        self.synced_at: datetime.datetime = datetime.datetime.fromioformat(
-            data["synced_at"]
-        )
-        self.subscriber_count: int = data["subscriber_count"]
-        self.revoked: bool = data.get["revoked"]
-        self.application: Optional[Application] = (
-            Application(data.get("application")) if data.get("application") else None
+        self.account: IntegrationAccount = IntegrationAccount(data["account"])
+        self.synced_at: Optional[datetime.datetime] = datetime.datetime.fromisoformat(
+            data["synced_at"] # type: ignore
+        ) if data.get("synced_at") else None
+        self.application: Optional[IntegrationApplication] = (
+            IntegrationApplication(client, data["application"]) if data.get("application") else None
         )
 
 

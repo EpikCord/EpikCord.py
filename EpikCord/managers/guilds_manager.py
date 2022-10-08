@@ -15,7 +15,7 @@ class GuildManager(CacheManager):
 
     async def fetch(
         self,
-        guild_id: str,
+        guild_id: int,
         *,
         with_counts: Optional[bool] = False,
     ):

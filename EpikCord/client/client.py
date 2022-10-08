@@ -57,7 +57,7 @@ class Client(WebsocketClient, CommandHandler):
         json = await response.json()
         return [StickerPack(self, pack) for pack in json["sticker_packs"]]
 
-    async def _interaction_create(self, data: discord_typings.InteractionCreateEvent):
+    async def _interaction_create(self, data: discord_typings.InteractionCreateData):
         await super()._interaction_create(data)
         interaction = self.utils.interaction_from_type(data)
         await self.handle_interaction(interaction)

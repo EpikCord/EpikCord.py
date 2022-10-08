@@ -351,14 +351,14 @@ class Message:
 
     """
 
-    def __init__(self, client, data: dict):
+    def __init__(self, client, data: discord_typings.MessageData):
         from EpikCord import GuildMember, Reaction
 
         self.client = client
         self.id: int = int(data["id"])
         self.channel_id: int = int(data["channel_id"])
-        self.guild_id: Optional[str] = data.get("guild_id")
-        self.webhook_id: Optional[str] = data.get("webhook_id")
+        self.guild_id: Optional[int] = int(data["guild_id"]) if data.get("guild_id") else None # type: ignore
+        self.webhook_id: Optional[int] = int(data["webhook_id"]) if data.get("webhook_id") else None
         self.author: Optional[Union[WebhookUser, GuildMember, User]] = None
 
         if self.webhook_id:
