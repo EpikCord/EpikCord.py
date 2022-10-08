@@ -145,7 +145,7 @@ class WebsocketClient:
 
     async def connect(self):
         if not self.gateway_url:
-            self.gateway_url = await self.http.get_gateway()["url"]
+            self.gateway_url = (await self.http.get_gateway())["url"]
 
         self.websocket = await self.http.ws_connect(
             f"{self.gateway_url}?v=10&encoding=json&compress=zlib-stream"
