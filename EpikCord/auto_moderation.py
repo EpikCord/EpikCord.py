@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional, TypedDict, Union
-from typing_extensions import NotRequired
 
 import discord_typings
+from typing_extensions import NotRequired
 
 from .type_enums import (
     AutoModActionType,
@@ -47,6 +47,7 @@ class AutoModAction:
             "type": int(self.type),
             "metadata": self.metadata.to_dict(),
         }
+
 
 class AutoModRulePayload(TypedDict):
     name: NotRequired[str]

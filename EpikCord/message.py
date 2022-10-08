@@ -3,11 +3,11 @@ import datetime
 import io
 import os
 from logging import getLogger
-from typing import Any, Dict, List, Optional, Union, TypedDict
-from typing_extensions import NotRequired
+from typing import Any, Dict, List, Optional, TypedDict, Union
 from urllib.parse import quote as _quote
 
 import discord_typings
+from typing_extensions import NotRequired
 
 from .application import Application
 from .colour import Colour
@@ -26,6 +26,7 @@ logger = getLogger(__name__)
 
 def _filter_values(dictionary: dict) -> dict:
     return {k: v for k, v in dictionary.items() if v is not None}
+
 
 class AllowedMention:
     def __init__(
@@ -56,6 +57,7 @@ class MessageActivity:
         self.type: int = data["type"]
         self.party_id: Optional[str] = data.get("party_id")
 
+
 class Attachment:
     def __init__(self, data: dict):
         self.id: str = data["id"]
@@ -70,7 +72,7 @@ class Attachment:
         self.ephemeral: Optional[bool] = data.get("ephemeral")
 
     def to_dict(self) -> discord_typings.AttachmentData:
-        return _filter_values( # type: ignore
+        return _filter_values(  # type: ignore
             {
                 "id": self.id,
                 "filename": self.file_name,
@@ -316,12 +318,20 @@ class File:
         self.fp.close = self._closer  # type: ignore
         self._closer()
 
+
 class MessageReference:
     def __init__(self, data: discord_typings.MessageReferenceData) -> None:
-        self.message_id: Optional[int] = int(data["message_id"]) if data.get("message_id") else None
-        self.channel_id: Optional[int] = int(data["channel_id"]) if data.get("channel_id") else None
-        self.guild_id: Optional[int] = int(data["guild_id"]) if data.get("guild_id") else None
+        self.message_id: Optional[int] = (
+            int(data["message_id"]) if data.get("message_id") else None
+        )
+        self.channel_id: Optional[int] = (
+            int(data["channel_id"]) if data.get("channel_id") else None
+        )
+        self.guild_id: Optional[int] = (
+            int(data["guild_id"]) if data.get("guild_id") else None
+        )
         self.fail_if_not_exists: Optional[bool] = data.get("fail_if_not_exists")
+
 
 class Message:
     """Represents a Discord message.
@@ -536,6 +546,7 @@ class Message:
         )
         return await response.json()
 
+
 class MessagePayload(TypedDict):
     content: NotRequired[str]
     nonce: NotRequired[Union[int, str]]
@@ -547,6 +558,7 @@ class MessagePayload(TypedDict):
     sticker_ids: NotRequired[List[int]]
     attachments: NotRequired[List[discord_typings.AttachmentData]]
     flags: NotRequired[int]
+
 
 __all__ = (
     "AllowedMention",
