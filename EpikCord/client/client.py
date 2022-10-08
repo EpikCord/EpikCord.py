@@ -1,53 +1,40 @@
 from __future__ import annotations
 
-from collections import deque
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, List, Optional, Union
+from typing import TYPE_CHECKING, Coroutine, Dict, List, Optional, Union, Callable, Any
 
 from ..flags import Intents
-from ..managers import ChannelManager, GuildManager
 from ..sticker import Sticker, StickerPack
 from .websocket_client import WebsocketClient
+from .command_handler import CommandHandler
 
 if TYPE_CHECKING:
-    from EpikCord import Activity, Presence, Section, Status
+    import discord_typings
+
+    from EpikCord import Presence, Section
 
 logger = getLogger(__name__)
 
+Callback = Callable[..., Coroutine[Any, Any, Any]]
 
-class Client(WebsocketClient):
+class Client(WebsocketClient, CommandHandler):
     def __init__(
         self,
         token: str,
         intents: Union[Intents, int] = 0,
         *,
-        status: Optional[Status] = None,
-        activity: Optional[Activity] = None,
-        overwrite_commands_on_ready: Optional[bool] = None,
+        overwrite_commands_on_ready: bool = False,
         discord_endpoint: str = "https://discord.com/api/v10",
-        presence: Presence = None,
+        presence: Optional[Presence] = None,
     ):
         super().__init__(token, intents, presence, discord_endpoint=discord_endpoint)
-        from EpikCord import ClientApplication, ClientUser, Presence, Utils
+        from EpikCord import Utils
 
         self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready or False
-        self.guilds: GuildManager = GuildManager(self)
-        self.channels: ChannelManager = ChannelManager(self)
-        self.presence: Presence = Presence(status=status, activity=activity)
-        self._components = {}
+        self._components: Dict[str, Callback] = {}
         self.utils = Utils(self)
-        self.latencies = deque(maxlen=5)
-        self.user: Optional[ClientUser] = None
-        self.application: Optional[ClientApplication] = None
+
         self.sections: List[Section] = []
-
-    @property
-    def latency(self):
-        return self.discord_latency
-
-    @property
-    def average_latency(self):
-        return sum(self.latencies) / len(self.latencies)
 
     def load_section(self, section_class: Section):
         section = section_class(self)  # type: ignore
@@ -68,5 +55,9 @@ class Client(WebsocketClient):
         json = await response.json()
         return [StickerPack(self, pack) for pack in json["sticker_packs"]]
 
+    async def _interaction_create(self, data: discord_typings.InteractionCreateEvent):
+        await super()._interaction_create(data)
+        interaction = self.utils.interaction_from_type(data)
+        await self.handle_interaction(interaction)
 
 __all__ = ("Client",)

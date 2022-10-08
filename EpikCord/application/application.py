@@ -1,7 +1,11 @@
-from typing import Callable, List, Optional
+from __future__ import annotations
+from typing import TYPE_CHECKING, List, Optional
 
 from ..partials import PartialUser
 from .team import Team
+
+if TYPE_CHECKING:
+    import discord_typings
 
 
 def _filter_values(dictionary: dict) -> dict:
@@ -9,7 +13,7 @@ def _filter_values(dictionary: dict) -> dict:
 
 
 class Application:
-    def __init__(self, data: dict):
+    def __init__(self, data: discord_typings.ApplicationData):
         self.id: int = int(data["id"])
         self.name: str = data["name"]
         self.icon: Optional[str] = data.get("icon")
@@ -17,10 +21,10 @@ class Application:
         self.rpc_origins: Optional[List[str]] = data.get("rpc_origins")
         self.bot_public: bool = data["bot_public"]
         self.bot_require_code_grant: bool = data["bot_require_code_grant"]
-        self.terms_of_service_url: Optional[str] = data.get("terms_of_service")
-        self.privacy_policy_url: Optional[str] = data.get("privacy_policy")
+        self.terms_of_service_url: Optional[str] = data.get("terms_of_service") # type: ignore
+        self.privacy_policy_url: Optional[str] = data.get("privacy_policy") # type: ignore
         self.owner: Optional[PartialUser] = (
-            PartialUser(data["user"]) if "user" in data else None
+            PartialUser(data["owner"]) if "user" in data else None
         )
         self.verify_key: str = data["verify_key"]
         self.team: Optional[Team] = Team(data["team"]) if data["team"] else None

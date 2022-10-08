@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import io
 import os
@@ -14,6 +15,7 @@ from .sticker import *
 from .thread import Thread
 from .type_enums import AllowedMentionTypes
 from .user import User
+from .utils import Utils
 from .webhooks import WebhookUser
 
 logger = getLogger(__name__)
@@ -206,7 +208,7 @@ class Embed:
     def set_footer(
         self,
         *,
-        text: Optional[str],
+        text: Optional[str] = None,
         icon_url: Optional[str] = None,
         proxy_icon_url: Optional[str] = None,
     ):
@@ -338,7 +340,6 @@ class Message:
         self.client = client
         self.id: int = int(data["id"])
         self.channel_id: int = int(data["channel_id"])
-        self.channel = client.channels.get(self.channel_id)
         self.guild_id: Optional[str] = data.get("guild_id")
         self.webhook_id: Optional[str] = data.get("webhook_id")
         self.author: Optional[Union[WebhookUser, GuildMember, User]] = None
@@ -414,6 +415,10 @@ class Message:
         self.stickers: Optional[List[StickerItem]] = [
             StickerItem(sticker) for sticker in data.get("stickers", [])
         ] or None
+
+        self.channel = client.channels.get(self.channel_id)
+        if not self.channel:  # Cache miss
+            self.channel = asyncio.create_task(client.channels.fetch(self.channel_id))
 
     async def add_reaction(self, emoji: str):
         emoji = _quote(emoji)
@@ -493,16 +498,20 @@ class Message:
     async def start_thread(
         self,
         name: str,
-        auto_archive_duration: Optional[int],
-        rate_limit_per_user: Optional[int],
+        auto_archive_duration: Optional[int] = None,
+        rate_limit_per_user: Optional[int] = None,
     ):
-        response = await self.client.http.post(
-            f"channels/{self.channel_id}/messages/{self.id}/threads",
-            data={
+        payload = Utils.filter_values(
+            {
                 "name": name,
                 "auto_archive_duration": auto_archive_duration,
                 "rate_limit_per_user": rate_limit_per_user,
-            },
+            }
+        )
+
+        response = await self.client.http.post(
+            f"channels/{self.channel_id}/messages/{self.id}/threads",
+            json=payload,
         )
         # * Cache it
         thread = Thread(self.client, await response.json())

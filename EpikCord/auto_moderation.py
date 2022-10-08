@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, List, Optional, Union
 
 from .type_enums import (
     AutoModActionType,
@@ -10,9 +10,9 @@ from .type_enums import (
 
 class AutoModTriggerMetaData:
     def __init__(self, data: dict):
-        self.keyword_filter: List[str] = data.get("keyword_filter")
+        self.keyword_filter: List[str] = data["keyword_filter"]
         self.presets: List[AutoModKeywordPresetType] = [
-            AutoModKeywordPresetType(x) for x in data.get("presets")
+            AutoModKeywordPresetType(x) for x in data["presets"]
         ]
 
     def to_dict(self):
@@ -24,8 +24,8 @@ class AutoModTriggerMetaData:
 
 class AutoModActionMetaData:
     def __init__(self, data: dict):
-        self.channel_id: str = data.get("channel_id")
-        self.duration_seconds: int = data.get("duration_seconds")
+        self.channel_id: int = int(data["channel_id"])
+        self.duration_seconds: int = data["duration_seconds"]
 
     def to_dict(self):
         return {
@@ -55,11 +55,11 @@ class AutoModRule:
         self.creator_id: str = data["creator_id"]
         self.event_type = AutoModEventType(data["event_type"])
         self.trigger_type = AutoModTriggerType(data["trigger_type"])
-        self.trigger_metadata: AutoModTriggerMetaData = [
+        self.trigger_metadata: List[AutoModTriggerMetaData] = [
             AutoModTriggerMetaData(data) for data in data["trigger_metadata"]
         ]
         self.actions: List[AutoModAction] = [
-            AutoModAction(data) for data in data.get("actions")
+            AutoModAction(data) for data in data["actions"]
         ]
         self.enabled: bool = data["enabled"]
         self.except_roles_ids: List[str] = data["except_roles"]

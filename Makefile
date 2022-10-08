@@ -7,20 +7,16 @@ PY_BIN = $(PY_ENV)/bin
 all: reqs
 
 
-$(PY_BIN)/python:
-	python -m venv $(PY_ENV)
+$(PY_BIN)/%:
+	python3 -m venv $(PY_ENV)
 	chmod +x $(PY_BIN)/activate
 	./$(PY_BIN)/activate
 
-
-$(PY_BIN)/pip3: $(PY_BIN)/python
-
-
-reqs: $(PY_BIN)/pip3
+reqs: $(PY_BIN)/pip
 	$(PY_BIN)/pip3 install -e .
 
 
-$(PY_BIN)/nox: $(PY_BIN)/pip3
+$(PY_BIN)/nox: $(PY_BIN)/pip
 	$(PY_BIN)/pip3 install nox
 
 

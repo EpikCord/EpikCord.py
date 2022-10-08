@@ -225,7 +225,7 @@ class Button(BaseComponent):
     def to_dict(self):
         from EpikCord import Utils
 
-        settings = Utils.filter_values(
+        return Utils.filter_values(
             {
                 "type": self.type,
                 "custom_id": self.custom_id,
@@ -236,8 +236,6 @@ class Button(BaseComponent):
                 "emoji": self.emoji,
             }
         )
-
-        return settings
 
     def set_label(self, label: str):
         if not isinstance(label, str):

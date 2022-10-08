@@ -99,9 +99,9 @@ class GuildTextChannel(GuildChannel, Messageable):
         return [Thread(self.client, data) for data in await response.json()]
 
     async def list_private_archived_threads(
-        self, *, before: Optional[str], limit: Optional[int]
+        self, *, before: Optional[int] = None, limit: Optional[int] = None
     ) -> List[Thread]:
-        params: Dict[str, Union[int, str]] = {}
+        params: Dict[str, Optional[int]] = {}
 
         if before:
             params["before"] = before
@@ -117,7 +117,7 @@ class GuildTextChannel(GuildChannel, Messageable):
         return [Thread(self.client, data) for data in await response.json()]
 
     async def list_joined_private_archived_threads(
-        self, *, before: Optional[str], limit: Optional[int]
+        self, *, before: Optional[int] = None, limit: Optional[int] = None
     ) -> List[Thread]:
         params: Dict[str, Union[int, str]] = {}
 
@@ -204,7 +204,6 @@ AnyChannel = Union[
 
 __all__ = (
     "Overwrite",
-    "GuildChannel",
     "GuildTextChannel",
     "GuildNewsChannel",
     "DMChannel",

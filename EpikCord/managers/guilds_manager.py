@@ -1,28 +1,17 @@
 from __future__ import annotations
 
-from typing import List, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from .cache_manager import CacheManager
 
+if TYPE_CHECKING:
+    from ..client.client import Client, WebsocketClient
+
 
 class GuildManager(CacheManager):
-    def __init__(self, client, guilds=None):
-        if guilds is None:
-            guilds = []
-
-        from EpikCord import Guild, UnavailableGuild
-
+    def __init__(self, client: Union[Client, WebsocketClient]):
         super().__init__()
         self.client = client
-        self.available_guilds = {
-            guild.id: guild
-            for guild in guilds
-            if not isinstance(guild, UnavailableGuild)
-        }
-        self.unavailable_guilds = {
-            guild.id: guild for guild in guilds if isinstance(guild, UnavailableGuild)
-        }
-        self.cache = {**self.available_guilds, **self.unavailable_guilds}
 
     async def fetch(
         self,

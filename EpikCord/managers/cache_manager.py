@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Iterator, Optional
+from typing import Any, Dict, Iterator, Optional, Union
 
 
 class CacheManager:
     def __init__(self):
         self.cache = {}
 
-    def add_to_cache(self, key: str, value: Any):
+    def add_to_cache(self, key: Union[int, str], value: Any):
         self.cache[key] = value
 
     def remove_from_cache(self, key):
@@ -80,4 +80,4 @@ class CacheManager:
         return self.cache
 
 
-# This is the base cache manager, people can extend this to make their own cache managers
+# !  This is the base cache manager, people can extend this to make their own cache managers

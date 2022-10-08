@@ -1,11 +1,14 @@
+from __future__ import annotations
 import asyncio
 import contextlib
 import zlib
+from functools import partialmethod
 from importlib.util import find_spec
 from logging import getLogger
-from typing import Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from aiohttp import ClientSession, ClientWebSocketResponse
+
 
 from ..exceptions import (
     DiscordAPIError,
@@ -25,6 +28,9 @@ if _ORJSON:
 
 else:
     import json  # type: ignore
+
+if TYPE_CHECKING:
+    import discord_typings
 
 
 class _FakeTask:
@@ -57,7 +63,7 @@ class DiscordWSMessage:
         return json.loads(self.data)
 
 
-class DiscordGatewayWebsocket(ClientWebSocketResponse):
+class GatewayWebsocket(ClientWebSocketResponse):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.buffer: bytearray = bytearray()
@@ -84,18 +90,27 @@ class DiscordGatewayWebsocket(ClientWebSocketResponse):
         )
 
 
-class HTTPClient(ClientSession):
-    def __init__(self, *args, **kwargs):
+class HTTPClient:
+    def __init__(self, token: Optional[str] = None, *args, **kwargs):
+        from EpikCord import __version__
         self.base_uri: str = kwargs.pop(
             "discord_endpoint", "https://discord.com/api/v10"
         )
-        super().__init__(
+        headers = {
+            "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
+            "Content-Type": "application/json",
+        }
+
+        if token:
+            headers["Authorization"] = f"Bot {token}"
+        self.session = ClientSession(
             *args,
             **kwargs,
-            json_serialize=lambda x, *__, **___: json.dumps(x).decode()
+            json_serialize=lambda x, *__, **___: json.dumps(x).decode() # type: ignore
             if _ORJSON
             else json.dumps(x),
-            ws_response_class=DiscordGatewayWebsocket,
+            ws_response_class=GatewayWebsocket,
+            headers=headers,
         )
         self.global_ratelimit: asyncio.Event = asyncio.Event()
         self.global_ratelimit.set()
@@ -117,7 +132,7 @@ class HTTPClient(ClientSession):
             return
 
         if url.startswith("ws") or not to_discord:
-            return await super().request(method, url, *args, **kwargs)
+            return await self.session.request(method, url, *args, **kwargs)
 
         if url.startswith("/"):
             url = url[1:]
@@ -135,7 +150,7 @@ class HTTPClient(ClientSession):
         await bucket.event.wait()
         await self.global_ratelimit.wait()
 
-        res = await super().request(method, url, *args, **kwargs)
+        res = await self.session.request(method, url, *args, **kwargs)
 
         await self.log_request(res, kwargs.get("json", kwargs.get("data", None)))
 
@@ -148,21 +163,18 @@ class HTTPClient(ClientSession):
             else:
                 b = Bucket(discord_hash=res.headers["X-RateLimit-Bucket"])
                 if b in self.buckets.values():
-                    self.buckets[bucket_hash] = {v: k for k, v in self.buckets.items()}[
+                    self.buckets[bucket_hash] = {v: k for k, v in self.buckets.items()}[  # type: ignore
                         b
-                    ]  # type: ignore
+                    ]
                 else:
                     self.buckets[bucket_hash] = b
+
         body: Union[Dict, str] = {}
+
         if res.headers["Content-Type"] == "application/json":
             body = await res.json()
         else:
             body = await res.text()
-
-        if res.status in range(200, 299):
-            bucket.event.set()
-            self.global_ratelimit.set()
-            return res
 
         if (
             int(res.headers.get("X-RateLimit-Remaining", 1)) == 0
@@ -182,12 +194,16 @@ class HTTPClient(ClientSession):
             )
 
             logger.critical(f"Rate limited. Reset in {time_to_sleep} seconds")
+
             if res.headers["X-RateLimit-Scope"] == "global":
                 await self.global_ratelimit.clear()  # type: ignore
 
+            await bucket.event.clear()
+
             await asyncio.sleep(time_to_sleep)
 
-            await self.global_ratelimit.set()  # type: ignore
+            self.global_ratelimit.set()  # type: ignore
+            bucket.event.set()
 
             return await self.request(method, url, *args, **kwargs, attempt=attempt + 1)
 
@@ -203,12 +219,6 @@ class HTTPClient(ClientSession):
         elif not 300 > res.status >= 200:
             raise DiscordAPIError(body)
 
-        if not bucket.event.is_set():
-            try:
-                bucket.event.set()
-            except Exception as e:
-                logger.exception(e)
-
         async def dispose():
             await asyncio.sleep(300)
 
@@ -218,9 +228,6 @@ class HTTPClient(ClientSession):
         bucket.close_task.cancel()
 
         bucket.close_task = asyncio.create_task(dispose())  # type: ignore
-
-        bucket.event.set()
-        self.global_ratelimit.set()
 
         return res
 
@@ -247,39 +254,45 @@ class HTTPClient(ClientSession):
         finally:
             logger.debug("".join(message))
 
-    async def get(  # type: ignore
+    def base(  # type: ignore
         self,
+        method,
         url,
         *args,
         to_discord: bool = True,
         **kwargs,
     ):
         if to_discord:
-            return await self.request("GET", url, *args, **kwargs)
-        return await super().get(url, *args, **kwargs)
+            return self.request(method, url, *args, **kwargs)
+        return self.session.request(method, url, *args, **kwargs)
 
-    async def post(self, url, *args, to_discord: bool = True, **kwargs):  # type: ignore
-        if to_discord:
-            return await self.request("POST", url, *args, **kwargs)
-        return await super().post(url, *args, **kwargs)
+    get = partialmethod(base, "GET")
+    post = partialmethod(base, "POST")
+    put = partialmethod(base, "PUT")
+    patch = partialmethod(base, "PATCH")
+    delete = partialmethod(base, "DELETE")
+    head = partialmethod(base, "HEAD")
+    options = partialmethod(base, "OPTIONS")
 
-    async def patch(self, url, *args, to_discord: bool = True, **kwargs):  # type: ignore
-        if to_discord:
-            res = await self.request("PATCH", url, *args, **kwargs)
-            return res
-        return await super().patch(url, *args, **kwargs)
+    async def get_gateway(self) -> discord_typings.GetGatewayData:
+        """
+        Get the gateway url.
+        Returns:
+            :class:`GetGatewayData`
+        """
+        res = await self.get("/gateway")
+        return await res.json()
 
-    async def delete(self, url, *args, to_discord: bool = True, **kwargs):  # type: ignore
-        if to_discord:
-            res = await self.request("DELETE", url, *args, **kwargs)
-            return res
-        return await super().delete(url, **kwargs)
+    async def get_gateway_bot(self) -> discord_typings.GetGatewayBotData:
+        """
+        Get information about the bot logging in, including the gateway url.
+        This is useful when sharding.
 
-    async def put(self, url, *args, to_discord: bool = True, **kwargs):  # type: ignore
-        if to_discord:
-            res = await self.request("PUT", url, *args, **kwargs)
-            return res
-        return await super().put(url, *args, **kwargs)
+        Returns:
+            :class:`GetGatewayBotData`
+        """
+        res = await self.get("/gateway/bot")
+        return await res.json()
 
 
 __all__ = ("HTTPClient",)

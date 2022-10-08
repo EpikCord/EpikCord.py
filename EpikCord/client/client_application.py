@@ -1,4 +1,6 @@
-from typing import Dict, List, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Union
 
 from ..application import (
     Application,
@@ -13,9 +15,12 @@ from ..exceptions import (
 from ..flags import Permissions
 from ..options import *
 
+if TYPE_CHECKING:
+    import discord_typings
+
 
 class ClientApplication(Application):
-    def __init__(self, client, data: dict):
+    def __init__(self, client, data: discord_typings.ApplicationData):
         super().__init__(data)
         self.client = client
 
@@ -40,16 +45,16 @@ class ClientApplication(Application):
         *,
         name: str,
         description: str,
-        options: Optional[List[AnyOption]],
-        default_member_permission: Optional[Permissions] = None,
-        command_type: Optional[int] = 1,
+        options: List[AnyOption] = [],
+        default_member_permissions: Optional[Permissions] = None,
+        command_type: Literal[1, 2, 3] = 1,
         dm_permission: bool = True,
     ):
-        payload = {
+        payload: discord_typings.ApplicationCommandPayload = {
             "name": name,
             "description": description,
-            "default_permissions": default_member_permission,
-            "dm_permissions": dm_permission,
+            "default_member_permissions": default_member_permissions,  # type: ignore
+            "dm_permission": dm_permission,
         }
 
         if command_type not in range(1, 4):
@@ -99,52 +104,53 @@ class ClientApplication(Application):
         name: Optional[str] = None,
         description: Optional[str] = None,
         options: Optional[List[AnyOption]] = None,
-        default_permissions: Optional[bool] = None,
+        default_member_permissions: Optional[Permissions] = None,
     ):
-        payload = {}
-        if name:
-            payload["name"] = name
-        if description:
-            payload["description"] = description
+        payload: Dict[str, Optional[Union[List[discord_typings.ApplicationCommandOptionData], str, int]]] = {
+            "name": name,
+            "description": description,
+        }
         if options:
             payload["options"] = [option.to_dict() for option in options]
-        if default_permissions:
-            payload["default_permissions"] = default_permissions
+        if default_member_permissions:
+            payload["default_member_permissions"] = default_member_permissions.value if isinstance(default_member_permissions, Permissions) else default_member_permissions
 
         await self.client.http.patch(
             f"/applications/{self.id}/commands/{command_id}", json=payload
         )
 
-    async def delete_global_app_command(self, command_id: str):
+    async def delete_global_application_command(self, command_id: str):
         await self.client.http.delete(f"/applications/{self.id}/commands/{command_id}")
 
-    async def bulk_overwrite_global_app_commands(self, commands: List[Dict]):
+    async def bulk_overwrite_global_application_commands(self, commands: List[Dict]):
         await self.client.http.put(f"/applications/{self.id}/commands", json=commands)
 
-    async def fetch_guild_app_commands(self, guild_id: str):
+    async def fetch_guild_application_commands(self, guild_id: str):
         response = await self.client.http.get(
             f"/applications/{self.id}/guilds/{guild_id}/commands"
         )
         return [ApplicationCommand(command) for command in await response.json()]
 
-    async def create_guild_app_command(
+    async def create_guild_application_command(
         self,
         guild_id: str,
         *,
         name: str,
         description: str,
         options=None,
-        default_permission: Optional[bool] = False,
-        command_type: Optional[int] = 1,
+        default_member_permission: Optional[Permissions] = None,
+        command_type: discord_typings.ApplicationCommandTypes = 1,
     ):
         if options is None:
             options = []
 
-        payload = {
+        payload: discord_typings.ApplicationCommandPayload = {
             "name": name,
             "description": description,
-            "default_permissions": default_permission,
         }
+
+        if default_member_permission:
+            payload["default_member_permissions"] = str(default_member_permission.value) if isinstance(default_member_permission, Permissions) else default_member_permission
 
         if command_type not in range(1, 4):
             raise InvalidApplicationCommandType("Command type must be 1, 2, or 3.")
@@ -164,7 +170,8 @@ class ClientApplication(Application):
                     ChannelOption,
                     RoleOption,
                     MentionableOption,
-                    NumberOption.AttachmentOption,
+                    NumberOption,
+                    AttachmentOption
                 ),
             ):
                 raise InvalidApplicationCommandOptionType(
@@ -193,17 +200,17 @@ class ClientApplication(Application):
         name: Optional[str] = None,
         description: Optional[str] = None,
         options: Optional[List[AnyOption]] = None,
-        default_permissions: Optional[bool] = None,
+        default_member_permissions: Optional[Permissions] = None,
     ):
-        payload = {}
+        payload: Dict[str, Optional[Union[List[discord_typings.ApplicationCommandOptionData], str, int]]]  = {}
         if name:
             payload["name"] = name
         if description:
             payload["description"] = description
         if options:
             payload["options"] = [option.to_dict() for option in options]
-        if default_permissions:
-            payload["default_permissions"] = default_permissions
+        if default_member_permissions:
+            payload["default_member_permissions"] = str(default_member_permissions.value) if isinstance(default_member_permissions, Permissions) else default_member_permissions
 
         await self.client.http.patch(
             f"/applications/{self.id}/guilds/{guild_id}/commands/{command_id}",

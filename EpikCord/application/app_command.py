@@ -37,8 +37,10 @@ class ApplicationCommand:
         self.options: List[AnyOption] = [
             conversion_type[option["type"]] for option in data["options"]  # type: ignore
         ]
-        self.default_member_permissions: Permissions = Permissions(
-            data["default_member_permissions"]
+        self.default_member_permissions: Optional[Permissions] = (
+            Permissions(int(data["default_member_permissions"]))  # type: ignore
+            if data.get("default_member_permissions")
+            else None
         )
         self.version: int = int(data["version"])
         self.name_localizations: Optional[List[Localization]] = [Localization(Locale(k), v) for (k, v) in data["name_localizations"].items()] if data.get("name_localizations") else None  # type: ignore
@@ -60,6 +62,13 @@ class ApplicationCommandPermission:
             data["type"]
         )
         self.permission: bool = data["permission"]
+
+    def to_dict(self) -> discord_typings.ApplicationCommandPermissionsData:
+        return {
+            "id": self.id,
+            "type": self.type.value,
+            "permission": self.permission,
+        }
 
 
 class GuildApplicationCommandPermission:

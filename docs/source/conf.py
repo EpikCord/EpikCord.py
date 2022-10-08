@@ -15,8 +15,10 @@ import sys
 
 sys.path.append(os.path.abspath(".."))
 sys.path.append(os.path.abspath("../.."))
+sys.path.append(os.path.abspath("../../EpikCord"))
 
 from EpikCord import __version__
+
 # -- Project information -----------------------------------------------------
 
 project = "EpikCord.py"
@@ -24,7 +26,7 @@ copyright = "2022, EpikCord"
 author = "EpikCord"
 
 # The full version, including alpha/beta/rc tags
-os.system("pip install -e ...")
+os.system("pip install -e ../../../EpikCord")
 release = __version__
 
 # -- General configuration ---------------------------------------------------

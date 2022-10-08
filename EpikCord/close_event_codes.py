@@ -4,6 +4,8 @@ from enum import IntEnum
 class GatewayCECode(IntEnum):
     """Gateway close event code."""
 
+    AbnormalClosure = 1006
+
     UnknownError = 4000
 
     UnknownOpcode = 4001
