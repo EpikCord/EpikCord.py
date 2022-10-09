@@ -428,7 +428,7 @@ class WebsocketClient:
     async def _guild_member_update(self, data: discord_typings.GuildMemberUpdateData):
         from EpikCord import GuildMember
 
-        guild_member = GuildMember(self, data) # type: ignore
+        guild_member = GuildMember(self, data)  # type: ignore
         guild = self.guilds.get(data["guild_id"])
         if not guild:
             guild = await self.guilds.fetch(int(data["guild_id"]))
