@@ -133,7 +133,7 @@ class Embed:
         self.url: Optional[str] = url
         self.video: Optional[discord_typings.EmbedVideoData] = video
         self.timestamp: Optional[datetime.datetime] = timestamp or None
-        self.color: Optional[Colour] = color or colour # type: ignore
+        self.color: Optional[Colour] = color or colour  # type: ignore
         self.footer: Optional[discord_typings.EmbedFooterData] = footer
         self.image: Optional[discord_typings.EmbedImageData] = image
         self.thumbnail: Optional[discord_typings.EmbedThumbnailData] = thumbnail
@@ -152,9 +152,7 @@ class Embed:
         height: Optional[int] = None,
         width: Optional[int] = None,
     ):
-        config: discord_typings.EmbedThumbnailData = {
-            "url": url
-        }
+        config: discord_typings.EmbedThumbnailData = {"url": url}
         if proxy_url:
             config["proxy_url"] = proxy_url
         if height:
@@ -231,9 +229,7 @@ class Embed:
         icon_url: Optional[str] = None,
         proxy_icon_url: Optional[str] = None,
     ):
-        payload: discord_typings.EmbedAuthorData = {
-            "name": name
-        }
+        payload: discord_typings.EmbedAuthorData = {"name": name}
         if url:
             payload["url"] = url
         if icon_url:
@@ -277,8 +273,8 @@ class Embed:
     def from_dict(cls, data: discord_typings.EmbedData):
         payload = data
         payload.pop("type", None)
-        payload["timestamp"] = datetime.datetime.fromisoformat(data["timestamp"]) # type: ignore
-        return cls(**payload) # type: ignore
+        payload["timestamp"] = datetime.datetime.fromisoformat(data["timestamp"])  # type: ignore
+        return cls(**payload)  # type: ignore
 
 
 class File:
@@ -379,7 +375,7 @@ class Message:
             self.author = WebhookUser(data["author"])
 
         if data.get("member"):
-            member_data = data["member"] # type: ignore
+            member_data = data["member"]  # type: ignore
             if data.get("author"):
                 member_data["user"] = data["author"]
             self.author = GuildMember(self, member_data)
@@ -400,7 +396,11 @@ class Message:
         self.mentions: Optional[List[User]] = [
             User(client, user) for user in data.get("mentions", [])
         ]
-        self.mention_roles: Optional[List[int]] = [int(r) for r in data["mention_roles"]] if data.get("mention_roles") else None
+        self.mention_roles: Optional[List[int]] = (
+            [int(r) for r in data["mention_roles"]]
+            if data.get("mention_roles")
+            else None
+        )
         self.mention_channels: Optional[List[MentionedChannel]] = [
             MentionedChannel(channel) for channel in data.get("mention_channels", [])
         ]
