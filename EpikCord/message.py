@@ -53,14 +53,14 @@ class AllowedMention:
 
 
 class MessageActivity:
-    def __init__(self, data: dict):
+    def __init__(self, data: discord_typings.MessageActivityData):
         self.type: int = data["type"]
         self.party_id: Optional[str] = data.get("party_id")
 
 
 class Attachment:
-    def __init__(self, data: dict):
-        self.id: str = data["id"]
+    def __init__(self, data: discord_typings.AttachmentData):
+        self.id: int = int(data["id"])
         self.file_name: str = data["filename"]
         self.description: Optional[str] = data.get("description")
         self.content_type: Optional[str] = data.get("content_type")
@@ -96,15 +96,15 @@ class Reaction:
 
     Attributes
     ----------
-    count : int
+    count: int
         The amount of times this reaction has been added to the Message.
-    me : bool
+    me: bool
         If the ClientUser has reacted to this Message with this Reaction.
-    emoji : PartialEmoji
+    emoji: PartialEmoji
         The partial emoji of this Reaction.
     """
 
-    def __init__(self, data: dict):
+    def __init__(self, data: discord_typings.MessageReactionData):
         self.count: int = data["count"]
         self.me: bool = data.get["me"]  # type: ignore
         self.emoji: PartialEmoji = PartialEmoji(data["emoji"])
@@ -116,32 +116,30 @@ class Embed:
         *,
         title: Optional[str] = None,
         description: Optional[str] = None,
-        color: Optional[Colour] = None,
-        video: Optional[dict] = None,
+        color: Optional[Union[Colour, int]] = None,
+        colour: Optional[Union[Colour, int]] = None,
+        video: Optional[discord_typings.EmbedVideoData] = None,
         timestamp: Optional[datetime.datetime] = None,
-        colour: Optional[Colour] = None,
         url: Optional[str] = None,
-        type: Optional[int] = None,
-        footer: Optional[dict] = None,
-        image: Optional[dict] = None,
-        thumbnail: Optional[dict] = None,
-        provider: Optional[dict] = None,
-        author: Optional[dict] = None,
-        fields: Optional[List[dict]] = None,
+        footer: Optional[discord_typings.EmbedFooterData] = None,
+        image: Optional[discord_typings.EmbedImageData] = None,
+        thumbnail: Optional[discord_typings.EmbedThumbnailData] = None,
+        provider: Optional[discord_typings.EmbedProviderData] = None,
+        author: Optional[discord_typings.EmbedAuthorData] = None,
+        fields: List[discord_typings.EmbedFieldData] = [],
     ):
-        self.type: Optional[int] = type
         self.title: Optional[str] = title
         self.description: Optional[str] = description
         self.url: Optional[str] = url
-        self.video: Optional[dict] = video
+        self.video: Optional[discord_typings.EmbedVideoData] = video
         self.timestamp: Optional[datetime.datetime] = timestamp or None
-        self.color: Optional[Colour] = color or colour
-        self.footer: Optional[Dict] = footer
-        self.image: Optional[Dict] = image
-        self.thumbnail: Optional[Dict] = thumbnail
-        self.provider: Optional[Dict] = provider
-        self.author: Optional[Dict] = author
-        self.fields: List[Dict] = fields or []
+        self.color: Optional[Colour] = color or colour # type: ignore
+        self.footer: Optional[discord_typings.EmbedFooterData] = footer
+        self.image: Optional[discord_typings.EmbedImageData] = image
+        self.thumbnail: Optional[discord_typings.EmbedThumbnailData] = thumbnail
+        self.provider: Optional[discord_typings.EmbedProviderData] = provider
+        self.author: Optional[discord_typings.EmbedAuthorData] = author
+        self.fields: List[discord_typings.EmbedFieldData] = fields
 
     def add_field(self, *, name: str, value: str, inline: bool = False):
         self.fields.append({"name": name, "value": value, "inline": inline})
@@ -149,12 +147,14 @@ class Embed:
     def set_thumbnail(
         self,
         *,
-        url: Optional[str] = None,
+        url: str,
         proxy_url: Optional[str] = None,
         height: Optional[int] = None,
         width: Optional[int] = None,
     ):
-        config: Dict[str, Union[int, str]] = {"url": url}  # type: ignore
+        config: discord_typings.EmbedThumbnailData = {
+            "url": url
+        }
         if proxy_url:
             config["proxy_url"] = proxy_url
         if height:
@@ -167,12 +167,12 @@ class Embed:
     def set_video(
         self,
         *,
-        url: Optional[str] = None,
+        url: str,
         proxy_url: Optional[str] = None,
         height: Optional[int] = None,
         width: Optional[int] = None,
     ):
-        config: Dict[str, Union[int, str]] = {"url": url}  # type: ignore
+        config: discord_typings.EmbedVideoData = {"url": url}
         if proxy_url:
             config["proxy_url"] = proxy_url
         if height:
@@ -185,12 +185,12 @@ class Embed:
     def set_image(
         self,
         *,
-        url: Optional[str] = None,
+        url: str,
         proxy_url: Optional[str] = None,
         height: Optional[int] = None,
         width: Optional[int] = None,
     ):
-        config: Dict[str, Union[int, str]] = {"url": url}  # type: ignore
+        config: discord_typings.EmbedImageData = {"url": url}
         if proxy_url:
             config["proxy_url"] = proxy_url
         if height:
@@ -201,23 +201,23 @@ class Embed:
         self.image = config
 
     def set_provider(self, *, name: Optional[str] = None, url: Optional[str] = None):
-        config = {}
-        if url:
-            config["url"] = url
+        config: discord_typings.EmbedProviderData = {}
         if name:
             config["name"] = name
+        if url:
+            config["url"] = url
         self.provider = config
 
     def set_footer(
         self,
         *,
-        text: Optional[str] = None,
+        text: str,
         icon_url: Optional[str] = None,
         proxy_icon_url: Optional[str] = None,
     ):
-        payload = {}
-        if text:
-            payload["text"] = text
+        payload: discord_typings.EmbedFooterData = {
+            "text": text,
+        }
         if icon_url:
             payload["icon_url"] = icon_url
         if proxy_icon_url:
@@ -226,14 +226,14 @@ class Embed:
 
     def set_author(
         self,
-        name: Optional[str] = None,
+        name: str,
         url: Optional[str] = None,
         icon_url: Optional[str] = None,
         proxy_icon_url: Optional[str] = None,
     ):
-        payload = {}
-        if name:
-            payload["name"] = name
+        payload: discord_typings.EmbedAuthorData = {
+            "name": name
+        }
         if url:
             payload["url"] = url
         if icon_url:
@@ -243,7 +243,12 @@ class Embed:
 
         self.author = payload
 
-    def set_fields(self, *, fields: List[dict]):
+    def set_fields(self, *, fields: List[discord_typings.EmbedFieldData]):
+        for field in fields:
+
+            if not field["name"] or not field["value"]:
+                raise ValueError("Field name and value are required")
+
         self.fields = fields
 
     def set_color(self, *, colour: Colour):
@@ -267,6 +272,13 @@ class Embed:
             for key, value in self.__dict__.items()
             if value is not None or key.startswith("_")
         }
+
+    @classmethod
+    def from_dict(cls, data: discord_typings.EmbedData):
+        payload = data
+        payload.pop("type", None)
+        payload["timestamp"] = datetime.datetime.fromisoformat(data["timestamp"]) # type: ignore
+        return cls(**payload) # type: ignore
 
 
 class File:
@@ -365,7 +377,7 @@ class Message:
             self.author = WebhookUser(data["author"])
 
         if data.get("member"):
-            member_data = data["member"]
+            member_data = data["member"] # type: ignore
             if data.get("author"):
                 member_data["user"] = data["author"]
             self.author = GuildMember(self, member_data)
@@ -386,12 +398,12 @@ class Message:
         self.mentions: Optional[List[User]] = [
             User(client, user) for user in data.get("mentions", [])
         ]
-        self.mention_roles: Optional[List[int]] = data.get("mention_roles")
+        self.mention_roles: Optional[List[int]] = [int(r) for r in data["mention_roles"]] if data.get("mention_roles") else None
         self.mention_channels: Optional[List[MentionedChannel]] = [
             MentionedChannel(channel) for channel in data.get("mention_channels", [])
         ]
         self.embeds: Optional[List[Embed]] = [
-            Embed(**embed) for embed in data.get("embeds", [])
+            Embed.from_dict(embed) for embed in data.get("embeds", [])
         ]
         self.reactions: Optional[List[Reaction]] = [
             Reaction(reaction) for reaction in data.get("reactions", [])
@@ -434,8 +446,8 @@ class Message:
             else None
         )
 
-        self.stickers: Optional[List[StickerItem]] = [
-            StickerItem(sticker) for sticker in data.get("stickers", [])
+        self.sticker_items: Optional[List[StickerItem]] = [
+            StickerItem(sticker) for sticker in data["sticker_items"]
         ] or None
 
         self.channel = client.channels.get(self.channel_id)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List, Optional, Union
 
 from EpikCord.flags import Permissions
 
@@ -39,7 +39,7 @@ class PartialUser:
 
 
 class PartialGuild:
-    def __init__(self, data: discord_typings.GuildData):
+    def __init__(self, data: Union[discord_typings.GuildData, discord_typings.PartialGuildData]):
         self.data = data
         self.id: int = int(data["id"])
         self.name: str = data["name"]
