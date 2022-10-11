@@ -39,7 +39,9 @@ class PartialUser:
 
 
 class PartialGuild:
-    def __init__(self, data: Union[discord_typings.GuildData, discord_typings.PartialGuildData]):
+    def __init__(
+        self, data: Union[discord_typings.GuildData, discord_typings.PartialGuildData]
+    ):
         self.data = data
         self.id: int = int(data["id"])
         self.name: str = data["name"]
