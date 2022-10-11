@@ -110,7 +110,7 @@ class HTTPClient:
         self.session = ClientSession(
             *args,
             **kwargs,
-            json_serialize=lambda x, *__, **___: json.dumps(x).decode("utf-8") # type: ignore
+            json_serialize=lambda x, *__, **___: json.dumps(x).decode("utf-8")  # type: ignore
             if _ORJSON
             else json.dumps(x),
             ws_response_class=GatewayWebsocket,
@@ -195,7 +195,7 @@ class HTTPClient:
             await asyncio.sleep(float(res.headers["X-RateLimit-Reset-After"]))
         if res.status == HTTPCodes.TOO_MANY_REQUESTS:
             time_to_sleep: float = (
-                body["retry_after"] # type: ignore
+                body["retry_after"]  # type: ignore
                 if body["retry_after"] > res.headers["X-RateLimit-Reset-After"]  # type: ignore
                 else res.headers["X-RateLimit-Reset-After"]
             )

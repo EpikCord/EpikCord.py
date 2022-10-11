@@ -34,9 +34,13 @@ class ApplicationCommand:
             10: NumberOption,
             11: AttachmentOption,
         }
-        self.options: Optional[List[AnyOption]] = [
-            conversion_type[option["type"]](**option) for option in data["options"] # type: ignore
-        ] if data.get("options") else None
+        self.options: Optional[List[AnyOption]] = (
+            [
+                conversion_type[option["type"]](**option) for option in data["options"]  # type: ignore
+            ]
+            if data.get("options")
+            else None
+        )
         self.default_member_permissions: Optional[Permissions] = (
             Permissions(int(data["default_member_permissions"]))  # type: ignore
             if data.get("default_member_permissions")

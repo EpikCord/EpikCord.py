@@ -1,7 +1,17 @@
 from __future__ import annotations
 
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Optional, Union, Type
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Coroutine,
+    Dict,
+    List,
+    Optional,
+    Type,
+    Union,
+)
 
 from ..flags import Intents
 from ..sticker import Sticker, StickerPack
@@ -39,7 +49,7 @@ class Client(WebsocketClient, CommandHandler):
         self.sections: List[Section] = []
 
     def load_section(self, section_class: Section):
-        section = section_class(self) # type: ignore
+        section = section_class(self)  # type: ignore
 
         for event in section._events.values():
             self.events[event.name] = event.callback
