@@ -42,7 +42,7 @@ class UnknownBucket:
     def __init__(self):
         self.event = asyncio.Event()
         self.event.set()
-        self.close_task: _FakeTask = _FakeTask()
+        self.close_task: Union[_FakeTask, asyncio.Task] = _FakeTask()
 
 
 class Bucket(UnknownBucket):
@@ -110,7 +110,7 @@ class HTTPClient:
         self.session = ClientSession(
             *args,
             **kwargs,
-            json_serialize=lambda x, *__, **___: json.dumps(x).decode("utf-8")  # type: ignore
+            json_serialize=lambda x, *__, **___: json.dumps(x).decode("utf-8") # type: ignore
             if _ORJSON
             else json.dumps(x),
             ws_response_class=GatewayWebsocket,
@@ -123,7 +123,7 @@ class HTTPClient:
         self.global_ratelimit.set()
         self.buckets: Dict[str, Bucket] = {}
 
-    async def request(  # type: ignore
+    async def request(
         self,
         method,
         url,
@@ -194,8 +194,8 @@ class HTTPClient:
 
             await asyncio.sleep(float(res.headers["X-RateLimit-Reset-After"]))
         if res.status == HTTPCodes.TOO_MANY_REQUESTS:
-            time_to_sleep: Union[float, int] = (
-                body["retry_after"]  # type: ignore
+            time_to_sleep: float = (
+                body["retry_after"] # type: ignore
                 if body["retry_after"] > res.headers["X-RateLimit-Reset-After"]  # type: ignore
                 else res.headers["X-RateLimit-Reset-After"]
             )
@@ -203,13 +203,13 @@ class HTTPClient:
             logger.critical(f"Rate limited. Reset in {time_to_sleep} seconds")
 
             if res.headers["X-RateLimit-Scope"] == "global":
-                await self.global_ratelimit.clear()  # type: ignore
+                self.global_ratelimit.clear()
 
             await bucket.event.clear()
 
             await asyncio.sleep(time_to_sleep)
 
-            self.global_ratelimit.set()  # type: ignore
+            self.global_ratelimit.set()
             bucket.event.set()
 
             return await self.request(method, url, *args, **kwargs, attempt=attempt + 1)
@@ -234,7 +234,7 @@ class HTTPClient:
 
         bucket.close_task.cancel()
 
-        bucket.close_task = asyncio.create_task(dispose())  # type: ignore
+        bucket.close_task = asyncio.create_task(dispose())
 
         return res
 
@@ -261,7 +261,7 @@ class HTTPClient:
         finally:
             logger.debug("".join(message))
 
-    def base(  # type: ignore
+    def base(
         self,
         method,
         url,

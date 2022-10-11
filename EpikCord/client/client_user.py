@@ -21,7 +21,7 @@ class ClientUser(User):
         super().__init__(client, data)
         if not self.bot:  # if they're a user account
             logger.critical(
-                "Self botting is against Discord ToS." " You can get banned. "
+                "Self botting is against Discord ToS. You can get banned. "
             )
             exit(1)
 

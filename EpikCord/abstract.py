@@ -355,13 +355,14 @@ class GuildChannel(BaseChannel):
             discord_typings.TextChannelData,
             discord_typings.CategoryChannelData,
             discord_typings.NewsChannelData,
+            discord_typings.ThreadChannelData,
+            discord_typings.ForumChannelData
         ],
     ):
         super().__init__(client, data)
         self.guild_id: int = int(data["guild_id"])
         self.guild = self.client.guilds.get(self.guild_id)
-        self.position: int = data["position"]
-        self.nsfw: bool = data["nsfw"]
+        self.position: Optional[int] = data["position"] if data.get("position") else None
         self.permission_overwrites: Optional[
             List[discord_typings.PermissionOverwriteData]
         ] = data.get("permission_overwrites")

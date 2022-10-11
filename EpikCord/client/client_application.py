@@ -53,9 +53,15 @@ class ClientApplication(Application):
         payload: discord_typings.ApplicationCommandPayload = {
             "name": name,
             "description": description,
-            "default_member_permissions": default_member_permissions,  # type: ignore
             "dm_permission": dm_permission,
         }
+
+        if default_member_permissions:
+            payload["default_member_permissions"] = (
+                str(default_member_permissions.value)
+                if isinstance(default_member_permissions, Permissions)
+                else default_member_permissions
+            )
 
         if command_type not in range(1, 4):
             raise InvalidApplicationCommandType("Command type must be 1, 2, or 3.")

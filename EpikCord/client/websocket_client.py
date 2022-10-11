@@ -141,7 +141,7 @@ class WebsocketClient:
             )
             return
 
-        await asyncio.sleep(self.heartbeat_interval)  # type: ignore
+        await asyncio.sleep(self.heartbeat_interval)
         await self.send_json(
             {
                 "op": GatewayOpcode.HEARTBEAT,
@@ -257,7 +257,7 @@ class WebsocketClient:
 
         if not check:
 
-            async def check(*_, **__):  # type: ignore
+            async def check(*_, **__):
                 return True
 
         self.wait_for_events[event_name.lower()].append((future, check))
@@ -389,8 +389,8 @@ class WebsocketClient:
         await self.dispatch("interaction_create", interaction)
 
     async def _channel_create(self, data: discord_typings.ChannelCreateData):
-        channel = self.utils.channel_from_type(data)  # type: ignore
-        self.channels.add_to_cache(channel.id, channel)  # type: ignore
+        channel = self.utils.channel_from_type(data)
+        self.channels.add_to_cache(channel.id, channel)
         await self.dispatch("channel_create", channel)
 
     async def _message_create(self, data: discord_typings.MessageCreateData):
@@ -449,10 +449,9 @@ class WebsocketClient:
 
         self.application = ClientApplication(self, application_data)
 
-        if not self.override_commands_on_ready:  # type: ignore
-            return
+        if self.override_commands_on_ready:  # type: ignore
+            await self.utils.override_commands()
 
-        await self.utils.override_commands()
         await self.dispatch("ready")
 
 
