@@ -27,8 +27,8 @@ class Modal:
 
 
 class ResolvedDataHandler:
-    def __init__(self, client, resolved_data: dict):
-        self.data: dict = resolved_data
+    def __init__(self, client, resolved_data: discord_typings.ResolvedInteractionDataData):
+        self.data: discord_typings.ResolvedInteractionDataData = resolved_data
         ...
 
 
