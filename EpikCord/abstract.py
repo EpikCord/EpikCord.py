@@ -362,9 +362,7 @@ class GuildChannel(BaseChannel):
         super().__init__(client, data)
         self.guild_id: int = int(data["guild_id"])
         self.guild = self.client.guilds.get(self.guild_id)
-        self.position: Optional[int] = (
-            data["position"] if data.get("position") else None
-        )
+        self.position: Optional[int] = data["position"] if data.get("position") else None  # type: ignore
         self.permission_overwrites: Optional[
             List[discord_typings.PermissionOverwriteData]
         ] = data.get("permission_overwrites")

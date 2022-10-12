@@ -31,7 +31,6 @@ class ResolvedDataHandler:
         self, client, resolved_data: discord_typings.ResolvedInteractionDataData
     ):
         self.data: discord_typings.ResolvedInteractionDataData = resolved_data
-        ...
 
 
 class BaseComponentInteraction(BaseInteraction):
@@ -181,7 +180,11 @@ class ApplicationCommandInteraction(BaseInteraction):
             if data.get("resolved")
             else None
         )
-        self.options: List[dict] | None = data["data"].get("options", [])
+        self.options: Optional[List[ReceivedOption]] = (
+            [ReceivedOption(option) for option in data["data"]["options"]]
+            if data["data"].get("options")
+            else None
+        )
 
 
 class UserCommandInteraction(ApplicationCommandInteraction):
