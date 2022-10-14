@@ -19,7 +19,7 @@ class User(Messageable):
         self.avatar: Optional[str] = data.get("avatar")
         self.bot: Optional[bool] = data.get("bot")
         self.system: Optional[bool] = data.get("system")
-        self.mfa_enabled: bool = data["mfa_enabled"]
+        self.mfa_enabled: Optional[bool] = data.get("mfa_enabled")
         self.banner: Optional[str] = data.get("banner")
         # * the user's banner color encoded as an integer representation of
         # * hexadecimal color code
