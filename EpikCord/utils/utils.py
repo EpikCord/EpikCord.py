@@ -115,7 +115,7 @@ class Utils:
 
         for guild_id, commands in command_sorter.items():
             if guild_id == "global":
-                await self.client.application.bulk_overwrite_global_app_commands(
+                await self.client.application.bulk_overwrite_global_application_commands(
                     commands
                 )
                 continue
