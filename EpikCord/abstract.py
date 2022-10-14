@@ -6,7 +6,7 @@ import struct
 from abc import abstractmethod
 from importlib.util import find_spec
 from logging import getLogger
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Union, TYPE_CHECKING
 
 from aiohttp import ClientWebSocketResponse
 
@@ -19,6 +19,8 @@ logger = getLogger("EpikCord.channels")
 
 _NACL = find_spec("nacl")
 
+if TYPE_CHECKING:
+    from .client import Client
 
 if _NACL:
     import nacl  # type: ignore
@@ -50,7 +52,7 @@ if TYPE_CHECKING:
 
 
 class TypingContextManager:
-    def __init__(self, client, channel_id):
+    def __init__(self, client: Client, channel_id):
         self.typing: Optional[asyncio.Task] = None
         self.client = client
         self.channel_id: str = channel_id
@@ -68,7 +70,7 @@ class TypingContextManager:
 
 
 class Messageable:
-    def __init__(self, client, channel_id: int):
+    def __init__(self, client: Client, channel_id: int):
         self.id: int = int(channel_id)
         self.client = client
 
@@ -156,7 +158,7 @@ class BaseCommand:
 
 
 class BaseChannel:
-    def __init__(self, client, data: discord_typings.ChannelData):
+    def __init__(self, client: Client, data: discord_typings.ChannelData):
         self.id: int = int(data["id"])
         self.client = client
         self.type: int = data["type"]
@@ -165,7 +167,7 @@ class BaseChannel:
 class Connectable:
     def __init__(
         self,
-        client,
+        client: Client,
         *,
         channel: VoiceChannel,
     ):
@@ -350,7 +352,7 @@ class Connectable:
 class GuildChannel(BaseChannel):
     def __init__(
         self,
-        client,
+        client: Client,
         data: Union[
             discord_typings.VoiceChannelData,
             discord_typings.TextChannelData,
@@ -446,7 +448,7 @@ class BaseComponent:
 
 
 class BaseInteraction:
-    def __init__(self, client, data):
+    def __init__(self, client: Client, data):
         from EpikCord import GuildMember, User
 
         self.id: int = int(data["id"])

@@ -212,7 +212,7 @@ class WebsocketClient:
 
     async def handle_event(self, event_name: str, data: Dict):
         if hasattr(self, f"_{event_name}"):
-            await getattr(self, f"_{event_name}")(data["d"])
+            await getattr(self, f"_{event_name}")(data)
 
         for wait_for_callback in self.wait_for_events[event_name]:
 

@@ -4,9 +4,7 @@ import re
 from base64 import b64encode
 from collections import defaultdict
 from logging import getLogger
-from typing import Callable, Optional, TypeVar, Union
-
-import discord_typings
+from typing import Callable, Optional, TypeVar, Union, TYPE_CHECKING
 
 from ..channels import *
 from ..components import *
@@ -19,6 +17,10 @@ from ..interactions import (
     SelectMenuInteraction,
 )
 from ..thread import Thread
+
+if TYPE_CHECKING:
+    import discord_typings
+    from ..client import Client
 
 logger = getLogger(__name__)
 T = TypeVar("T")
@@ -46,8 +48,8 @@ class Utils:
         13: GuildStageChannel,
     }
 
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, client: Client):
+        self.client: Client = client
         self._MARKDOWN_ESCAPE_SUBREGEX = "|".join(
             r"\{0}(?=([\s\S]*((?<!\{0})\{0})))".format(c)
             for c in ("*", "`", "_", "~", "|")
@@ -175,7 +177,7 @@ class Utils:
         interaction_types = {
             2: ApplicationCommandInteraction,
             3: lambda client, data: SelectMenuInteraction(client, data)
-            if data["data"]["values"]
+            if data["data"].get("values")
             else ButtonInteraction(client, data),
             4: AutoCompleteInteraction,
             5: ModalSubmitInteraction,

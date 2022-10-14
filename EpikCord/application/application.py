@@ -8,6 +8,7 @@ from .team import Team
 
 if TYPE_CHECKING:
     import discord_typings
+    from ..client import Client
 
 
 def _filter_values(dictionary: dict) -> dict:
@@ -53,7 +54,7 @@ class Application:
 
 
 class IntegrationApplication:
-    def __init__(self, client, data: discord_typings.IntegrationApplicationData):
+    def __init__(self, client: Client, data: discord_typings.IntegrationApplicationData):
         self.id: int = int(data["id"])
         self.name: str = data["name"]
         self.icon: Optional[str] = data.get("icon")

@@ -15,8 +15,8 @@ if TYPE_CHECKING:
 
 
 class Connection:
-    def __init__(self, client: UserClient, data: dict):
-        self.id: str = data["id"]
+    def __init__(self, client: UserClient, data: discord_typings.ConnectionData):
+        self.id: int = int(data["id"])
         self.client = client
         self.name: str = data["name"]
         self.type: str = data["type"]

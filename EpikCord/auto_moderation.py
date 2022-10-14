@@ -1,6 +1,7 @@
-from typing import Dict, List, Optional, TypedDict, Union
+from __future__ import annotations
 
-import discord_typings
+from typing import Dict, List, Optional, TypedDict, Union, TYPE_CHECKING
+
 from typing_extensions import NotRequired
 
 from .type_enums import (
@@ -10,13 +11,15 @@ from .type_enums import (
     AutoModTriggerType,
 )
 
+if TYPE_CHECKING:
+    import discord_typings
 
-class AutoModTriggerMetaData:
-    def __init__(self, data: dict):
-        self.keyword_filter: List[str] = data["keyword_filter"]
-        self.presets: List[AutoModKeywordPresetType] = [
+class AutoModTriggerMetadata:
+    def __init__(self, data: discord_typings.AutoModerationTriggerMetadataData):
+        self.keyword_filter: Optional[List[str]] = data["keyword_filter"] if data.get("keyword_filter") else None
+        self.presets: Optional[List[AutoModKeywordPresetType]] = [
             AutoModKeywordPresetType(x) for x in data["presets"]
-        ]
+        ] if data.get("presets") else None
 
     def to_dict(self):
         return {
@@ -26,7 +29,7 @@ class AutoModTriggerMetaData:
 
 
 class AutoModActionMetaData:
-    def __init__(self, data: dict):
+    def __init__(self, data: discord_typings.AutoModerationAction):
         self.channel_id: int = int(data["channel_id"])
         self.duration_seconds: int = data["duration_seconds"]
 
@@ -68,8 +71,8 @@ class AutoModRule:
         self.creator_id: str = data["creator_id"]
         self.event_type = AutoModEventType(data["event_type"])
         self.trigger_type = AutoModTriggerType(data["trigger_type"])
-        self.trigger_metadata: List[AutoModTriggerMetaData] = [
-            AutoModTriggerMetaData(data) for data in data["trigger_metadata"]
+        self.trigger_metadata: List[AutoModTriggerMetadata] = [
+            AutoModTriggerMetadata(data) for data in data["trigger_metadata"]
         ]
         self.actions: List[AutoModAction] = [
             AutoModAction(data) for data in data["actions"]
@@ -83,7 +86,7 @@ class AutoModRule:
         *,
         name: Optional[str] = None,
         event_type: Optional[discord_typings.AutoModerationEventTypes] = None,
-        trigger_metadata: Optional[AutoModTriggerMetaData] = None,
+        trigger_metadata: Optional[AutoModTriggerMetadata] = None,
         actions: Optional[List[AutoModAction]] = None,
         enabled: Optional[bool] = None,
         exempt_roles: Optional[List[int]] = None,
