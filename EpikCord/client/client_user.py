@@ -15,9 +15,7 @@ logger = getLogger(__name__)
 
 
 class ClientUser(User):
-    def __init__(
-        self, client: WebsocketClient, data: discord_typings.UserData
-    ):
+    def __init__(self, client: WebsocketClient, data: discord_typings.UserData):
         super().__init__(client, data)
         if not self.bot:  # if they're a user account
             logger.critical("Self botting is against Discord ToS. You can get banned. ")

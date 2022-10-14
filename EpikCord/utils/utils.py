@@ -6,7 +6,7 @@ import re
 from base64 import b64encode
 from collections import defaultdict
 from logging import getLogger
-from typing import Callable, Optional, TypeVar, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, Optional, TypeVar, Union
 
 from ..channels import *
 from ..components import *
@@ -22,6 +22,7 @@ from ..thread import Thread
 
 if TYPE_CHECKING:
     import discord_typings
+
     from ..client import WebsocketClient
 
 logger = getLogger(__name__)
