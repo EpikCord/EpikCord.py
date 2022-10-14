@@ -28,8 +28,8 @@ class User(Messageable):
         self.verified: bool = data["verified"]
         self.email: Optional[str] = data.get("email")  # type: ignore
         self.flags: int = data["flags"]
-        self.premium_type: int = data["premium_type"]
-        self.public_flags: int = data["public_flags"]
+        self.premium_type: Optional[int] = data.get("premium_type")
+        self.public_flags: Optional[int] = data.get("public_flags")
 
     def to_dict(self) -> discord_typings.UserData:
         return self.data
