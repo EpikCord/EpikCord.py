@@ -6,7 +6,7 @@ import re
 from base64 import b64encode
 from collections import defaultdict
 from logging import getLogger
-from typing import TYPE_CHECKING, Callable, Optional, TypeVar, Union
+from typing import Callable, Optional, TypeVar, Union, TYPE_CHECKING
 
 from ..channels import *
 from ..components import *
@@ -22,7 +22,6 @@ from ..thread import Thread
 
 if TYPE_CHECKING:
     import discord_typings
-
     from ..client import Client
 
 logger = getLogger(__name__)
@@ -86,7 +85,7 @@ class Utils:
             if command_payload["type"] == 1:
                 command_payload["description"] = command.description
                 command_payload["options"] = [
-                    option.to_dict() for option in getattr(command, "options", [])
+                    option.to_dict() for option in command.options
                 ]
 
                 if command.name_localizations:
@@ -103,8 +102,9 @@ class Utils:
                             description_localization
                         ] = description_localization.to_dict()
 
-            for guild_id in command.guild_ids or []:
-                command_sorter[guild_id].append(command_payload)
+            if command.guild_ids:
+                for guild_id in command.guild_ids:
+                    command_sorter[guild_id].append(command_payload)
             else:
                 command_sorter["global"].append(command_payload)
 
@@ -137,7 +137,7 @@ class Utils:
         raise InvalidArgumentType("Unsupported image type given")
 
     @staticmethod
-    def _bytes_to_base64_data(data: bytes) -> str:
+    def bytes_to_base64_data(data: bytes) -> str:
         fmt = "data:{mime};base64,{data}"
         mime = Utils.get_mime_type_for_image(data)
         b64 = b64encode(data).decode("ascii")
