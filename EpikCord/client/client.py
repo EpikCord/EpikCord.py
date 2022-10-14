@@ -34,7 +34,6 @@ class Client(WebsocketClient, CommandHandler):
         token: str,
         intents: Union[Intents, int] = 0,
         *,
-        overwrite_commands_on_ready: bool = False,
         discord_endpoint: str = "https://discord.com/api/v10",
         presence: Optional[Presence] = None,
     ):
@@ -42,7 +41,6 @@ class Client(WebsocketClient, CommandHandler):
         CommandHandler.__init__(self)
         from EpikCord import Utils
 
-        self.overwrite_commands_on_ready: bool = overwrite_commands_on_ready or False
         self._components: Dict[str, Callback] = {}
         self.utils = Utils(self)
 
