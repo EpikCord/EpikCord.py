@@ -24,11 +24,12 @@ if TYPE_CHECKING:
 class ClientApplication(Application):
     def __init__(
         self,
-        client: Union[Client, WebsocketClient],
+        client: WebsocketClient,
         data: discord_typings.ApplicationData,
     ):
         super().__init__(data)
         self.client = client
+        self.commands: List[ApplicationCommand] = []
 
     async def fetch(self):
         response = await self.client.http.get("oauth2/applications/@me")
@@ -43,7 +44,7 @@ class ClientApplication(Application):
             f"/applications/{self.id}/commands?with_localizations={with_localisation}"
         )
         payload = [ApplicationCommand(command) for command in await response.json()]
-        self.client.application_commands = payload
+        self.commands = payload
         return payload
 
     async def create_global_application_command(

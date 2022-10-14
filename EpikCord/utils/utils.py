@@ -22,7 +22,7 @@ from ..thread import Thread
 
 if TYPE_CHECKING:
     import discord_typings
-    from ..client import Client
+    from ..client import WebsocketClient
 
 logger = getLogger(__name__)
 T = TypeVar("T")
@@ -50,8 +50,8 @@ class Utils:
         13: GuildStageChannel,
     }
 
-    def __init__(self, client: Client):
-        self.client: Client = client
+    def __init__(self, client: WebsocketClient):
+        self.client: WebsocketClient = client
         self._MARKDOWN_ESCAPE_SUBREGEX = "|".join(
             r"\{0}(?=([\s\S]*((?<!\{0})\{0})))".format(c)
             for c in ("*", "`", "_", "~", "|")

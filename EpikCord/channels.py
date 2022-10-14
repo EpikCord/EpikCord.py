@@ -60,7 +60,7 @@ class GuildTextChannel(GuildChannel, Messageable):
             }
         )
 
-        headers = self.client.http.headers.copy()
+        headers = self.client.http.session.headers.copy()
 
         if reason:
             headers["X-Audit-Log-Reason"] = reason
@@ -72,14 +72,14 @@ class GuildTextChannel(GuildChannel, Messageable):
             channel_id=self.id,
         )
         thread = Thread(self.client, await response.json())
-        self.client.guilds[self.guild_id].channels.append(thread)
+        self.client.guilds.cache[self.guild_id].channels.append(thread)
 
         return thread
 
     async def bulk_delete(self, message_ids: List[str], reason: Optional[str]) -> None:
 
         if reason:
-            headers = self.client.http.headers.copy()
+            headers = self.client.http.session.headers.copy()
             headers["X-Audit-Log-Reason"] = reason
 
         response = await self.client.http.post(

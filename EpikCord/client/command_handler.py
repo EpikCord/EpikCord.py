@@ -4,6 +4,7 @@ from inspect import iscoroutinefunction
 from logging import getLogger
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
+from ..application import ApplicationCommand
 from ..localizations import *
 from ..options import AnyOption, ReceivedOption
 
@@ -20,6 +21,7 @@ class CommandHandler:
         self.commands: Dict[
             str, Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]
         ] = {}
+        self.application_commands: Dict[str, ApplicationCommand]
 
     def command(
         self,

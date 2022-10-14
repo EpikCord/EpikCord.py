@@ -379,7 +379,7 @@ class GuildChannel(BaseChannel):
         self.name: str = data["name"]
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
-        headers = self.client.http.headers.copy()
+        headers = self.client.http.session.headers.copy()
 
         if reason:
             headers["reason"] = reason

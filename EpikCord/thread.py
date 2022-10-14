@@ -108,8 +108,9 @@ class Thread(Messageable):
 
     async def bulk_delete(self, message_ids: List[str], reason: Optional[str]) -> None:
 
+        headers = self.client.http.session.headers.copy()
+        
         if reason:
-            headers = self.client.http.headers.copy()
             headers["X-Audit-Log-Reason"] = reason
 
         response = await self.client.http.post(

@@ -5,7 +5,7 @@ from typing import Any, Dict, Iterator, Optional, Union
 
 class CacheManager:
     def __init__(self):
-        self.cache = {}
+        self.cache: Dict[Any, Any] = {}
 
     def add_to_cache(self, key: Union[int, str], value: Any):
         self.cache[key] = value
