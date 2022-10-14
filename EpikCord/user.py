@@ -25,9 +25,9 @@ class User(Messageable):
         # * hexadecimal color code
         self.accent_color: Optional[int] = data.get("accent_color")
         self.locale: Optional[str] = data.get("locale")
-        self.verified: bool = data["verified"]
+        self.verified: Optional[bool] = data.get("verified")
         self.email: Optional[str] = data.get("email")  # type: ignore
-        self.flags: int = data["flags"]
+        self.flags: Optional[int] = data.get("flags")
         self.premium_type: Optional[int] = data.get("premium_type")
         self.public_flags: Optional[int] = data.get("public_flags")
 
