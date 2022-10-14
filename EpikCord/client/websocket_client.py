@@ -449,8 +449,6 @@ class WebsocketClient:
 
         self.application = ClientApplication(self, application_data)
 
-        if self.override_commands_on_ready:  # type: ignore
-            await self.utils.override_commands()
 
         await self.dispatch("ready")
 

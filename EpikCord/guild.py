@@ -124,6 +124,7 @@ class GuildPreview:
 
 class Guild:
     def __init__(self, client, data: discord_typings.GuildCreateData):
+        from .flags import SystemChannelFlags
         self.client = client
         self.data = data
         self.id: int = int(data["id"])
