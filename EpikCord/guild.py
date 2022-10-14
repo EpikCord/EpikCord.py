@@ -128,7 +128,6 @@ class Guild:
 
         self.client = client
         self.data = data
-        print(f"Data is of type {type(data)}")
         self.id: int = int(data["id"])
         self.name: str = data["name"]
         self.icon: Optional[str] = data.get("icon")
@@ -442,8 +441,8 @@ class Guild:
 
 class RoleTags:
     def __init__(self, data: discord_typings.RoleTagsData):
-        self.bot_id: Optional[int] = int(data.get("bot_id"))  # type: ignore
-        self.integration_id: Optional[int] = int(data.get("integration_id"))  # type: ignore
+        self.bot_id: Optional[int] = int(data["bot_id"]) if data.get("bot_id" ) else None
+        self.integration_id: Optional[int] = int(data["integration_id"]) if data.get("integration_id") else None
         self.premium_subscriber: bool = bool(data.get("premium_subscriber"))
 
 
