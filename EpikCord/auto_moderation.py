@@ -75,7 +75,11 @@ class AutoModRule:
         self.name: str = data["name"]
         self.creator_id: int = int(data["creator_id"])
         self.event_type = AutoModEventType(data["event_type"])
-        self.trigger_type: Optional[AutoModTriggerType] = AutoModTriggerType(data["trigger_type"]) if data.get("trigger_type") else None
+        self.trigger_type: Optional[AutoModTriggerType] = (
+            AutoModTriggerType(data["trigger_type"])
+            if data.get("trigger_type")
+            else None
+        )
         self.trigger_metadata: List[AutoModTriggerMetadata] = [
             AutoModTriggerMetadata(d) for d in data["trigger_metadata"]
         ]
@@ -83,8 +87,16 @@ class AutoModRule:
             AutoModAction(data) for data in data["actions"]
         ]
         self.enabled: bool = data["enabled"]
-        self.except_roles_ids: List[int] = [int(role) for role in data["except_roles"]] if data.get("except_roles") else []
-        self.except_channels_ids: List[int] = [int(channel) for channel in data["except_channels"]] if data.get("except_channels") else []
+        self.except_roles_ids: List[int] = (
+            [int(role) for role in data["except_roles"]]
+            if data.get("except_roles")
+            else []
+        )
+        self.except_channels_ids: List[int] = (
+            [int(channel) for channel in data["except_channels"]]
+            if data.get("except_channels")
+            else []
+        )
 
     async def edit(
         self,
