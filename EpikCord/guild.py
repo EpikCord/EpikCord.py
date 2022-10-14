@@ -128,6 +128,7 @@ class Guild:
 
         self.client = client
         self.data = data
+        print(f"Data is of type {type(data)}")
         self.id: int = int(data["id"])
         self.name: str = data["name"]
         self.icon: Optional[str] = data.get("icon")
