@@ -64,7 +64,7 @@ class TypingContextManager:
         self.typing = asyncio.create_task(self.start_typing())
 
     async def __aexit__(self):
-        self.typing.cancel() # type: ignore
+        self.typing.cancel()  # type: ignore
 
 
 class Messageable:
@@ -234,12 +234,12 @@ class Connectable:
         await self._connect_ws()
 
     async def _connect_ws(self):
-        wss = "" if self.endpoint.startswith("wss://") else "wss://" # type: ignore
+        wss = "" if self.endpoint.startswith("wss://") else "wss://"  # type: ignore
         self.ws = await self.client.http.ws_connect(f"{wss}{self.endpoint}?v=4")
         return await self.handle_events()
 
     async def handle_events(self):
-        async for event in self.ws: # type: ignore
+        async for event in self.ws:  # type: ignore
             event = event.json()
             if event["op"] == VoiceOpcode.HELLO:
                 await self.handle_hello(event["d"])
