@@ -45,7 +45,9 @@ class PartialGuild:
         self.data = data
         self.id: int = int(data["id"])
         self.name: str = data["name"]
-        self.permissions: Permissions = Permissions(int(data["permissions"])) if data.get("permissions") else None
+        self.permissions: Permissions = (
+            Permissions(int(data["permissions"])) if data.get("permissions") else None
+        )
         self.features: Optional[List[discord_typings.GuildFeaturesData]] = data.get(
             "features"
         )
