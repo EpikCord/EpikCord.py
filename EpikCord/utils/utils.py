@@ -45,8 +45,8 @@ class Utils:
         1: DMChannel,
         2: VoiceChannel,
         4: CategoryChannel,
-        5: GuildNewsChannel,
-        10: GuildNewsThread,
+        5: GuildAnnouncementChannel,
+        10: GuildAnnouncementThread,
         11: Thread,
         13: GuildStageChannel,
     }

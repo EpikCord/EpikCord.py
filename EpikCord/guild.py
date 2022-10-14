@@ -467,7 +467,7 @@ class Role:
         self.tags: Optional[RoleTags] = (
             RoleTags(data["tags"]) if data.get("tags") else None
         )
-        self.guild: Guild = data["guild"] if data.get("guild") else None
+        self.guild: Guild = data["guild"] if data.get("guild") else None # type: ignore
 
 
 class EditEmojiData(TypedDict):

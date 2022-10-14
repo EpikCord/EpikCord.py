@@ -52,9 +52,6 @@ class CacheManager:
     def __iter__(self) -> Iterator:
         return iter(self.cache)
 
-    def __next__(self) -> Any:
-        return next(self.cache)
-
     def __eq__(self, other: CacheManager) -> bool:  # type: ignore
         return self.cache == other.cache
 
