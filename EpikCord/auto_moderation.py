@@ -48,7 +48,7 @@ class AutoModActionMetadata:
 class AutoModAction:
     def __init__(self, data: discord_typings.AutoModerationActionData):
         self.type: int = AutoModActionType(data["type"])
-        self.metadata = AutoModActionMetaData(data["metadata"])
+        self.metadata = AutoModActionMetadata(data["metadata"])
 
     def to_dict(self):
         return {
