@@ -235,7 +235,7 @@ class Guild:
 
         self.presences: Optional[List[Presence]] = (
             [
-                Presence(activity=p["activities"][-1], status=Status(p["status"])) for p in data["presences"]  # type: ignore
+                Presence(activity=p["activities"], status=Status(p["status"])) for p in data["presences"]  # type: ignore
             ]
             if data.get("presences")
             else None
