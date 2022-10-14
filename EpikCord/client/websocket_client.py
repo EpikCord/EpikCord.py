@@ -449,7 +449,6 @@ class WebsocketClient:
 
         self.application = ClientApplication(self, application_data)
 
-
         await self.dispatch("ready")
 
 
