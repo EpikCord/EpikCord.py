@@ -50,7 +50,7 @@ if TYPE_CHECKING:
 
 class TypingContextManager:
     def __init__(self, client, channel_id):
-        self.typing: asyncio.Task = None
+        self.typing: Optional[asyncio.Task] = None
         self.client = client
         self.channel_id: str = channel_id
 
@@ -63,7 +63,7 @@ class TypingContextManager:
         self.typing = asyncio.create_task(self.start_typing())
 
     async def __aexit__(self):
-        self.typing.cancel()
+        self.typing.cancel() # type: ignore
 
 
 class Messageable:
@@ -233,12 +233,12 @@ class Connectable:
         await self._connect_ws()
 
     async def _connect_ws(self):
-        wss = "" if self.endpoint.startswith("wss://") else "wss://"
+        wss = "" if self.endpoint.startswith("wss://") else "wss://" # type: ignore
         self.ws = await self.client.http.ws_connect(f"{wss}{self.endpoint}?v=4")
         return await self.handle_events()
 
     async def handle_events(self):
-        async for event in self.ws:
+        async for event in self.ws: # type: ignore
             event = event.json()
             if event["op"] == VoiceOpcode.HELLO:
                 await self.handle_hello(event["d"])
@@ -360,7 +360,7 @@ class GuildChannel(BaseChannel):
         ],
     ):
         super().__init__(client, data)
-        self.guild_id: int = int(data["guild_id"])
+        self.guild_id: Optional[int] = int(data["guild_id"]) if data.get("guild_id") else None
         self.guild = self.client.guilds.get(self.guild_id)
         self.position: Optional[int] = data["position"] if data.get("position") else None  # type: ignore
         self.permission_overwrites: Optional[
@@ -370,8 +370,8 @@ class GuildChannel(BaseChannel):
         self.name: str = data["name"]
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
-        if reason:
-            headers = self.client.http.headers.copy()
+        headers = self.client.http.headers.copy()
+
         if reason:
             headers["reason"] = reason
 

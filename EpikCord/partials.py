@@ -16,12 +16,12 @@ class PartialEmoji:
         self.animated: Optional[bool] = data.get("animated")
 
     def to_dict(self):
-        payload = {
+        payload: discord_typings.EmojiData = {
             "id": self.id,
             "name": self.name,
         }
 
-        if self.animated in (True, False):
+        if self.animated is not None:
             payload["animated"] = self.animated
 
         return payload
@@ -45,7 +45,7 @@ class PartialGuild:
         self.data = data
         self.id: int = int(data["id"])
         self.name: str = data["name"]
-        self.permissions: Permissions = Permissions(int(data["permissions"]))
+        self.permissions: Permissions = Permissions(int(data["permissions"])) if data.get("permissions") else None
         self.features: Optional[List[discord_typings.GuildFeaturesData]] = data.get(
             "features"
         )
