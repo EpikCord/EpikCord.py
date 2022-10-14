@@ -17,10 +17,16 @@ from ..options import *
 
 if TYPE_CHECKING:
     import discord_typings
+
     from .client import Client, WebsocketClient
 
+
 class ClientApplication(Application):
-    def __init__(self, client: Union[Client, WebsocketClient], data: discord_typings.ApplicationData):
+    def __init__(
+        self,
+        client: Union[Client, WebsocketClient],
+        data: discord_typings.ApplicationData,
+    ):
         super().__init__(data)
         self.client = client
 

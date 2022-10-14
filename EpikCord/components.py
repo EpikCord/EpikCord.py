@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import List, Optional, Union, Tuple
+from typing import List, Optional, Tuple, Union
 
 from .abstract import BaseComponent
 from .exceptions import (
@@ -46,13 +46,23 @@ class SelectMenuOption:
 
         return settings
 
+
 class UserSelectMenu(BaseComponent):
-    def __init__(self, *, custom_id: str, placeholder: str, min_values: Optional[int] = None, max_values: Optional[int], disabled: bool = False):
+    def __init__(
+        self,
+        *,
+        custom_id: str,
+        placeholder: str,
+        min_values: Optional[int] = None,
+        max_values: Optional[int],
+        disabled: bool = False,
+    ):
         self.custom_id: str = custom_id
         self.placeholder: str = placeholder
         self.min_values: Optional[int] = min_values
         self.max_values: Optional[int] = max_values
         self.disabled: bool = disabled
+
 
 class SelectMenu(BaseComponent):
     def __init__(
@@ -61,7 +71,7 @@ class SelectMenu(BaseComponent):
         min_values: int = 1,
         max_values: int = 1,
         disabled: bool = False,
-        custom_id: str
+        custom_id: str,
     ):
         super().__init__(custom_id=custom_id)
         self.options: List[SelectMenuOption] = []
@@ -128,7 +138,7 @@ class TextInput(BaseComponent):
         max_length: int = 4000,
         required: bool = True,
         value: Optional[str] = None,
-        placeholder: Optional[str] = None
+        placeholder: Optional[str] = None,
     ):
         super().__init__(custom_id=custom_id)
         VALID_STYLES = {"Short": 1, "Paragraph": 2}
@@ -194,7 +204,7 @@ class Button(BaseComponent):
         emoji: Optional[Union[PartialEmoji, dict]] = None,
         url: Optional[str] = None,
         custom_id: str,
-        disabled: bool = False
+        disabled: bool = False,
     ):
         super().__init__(custom_id=custom_id)
         self.type: int = 2

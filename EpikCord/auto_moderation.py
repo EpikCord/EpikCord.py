@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional, TypedDict, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List, Optional, TypedDict, Union
 
 from typing_extensions import NotRequired
 
@@ -14,12 +14,17 @@ from .type_enums import (
 if TYPE_CHECKING:
     import discord_typings
 
+
 class AutoModTriggerMetadata:
     def __init__(self, data: discord_typings.AutoModerationTriggerMetadataData):
-        self.keyword_filter: Optional[List[str]] = data["keyword_filter"] if data.get("keyword_filter") else None
-        self.presets: Optional[List[AutoModKeywordPresetType]] = [
-            AutoModKeywordPresetType(x) for x in data["presets"]
-        ] if data.get("presets") else None
+        self.keyword_filter: Optional[List[str]] = (
+            data["keyword_filter"] if data.get("keyword_filter") else None
+        )
+        self.presets: Optional[List[AutoModKeywordPresetType]] = (
+            [AutoModKeywordPresetType(x) for x in data["presets"]]
+            if data.get("presets")
+            else None
+        )
 
     def to_dict(self):
         return {
