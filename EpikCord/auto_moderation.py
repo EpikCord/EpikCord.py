@@ -28,8 +28,8 @@ class AutoModTriggerMetadata:
         }
 
 
-class AutoModActionMetaData:
-    def __init__(self, data: discord_typings.AutoModerationAction):
+class AutoModActionMetadata:
+    def __init__(self, data: discord_typings.AutoModerationActionData):
         self.channel_id: int = int(data["channel_id"])
         self.duration_seconds: int = data["duration_seconds"]
 
@@ -41,7 +41,7 @@ class AutoModActionMetaData:
 
 
 class AutoModAction:
-    def __init__(self, data: dict):
+    def __init__(self, data: discord_typings.AutoModerationActionData):
         self.type: int = AutoModActionType(data["type"])
         self.metadata = AutoModActionMetaData(data["metadata"])
 
@@ -63,23 +63,23 @@ class AutoModRulePayload(TypedDict):
 
 
 class AutoModRule:
-    def __init__(self, client, data: dict):
+    def __init__(self, client, data: discord_typings.AutoModerationRuleData):
         self.client = client
-        self.id: str = data["id"]
-        self.guild_id: str = data["guild_id"]
+        self.id: int = int(data["id"])
+        self.guild_id: int = int(data["guild_id"])
         self.name: str = data["name"]
-        self.creator_id: str = data["creator_id"]
+        self.creator_id: int = int(data["creator_id"])
         self.event_type = AutoModEventType(data["event_type"])
-        self.trigger_type = AutoModTriggerType(data["trigger_type"])
+        self.trigger_type: Optional[AutoModTriggerType] = AutoModTriggerType(data["trigger_type"]) if data.get("trigger_type") else None
         self.trigger_metadata: List[AutoModTriggerMetadata] = [
-            AutoModTriggerMetadata(data) for data in data["trigger_metadata"]
+            AutoModTriggerMetadata(d) for d in data["trigger_metadata"]
         ]
         self.actions: List[AutoModAction] = [
             AutoModAction(data) for data in data["actions"]
         ]
         self.enabled: bool = data["enabled"]
-        self.except_roles_ids: List[str] = data["except_roles"]
-        self.except_channels_ids: List[str] = data["except_channels"]
+        self.except_roles_ids: List[int] = [int(role) for role in data["except_roles"]] if data.get("except_roles") else []
+        self.except_channels_ids: List[int] = [int(channel) for channel in data["except_channels"]] if data.get("except_channels") else []
 
     async def edit(
         self,
@@ -126,8 +126,8 @@ class AutoModRule:
 
 
 __all__ = (
-    "AutoModTriggerMetaData",
-    "AutoModActionMetaData",
+    "AutoModTriggerMetadata",
+    "AutoModActionMetadata",
     "AutoModAction",
     "AutoModRule",
 )
