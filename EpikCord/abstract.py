@@ -43,6 +43,7 @@ if TYPE_CHECKING:
         MessagePayload,
         Modal,
         VoiceChannel,
+        Overwrite
     )
 
     from .components import *
@@ -360,12 +361,13 @@ class GuildChannel(BaseChannel):
         ],
     ):
         super().__init__(client, data)
+        from .channels import Overwrite
         self.guild_id: Optional[int] = int(data["guild_id"]) if data.get("guild_id") else None
         self.guild = self.client.guilds.get(self.guild_id)
         self.position: Optional[int] = data["position"] if data.get("position") else None  # type: ignore
         self.permission_overwrites: Optional[
-            List[discord_typings.PermissionOverwriteData]
-        ] = data.get("permission_overwrites")
+            List[Overwrite]
+        ] = [Overwrite(overwrite) for overwrite in data["permissions"]] if data.get("permissions") else None # type: ignore
         self.parent_id: Optional[int] = int(data["parent_id"]) if data.get("parent_id") else None  # type: ignore
         self.name: str = data["name"]
 
