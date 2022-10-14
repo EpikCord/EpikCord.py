@@ -149,7 +149,9 @@ class GuildTextChannel(GuildChannel, Messageable):
 class GuildAnnouncementChannel(GuildTextChannel):
     def __init__(self, client, data: discord_typings.NewsChannelData):
         super().__init__(client, data)
-        self.default_auto_archive_duration: Optional[int] = data.get("default_auto_archive_duration")
+        self.default_auto_archive_duration: Optional[int] = data.get(
+            "default_auto_archive_duration"
+        )
 
     async def follow(self, webhook_channel_id: str):
         response = await self.client.http.post(
