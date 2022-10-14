@@ -450,7 +450,7 @@ class Message:
 
         self.sticker_items: Optional[List[StickerItem]] = [
             StickerItem(sticker) for sticker in data["sticker_items"]
-        ] or None
+        ] if data.get("sticker_items") else None
 
         self.channel = client.channels.get(self.channel_id)
         if not self.channel:  # Cache miss
