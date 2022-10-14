@@ -441,8 +441,10 @@ class Guild:
 
 class RoleTags:
     def __init__(self, data: discord_typings.RoleTagsData):
-        self.bot_id: Optional[int] = int(data["bot_id"]) if data.get("bot_id" ) else None
-        self.integration_id: Optional[int] = int(data["integration_id"]) if data.get("integration_id") else None
+        self.bot_id: Optional[int] = int(data["bot_id"]) if data.get("bot_id") else None
+        self.integration_id: Optional[int] = (
+            int(data["integration_id"]) if data.get("integration_id") else None
+        )
         self.premium_subscriber: bool = bool(data.get("premium_subscriber"))
 
 
