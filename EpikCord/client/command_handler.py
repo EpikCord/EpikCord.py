@@ -21,7 +21,6 @@ class CommandHandler:
         self.commands: Dict[
             str, Union[ClientSlashCommand, ClientUserCommand, ClientMessageCommand]
         ] = {}
-        self.application_commands: Dict[str, ApplicationCommand]
 
     def command(
         self,
