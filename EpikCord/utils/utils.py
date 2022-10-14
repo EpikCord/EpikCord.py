@@ -92,7 +92,8 @@ class Utils:
                 if command.name_localizations:
                     command_payload["name_localizations"] = {}
                     for name_localization in command.name_localizations:
-                        if not name_localization: return
+                        if not name_localization:
+                            return
                         command_payload["name_localizations"][
                             name_localization
                         ] = name_localization.to_dict()
@@ -100,7 +101,8 @@ class Utils:
                 if command.description_localizations:
                     command_payload["description_localizations"] = {}
                     for description_localization in command.description_localizations:
-                        if not description_localization: return
+                        if not description_localization:
+                            return
                         command_payload["description_localizations"][
                             description_localization
                         ] = description_localization.to_dict()
