@@ -146,10 +146,10 @@ class GuildTextChannel(GuildChannel, Messageable):
         return [Thread(self.client, data) for data in await response.json()]
 
 
-class GuildNewsChannel(GuildTextChannel):
+class GuildAnnouncementChannel(GuildTextChannel):
     def __init__(self, client, data: discord_typings.NewsChannelData):
         super().__init__(client, data)
-        self.default_auto_archive_duration: int = data["default_auto_archive_duration"]
+        self.default_auto_archive_duration: Optional[int] = data.get("default_auto_archive_duration")
 
     async def follow(self, webhook_channel_id: str):
         response = await self.client.http.post(
@@ -175,7 +175,7 @@ class CategoryChannel(GuildChannel):
         super().__init__(client, data)
 
 
-class GuildNewsThread(Thread, GuildNewsChannel):
+class GuildAnnouncementThread(Thread, GuildAnnouncementChannel):
     def __init__(self, client, data):
         super().__init__(client, data)
 
@@ -208,8 +208,8 @@ AnyChannel = Union[
     GuildTextChannel,
     VoiceChannel,
     CategoryChannel,
-    GuildNewsChannel,
-    GuildNewsThread,
+    GuildAnnouncementChannel,
+    GuildAnnouncementThread,
     Thread,
     GuildStageChannel,
     ForumChannel,
@@ -218,10 +218,10 @@ AnyChannel = Union[
 __all__ = (
     "Overwrite",
     "GuildTextChannel",
-    "GuildNewsChannel",
+    "GuildAnnouncementChannel",
     "DMChannel",
     "CategoryChannel",
-    "GuildNewsThread",
+    "GuildAnnouncementThread",
     "GuildStageChannel",
     "VoiceChannel",
     "ForumChannel",
