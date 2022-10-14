@@ -35,10 +35,10 @@ class GuildTextChannel(GuildChannel, Messageable):
     ):
         super().__init__(client, data)
         Messageable.__init__(self, client, self.id)
-        self.topic: Optional[str] = data.get("topic") # type: ignore
-        self.rate_limit_per_user: Optional[int] = data["rate_limit_per_user"] if data.get("rate_limit_per_user") else None # type: ignore
+        self.topic: Optional[str] = data.get("topic")  # type: ignore
+        self.rate_limit_per_user: Optional[int] = data["rate_limit_per_user"] if data.get("rate_limit_per_user") else None  # type: ignore
         self.last_message_id: Optional[int] = int(data["last_message_id"]) if data.get("last_message_id") else None  # type: ignore
-        self.default_auto_archive_duration: Optional[int] = data.get("default_auto_archive_duration") # type: ignore # MyPy being absolutely dumb.
+        self.default_auto_archive_duration: Optional[int] = data.get("default_auto_archive_duration")  # type: ignore # MyPy being absolutely dumb.
 
     async def start_thread(
         self,
@@ -191,7 +191,7 @@ class GuildStageChannel(BaseChannel):
         self.discoverable_disabled: bool = data["discoverable_disabled"]
 
 
-class VoiceChannel(GuildChannel, Messageable, Connectable): # type: ignore
+class VoiceChannel(GuildChannel, Messageable, Connectable):  # type: ignore
     def __init__(self, client, data: discord_typings.VoiceChannelData):
         super().__init__(client, data)
         self.bitrate: int = data["bitrate"]

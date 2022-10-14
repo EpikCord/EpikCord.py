@@ -6,7 +6,7 @@ import struct
 from abc import abstractmethod
 from importlib.util import find_spec
 from logging import getLogger
-from typing import TYPE_CHECKING, Dict, List, Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 from aiohttp import ClientWebSocketResponse
 
