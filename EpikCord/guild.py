@@ -567,7 +567,7 @@ class GuildWidget:
 
 
 class GuildScheduledEventEntityMetadata:
-    def __init__(self, data: discord_typings.GuildScheduledEventEntityMetadata):
+    def __init__(self, data: discord_typings.GuildScheduledEventEntityMetadataData):
         self.location: Optional[str] = data.get("location")
 
 

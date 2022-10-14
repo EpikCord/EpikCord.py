@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Tuple
 
 from .abstract import BaseComponent
 from .exceptions import (
@@ -17,6 +17,7 @@ class SelectMenuOption:
         self,
         label: str,
         value: str,
+        *,
         description: Optional[str] = None,
         emoji: Optional[PartialEmoji] = None,
         default: Optional[bool] = None,
@@ -45,6 +46,13 @@ class SelectMenuOption:
 
         return settings
 
+class UserSelectMenu(BaseComponent):
+    def __init__(self, *, custom_id: str, placeholder: str, min_values: Optional[int] = None, max_values: Optional[int], disabled: bool = False):
+        self.custom_id: str = custom_id
+        self.placeholder: str = placeholder
+        self.min_values: Optional[int] = min_values
+        self.max_values: Optional[int] = max_values
+        self.disabled: bool = disabled
 
 class SelectMenu(BaseComponent):
     def __init__(
@@ -73,6 +81,7 @@ class SelectMenu(BaseComponent):
         }
 
     def add_options(self, options: List[SelectMenuOption]):
+
         for option in options:
 
             if len(self.options) > 25:

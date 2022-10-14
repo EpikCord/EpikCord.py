@@ -423,7 +423,7 @@ class Message:
         )
         self.flags: Optional[int] = data.get("flags")
         self.referenced_message: Optional[Message] = (
-            Message(client, data["referenced_message"])
+            Message(client, data["referenced_message"]) # type: ignore # MyPy being dumb
             if data.get("referenced_message")
             else None
         )

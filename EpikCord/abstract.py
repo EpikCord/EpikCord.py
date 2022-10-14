@@ -69,7 +69,7 @@ class TypingContextManager:
 
 class Messageable:
     def __init__(self, client, channel_id: int):
-        self.id: int = channel_id
+        self.id: int = int(channel_id)
         self.client = client
 
     async def fetch_messages(
