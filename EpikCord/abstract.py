@@ -462,9 +462,7 @@ class BaseInteraction:
         self.client = client
         self.type: int = data["type"]
         self.application_id: int = int(data["application_id"])
-        self.interaction_data: Optional[InteractionDataData] = data.get(
-            "data"
-        )
+        self.interaction_data: Optional[InteractionDataData] = data.get("data")
         self.guild_id: Optional[str] = data.get("guild_id")
         self.channel_id: Optional[str] = data.get("channel_id")
         self.author: Optional[Union[User, GuildMember]] = (
