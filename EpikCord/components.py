@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from enum import IntEnum
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union, TYPE_CHECKING
 
 from .abstract import BaseComponent
 from .exceptions import (
@@ -11,6 +13,9 @@ from .exceptions import (
 )
 from .partials import PartialEmoji
 
+
+if TYPE_CHECKING:
+    import discord_typings
 
 class SelectMenuOption:
     def __init__(
@@ -57,12 +62,130 @@ class UserSelectMenu(BaseComponent):
         max_values: Optional[int],
         disabled: bool = False,
     ):
-        self.custom_id: str = custom_id
+        super().__init__(custom_id=custom_id)
         self.placeholder: str = placeholder
         self.min_values: Optional[int] = min_values
-        self.max_values: Optional[int] = max_values
         self.disabled: bool = disabled
+        self.max_values: Optional[int] = max_values
 
+    @property
+    def type(self) -> int:
+        return 5
+
+    def to_dict(self):
+        from .utils import Utils
+        settings = Utils.filter_values({
+            "type": self.type,
+            "custom_id": self.custom_id,
+            "disabled": self.disabled,
+            "placeholder": self.placeholder,
+            "min_values": self.min_values,
+            "max_values": self.max_values
+        })
+
+        return settings
+
+class RoleSelectMenu(BaseComponent):
+    def __init__(
+        self,
+        *,
+        custom_id: str,
+        placeholder: str,
+        min_values: Optional[int] = None,
+        max_values: Optional[int],
+        disabled: bool = False,
+    ):
+        super().__init__(custom_id=custom_id)
+        self.placeholder: str = placeholder
+        self.min_values: Optional[int] = min_values
+        self.disabled: bool = disabled
+        self.max_values: Optional[int] = max_values
+
+    @property
+    def type(self) -> int:
+        return 6
+
+    def to_dict(self):
+        from .utils import Utils
+        settings = Utils.filter_values({
+            "type": self.type,
+            "custom_id": self.custom_id,
+            "disabled": self.disabled,
+            "placeholder": self.placeholder,
+            "min_values": self.min_values,
+            "max_values": self.max_values
+        })
+
+        return settings
+
+class MentionableSelectMenu(BaseComponent):
+    def __init__(
+        self,
+        *,
+        custom_id: str,
+        placeholder: str,
+        min_values: Optional[int] = None,
+        max_values: Optional[int],
+        disabled: bool = False,
+    ):
+        super().__init__(custom_id=custom_id)
+        self.placeholder: str = placeholder
+        self.min_values: Optional[int] = min_values
+        self.disabled: bool = disabled
+        self.max_values: Optional[int] = max_values
+
+    @property
+    def type(self) -> int:
+        return 7
+
+    def to_dict(self):
+        from .utils import Utils
+        settings = Utils.filter_values({
+            "type": self.type,
+            "custom_id": self.custom_id,
+            "disabled": self.disabled,
+            "placeholder": self.placeholder,
+            "min_values": self.min_values,
+            "max_values": self.max_values
+        })
+
+        return settings
+
+class ChannelSelectMenu(BaseComponent):
+    def __init__(
+        self,
+        *,
+        custom_id: str,
+        placeholder: str,
+        min_values: Optional[int] = None,
+        max_values: Optional[int],
+        disabled: bool = False,
+        channel_types: Optional[List[discord_typings.ChannelTypes]] = None
+    ):
+        super().__init__(custom_id=custom_id)
+        self.placeholder: str = placeholder
+        self.min_values: Optional[int] = min_values
+        self.disabled: bool = disabled
+        self.max_values: Optional[int] = max_values
+        self.channel_types: Optional[List[discord_typings.ChannelTypes]] = channel_types
+
+    @property
+    def type(self) -> int:
+        return 8
+
+    def to_dict(self):
+        from .utils import Utils
+        settings = Utils.filter_values({
+            "type": self.type,
+            "custom_id": self.custom_id,
+            "disabled": self.disabled,
+            "placeholder": self.placeholder,
+            "min_values": self.min_values,
+            "max_values": self.max_values,
+            "channel_types": self.channel_types
+        })
+
+        return settings
 
 class SelectMenu(BaseComponent):
     def __init__(
