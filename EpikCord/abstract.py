@@ -372,7 +372,7 @@ class GuildChannel(BaseChannel):
         self.guild = self.client.guilds.get(self.guild_id)
         self.position: Optional[int] = data["position"] if data.get("position") else None  # type: ignore
         self.permission_overwrites: Optional[List[Overwrite]] = (
-            [Overwrite(overwrite) for overwrite in data["permissions"]]
+            [Overwrite(overwrite) for overwrite in data["permissions"]] # type: ignore
             if data.get("permissions")
             else None
         )  # type: ignore
