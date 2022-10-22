@@ -392,6 +392,17 @@ class WebsocketClient:
         channel = self.utils.channel_from_type(data)
         self.channels.add_to_cache(channel.id, channel)
         await self.dispatch("channel_create", channel)
+    
+    async def _channel_update(self,data:discord_typings.ChannelUpdateData):
+        updated_channel = self.utils.channel_from_type(data)
+        initial_channel = self.channels.get(updated_channel.id)
+        self.channels.add_to_cache(updated_channel.id, updated_channel)
+        await self.dispatch("channel_update", initial_channel, updated_channel) 
+
+    async def _channel_delete(self, data:discord_typings.ChannelDeleteData):
+        channel = self.utils.channel_from_type(data)
+        self.channels.remove_from_cache(channel.id)
+        await self.dispatch("channel_delete", channel)
 
     async def _message_create(self, data: discord_typings.MessageCreateData):
         """Event fired when messages are created"""
