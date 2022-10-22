@@ -476,9 +476,7 @@ class BaseInteraction:
         self.version: int = data.get("version")
         self.locale: Optional[str] = data.get("locale")
         self.guild_locale: Optional[str] = data.get("guild_locale")
-        self.original_response: Optional[
-            Message
-        ] = None
+        self.original_response: Optional[Message] = None
         self.ephemeral: Optional[bool]
 
     async def reply(
@@ -523,7 +521,8 @@ class BaseInteraction:
 
     async def defer(self, *, ephemeral: bool = False):
         await self.client.http.post(
-            f"/interaction/{self.id}/{self.token}/callback", json={"type": 6, "data": {"flags": 1 << 6 if ephemeral else 0}}
+            f"/interaction/{self.id}/{self.token}/callback",
+            json={"type": 6, "data": {"flags": 1 << 6 if ephemeral else 0}},
         )
 
     async def send_modal(self, modal: Modal):
@@ -536,7 +535,6 @@ class BaseInteraction:
         await self.client.http.post(
             f"/interactions/{self.id}/{self.token}/callback", json=payload
         )
-
 
     @property
     def is_ping(self):
