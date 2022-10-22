@@ -278,8 +278,6 @@ class HTTPClient:
     put = partialmethod(base, "PUT")
     patch = partialmethod(base, "PATCH")
     delete = partialmethod(base, "DELETE")
-    head = partialmethod(base, "HEAD")
-    options = partialmethod(base, "OPTIONS")
 
     async def get_gateway(self) -> discord_typings.GetGatewayData:
         """

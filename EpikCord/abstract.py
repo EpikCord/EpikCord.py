@@ -478,7 +478,8 @@ class BaseInteraction:
         self.guild_locale: Optional[str] = data.get("guild_locale")
         self.original_response: Optional[
             Message
-        ] = None  # Can't be set on construction.
+        ] = None
+        self.ephemeral: Optional[bool]
 
     async def reply(
         self,
@@ -499,7 +500,7 @@ class BaseInteraction:
             message_data["flags"] |= 1 << 2
         if ephemeral:
             message_data["flags"] |= 1 << 6
-
+            self.ephemeral = True
         if content:
             message_data["content"] = content
         if embeds:
@@ -520,15 +521,10 @@ class BaseInteraction:
             f"/interactions/{self.id}/{self.token}/callback", json=payload
         )
 
-    async def defer(self, *, show_loading_state: Optional[bool] = True):
-        if show_loading_state:
-            return await self.client.http.post(
-                f"/interaction/{self.id}/{self.token}/callback", json={"type": 5}
-            )
-        else:
-            return await self.client.http.post(
-                f"/interaction/{self.id}/{self.token}/callback", json={"type": 6}
-            )
+    async def defer(self, *, ephemeral: bool = False):
+        await self.client.http.post(
+            f"/interaction/{self.id}/{self.token}/callback", json={"type": 6, "data": {"flags": 1 << 6 if ephemeral else 0}}
+        )
 
     async def send_modal(self, modal: Modal):
         from EpikCord import Modal
@@ -540,6 +536,7 @@ class BaseInteraction:
         await self.client.http.post(
             f"/interactions/{self.id}/{self.token}/callback", json=payload
         )
+
 
     @property
     def is_ping(self):

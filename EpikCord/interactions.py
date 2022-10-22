@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Literal, Optional, TypedDict, Union
+from typing_extensions import NotRequired
 
 from .abstract import BaseInteraction
 from .components import *
@@ -32,6 +33,9 @@ class ResolvedDataHandler:
     ):
         self.data: discord_typings.ResolvedInteractionDataData = resolved_data
 
+class DeferredInteractionResponse(TypedDict):
+    type: Literal[5, 6]
+    data: NotRequired[Optional[MessagePayload]]
 
 class BaseComponentInteraction(BaseInteraction):
     def __init__(self, client, data: discord_typings.ComponentInteractionData):
@@ -41,6 +45,18 @@ class BaseComponentInteraction(BaseInteraction):
         self.message: Message = Message(client, data["message"])
         self.custom_id: str = data["data"]["custom_id"]
         self.component_type: int = data["data"]["component_type"]
+
+    async def defer(self, *, ephemeral: bool = False, show_loading_state: bool = True):
+        data: DeferredInteractionResponse = {"type": 5}
+
+        if ephemeral: data["data"] = {"flags": 1 << 6}
+
+        if not show_loading_state:
+            data["type"] = 6
+
+        await self.client.http.post(
+            f"/interaction/{self.id}/{self.token}/callback", json=data
+        )
 
     def is_action_row(self):
         return self.component_type == 1
