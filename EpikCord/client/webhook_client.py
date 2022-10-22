@@ -1,5 +1,7 @@
-from aiohttp import ClientSession
 from typing import Optional
+
+from aiohttp import ClientSession
+
 
 class WebhookClient:
     def __init__(self, url: str, session: ClientSession = ClientSession()):
