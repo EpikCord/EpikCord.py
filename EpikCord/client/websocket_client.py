@@ -381,7 +381,7 @@ class WebsocketClient:
         )  # TODO: Make this return something like (VoiceState, Member) or make VoiceState get Member from member_id
 
     async def _guild_delete(self, data: discord_typings.GuildDeleteData):
-        if guild := self.guilds.remove_from_cache(data["id"]):
+        if guild := self.guilds.remove_from_cache(int(data["id"])):
             await self.dispatch("guild_delete", guild)
 
     async def _interaction_create(self, data: discord_typings.InteractionCreateData):
@@ -419,7 +419,7 @@ class WebsocketClient:
         :return channel: The Channel which was deleted
         :type channel: EpikCord.abstract.GuildChannel
         """
-        channel = self.channels.get(data["id"])
+        channel = self.channels.get(int(data["id"]))
         self.channels.remove_from_cache(channel.id)
         await self.dispatch("channel_delete", channel)
 
