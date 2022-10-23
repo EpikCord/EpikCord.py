@@ -391,8 +391,7 @@ class WebsocketClient:
     async def _channel_create(self, data: discord_typings.ChannelCreateData):
         """Event Fired when a channel is created
 
-        :return channel: The Channel which was created
-        :type channel: EpikCord.abstract.GuildChannel
+            Dispatches ``channel`` to the defined event function
         """
         channel = self.utils.channel_from_type(data)
         self.channels.add_to_cache(channel.id, channel)
@@ -403,21 +402,17 @@ class WebsocketClient:
 
         This event dispatches both the channel before the modification and the channel after the modification
 
-        :return channel_before: The Channel object before the modification
-        :type channel: EpikCord.abstract.GuildChannel
-        :return channel_before: The Channel object after the modification
-        :type channel: EpikCord.abstract.GuildChannel
+        Dispatches ``before`` and ``after`` to the defined event function
         """
-        channel_after = self.utils.channel_from_type(data)
-        channel_before = self.channels.get(channel_after.id)
-        self.channels.add_to_cache(channel_after.id, channel_after)
-        await self.dispatch("channel_update", channel_before, channel_after) 
+        after = self.utils.channel_from_type(data)
+        before = self.channels.get(after.id)
+        self.channels.add_to_cache(after.id, after)
+        await self.dispatch("channel_update", before, after) 
 
     async def _channel_delete(self, data:discord_typings.ChannelDeleteData):
         """Event Fired when a channel is deleted
 
-        :return channel: The Channel which was deleted
-        :type channel: EpikCord.abstract.GuildChannel
+        Dispatches ``channel`` to the defined event function
         """
         channel = self.channels.get(int(data["id"]))
         self.channels.remove_from_cache(channel.id)
