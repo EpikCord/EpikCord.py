@@ -419,7 +419,7 @@ class WebsocketClient:
         :return channel: The Channel which was deleted
         :type channel: EpikCord.abstract.GuildChannel
         """
-        channel = self.utils.channel_from_type(data)
+        channel = self.channels.get(data["id"])
         self.channels.remove_from_cache(channel.id)
         await self.dispatch("channel_delete", channel)
 
