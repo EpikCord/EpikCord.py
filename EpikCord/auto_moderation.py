@@ -87,14 +87,14 @@ class AutoModRule:
             AutoModAction(data) for data in data["actions"]
         ]
         self.enabled: bool = data["enabled"]
-        self.except_roles_ids: List[int] = (
-            [int(role) for role in data["except_roles"]]
-            if data.get("except_roles")
+        self.exempt_roles_ids: List[int] = (
+            [int(role) for role in data["exempt_roles"]]
+            if data.get("exempt_roles")
             else []
         )
         self.except_channels_ids: List[int] = (
-            [int(channel) for channel in data["except_channels"]]
-            if data.get("except_channels")
+            [int(channel) for channel in data["exempt_channels"]]
+            if data.get("exempt_channels")
             else []
         )
 
