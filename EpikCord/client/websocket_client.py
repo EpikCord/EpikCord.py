@@ -391,18 +391,16 @@ class WebsocketClient:
     async def _channel_create(self, data: discord_typings.ChannelCreateData):
         """Event Fired when a channel is created
 
-            Dispatches ``channel`` to the defined event function
+            Dispatches ``channel`` to the defined event function(s)
         """
         channel = self.utils.channel_from_type(data)
         self.channels.add_to_cache(channel.id, channel)
         await self.dispatch("channel_create", channel)
     
     async def _channel_update(self,data:discord_typings.ChannelUpdateData):
-        """Event Fired when a channel is modified/updated
+        """Event Fired when a channel is modified/updated. This event dispatches both the channel object before and after the modification.
 
-        This event dispatches both the channel before the modification and the channel after the modification
-
-        Dispatches ``before`` and ``after`` to the defined event function
+        Dispatches ``before`` and ``after`` to the defined event function(s)
         """
         after = self.utils.channel_from_type(data)
         before = self.channels.get(after.id)
@@ -412,7 +410,7 @@ class WebsocketClient:
     async def _channel_delete(self, data:discord_typings.ChannelDeleteData):
         """Event Fired when a channel is deleted
 
-        Dispatches ``channel`` to the defined event function
+        Dispatches ``channel`` to the defined event function(s)
         """
         channel = self.channels.get(int(data["id"]))
         self.channels.remove_from_cache(channel.id)
