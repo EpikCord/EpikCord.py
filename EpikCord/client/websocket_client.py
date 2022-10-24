@@ -398,7 +398,7 @@ class WebsocketClient:
         await self.dispatch("channel_create", channel)
     
     async def _channel_update(self,data:discord_typings.ChannelUpdateData):
-        """Event Fired when a channel is modified/updated. This event dispatches both the channel object before and after the modification.
+        """Event Fired when a channel is modified/updated. This event dispatch the channel object before and after the modification.
 
         Dispatches ``before`` and ``after`` to the defined event function(s)
         """
