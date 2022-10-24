@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Literal, Optional, TypedDict, Union
+
 from typing_extensions import NotRequired
 
 from .abstract import BaseInteraction
@@ -33,9 +34,11 @@ class ResolvedDataHandler:
     ):
         self.data: discord_typings.ResolvedInteractionDataData = resolved_data
 
+
 class DeferredInteractionResponse(TypedDict):
     type: Literal[5, 6]
     data: NotRequired[Optional[MessagePayload]]
+
 
 class BaseComponentInteraction(BaseInteraction):
     def __init__(self, client, data: discord_typings.ComponentInteractionData):
@@ -49,7 +52,8 @@ class BaseComponentInteraction(BaseInteraction):
     async def defer(self, *, ephemeral: bool = False, show_loading_state: bool = True):
         data: DeferredInteractionResponse = {"type": 5}
 
-        if ephemeral: data["data"] = {"flags": 1 << 6}
+        if ephemeral:
+            data["data"] = {"flags": 1 << 6}
 
         if not show_loading_state:
             data["type"] = 6
