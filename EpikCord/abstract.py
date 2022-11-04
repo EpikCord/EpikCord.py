@@ -67,7 +67,7 @@ class TypingContextManager:
         self.typing = asyncio.create_task(self.start_typing())
 
     async def __aexit__(self):
-        self.typing.cancel()  # type: ignore
+        self.typing.cancel()
 
 
 class Messageable:
@@ -163,6 +163,7 @@ class BaseChannel:
         self.id: int = int(data["id"])
         self.client = client
         self.type: int = data["type"]
+        self.data: discord_typings.ChannelData = data
 
 
 class Connectable:
@@ -237,12 +238,12 @@ class Connectable:
         await self._connect_ws()
 
     async def _connect_ws(self):
-        wss = "" if self.endpoint.startswith("wss://") else "wss://"  # type: ignore
+        wss = "" if self.endpoint.startswith("wss://") else "wss://"
         self.ws = await self.client.http.ws_connect(f"{wss}{self.endpoint}?v=4")
         return await self.handle_events()
 
     async def handle_events(self):
-        async for event in self.ws:  # type: ignore
+        async for event in self.ws:
             event = event.json()
             if event["op"] == VoiceOpcode.HELLO:
                 await self.handle_hello(event["d"])
@@ -348,96 +349,6 @@ class Connectable:
         ip_end = ip_data.index(0, 4)
         self.ip = ip_data[4:ip_end].decode("ascii")
         self.port = struct.unpack_from(">H", ip_data, len(ip_data) - 2)[0]
-
-
-class GuildChannel(BaseChannel):
-    def __init__(
-        self,
-        client: Client,
-        data: Union[
-            discord_typings.VoiceChannelData,
-            discord_typings.TextChannelData,
-            discord_typings.CategoryChannelData,
-            discord_typings.NewsChannelData,
-            discord_typings.ThreadChannelData,
-            discord_typings.ForumChannelData,
-        ],
-    ):
-        super().__init__(client, data)
-        from .channels import Overwrite
-
-        self.guild_id: Optional[int] = (
-            int(data["guild_id"]) if data.get("guild_id") else None
-        )
-        self.guild = self.client.guilds.get(self.guild_id)
-        self.position: Optional[int] = data["position"] if data.get("position") else None  # type: ignore
-        self.permission_overwrites: Optional[List[Overwrite]] = (
-            [Overwrite(overwrite) for overwrite in data["permissions"]]  # type: ignore
-            if data.get("permissions")
-            else None
-        )  # type: ignore
-        self.parent_id: Optional[int] = int(data["parent_id"]) if data.get("parent_id") else None  # type: ignore
-        self.name: str = data["name"]
-
-    async def delete(self, *, reason: Optional[str] = None) -> None:
-        headers = self.client.http.session.headers.copy()
-
-        if reason:
-            headers["reason"] = reason
-
-        response = await self.client.http.delete(
-            f"/channels/{self.id}", headers=headers, channel_id=self.id
-        )
-        return await response.json()
-
-    async def fetch_invites(self):
-        response = await self.client.http.get(
-            f"/channels/{self.id}/invites", channel_id=self.id
-        )
-        return await response.json()
-
-    async def create_invite(
-        self,
-        *,
-        max_age: Optional[int] = None,
-        max_uses: Optional[int] = None,
-        temporary: Optional[bool] = None,
-        unique: Optional[bool] = None,
-        target_type: Optional[int] = None,
-        target_user_id: Optional[str] = None,
-        target_application_id: Optional[str] = None,
-    ):
-        data = self.client.utils.filter_values(
-            {
-                "max_age": max_age,
-                "max_uses": max_uses,
-                "temporary": temporary,
-                "unique": unique,
-                "target_type": target_type,
-                "target_user_id": target_user_id,
-                "target_application_id": target_application_id,
-            }
-        )
-
-        await self.client.http.post(
-            f"/channels/{self.id}/invites", json=data, channel_id=self.id
-        )
-
-    async def delete_overwrite(self, overwrites) -> None:
-        response = await self.client.http.delete(
-            f"/channels/{self.id}/permissions/{overwrites.id}", channel_id=self.id
-        )
-        return await response.json()
-
-    async def fetch_pinned_messages(self) -> List[Message]:
-        from EpikCord import Message
-
-        response = await self.client.http.get(
-            f"/channels/{self.id}/pins", channel_id=self.id
-        )
-        data = await response.json()
-        return [Message(self.client, message) for message in data]
-
 
 class BaseComponent:
     def __init__(self, *, custom_id: str):
@@ -730,7 +641,6 @@ class BaseSlashCommandOption:
 __all__ = (
     "Messageable",
     "BaseCommand",
-    "BaseChannel",
     "TypingContextManager",
     "Connectable",
     "GuildChannel",
