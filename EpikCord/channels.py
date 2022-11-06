@@ -28,31 +28,24 @@ class GuildChannel(BaseChannel):
         data: Union[
             discord_typings.TextChannelData,
             discord_typings.NewsChannelData,
-            discord_typings.ThreadChannelData,
             discord_typings.VoiceChannelData,
             discord_typings.CategoryChannelData,
-            discord_typings.ForumChannelData
         ]
     ):
         super().__init__(client, data)
-        reveal_type(data)
         self.guild_id: Optional[int] = int(data["guild_id"]) if data.get("guild_id") else None
         self.guild: Optional[Guild] = client.guilds.get(self.guild_id) if self.guild_id else None
         self.position: Optional[int] = data.get("position")
-        self.permission_overwrites: List[Overwrite] = [
+        self.permission_overwrites: Optional[List[Overwrite]] = [
             Overwrite(overwrite) for overwrite in data["permission_overwrites"]
-        ] if data.get("permission_overwrites") else []
+        ] if data.get("permission_overwrites") else None
         
 
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
-        headers = self.client.http.session.headers.copy()
-
-        if reason:
-            headers["reason"] = reason
 
         response = await self.client.http.delete(
-            f"/channels/{self.id}", headers=headers, channel_id=self.id
+            f"/channels/{self.id}", channel_id=self.id, reason=reason
         )
         return await response.json()
 

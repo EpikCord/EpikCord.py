@@ -24,7 +24,7 @@ _ORJSON = find_spec("orjson")
 
 
 if _ORJSON:
-    import orjson as json
+    import orjson as json # type: ignore
 
 else:
     import json  # type: ignore
@@ -132,6 +132,7 @@ class HTTPClient:
         to_discord=True,
         guild_id: Union[str, int] = 0,
         channel_id: Union[int, str] = 0,
+        reason: Optional[str] = None,
         **kwargs,
     ):
         if attempt > 5:
@@ -149,13 +150,18 @@ class HTTPClient:
 
         url = f"{self.base_uri}/{url}"
 
+        headers = self.session.headers
+        headers.update(kwargs.pop("headers", {}))
+
+        if reason:
+            headers["X-Audit-Log-Reason"] = reason
+
         bucket_hash = f"{guild_id}:{channel_id}:{url}"
         bucket: Union[Bucket, UnknownBucket] = self.buckets.get(
             bucket_hash, UnknownBucket()
         )
 
-        await bucket.event.wait()
-        await self.global_ratelimit.wait()
+        await asyncio.gather(self.global_ratelimit.wait(), bucket.event.wait())
 
         res = await self.session.request(method, url, *args, **kwargs)
 

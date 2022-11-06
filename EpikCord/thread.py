@@ -106,17 +106,12 @@ class Thread(Messageable):
         )
         return [ThreadMember(member) for member in await response.json()]
 
-    async def bulk_delete(self, message_ids: List[str], reason: Optional[str]) -> None:
-
-        headers = self.client.http.session.headers.copy()
-
-        if reason:
-            headers["X-Audit-Log-Reason"] = reason
+    async def bulk_delete(self, message_ids: List[int], reason: Optional[str] = None) -> None:
 
         response = await self.client.http.post(
             f"channels/{self.id}/messages/bulk-delete",
             data={"messages": message_ids},
-            headers=headers,
+            reason=reason,
             channel_id=self.id,
         )
         return await response.json()

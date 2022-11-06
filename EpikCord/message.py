@@ -504,32 +504,21 @@ class Message:
         )
         return await response.json()
 
-    async def delete(self, reason: str):
-        headers = self.client.headers.copy()
-        if reason:
-            headers["X-Audit-Log-Reason"] = reason
+    async def delete(self, reason: Optional[str] = None):
         response = await self.client.http.delete(
-            f"channels/{self.channel_id}/messages/{self.id}", headers=headers
+            f"channels/{self.channel_id}/messages/{self.id}", reason=reason
         )
         return await response.json()
 
-    async def pin(self, *, reason: Optional[str]):
-        headers = self.client.http.headers.copy()
-        if reason:
-            headers["X-Audit-Log-Reason"] = reason
-        else:
-            logger.debug(f"Pinning message {self.id}.")
+    async def pin(self, *, reason: Optional[str] = None):
         response = await self.client.http.put(
-            f"channels/{self.channel_id}/pins/{self.id}", headers=headers
+            f"channels/{self.channel_id}/pins/{self.id}", reason=reason
         )
         return await response.json()
 
-    async def unpin(self, *, reason: Optional[str]):
-        headers = self.client.http.headers.copy()
-        if reason:
-            headers["X-Audit-Log-Reason"] = reason
+    async def unpin(self, *, reason: Optional[str] = None):
         response = await self.client.http.delete(
-            f"channels/{self.channel_id}/pins/{self.id}", headers=headers
+            f"channels/{self.channel_id}/pins/{self.id}", reason=reason
         )
         return await response.json()
 
@@ -554,7 +543,7 @@ class Message:
         # * Cache it
         thread = Thread(self.client, await response.json())
         self.client.guilds[self.guild_id].channels[thread.id] = thread
-        return Thread(self.client, await response.json())
+        return thread
 
     async def crosspost(self):
         response = await self.client.http.post(
