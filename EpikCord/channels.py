@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     import discord_typings
     from .client import Client
     from .guild import Guild
+    from .message import Message
 
 class Overwrite:
     def __init__(self, data: discord_typings.PermissionOverwriteData):
@@ -29,7 +30,7 @@ class GuildChannel(BaseChannel):
             discord_typings.TextChannelData,
             discord_typings.NewsChannelData,
             discord_typings.VoiceChannelData,
-            discord_typings.CategoryChannelData,
+            discord_typings.ForumChannelData
         ]
     ):
         super().__init__(client, data)
@@ -88,14 +89,6 @@ class GuildChannel(BaseChannel):
         )
         return await response.json()
 
-    async def fetch_pinned_messages(self) -> List[Message]:
-        from EpikCord import Message
-
-        response = await self.client.http.get(
-            f"/channels/{self.id}/pins", channel_id=self.id
-        )
-        data = await response.json()
-        return [Message(self.client, message) for message in data]
 
 class GuildTextChannel(GuildChannel, Messageable):
     def __init__(self, client: Client, data: discord_typings.TextChannelData):

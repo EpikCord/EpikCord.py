@@ -74,6 +74,15 @@ class Messageable:
         self.id: int = int(channel_id)
         self.client = client
 
+    async def fetch_pinned_messages(self) -> List[Message]:
+        from EpikCord import Message
+
+        response = await self.client.http.get(
+            f"/channels/{self.id}/pins", channel_id=self.id
+        )
+        data = await response.json()
+        return [Message(self.client, message) for message in data]
+
     async def fetch_messages(
         self,
         *,
