@@ -198,7 +198,13 @@ class ForumChannel(BaseGuildChannel):
 
 
 class GuildStageChannel(BaseGuildChannel, Connectable):
-    def __init__(self, client: Client, data: Union[discord_typings.VoiceChannelData, discord_typings.InviteStageInstanceData]):
+    def __init__(
+        self,
+        client: Client,
+        data: Union[
+            discord_typings.VoiceChannelData, discord_typings.InviteStageInstanceData
+        ],
+    ):
         super().__init__(client, data)
         Connectable.__init__(self, client, channel=self)
         self.bitrate: int = data["bitrate"]
