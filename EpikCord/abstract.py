@@ -41,12 +41,12 @@ if TYPE_CHECKING:
         Attachment,
         Check,
         Embed,
+        GuildStageChannel,
         Message,
         MessagePayload,
         Modal,
         Overwrite,
         VoiceChannel,
-        GuildStageChannel
     )
 
     from .components import *
