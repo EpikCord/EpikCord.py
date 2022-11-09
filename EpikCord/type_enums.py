@@ -137,9 +137,11 @@ class IntegrationExpireBehavior(IntEnum):
 class GuildScheduledEventPrivacyLevel(IntEnum):
     GUILD_ONLY = 2
 
+
 class VideoQualityMode(IntEnum):
     AUTO = 1
     FULL = 2
+
 
 __all__ = (
     "VisibilityType",

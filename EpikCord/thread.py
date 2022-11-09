@@ -4,8 +4,8 @@ import datetime
 from typing import TYPE_CHECKING, List, Optional
 
 from .abstract import Messageable
-from .type_enums import Video
 from .exceptions import NotFound404, ThreadArchived
+from .type_enums import Video
 
 if TYPE_CHECKING:
     import discord_typings
@@ -107,7 +107,9 @@ class Thread(Messageable):
         )
         return [ThreadMember(member) for member in await response.json()]
 
-    async def bulk_delete(self, message_ids: List[int], reason: Optional[str] = None) -> None:
+    async def bulk_delete(
+        self, message_ids: List[int], reason: Optional[str] = None
+    ) -> None:
 
         response = await self.client.http.post(
             f"channels/{self.id}/messages/bulk-delete",
