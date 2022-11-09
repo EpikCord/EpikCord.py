@@ -46,7 +46,7 @@ class Utils:
         2: VoiceChannel,
         4: CategoryChannel,
         5: GuildAnnouncementChannel,
-        10: GuildAnnouncementThread,
+        10: Thread,
         11: Thread,
         13: GuildStageChannel,
     }

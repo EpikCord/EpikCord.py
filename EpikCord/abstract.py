@@ -658,7 +658,6 @@ __all__ = (
     "BaseCommand",
     "TypingContextManager",
     "Connectable",
-    "GuildChannel",
     "BaseComponent",
     "BaseSlashCommandOption",
 )

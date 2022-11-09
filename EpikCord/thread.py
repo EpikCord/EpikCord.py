@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, List, Optional
 
 from .abstract import Messageable
 from .exceptions import NotFound404, ThreadArchived
-from .type_enums import Video
+from .type_enums import VideoQualityMode
 
 if TYPE_CHECKING:
     import discord_typings
