@@ -11,7 +11,12 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Union
 from aiohttp import ClientWebSocketResponse
 
 from .close_event_codes import GatewayCECode
-from .exceptions import ClosedWebSocketConnection, CustomIdIsTooBig, InvalidArgumentType, InvalidData
+from .exceptions import (
+    ClosedWebSocketConnection,
+    CustomIdIsTooBig,
+    InvalidArgumentType,
+    InvalidData,
+)
 from .opcodes import GatewayOpcode, VoiceOpcode
 from .type_enums import AllowedMentionTypes
 
