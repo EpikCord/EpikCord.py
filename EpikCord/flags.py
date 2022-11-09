@@ -122,5 +122,8 @@ class Permissions(Flag):
     start_embedded_activities = 1 << 39
     moderator_members = 1 << 40
 
+class ChannelFlags(Flag):
+    pinned = 1 << 1
+    require_tag = 1 << 4
 
-__all__ = ("Intents", "SystemChannelFlags", "Permissions", "Flag")
+__all__ = ("Intents", "SystemChannelFlags", "Permissions", "Flag", "ChannelFlags")

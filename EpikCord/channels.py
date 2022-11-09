@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import datetime
 from logging import getLogger
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Union, overload
 
 from .abstract import BaseChannel, Connectable, Messageable
 from .partials import PartialUser
+from .user import User
 from .thread import Thread
+from .flags import ChannelFlags
 
 logger = getLogger(__name__)
 
@@ -22,26 +25,26 @@ class Overwrite:
         self.allow: str = data["allow"]
         self.deny: str = data["deny"]
 
-class GuildChannel(BaseChannel):
-    def __init__(
-        self,
+class BaseGuildChannel(BaseChannel):
+    def __init__(self,
         client: Client,
         data: Union[
             discord_typings.TextChannelData,
-            discord_typings.NewsChannelData,
             discord_typings.VoiceChannelData,
-            discord_typings.ForumChannelData
+            discord_typings.CategoryChannelData,
+            discord_typings.NewsChannelData,
+            discord_typings.ForumChannelData,
         ]
     ):
-        super().__init__(client, data)
-        self.guild_id: Optional[int] = int(data["guild_id"]) if data.get("guild_id") else None
-        self.guild: Optional[Guild] = client.guilds.get(self.guild_id) if self.guild_id else None
-        self.position: Optional[int] = data.get("position")
-        self.permission_overwrites: Optional[List[Overwrite]] = [
-            Overwrite(overwrite) for overwrite in data["permission_overwrites"]
-        ] if data.get("permission_overwrites") else None
-        
 
+        super().__init__(client, data)
+        self.guild_id: int = int(data["guild_id"])
+        self.position: int = data["position"]
+        self.permission_overwrites: List[Overwrite] = [
+            Overwrite(overwrite) for overwrite in data["permission_overwrites"]
+        ]        
+        self.name: str = data["name"]
+        self.nsfw: bool = data["nsfw"]
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
 
@@ -89,24 +92,83 @@ class GuildChannel(BaseChannel):
         )
         return await response.json()
 
+class CommonFieldsTextAndNews(Messageable):
+    def __init__(self, client: Client, data: Union[discord_typings.NewsChannelData, discord_typings.TextChannelData]):
+        super().__init__(client, int(data["id"]))
+        self.topic: Optional[str] = data["topic"]
+        self.parent_id: Optional[int] = int(data["parent_id"]) if data["parent_id"] else None
+        self.last_pin_timestamp: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["last_pin_timestamp"]) if data.get("last_pin_timestamp") else None # type: ignore
+        self.default_auto_archive_duration: Optional[int] = data.get("default_auto_archive_duration")
+        self.flags: ChannelFlags = ChannelFlags(data["flags"])
 
-class GuildTextChannel(GuildChannel, Messageable):
+class GuildTextChannel(BaseGuildChannel, CommonFieldsTextAndNews):
     def __init__(self, client: Client, data: discord_typings.TextChannelData):
         super().__init__(client, data)
-        Messageable.__init__(self, client, int(data["id"]))
-        self.client: Client = client
-        self.data: discord_typings.TextChannelData = data
+        CommonFieldsTextAndNews.__init__(self, client, data)
+        self.rate_limit_per_user: int = data["rate_limit_per_user"]
 
+class NewsChannelData(BaseGuildChannel, CommonFieldsTextAndNews):
+
+    def __init__(self, client: Client, data: discord_typings.NewsChannelData):
+        super().__init__(client, data)
+        CommonFieldsTextAndNews.__init__(self, client, data)
+
+class DMChannel(Messageable):
+    def __init__(self, client: Client, data: discord_typings.DMChannelData):
+        super().__init__(client, int(data["id"]))
+        self.recipients: List[User] = [User(client, user) for user in data["recipients"]]
+        self.last_pin_timestamp: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["last_pin_timestamp"]) if data.get("last_pin_timestamp") else None # type: ignore
+        self.flags: ChannelFlags = ChannelFlags(data["flags"])
+
+class GroupDMChannel(Messageable):
+    def __init__(self, client: Client, data: discord_typings.GroupDMChannelData):
+        super().__init__(client, int(data["id"]))
+        self.name: str = data["name"]
+        self.recipients: List[User] = [User(client, user) for user in data["recipients"]]
+        self.icon: Optional[str] = data["icon"]
+        self.owner_id: int = int(data["owner_id"])
+        self.application_id: Optional[int] = int(data["application_id"]) if data["application_id"] else None
+        self.last_pin_timestamp: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["last_pin_timestamp"]) if data.get("last_pin_timestamp") else None # type: ignore
+        self.flags: ChannelFlags = ChannelFlags(data["flags"])
+
+class VoiceChannel(BaseGuildChannel, Connectable):
+    def __init__(self, client: Client, data: discord_typings.VoiceChannelData):
+        super().__init__(client, data)
+        Connectable.__init__(self, client, channel=self)
+        self.bitrate: int = data["bitrate"]
+        self.user_limit: int = data["user_limit"]
+        self.parent_id: Optional[int] = int(data["parent_id"]) if data["parent_id"] else None
+        self.last_pin_timestamp: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["last_pin_timestamp"]) if data.get("last_pin_timestamp") else None # type: ignore
+        self.rtc_region: Optional[str] = data["rtc_region"]        
+        self.video_quality_mode: Optional[int] = data.get("video_quality_mode") 
+        self.flags: ChannelFlags = ChannelFlags(data["flags"])
+
+class CategoryChannel(BaseGuildChannel):
+    def __init__(self, client: Client, data: discord_typings.CategoryChannelData):
+        self.flags: ChannelFlags = ChannelFlags(data["flags"])
+
+class ForumChannel(BaseGuildChannel):
+    def __init__(self, client: Client, data: discord_typings.ForumChannelData):
+        super().__init__(client, data)
+        self.topic: Optional[str] = data["topic"]
+        self.rate_limit_per_user: int = data["rate_limit_per_user"]
+        self.default_auto_archive_duration: Optional[int] = data.get("default_auto_archive_duration")
+        self.flags: ChannelFlags = ChannelFlags(data["flags"])
+        self.default_reaction_emoji: Optional[discord_typings.DefaultReactionData] = data.get("default_reaction_emoji")
+        self.default_thread_rate_limit_per_user: int = data["default_thread_rate_limit_per_user"]
+        self.default_sort_order: Optional[discord_typings.SortOrderTypes] = data["default_sort_order"]
+
+ 
 
 AnyChannel = Union[
     GuildTextChannel,
     VoiceChannel,
     CategoryChannel,
     GuildAnnouncementChannel,
-    GuildAnnouncementThread,
     Thread,
     GuildStageChannel,
     ForumChannel,
+    GroupDMChannel
 ]
 
 __all__ = (
@@ -115,12 +177,8 @@ __all__ = (
     "GuildAnnouncementChannel",
     "DMChannel",
     "CategoryChannel",
-    "GuildAnnouncementThread",
     "GuildStageChannel",
     "VoiceChannel",
     "ForumChannel",
     "AnyChannel",
 )
-
-
-a

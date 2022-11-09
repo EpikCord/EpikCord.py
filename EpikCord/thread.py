@@ -4,6 +4,7 @@ import datetime
 from typing import TYPE_CHECKING, List, Optional
 
 from .abstract import Messageable
+from .type_enums import Video
 from .exceptions import NotFound404, ThreadArchived
 
 if TYPE_CHECKING:

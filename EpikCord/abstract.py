@@ -172,6 +172,8 @@ class BaseChannel:
         self.client = client
         self.type: int = data["type"]
         self.data: discord_typings.ChannelData = data
+        self.last_message_id: Optional[int] = int(data["last_message_id"]) if data["last_message_id"] else None
+
 
 
 class Connectable:
