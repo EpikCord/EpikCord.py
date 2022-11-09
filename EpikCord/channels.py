@@ -121,7 +121,7 @@ class GuildTextChannel(BaseGuildChannel, CommonFieldsTextAndNews):
         CommonFieldsTextAndNews.__init__(self, client, data)
         self.rate_limit_per_user: int = data["rate_limit_per_user"]
 
-class NewsChannelData(BaseGuildChannel, CommonFieldsTextAndNews):
+class NewsChannel(BaseGuildChannel, CommonFieldsTextAndNews):
     def __init__(self, client: Client, data: discord_typings.NewsChannelData):
         super().__init__(client, data)
         CommonFieldsTextAndNews.__init__(self, client, data)
