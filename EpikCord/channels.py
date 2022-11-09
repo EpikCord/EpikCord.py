@@ -107,11 +107,13 @@ class GuildTextChannel(BaseGuildChannel, CommonFieldsTextAndNews):
         CommonFieldsTextAndNews.__init__(self, client, data)
         self.rate_limit_per_user: int = data["rate_limit_per_user"]
 
-class NewsChannelData(BaseGuildChannel, CommonFieldsTextAndNews):
+class NewsChannel(BaseGuildChannel, CommonFieldsTextAndNews):
 
     def __init__(self, client: Client, data: discord_typings.NewsChannelData):
         super().__init__(client, data)
         CommonFieldsTextAndNews.__init__(self, client, data)
+
+GuildAnnouncementChannel = NewsChannel
 
 class DMChannel(Messageable):
     def __init__(self, client: Client, data: discord_typings.DMChannelData):
@@ -158,13 +160,22 @@ class ForumChannel(BaseGuildChannel):
         self.default_thread_rate_limit_per_user: int = data["default_thread_rate_limit_per_user"]
         self.default_sort_order: Optional[discord_typings.SortOrderTypes] = data["default_sort_order"]
 
- 
+class GuildStageChannel(BaseGuildChannel, Connectable):
+    def __init__(self, client: Client, data: discord_typings.VoiceChannelData):
+        super().__init__(client, data)
+        Connectable.__init__(self, client, channel=self)
+        self.bitrate: int = data["bitrate"]
+        self.user_limit: int = data["user_limit"]
+        self.parent_id: Optional[int] = int(data["parent_id"]) if data["parent_id"] else None
+        self.last_pin_timestamp: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["last_pin_timestamp"]) if data.get("last_pin_timestamp") else None # type: ignore
+        self.rtc_region: Optional[str] = data["rtc_region"]
+        self.video_quality_mode: Optional[int] = data.get("video_quality_mode")
 
 AnyChannel = Union[
     GuildTextChannel,
     VoiceChannel,
     CategoryChannel,
-    GuildAnnouncementChannel,
+    NewsChannel,
     Thread,
     GuildStageChannel,
     ForumChannel,
@@ -180,5 +191,6 @@ __all__ = (
     "GuildStageChannel",
     "VoiceChannel",
     "ForumChannel",
+    "NewsChannel",
     "AnyChannel",
 )

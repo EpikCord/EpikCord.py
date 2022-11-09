@@ -46,6 +46,7 @@ if TYPE_CHECKING:
         Modal,
         Overwrite,
         VoiceChannel,
+        GuildStageChannel
     )
 
     from .components import *
@@ -181,7 +182,7 @@ class Connectable:
         self,
         client: Client,
         *,
-        channel: VoiceChannel,
+        channel: Union[VoiceChannel, GuildStageChannel],
     ):
         self.client = client
         self.guild_id: int = channel.guild.id
