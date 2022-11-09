@@ -172,7 +172,7 @@ class Utils:
 
     @staticmethod
     def interaction_from_type(
-        data,
+        data: discord_typings.InteractionData
     ) -> Optional[
         Union[
             ApplicationCommandInteraction,

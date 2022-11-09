@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Union
 from aiohttp import ClientWebSocketResponse
 
 from .close_event_codes import GatewayCECode
-from .exceptions import ClosedWebSocketConnection, CustomIdIsTooBig, InvalidArgumentType
+from .exceptions import ClosedWebSocketConnection, CustomIdIsTooBig, InvalidArgumentType, InvalidData
 from .opcodes import GatewayOpcode, VoiceOpcode
 from .type_enums import AllowedMentionTypes
 
@@ -186,6 +186,10 @@ class Connectable:
         channel: Union[VoiceChannel, GuildStageChannel],
     ):
         self.client = client
+
+        if not channel.guild:
+            raise InvalidData("Channel needs a Guild attached to it")
+
         self.guild_id: int = channel.guild.id
         self.channel_id = channel.id
         self._closed = True
