@@ -42,7 +42,7 @@ class BaseGuildChannel(BaseChannel):
     ):
 
         super().__init__(client, data)
-        self.guild_id: int = int(data["guild_id"])
+        self.guild_id: Optional[int] = int(data["guild_id"]) if data.get("guild_id") else None
         self.position: int = data["position"]
         self.permission_overwrites: List[Overwrite] = [
             Overwrite(overwrite) for overwrite in data["permission_overwrites"]
