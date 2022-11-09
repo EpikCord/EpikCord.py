@@ -26,12 +26,16 @@ class PartialEmoji:
 
         return payload
 
+
 class PartialChannel:
     def __init__(self, data: discord_typings.PartialChannelData):
         self.data = data
         self.id: int = int(data["id"])
         self.type: int = data["type"]
-        self.permissions: Optional[Permissions] = Permissions(int(data["permissions"])) if data.get("permissions") else None
+        self.permissions: Optional[Permissions] = (
+            Permissions(int(data["permissions"])) if data.get("permissions") else None
+        )
+
 
 class PartialUser:
     def __init__(

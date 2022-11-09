@@ -24,7 +24,7 @@ _ORJSON = find_spec("orjson")
 
 
 if _ORJSON:
-    import orjson as json # type: ignore
+    import orjson as json  # type: ignore
 
 else:
     import json  # type: ignore

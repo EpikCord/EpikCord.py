@@ -172,8 +172,9 @@ class BaseChannel:
         self.client = client
         self.type: int = data["type"]
         self.data: discord_typings.ChannelData = data
-        self.last_message_id: Optional[int] = int(data["last_message_id"]) if data["last_message_id"] else None
-
+        self.last_message_id: Optional[int] = (
+            int(data["last_message_id"]) if data["last_message_id"] else None
+        )
 
 
 class Connectable:
@@ -360,6 +361,7 @@ class Connectable:
         self.ip = ip_data[4:ip_end].decode("ascii")
         self.port = struct.unpack_from(">H", ip_data, len(ip_data) - 2)[0]
 
+
 class BaseComponent:
     def __init__(self, *, custom_id: str):
         self.custom_id: str = custom_id
@@ -383,7 +385,9 @@ class BaseInteraction:
         self.client = client
         self.type: int = data["type"]
         self.application_id: int = int(data["application_id"])
-        self.interaction_data: Optional[discord_typings.InteractionDataData] = data.get("data")
+        self.interaction_data: Optional[discord_typings.InteractionDataData] = data.get(
+            "data"
+        )
         self.guild_id: Optional[str] = data.get("guild_id")
         self.channel_id: Optional[str] = data.get("channel_id")
         self.author: Optional[Union[User, GuildMember]] = (
