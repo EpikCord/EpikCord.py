@@ -1,16 +1,23 @@
 from __future__ import annotations
 
+import datetime
 from logging import getLogger
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Union, overload
 
-from .abstract import BaseChannel, Connectable, GuildChannel, Messageable
+from .abstract import BaseChannel, Connectable, Messageable
+from .flags import ChannelFlags
 from .partials import PartialUser
 from .thread import Thread
+from .user import User
 
 logger = getLogger(__name__)
 
 if TYPE_CHECKING:
     import discord_typings
+
+    from .client import Client
+    from .guild import Guild
+    from .message import Message
 
 
 class Overwrite:
@@ -21,200 +28,209 @@ class Overwrite:
         self.deny: str = data["deny"]
 
 
-class GuildTextChannel(GuildChannel, Messageable):
+class BaseGuildChannel(BaseChannel):
     def __init__(
         self,
-        client,
+        client: Client,
         data: Union[
             discord_typings.TextChannelData,
-            discord_typings.NewsChannelData,
-            discord_typings.ThreadChannelData,
             discord_typings.VoiceChannelData,
+            discord_typings.CategoryChannelData,
+            discord_typings.NewsChannelData,
             discord_typings.ForumChannelData,
         ],
     ):
-        super().__init__(client, data)
-        Messageable.__init__(self, client, self.id)
-        self.topic: Optional[str] = data.get("topic")  # type: ignore
-        self.rate_limit_per_user: Optional[int] = data["rate_limit_per_user"] if data.get("rate_limit_per_user") else None  # type: ignore
-        self.last_message_id: Optional[int] = int(data["last_message_id"]) if data.get("last_message_id") else None  # type: ignore
-        self.default_auto_archive_duration: Optional[int] = data.get("default_auto_archive_duration")  # type: ignore # MyPy being absolutely dumb.
 
-    async def start_thread(
+        super().__init__(client, data)
+        self.guild_id: Optional[int] = (
+            int(data["guild_id"]) if data.get("guild_id") else None
+        )
+        self.guild: Optional[Guild] = (
+            self.client.guilds.get(self.guild_id) if self.guild_id else None
+        )
+        self.position: int = data["position"]
+        self.permission_overwrites: List[Overwrite] = [
+            Overwrite(overwrite) for overwrite in data["permission_overwrites"]
+        ]
+        self.name: str = data["name"]
+        self.nsfw: bool = data["nsfw"]
+
+    async def delete(self, *, reason: Optional[str] = None) -> None:
+
+        response = await self.client.http.delete(
+            f"/channels/{self.id}", channel_id=self.id, reason=reason
+        )
+        return await response.json()
+
+    async def fetch_invites(self):
+        response = await self.client.http.get(
+            f"/channels/{self.id}/invites", channel_id=self.id
+        )
+        return await response.json()
+
+    async def create_invite(
         self,
-        name: str,
         *,
-        auto_archive_duration: Optional[int] = None,
-        type: Optional[int] = 11,
-        invitable: Optional[bool] = None,
-        rate_limit_per_user: Optional[int] = None,
-        reason: Optional[str] = None,
-    ) -> Thread:
+        max_age: Optional[int] = None,
+        max_uses: Optional[int] = None,
+        temporary: Optional[bool] = None,
+        unique: Optional[bool] = None,
+        target_type: Optional[int] = None,
+        target_user_id: Optional[str] = None,
+        target_application_id: Optional[str] = None,
+    ):
         data = self.client.utils.filter_values(
             {
-                "name": name,
-                "auto_archive_duration": auto_archive_duration,
-                "type": type,
-                "invitable": invitable,
-                "rate_limit_per_user": rate_limit_per_user,
+                "max_age": max_age,
+                "max_uses": max_uses,
+                "temporary": temporary,
+                "unique": unique,
+                "target_type": target_type,
+                "target_user_id": target_user_id,
+                "target_application_id": target_application_id,
             }
         )
 
-        headers = self.client.http.session.headers.copy()
-
-        if reason:
-            headers["X-Audit-Log-Reason"] = reason
-
-        response = await self.client.http.post(
-            f"/channels/{self.id}/threads",
-            json=data,
-            headers=headers,
-            channel_id=self.id,
+        await self.client.http.post(
+            f"/channels/{self.id}/invites", json=data, channel_id=self.id
         )
-        thread = Thread(self.client, await response.json())
-        self.client.guilds.cache[self.guild_id].channels.append(thread)
 
-        return thread
-
-    async def bulk_delete(self, message_ids: List[str], reason: Optional[str]) -> None:
-
-        if reason:
-            headers = self.client.http.session.headers.copy()
-            headers["X-Audit-Log-Reason"] = reason
-
-        response = await self.client.http.post(
-            f"channels/{self.id}/messages/bulk-delete",
-            json={"messages": message_ids},
-            headers=headers,
-            channel_id=self.id,
+    async def delete_overwrite(self, overwrites) -> None:
+        response = await self.client.http.delete(
+            f"/channels/{self.id}/permissions/{overwrites.id}", channel_id=self.id
         )
         return await response.json()
 
-    async def list_public_archived_threads(
-        self, *, before: Optional[str] = None, limit: Optional[int] = None
-    ) -> List[Thread]:
 
-        params: Dict[str, Union[int, str]] = {}
-
-        if before:
-            params["before"] = before
-
-        if limit:
-            params["limit"] = limit
-
-        response = await self.client.http.get(
-            f"/channels/{self.id}/threads/archived/public",
-            params=params,
-            channel_id=self.id,
+class CommonFieldsTextAndNews(Messageable):
+    def __init__(
+        self,
+        client: Client,
+        data: Union[discord_typings.NewsChannelData, discord_typings.TextChannelData],
+    ):
+        super().__init__(client, int(data["id"]))
+        self.topic: Optional[str] = data["topic"]
+        self.parent_id: Optional[int] = (
+            int(data["parent_id"]) if data["parent_id"] else None
         )
-        return [Thread(self.client, data) for data in await response.json()]
-
-    async def list_private_archived_threads(
-        self, *, before: Optional[int] = None, limit: Optional[int] = None
-    ) -> List[Thread]:
-        params: Dict[str, Optional[int]] = {}
-
-        if before:
-            params["before"] = before
-
-        if limit is not None:
-            params["limit"] = limit
-
-        response = await self.client.http.get(
-            f"/channels/{self.id}/threads/archived/private",
-            params=params,
-            channel_id=self.id,
-        )
-        return [Thread(self.client, data) for data in await response.json()]
-
-    async def list_joined_private_archived_threads(
-        self, *, before: Optional[int] = None, limit: Optional[int] = None
-    ) -> List[Thread]:
-        params: Dict[str, Union[int, str]] = {}
-
-        if before:
-            params["before"] = before
-
-        if limit is not None:
-            params["limit"] = limit
-
-        response = await self.client.http.get(
-            f"/channels/{self.id}/threads/archived/private",
-            params=params,
-            channel_id=self.id,
-        )
-        return [Thread(self.client, data) for data in await response.json()]
-
-
-class GuildAnnouncementChannel(GuildTextChannel):
-    def __init__(self, client, data: discord_typings.NewsChannelData):
-        super().__init__(client, data)
+        self.last_pin_timestamp: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["last_pin_timestamp"]) if data.get("last_pin_timestamp") else None  # type: ignore
         self.default_auto_archive_duration: Optional[int] = data.get(
             "default_auto_archive_duration"
         )
-
-    async def follow(self, webhook_channel_id: str):
-        response = await self.client.http.post(
-            f"/channels/{self.id}/followers",
-            json={"webhook_channel_id": webhook_channel_id},
-            channel_id=self.id,
-        )
-        return await response.json()
+        self.flags: ChannelFlags = ChannelFlags(data["flags"])
 
 
-class DMChannel(BaseChannel):
-    def __init__(self, client, data: discord_typings.DMChannelData):
+class GuildTextChannel(BaseGuildChannel, CommonFieldsTextAndNews):
+    def __init__(self, client: Client, data: discord_typings.TextChannelData):
         super().__init__(client, data)
-        self.recipients: Optional[List[PartialUser]] = (
-            [PartialUser(r) for r in data["recipients"]]
-            if data.get("recipient")
-            else None
-        )
+        CommonFieldsTextAndNews.__init__(self, client, data)
+        self.rate_limit_per_user: int = data["rate_limit_per_user"]
 
 
-class CategoryChannel(GuildChannel):
-    def __init__(self, client, data: discord_typings.CategoryChannelData):
+class NewsChannel(BaseGuildChannel, CommonFieldsTextAndNews):
+    def __init__(self, client: Client, data: discord_typings.NewsChannelData):
         super().__init__(client, data)
+        CommonFieldsTextAndNews.__init__(self, client, data)
 
 
-class GuildAnnouncementThread(Thread, GuildAnnouncementChannel):
-    def __init__(self, client, data):
-        super().__init__(client, data)
+GuildAnnouncementChannel = NewsChannel
 
 
-class GuildStageChannel(BaseChannel):
-    def __init__(self, client, data):
-        super().__init__(client, data)
-        self.guild_id: int = int(data["guild_id"])
-        self.channel_id: int = int(data["channel_id"])
-        self.privacy_level: discord_typings.StageInstancePrivacyLevels = data[
-            "privacy_level"
+class DMChannel(Messageable):
+    def __init__(self, client: Client, data: discord_typings.DMChannelData):
+        super().__init__(client, int(data["id"]))
+        self.recipients: List[User] = [
+            User(client, user) for user in data["recipients"]
         ]
-        self.discoverable_disabled: bool = data["discoverable_disabled"]
+        self.last_pin_timestamp: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["last_pin_timestamp"]) if data.get("last_pin_timestamp") else None  # type: ignore
+        self.flags: ChannelFlags = ChannelFlags(data["flags"])
 
 
-class VoiceChannel(GuildChannel, Messageable, Connectable):  # type: ignore
-    def __init__(self, client, data: discord_typings.VoiceChannelData):
+class GroupDMChannel(Messageable):
+    def __init__(self, client: Client, data: discord_typings.GroupDMChannelData):
+        super().__init__(client, int(data["id"]))
+        self.name: str = data["name"]
+        self.recipients: List[User] = [
+            User(client, user) for user in data["recipients"]
+        ]
+        self.icon: Optional[str] = data["icon"]
+        self.owner_id: int = int(data["owner_id"])
+        self.application_id: Optional[int] = (
+            int(data["application_id"]) if data["application_id"] else None
+        )
+        self.last_pin_timestamp: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["last_pin_timestamp"]) if data.get("last_pin_timestamp") else None  # type: ignore
+        self.flags: ChannelFlags = ChannelFlags(data["flags"])
+
+
+class VoiceChannel(BaseGuildChannel, Connectable):
+    def __init__(self, client: Client, data: discord_typings.VoiceChannelData):
         super().__init__(client, data)
+        Connectable.__init__(self, client, channel=self)
         self.bitrate: int = data["bitrate"]
         self.user_limit: int = data["user_limit"]
-        self.rtc_region: Optional[str] = data.get("rtc_region")
+        self.parent_id: Optional[int] = (
+            int(data["parent_id"]) if data["parent_id"] else None
+        )
+        self.last_pin_timestamp: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["last_pin_timestamp"]) if data.get("last_pin_timestamp") else None  # type: ignore
+        self.rtc_region: Optional[str] = data["rtc_region"]
+        self.video_quality_mode: Optional[int] = data.get("video_quality_mode")
+        self.flags: ChannelFlags = ChannelFlags(data["flags"])
 
 
-class ForumChannel(GuildChannel):
-    def __init__(self, client, data):
-        raise NotImplementedError("Forum channels are not implemented yet.")
+class CategoryChannel(BaseGuildChannel):
+    def __init__(self, client: Client, data: discord_typings.CategoryChannelData):
+        self.flags: ChannelFlags = ChannelFlags(data["flags"])
+
+
+class ForumChannel(BaseGuildChannel):
+    def __init__(self, client: Client, data: discord_typings.ForumChannelData):
+        super().__init__(client, data)
+        self.topic: Optional[str] = data["topic"]
+        self.rate_limit_per_user: int = data["rate_limit_per_user"]
+        self.default_auto_archive_duration: Optional[int] = data.get(
+            "default_auto_archive_duration"
+        )
+        self.flags: ChannelFlags = ChannelFlags(data["flags"])
+        self.default_reaction_emoji: Optional[
+            discord_typings.DefaultReactionData
+        ] = data.get("default_reaction_emoji")
+        self.default_thread_rate_limit_per_user: int = data[
+            "default_thread_rate_limit_per_user"
+        ]
+        self.default_sort_order: Optional[discord_typings.SortOrderTypes] = data[
+            "default_sort_order"
+        ]
+
+
+class GuildStageChannel(BaseGuildChannel, Connectable):
+    def __init__(
+        self,
+        client: Client,
+        data: Union[
+            discord_typings.VoiceChannelData, discord_typings.InviteStageInstanceData
+        ],
+    ):
+        super().__init__(client, data)
+        Connectable.__init__(self, client, channel=self)
+        self.bitrate: int = data["bitrate"]
+        self.user_limit: int = data["user_limit"]
+        self.parent_id: Optional[int] = (
+            int(data["parent_id"]) if data["parent_id"] else None
+        )
+        self.last_pin_timestamp: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["last_pin_timestamp"]) if data.get("last_pin_timestamp") else None  # type: ignore
+        self.rtc_region: Optional[str] = data["rtc_region"]
+        self.video_quality_mode: Optional[int] = data.get("video_quality_mode")
 
 
 AnyChannel = Union[
     GuildTextChannel,
     VoiceChannel,
     CategoryChannel,
-    GuildAnnouncementChannel,
-    GuildAnnouncementThread,
+    NewsChannel,
     Thread,
     GuildStageChannel,
     ForumChannel,
+    GroupDMChannel,
 ]
 
 __all__ = (
@@ -223,9 +239,9 @@ __all__ = (
     "GuildAnnouncementChannel",
     "DMChannel",
     "CategoryChannel",
-    "GuildAnnouncementThread",
     "GuildStageChannel",
     "VoiceChannel",
     "ForumChannel",
+    "NewsChannel",
     "AnyChannel",
 )

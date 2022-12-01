@@ -60,15 +60,12 @@ class Sticker:
         )
         return
 
-    async def delete(self, reason: Optional[str]):
+    async def delete(self, reason: Optional[str] = None):
         if not self.guild_id:
             raise ValueError("Cannot delete a sticker that is not in a guild.")
-        headers = self.client.headers.copy()
-        if reason:
-            headers["X-Audit-Log-Reason"] = reason
         await self.client.http.delete(
             f"/guilds/{self.guild_id}/stickers/{self.id}",
-            headers=headers,
+            reason=reason,
             guild_id=self.guild_id,
         )
         return

@@ -327,11 +327,8 @@ class Guild:
             }
         )
 
-        headers = self.client.http.headers.copy()
-        if reason:
-            headers["X-Audit-Log-Reason"] = reason
         response = await self.client.http.patch(
-            f"/guilds/{self.id}", json=data, headers=headers, guild_id=self.id
+            f"/guilds/{self.id}", json=data, reason=reason, guild_id=self.id
         )
         guild_data = await response.json()
 
@@ -423,16 +420,12 @@ class Guild:
             }
         )
 
-        headers = self.client.http.headers.copy()
-        if reason:
-            headers["X-Audit-Log-Reason"] = reason
-
         return self.client.utils.channel_from_type(
             await (
                 await self.client.http.post(
                     f"/guilds/{self.id}/channels",
                     json=data,
-                    headers=headers,
+                    reason=reason,
                     guild_id=self.id,
                 )
             ).json()
@@ -506,10 +499,6 @@ class Emoji:
         reason: Optional[str] = None,
     ):
         payload: EditEmojiData = {}
-        headers = self.client.http.headers.copy()
-        if reason:
-            headers["X-Audit-Log-Reason"] = reason
-
         if name:
             payload["name"] = name
 
@@ -517,16 +506,13 @@ class Emoji:
             payload["roles"] = [int(role.id) for role in roles]
 
         emoji = await self.client.http.patch(
-            f"/guilds/{self.guild_id}/emojis/{self.id}", json=payload, headers=headers
+            f"/guilds/{self.guild_id}/emojis/{self.id}", json=payload, reason=reason
         )
         return Emoji(self.client, emoji)
 
     async def delete(self, *, reason: Optional[str] = None):
-        headers = self.client.http.headers.copy()
-        if reason:
-            headers["X-Audit-Log-Reason"] = reason
         await self.client.http.delete(
-            f"/guilds/{self.guild_id}/emojis/{self.id}", headers=headers
+            f"/guilds/{self.guild_id}/emojis/{self.id}", reason=reason
         )
 
 
