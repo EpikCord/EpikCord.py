@@ -175,13 +175,11 @@ class WebsocketClient:
             url = self.resume_gateway_url
         else:
             if not self.gateway_url:
-                logger.info("Getting gateway url...")
                 self.gateway_url = url = (await self.http.get_gateway())["url"]
-                logger.info(f"Received url {self.gateway_url}")
 
         logger.info("Connecting to gateway...")
         self.websocket = await self.http.ws_connect(  # type: ignore
-            f"{url}?v=10&encoding=json&compress=zlib-stream"
+            f"{url}?v=10&encoding=json"
         )
         logger.info("Connected to gateway! Listening to events!")
         self.websocket_ratelimiter = GatewayRateLimiter()
