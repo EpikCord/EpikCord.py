@@ -38,7 +38,9 @@ class CommandHandler:
 
         for name_localisation in localized_names:
             if len(name_localisation.value) > 32:
-                raise TypeError(f"Command with name {name} has too long of a name for locale {name_localisation.locale}. Must be less than 32 characters. It is {len(name_localisation.value)}/32.")
+                raise TypeError(
+                    f"Command with name {name} has too long of a name for locale {name_localisation.locale}. Must be less than 32 characters. It is {len(name_localisation.value)}/32."
+                )
 
         for description_localisation in localized_descriptions:
             if len(description_localisation.value) > 100:
@@ -51,7 +53,9 @@ class CommandHandler:
             desc = description or func.__doc__
 
             if len(name) > 32:
-                raise TypeError(f"Command with name {name} has too long of a name. Must be less than 32 characters. It is {len(name)}/32.")
+                raise TypeError(
+                    f"Command with name {name} has too long of a name. Must be less than 32 characters. It is {len(name)}/32."
+                )
 
             if not desc:
                 raise TypeError(
@@ -59,7 +63,9 @@ class CommandHandler:
                 )
 
             if len(desc) > 100:
-                raise TypeError(f"Command with name {name} has too large of a description. It must be 100 or less characters. It is {len(desc)}/100")
+                raise TypeError(
+                    f"Command with name {name} has too large of a description. It must be 100 or less characters. It is {len(desc)}/100"
+                )
 
             command = ClientSlashCommand(
                 name=name,
