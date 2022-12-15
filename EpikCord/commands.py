@@ -9,17 +9,19 @@ from .options import AnyOption
 logger = getLogger(__name__)
 
 
+Callback = Callable[..., Coroutine[Any, Any, Any]]
+
 class Check:
-    def __init__(self, callback):
-        self.callback = callback
-        self.success_callback = self.default_success
-        self.failure_callback = self.default_failure
+    def __init__(self, callback: Callback):
+        self.callback: Callback = callback
+        self.success_callback: Callback = self._default_success
+        self.failure_callback: Callback = self._default_failure
 
     def success(self, callback: Optional[Callable] = None):
-        self.success_callback = callback or self.default_success
+        self.success_callback = callback or self._default_success
 
     def failure(self, callback: Optional[Callable] = None):
-        self.failure_callback = callback or self.default_failure
+        self.failure_callback = callback or self._default_failure
 
     async def default_success(self, interaction):
         logger.info(
@@ -94,7 +96,7 @@ class ClientSlashCommand(BaseCommand):
         self.callback: Callable = callback
         self.guild_ids: Optional[List[str]] = guild_ids or []
         self.options: Optional[List[AnyOption]] = options or []
-        self.autocomplete_options: dict = {}
+        self.autocomplete_options: Dict[str, Callback] = {}
 
     @property
     def type(self):
