@@ -1,5 +1,5 @@
 from logging import getLogger
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Coroutine, Any
 
 from .abstract import BaseCommand
 from .exceptions import FailedCheck
