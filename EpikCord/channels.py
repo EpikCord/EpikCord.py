@@ -109,7 +109,7 @@ class CommonFieldsTextAndNews(Messageable):
         super().__init__(client, int(data["id"]))
         self.topic: Optional[str] = data["topic"]
         self.parent_id: Optional[int] = (
-            int(data["parent_id"]) if data["parent_id"] else None
+            int(data["parent_id"]) if data.get("parent_id") else None
         )
         self.last_pin_timestamp: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["last_pin_timestamp"]) if data.get("last_pin_timestamp") else None  # type: ignore
         self.default_auto_archive_duration: Optional[int] = data.get(
