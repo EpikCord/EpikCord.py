@@ -341,6 +341,7 @@ class WebsocketClient:
         async def runner():
             try:
                 await self.connect()
+                print("Finished connect function")
             finally:
                 if not self._closed:
                     await self.close()
