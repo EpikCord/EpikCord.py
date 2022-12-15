@@ -45,9 +45,7 @@ class BaseGuildChannel(BaseChannel):
         self.guild_id: Optional[int] = (
             int(data["guild_id"]) if data.get("guild_id") else None
         )
-        self.guild: Optional[Guild] = (
-            self.client.guilds.get(self.guild_id) if self.guild_id else None
-        )
+        self.guild: Optional[Guild] = self.client.guilds.get(self.guild_id)
         self.position: int = data["position"]
         self.permission_overwrites: List[Overwrite] = [
             Overwrite(overwrite) for overwrite in data["permission_overwrites"]

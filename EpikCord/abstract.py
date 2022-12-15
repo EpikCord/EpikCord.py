@@ -192,10 +192,6 @@ class Connectable:
     ):
         self.client = client
 
-        if not channel.guild:
-            raise InvalidData("Channel needs a Guild attached to it")
-
-        self.guild_id: int = channel.guild.id
         self.channel_id = channel.id
         self._closed = True
 
@@ -219,6 +215,13 @@ class Connectable:
     async def connect(
         self, muted: Optional[bool] = False, deafened: Optional[bool] = False
     ):
+        if not self.guild:
+            channel = await self.client.channels.fetch(self.channel_id)
+            if not channel:
+                raise InvalidData(f"Channel with Id {self.channel_id} does not exist.")
+            self.guild = channel.id
+            self.guild_id = channel.id
+
         await self.client.send_json(
             {
                 "op": GatewayOpcode.VOICE_STATE_UPDATE,
