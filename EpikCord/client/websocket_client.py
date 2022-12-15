@@ -315,6 +315,7 @@ class WebsocketClient:
             return
 
         if self.websocket is not None and not self.websocket.closed:
+            logger.critical("Closing connection to Discord...")
             await self.websocket.close(code=4000)
 
         self._closed = True
@@ -341,7 +342,6 @@ class WebsocketClient:
         async def runner():
             try:
                 await self.connect()
-                print("Finished connect function")
             finally:
                 if not self._closed:
                     await self.close()
