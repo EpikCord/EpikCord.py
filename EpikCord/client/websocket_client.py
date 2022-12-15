@@ -179,7 +179,7 @@ class WebsocketClient:
 
         logger.info("Connecting to gateway...")
         self.websocket = await self.http.ws_connect(  # type: ignore
-            f"{url}?v=10&encoding=json"
+            f"{url}?v=10&encoding=json&compress=zlib-stream"
         )
         logger.info("Connected to gateway! Listening to events!")
         self.websocket_ratelimiter = GatewayRateLimiter()
@@ -396,8 +396,10 @@ class WebsocketClient:
     async def _message_create(self, data: discord_typings.MessageCreateData):
         """Event fired when messages are created"""
         from EpikCord import Message
-
-        await self.dispatch("message_create", Message(self, data))
+        message: Message = Message(self, data)
+        if not message.channel:
+            message.channel = await self.channels.fetch(data["channel_id"])
+        await self.dispatch("message_create", message)
 
     async def _guild_create(self, data: discord_typings.GuildCreateData):
         from EpikCord import Guild, Thread, UnavailableGuild

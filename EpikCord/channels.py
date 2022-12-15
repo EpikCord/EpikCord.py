@@ -192,12 +192,12 @@ class ForumChannel(BaseGuildChannel):
         self.default_reaction_emoji: Optional[
             discord_typings.DefaultReactionData
         ] = data.get("default_reaction_emoji")
-        self.default_thread_rate_limit_per_user: int = data[
+        self.default_thread_rate_limit_per_user: Optional[int] = data.get(
             "default_thread_rate_limit_per_user"
-        ]
-        self.default_sort_order: Optional[discord_typings.SortOrderTypes] = data[
+        )
+        self.default_sort_order: Optional[discord_typings.SortOrderTypes] = data.get(
             "default_sort_order"
-        ]
+        )
 
 
 class GuildStageChannel(BaseGuildChannel, Connectable):

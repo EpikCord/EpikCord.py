@@ -273,7 +273,8 @@ class Embed:
     def from_dict(cls, data: discord_typings.EmbedData):
         payload = data
         payload.pop("type", None)
-        payload["timestamp"] = datetime.datetime.fromisoformat(data["timestamp"])  # type: ignore
+        if data.get("timestamp"):
+            payload["timestamp"] = datetime.datetime.fromisoformat(data["timestamp"])  # type: ignore
         return cls(**payload)  # type: ignore
 
 
@@ -455,8 +456,6 @@ class Message:
         )
 
         self.channel = client.channels.get(self.channel_id)
-        if not self.channel:  # Cache miss
-            self.channel = asyncio.create_task(client.channels.fetch(self.channel_id))
 
     async def add_reaction(self, emoji: str):
         emoji = _quote(emoji)

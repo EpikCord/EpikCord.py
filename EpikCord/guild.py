@@ -87,6 +87,7 @@ class Invite:
 class GuildMember(User):
     def __init__(self, client, data: discord_typings.GuildMemberData):
         super().__init__(client, data["user"])
+        print(data)
         self.data: discord_typings.GuildMemberData = data  # type: ignore
         self.client = client
         self.nick: Optional[str] = data.get("nick")
@@ -102,7 +103,7 @@ class GuildMember(User):
         self.permissions: Optional[Permissions] = (
             Permissions(int(data["permissions"])) if data.get("permissions") else None
         )
-        self.communication_disabled_until: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["communication_disabled_until"]) if data.get("communication_disabled_until") else None  # type: ignore # until my pr is merged
+        self.communication_disabled_until: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["communication_disabled_until"]) if data.get("communication_disabled_until") else None
 
 
 class GuildPreview:

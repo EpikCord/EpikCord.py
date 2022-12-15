@@ -97,6 +97,7 @@ class Messageable:
         after: Optional[int] = None,
         limit: Optional[int] = None,
     ) -> List[Message]:
+        from EpikCord import Message
 
         response = await self.client.http.get(
             f"channels/{self.id}/messages",
@@ -106,6 +107,7 @@ class Messageable:
         return [Message(self.client, message) for message in data]
 
     async def fetch_message(self, *, message_id: str) -> Message:
+        from EpikCord import Message
 
         response = await self.client.http.get(
             f"channels/{self.id}/messages/{message_id}"
@@ -125,6 +127,7 @@ class Messageable:
         attachments: List[Attachment] = [],
         suppress_embeds: bool = False,
     ) -> Message:
+        from EpikCord import Message
 
         payload: MessagePayload = self.client.utils.filter_values(
             {
@@ -151,7 +154,6 @@ class Messageable:
 
     async def typing(self) -> TypingContextManager:
         return TypingContextManager(self.client, self.id)
-
 
 class BaseCommand:
     def __init__(self, checks: Optional[List[Check]] = None):
