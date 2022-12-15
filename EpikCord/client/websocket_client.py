@@ -27,7 +27,7 @@ from ..ext.tasks import task
 from ..flags import Intents
 from ..opcodes import GatewayOpcode
 from ..ws_events import setup_ws_event_handler
-from .client_application import ClientApplication
+from .client_application import ClienhtApplication
 from .client_user import ClientUser
 from .http_client import HTTPClient
 
@@ -316,7 +316,7 @@ class WebsocketClient:
             return
 
         if self.websocket is not None and not self.websocket.closed:
-            logger.critical("Closing connection to Discord...")
+            await self.handle_close()
             await self.websocket.close(code=4000)
 
         self._closed = True
