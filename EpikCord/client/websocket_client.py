@@ -27,7 +27,7 @@ from ..ext.tasks import task
 from ..flags import Intents
 from ..opcodes import GatewayOpcode
 from ..ws_events import setup_ws_event_handler
-from .client_application import ClienhtApplication
+from .client_application import ClientApplication
 from .client_user import ClientUser
 from .http_client import HTTPClient
 
