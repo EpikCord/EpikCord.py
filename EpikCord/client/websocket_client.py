@@ -191,6 +191,7 @@ class WebsocketClient:
                 f"Received {event_data} from the Websocket Connection to Discord."
             )
             await self.handle_ws_event(event_data)
+        await self.handle_close()
 
     async def reconnect(self):
         await self.close()
@@ -345,7 +346,6 @@ class WebsocketClient:
             finally:
                 if not self._closed:
                     await self.close()
-            logger.critical("Closed connection to Discord.")
 
         def stop_loop_on_completion(f: asyncio.Future):
             loop.stop()
