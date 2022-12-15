@@ -345,7 +345,7 @@ class WebsocketClient:
             finally:
                 if not self._closed:
                     await self.close()
-            print("Closed connection to Discord.")
+            logger.critical("Closed connection to Discord.")
 
         def stop_loop_on_completion(f: asyncio.Future):
             loop.stop()
