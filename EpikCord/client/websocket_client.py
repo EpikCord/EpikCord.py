@@ -23,14 +23,13 @@ from EpikCord.managers import ChannelManager, GuildManager
 from ..close_event_codes import GatewayCECode
 from ..close_handler import CloseHandlerLog, CloseHandlerRaise, close_dispatcher
 from ..exceptions import ClosedWebSocketConnection
-from ..ext.tasks import Task
+from ..ext.tasks import Task, task
 from ..flags import Intents
 from ..opcodes import GatewayOpcode
 from ..ws_events import setup_ws_event_handler
 from .client_application import ClientApplication
 from .client_user import ClientUser
 from .http_client import HTTPClient
-from ..ext.tasks import task
 
 if TYPE_CHECKING:
     import discord_typings
