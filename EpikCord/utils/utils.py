@@ -49,7 +49,7 @@ class Utils:
         10: Thread,
         11: Thread,
         13: GuildStageChannel,
-        15: ForumChannel
+        15: ForumChannel,
     }
 
     def __init__(self, client: WebsocketClient):

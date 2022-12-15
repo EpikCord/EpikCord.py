@@ -155,6 +155,7 @@ class Messageable:
     async def typing(self) -> TypingContextManager:
         return TypingContextManager(self.client, self.id)
 
+
 class BaseCommand:
     def __init__(self, checks: Optional[List[Check]] = None):
         self.checks: List[Check] = checks or []

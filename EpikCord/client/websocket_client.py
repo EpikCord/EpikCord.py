@@ -23,7 +23,7 @@ from EpikCord.managers import ChannelManager, GuildManager
 from ..close_event_codes import GatewayCECode
 from ..close_handler import CloseHandlerLog, CloseHandlerRaise, close_dispatcher
 from ..exceptions import ClosedWebSocketConnection
-from ..ext.tasks import task
+from ..ext.tasks import Task
 from ..flags import Intents
 from ..opcodes import GatewayOpcode
 from ..ws_events import setup_ws_event_handler
@@ -338,10 +338,8 @@ class WebsocketClient:
             }
         )
 
-        @task(seconds=self.heartbeat_interval)
-        async def heartbeat():
-            await self.heartbeat()
-        await heartbeat.start()
+        heartbeat = Task(self.heartbeat, self.heartbeat_interval, -1)
+        heartbeat.run()
 
     def login(self):
         loop = asyncio.get_event_loop()
@@ -402,6 +400,7 @@ class WebsocketClient:
     async def _message_create(self, data: discord_typings.MessageCreateData):
         """Event fired when messages are created"""
         from EpikCord import Message
+
         message: Message = Message(self, data)
         if not message.channel:
             message.channel = await self.channels.fetch(data["channel_id"])

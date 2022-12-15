@@ -102,7 +102,11 @@ class GuildMember(User):
         self.permissions: Optional[Permissions] = (
             Permissions(int(data["permissions"])) if data.get("permissions") else None
         )
-        self.communication_disabled_until: Optional[datetime.datetime] = datetime.datetime.fromisoformat(data["communication_disabled_until"]) if data.get("communication_disabled_until") else None
+        self.communication_disabled_until: Optional[datetime.datetime] = (
+            datetime.datetime.fromisoformat(data["communication_disabled_until"])
+            if data.get("communication_disabled_until")
+            else None
+        )
 
 
 class GuildPreview:
@@ -166,7 +170,11 @@ class Guild:
         self.system_channel_flags: SystemChannelFlags = SystemChannelFlags(
             data["system_channel_flags"]
         )
-        self.rules_channel_id: Optional[int] = int(data["rules_channel_id"]) if data["rules_channel_id"] is not None else None
+        self.rules_channel_id: Optional[int] = (
+            int(data["rules_channel_id"])
+            if data["rules_channel_id"] is not None
+            else None
+        )
         self.max_presences: Optional[int] = data.get("max_presences")
         self.max_members: Optional[int] = data.get("max_members")
         self.vanity_url_code: Optional[str] = data.get("vanity_url_code")

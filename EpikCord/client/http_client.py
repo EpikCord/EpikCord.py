@@ -53,6 +53,9 @@ class Bucket(UnknownBucket):
     def __eq__(self, other):
         return self.bucket_hash == other.bucket_hash
 
+    def __hash__(self):
+        return id(self)
+
 
 class DiscordWSMessage:
     def __init__(self, *, data, type, extra):
@@ -176,8 +179,8 @@ class HTTPClient:
             else:
                 b = Bucket(discord_hash=res.headers["X-RateLimit-Bucket"])
                 if b in self.buckets.values():
-                    self.buckets[bucket_hash] = {v: k for k, v in self.buckets.items()}[  # type: ignore
-                        b
+                    self.buckets[bucket_hash] = list(self.bucket.values())[
+                        list(self.bucket.values()).index(b)
                     ]
                 else:
                     self.buckets[bucket_hash] = b
