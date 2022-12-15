@@ -53,7 +53,7 @@ class BaseGuildChannel(BaseChannel):
             Overwrite(overwrite) for overwrite in data["permission_overwrites"]
         ]
         self.name: str = data["name"]
-        self.nsfw: bool = data["nsfw"]
+        self.nsfw: Optional[bool] = data.get("nsfw")
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
 
