@@ -20,9 +20,9 @@ See the [Contributing](./CONTRIBUTING.md) page for more information.
 Have functions and attributes you not sure about? Check our docs [here](https://epikcordpy.readthedocs.io)
 
 ## I need help!
-If you need help, you can join our [EpikCord.py Discord Server](https://discord.gg/4R473R73kQ) and ask for help there.
+If you need help, you can join our [EpikCord.py Discord Server](https://discord.gg/EpikCord) and ask for help there.
 
-<a href="https://discord.gg/4R473R73kQ" target="_blank" rel="noopener noreferrer">
+<a href="https://discord.gg/EpikCord" target="_blank" rel="noopener noreferrer">
     <img src="https://img.shields.io/discord/937364424208039957?color=9cf&logo=discord&label=discord" alt="Discord server">
 </a>
 
