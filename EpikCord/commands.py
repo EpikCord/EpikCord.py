@@ -81,16 +81,16 @@ class ClientSlashCommand(BaseCommand):
         callback: Callable,
         guild_ids: Optional[List[str]] = None,
         options: Optional[List[AnyOption]] = None,
-        name_localization: Optional[Localization] = None,
-        description_localization: Optional[Localization] = None,
+        name_localization: Optional[List[Localization]] = None,
+        description_localization: Optional[List[Localization]] = None,
         checks: Optional[List[Check]] = None,
     ):
         super().__init__(checks or [])
         self.name: str = name
         self.description: str = description
-        self.name_localizations: Optional[Localization] = name_localization
+        self.name_localizations: Optional[List[Localization]] = name_localization
         self.description_localizations: Optional[
-            Localization
+            List[Localization]
         ] = description_localization
         self.callback: Callable = callback
         self.guild_ids: Optional[List[str]] = guild_ids or []
