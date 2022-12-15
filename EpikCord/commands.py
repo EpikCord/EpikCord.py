@@ -11,6 +11,7 @@ logger = getLogger(__name__)
 
 Callback = Callable[..., Coroutine[Any, Any, Any]]
 
+
 class Check:
     def __init__(self, callback: Callback):
         self.callback: Callback = callback
