@@ -29,34 +29,46 @@ class CommandHandler:
         description: str = None,
         guild_ids: Optional[List[str]] = None,
         options: Optional[List[AnyOption]] = None,
-        name_localizations: Optional[List[Localization]] = None,
-        description_localizations: Optional[List[Localization]] = None,
-        name_localisations: Optional[List[Localization]] = None,
-        description_localisations: Optional[List[Localization]] = None,
+        localized_names: Optional[List[Localization]] = None,
+        localized_descriptions: Optional[List[Localization]] = None,
         checks: Optional[List[Check]] = None,
     ):
-        name_localization = name_localizations, name_localisations or []
-        description_localization = (
-            description_localizations,
-            description_localisations or [],
-        )
+        name_localizations: List[Localization] = localized_names or []
+        description_localization: List[Localization] = localized_descriptions or []
+
+        for name_localisation in localized_names:
+            if len(name_localisation.value) > 32:
+                raise TypeError(f"Command with name {name} has too long of a name for locale {name_localisation.locale}. Must be less than 32 characters. It is {len(name_localisation.value)}/32.")
+
+        for description_localisation in localized_descriptions:
+            if len(description_localisation.value) > 100:
+                raise TypeError(f"Command with name {name} has too long of a length")
 
         def register_slash_command(func):
-            desc = description or func.__doc__
-            if not desc:
-                raise TypeError(
-                    f"Command with {name or func.__name__} has no description. This is required."
-                )
             from EpikCord import ClientSlashCommand
 
+            name = name.lower() or func.__name__.lower()
+            desc = description or func.__doc__
+
+            if len(name) > 32:
+                raise TypeError(f"Command with name {name} has too long of a name. Must be less than 32 characters. It is {len(name)}/32.")
+
+            if not desc:
+                raise TypeError(
+                    f"Command with name {name} has no description. This is required."
+                )
+
+            if len(desc) > 100:
+                raise TypeError(f"Command with name {name} has too large of a description. It must be 100 or less characters. It is {len(desc)}/100")
+
             command = ClientSlashCommand(
-                name=name or func.__name__,
+                name=name,
                 description=desc,
                 guild_ids=guild_ids or [],
                 options=options or [],
                 callback=func,
-                name_localization=name_localization,
-                description_localization=description_localization,
+                name_localizations=localized_names,
+                description_localizations=localized_descriptions,
                 checks=checks or [],
             )
 

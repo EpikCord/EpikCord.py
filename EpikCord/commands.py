@@ -67,6 +67,10 @@ class ClientUserCommand(BaseCommand):
     def type(self):
         return 2
 
+    def to_dict(self):
+        return {
+            "name": self.name
+        }
 
 class ClientSlashCommand(BaseCommand):
     def __init__(
