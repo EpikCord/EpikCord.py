@@ -87,7 +87,6 @@ class Invite:
 class GuildMember(User):
     def __init__(self, client, data: discord_typings.GuildMemberData):
         super().__init__(client, data["user"])
-        print(data)
         self.data: discord_typings.GuildMemberData = data  # type: ignore
         self.client = client
         self.nick: Optional[str] = data.get("nick")

@@ -30,6 +30,7 @@ from ..ws_events import setup_ws_event_handler
 from .client_application import ClientApplication
 from .client_user import ClientUser
 from .http_client import HTTPClient
+from ..ext.tasks import task
 
 if TYPE_CHECKING:
     import discord_typings
@@ -336,6 +337,11 @@ class WebsocketClient:
                 },
             }
         )
+
+        @task(seconds=self.heartbeat_interval)
+        async def heartbeat():
+            await self.heartbeat()
+        await heartbeat.start()
 
     def login(self):
         loop = asyncio.get_event_loop()
