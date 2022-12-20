@@ -14,7 +14,7 @@ class WebhookUserData(TypedDict):
 
 class WebhookUser:
     def __init__(self, data: UserData):
-        self.webhook_id: str = data["webhook_id"]  # type: ignore
+        self.webhook_id: Optional[int] = data.get("webhook_id")  # type: ignore
         self.username: str = data["username"]
         self.avatar: Optional[str] = data.get("avatar")
 

@@ -22,5 +22,6 @@ _build
 testing.*
 config.json
 RoboEpikLogs.log
+epikcord.log
 *.mp3
 *.mp4
