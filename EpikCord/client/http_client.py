@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ..utils import clear_none_values
 import asyncio
 from typing import Optional, Dict
 
@@ -110,7 +111,7 @@ class HTTPClient:
     async def ws_connect(self, url: str) -> aiohttp.ClientWebSocketResponse:
         return await self.session.ws_connect(url)
 
-    async def request(self, method: str, url: str, *args,  discord: bool = True, channel_id: int = 0, guild_id: int = 0, webhook_id: int = 0, webhook_token: str = "None", **kwargs) -> Optional[aiohttp.ClientResponse]:
+    async def request(self, method: str, url: str, *args,  discord: bool = True, channel_id: Optional[int] = None, guild_id: Optional[int] = None, webhook_id: Optional[int] = None, webhook_token: Optional[str] = None, **kwargs) -> Optional[aiohttp.ClientResponse]:
         """
         Parameters
         ----------
@@ -151,8 +152,10 @@ class HTTPClient:
         HTTPException
             If the request returns a status code that is not OK and not any of the other exceptions.
         """
+
         if not discord:
             return await self.session.request(method, url, *args, **kwargs)
+  
         if url.startswith("/"):
             url = f"https://discord.com/api/v{self.version}{url}"
         else:
@@ -161,7 +164,7 @@ class HTTPClient:
         if url.endswith("/"):
             url = url[:-1]
         
-        bucket = self.buckets.get(url) or MockBucket()
+        bucket = self.buckets.get(f"{method}:{url}") or MockBucket()
 
         await self.global_event.wait()
         await bucket.wait()
@@ -169,6 +172,22 @@ class HTTPClient:
         async with self.session.request(method, url, *args, **kwargs) as response:
             if isinstance(bucket, MockBucket) and response.headers.get("X-RateLimit-Bucket"):
                 if channel_id or guild_id or webhook_id or webhook_token:
+                    bucket = TopLevelBucket(
+                        major_parameters=clear_none_values({
+                            "channel_id": channel_id,
+                            "guild_id": guild_id,
+                            "webhook_id": webhook_id,
+                            "webhook_token": webhook_token
+                        })
+                    )
+                    self.buckets[f"{method}:{url}"] = bucket
+                else:
+                    bucket = Bucket(bucket_hash=response.headers["X-RateLimit-Bucket"])
+                    if bucket in self.buckets.values():
+                        self.buckets[f"{method}:{url}"] = list(self.buckets.values())[list(self.buckets.values()).index(bucket)]
+                        bucket = self.buckets[f"{method}:{url}"]
+                    else:
+                        self.buckets[f"{method}:{url}"] = bucket
 
             if response.status == 429:
                 data = await response.json()
