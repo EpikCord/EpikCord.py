@@ -384,7 +384,7 @@ class WebsocketClient:
         )  # TODO: Make this return something like (VoiceState, Member) or make VoiceState get Member from member_id
 
     async def _guild_delete(self, data: discord_typings.GuildDeleteData):
-        if guild := self.guilds.remove_from_cache(data["id"]):
+        if guild := self.guilds.remove_from_cache(int(data["id"])):
             await self.dispatch("guild_delete", guild)
 
     async def _interaction_create(self, data: discord_typings.InteractionCreateData):
@@ -392,9 +392,32 @@ class WebsocketClient:
         await self.dispatch("interaction_create", interaction)
 
     async def _channel_create(self, data: discord_typings.ChannelCreateData):
+        """Event Fired when a channel is created
+
+            Dispatches ``channel`` to the defined event function(s)
+        """
         channel = self.utils.channel_from_type(data)
         self.channels.add_to_cache(channel.id, channel)
         await self.dispatch("channel_create", channel)
+    
+    async def _channel_update(self,data:discord_typings.ChannelUpdateData):
+        """Event Fired when a channel is modified/updated. This event dispatches the channel objects before and after the modification.
+
+        Dispatches ``before`` and ``after`` to the defined event function(s)
+        """
+        after = self.utils.channel_from_type(data)
+        before = self.channels.get(after.id)
+        self.channels.add_to_cache(after.id, after)
+        await self.dispatch("channel_update", before, after) 
+
+    async def _channel_delete(self, data:discord_typings.ChannelDeleteData):
+        """Event Fired when a channel is deleted
+
+        Dispatches ``channel`` to the defined event function(s)
+        """
+        channel = self.channels.get(int(data["id"]))
+        self.channels.remove_from_cache(channel.id)
+        await self.dispatch("channel_delete", channel)
 
     async def _message_create(self, data: discord_typings.MessageCreateData):
         """Event fired when messages are created"""
