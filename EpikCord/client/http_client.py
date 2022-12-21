@@ -1,17 +1,12 @@
 from __future__ import annotations
 
-from ..exceptions import (
-    NotFound,
-    Forbidden,
-    Unauthorized,
-    BadRequest,
-    HTTPException
-)
+from ..exceptions import NotFound, Forbidden, Unauthorized, BadRequest, HTTPException
 from ..utils import clear_none_values
 import asyncio
 from typing import Optional, Dict
 
 import aiohttp
+
 
 class MockBucket:
     def __init__(self):
@@ -31,6 +26,7 @@ class MockBucket:
         if isinstance(other, MockBucket):
             return True
         return False
+
 
 class Bucket:
     def __init__(self, *, bucket_hash: str):
@@ -69,11 +65,11 @@ class Bucket:
         """
         self.event.clear()
 
-
     def __eq__(self, other: Bucket):
         if isinstance(other, Bucket):
             return self.hash == other.hash
         return False
+
 
 class TopLevelBucket(Bucket):
     def __init__(self, *, major_parameters: Dict[str, Any]):
@@ -104,13 +100,14 @@ class TopLevelBucket(Bucket):
             return self.major_parameters == other.major_parameters
         return False
 
+
 class HTTPClient:
     def __init__(self, token: str, *, version: int = 10):
         self.token: str = token
         self.version: int = version
-        self.session: aiohttp.ClientSession = aiohttp.ClientSession(headers={
-            "Authorization": f"Bot {self.token}"
-        })
+        self.session: aiohttp.ClientSession = aiohttp.ClientSession(
+            headers={"Authorization": f"Bot {self.token}"}
+        )
         self.buckets: Dict[str, Bucket] = {}
         self.global_event: asyncio.Event = asyncio.Event()
         self.global_event.set()
@@ -118,7 +115,18 @@ class HTTPClient:
     async def ws_connect(self, url: str) -> aiohttp.ClientWebSocketResponse:
         return await self.session.ws_connect(url)
 
-    async def request(self, method: str, url: str, *args,  discord: bool = True, channel_id: Optional[int] = None, guild_id: Optional[int] = None, webhook_id: Optional[int] = None, webhook_token: Optional[str] = None, **kwargs) -> Optional[aiohttp.ClientResponse]:
+    async def request(
+        self,
+        method: str,
+        url: str,
+        *args,
+        discord: bool = True,
+        channel_id: Optional[int] = None,
+        guild_id: Optional[int] = None,
+        webhook_id: Optional[int] = None,
+        webhook_token: Optional[str] = None,
+        **kwargs,
+    ) -> Optional[aiohttp.ClientResponse]:
         """
         Parameters
         ----------
@@ -145,7 +153,7 @@ class HTTPClient:
         -------
         Optional[aiohttp.ClientResponse]
             The response of the request. Can be None if the request fails.
-        
+
         Raises
         ------
         NotFound
@@ -162,7 +170,7 @@ class HTTPClient:
 
         if not discord:
             return await self.session.request(method, url, *args, **kwargs)
-  
+
         if url.startswith("/"):
             url = f"https://discord.com/api/v{self.version}{url}"
         else:
@@ -170,28 +178,34 @@ class HTTPClient:
 
         if url.endswith("/"):
             url = url[:-1]
-        
+
         bucket = self.buckets.get(f"{method}:{url}") or MockBucket()
 
         await self.global_event.wait()
         await bucket.wait()
 
         async with self.session.request(method, url, *args, **kwargs) as response:
-            if isinstance(bucket, MockBucket) and response.headers.get("X-RateLimit-Bucket"):
+            if isinstance(bucket, MockBucket) and response.headers.get(
+                "X-RateLimit-Bucket"
+            ):
                 if channel_id or guild_id or webhook_id or webhook_token:
                     bucket = TopLevelBucket(
-                        major_parameters=clear_none_values({
-                            "channel_id": channel_id,
-                            "guild_id": guild_id,
-                            "webhook_id": webhook_id,
-                            "webhook_token": webhook_token
-                        })
+                        major_parameters=clear_none_values(
+                            {
+                                "channel_id": channel_id,
+                                "guild_id": guild_id,
+                                "webhook_id": webhook_id,
+                                "webhook_token": webhook_token,
+                            }
+                        )
                     )
                     self.buckets[f"{method}:{url}"] = bucket
                 else:
                     bucket = Bucket(bucket_hash=response.headers["X-RateLimit-Bucket"])
                     if bucket in self.buckets.values():
-                        self.buckets[f"{method}:{url}"] = list(self.buckets.values())[list(self.buckets.values()).index(bucket)]
+                        self.buckets[f"{method}:{url}"] = list(self.buckets.values())[
+                            list(self.buckets.values()).index(bucket)
+                        ]
                         bucket = self.buckets[f"{method}:{url}"]
                     else:
                         self.buckets[f"{method}:{url}"] = bucket
