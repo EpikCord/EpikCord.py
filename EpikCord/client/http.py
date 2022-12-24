@@ -99,8 +99,8 @@ class HTTPClient:
             The args to pass to the ClientSession.request method.
         discord: bool
             Whether this request is to Discord.
-        json: Optional[Dict]
-            The json to pass to the ClientSession.request method.
+        json: Optional[Dict[:class:`str`, Any]]
+            The json document to pass to the ClientSession.request method.
         files: Optional[List[File]]
             The files to pass to the request.
         **kwargs
