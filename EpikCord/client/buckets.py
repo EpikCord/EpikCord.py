@@ -6,6 +6,7 @@ import asyncio
 from logging import getLogger
 from typing import Union, Optional, Dict
 
+import aiohttp
 
 logger = getLogger("EpikCord.http")
 
@@ -21,7 +22,6 @@ class MockBucket:
 
     def __eq__(self, other: MockBucket):
         return isinstance(other, MockBucket)
-
 
 class Bucket:
     def __init__(self, *, bucket_hash: str):
@@ -69,6 +69,19 @@ class Bucket:
             return self.hash == other.hash
         return False
 
+    async def handle_exhaustion(self, retry_after: int):
+        """
+        Handles the exhaustion of the bucket.
+
+        Parameters
+        ----------
+        retry_after: int
+            The amount of time to wait before retrying.
+        """
+        self.clear()
+        logger.info(f"Bucket {self.hash} exhausted, waiting {retry_after} seconds.")
+        await asyncio.sleep(retry_after)
+        self.set()
 
 class TopLevelBucket:
     def __init__(
@@ -152,3 +165,17 @@ class TopLevelBucket:
         return (
             f"{self.channel_id}:{self.guild_id}:{self.webhook_id}:{self.webhook_token}"
         )
+
+    async def handle_exhaustion(self, retry_after: int):
+        """
+        Handles the exhaustion of the bucket.
+
+        Parameters
+        ----------
+        retry_after: int
+            The amount of time to wait before retrying.
+        """
+        self.clear()
+        logger.info(f"Bucket {str(self)} exhausted, waiting {retry_after} seconds.")
+        await asyncio.sleep(retry_after)
+        self.set()

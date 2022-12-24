@@ -141,7 +141,7 @@ class HTTPClient:
                 if response.status == 429:
                     await self.handle_ratelimit(data, bucket)
                 elif response.headers.get("X-RateLimit-Remaining", "1") == "0":
-                    await self.handle_exhausted_bucket(response, bucket)
+                    await bucket.handle_exhaustion(int(response.headers["X-RateLimit-Reset-After"]))
                 elif not response.ok:
                     error = self.error_mapping.get(response.status, HTTPException)
                     raise error(response, data)
@@ -182,19 +182,13 @@ class HTTPClient:
 
         return bucket
 
-    async def extract_content(self, response: aiohttp.ClientResponse) -> Dict[str, Any]:
+    @staticmethod
+    async def extract_content(response: aiohttp.ClientResponse) -> Dict[str, Any]:
         if response.headers["Content-Type"] == "application/json":
             data = await response.json()
         else:
             data = {}
         return data
-
-    async def handle_exhausted_bucket(
-        self, response: aiohttp.ClientResponse, bucket: Union[Bucket, TopLevelBucket]
-    ):
-        bucket.clear()
-        await asyncio.sleep(int(response.headers["X-RateLimit-Reset-After"]))
-        bucket.set()
 
     async def handle_ratelimit(
         self, data: Dict[str, Any], bucket: Union[Bucket, TopLevelBucket]
