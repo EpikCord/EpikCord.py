@@ -15,6 +15,6 @@ def lint(session: nox.Session):
 
 
 @nox.session
-def mypy(session: nox.Session):
-    session.install("mypy")
-    session.run("mypy", "EpikCord")
+def pyright(session: nox.Session):
+    session.install("pyright")
+    session.run("pyright", "EpikCord")
