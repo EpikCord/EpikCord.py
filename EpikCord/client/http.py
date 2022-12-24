@@ -20,7 +20,7 @@ class MockBucket:
         ...
 
     def __eq__(self, other: MockBucket):
-        return isinstance(other, MockBucket):
+        return isinstance(other, MockBucket)    
 
 
 class Bucket:
@@ -183,18 +183,12 @@ class HTTPClient:
         if not discord:
             return await self.session.request(method, url, *args, **kwargs)
 
-        if url.startswith("/"):
-            url = f"https://discord.com/api/v{self.version}{url}"
-        else:
-            url = f"https://discord.com/api/v{self.version}/{url}"
-
-        if url.endswith("/"):
-            url = url[:-1]
-
+        url = self.clean_url(url)
         bucket = self.buckets.get(f"{method}:{url}") or MockBucket()
 
         await self.global_event.wait()
         await bucket.wait()
+
         for _ in range(5):
             async with self.session.request(method, url, *args, **kwargs) as response:
                 if isinstance(bucket, MockBucket):
@@ -254,3 +248,14 @@ class HTTPClient:
 
         self.global_event.set()
         bucket.set()
+
+    def clean_url(self, url: str) -> str:
+        if url.startswith("/"):
+            url = f"https://discord.com/api/v{self.version}{url}"
+        else:
+            url = f"https://discord.com/api/v{self.version}/{url}"
+
+        if url.endswith("/"):
+            url = url[:-1]
+
+        return url
