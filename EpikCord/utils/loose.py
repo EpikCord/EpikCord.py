@@ -1,4 +1,5 @@
 from importlib.util import find_spec
+from typing import Dict, Any
 
 _ORJSON = find_spec("orjson")
 
@@ -6,6 +7,8 @@ if _ORJSON:
     import orjson as json
 else:
     import json
+
+import aiohttp
 
 def clear_none_values(d: dict):
     """
@@ -30,3 +33,10 @@ def clean_url(url: str, version: int) -> str:
         url = url[:-1]
 
     return url
+
+async def extract_content(response: aiohttp.ClientResponse) -> Dict[str, Any]:
+    if response.headers["Content-Type"] == "application/json":
+        data = await response.json()
+    else:
+        data = {}
+    return data

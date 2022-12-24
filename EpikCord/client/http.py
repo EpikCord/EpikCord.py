@@ -10,7 +10,7 @@ from .buckets import TopLevelBucket, Bucket, MockBucket
 from .. import __version__
 from ..exceptions import BadRequest, Forbidden, HTTPException, NotFound, Unauthorized, TooManyRetries
 from ..file import File
-from ..utils import clear_none_values, json_serialize, clean_url
+from ..utils import clear_none_values, json_serialize, clean_url, extract_content
 from .websocket import GatewayWebsocket
 
 import aiohttp
@@ -134,7 +134,7 @@ class HTTPClient:
                         **route.major_parameters,
                     )
 
-                data = await self.extract_content(response)
+                data = await extract_content(response)
 
                 await self.log_request(response, data)
 
@@ -181,14 +181,6 @@ class HTTPClient:
             self.buckets[bucket_key] = bucket
 
         return bucket
-
-    @staticmethod
-    async def extract_content(response: aiohttp.ClientResponse) -> Dict[str, Any]:
-        if response.headers["Content-Type"] == "application/json":
-            data = await response.json()
-        else:
-            data = {}
-        return data
 
     async def handle_ratelimit(
         self, data: Dict[str, Any], bucket: Union[Bucket, TopLevelBucket]
