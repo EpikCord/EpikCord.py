@@ -23,9 +23,7 @@ class MockBucket:
         ...
 
     def __eq__(self, other: MockBucket):
-        if isinstance(other, MockBucket):
-            return True
-        return False
+        return isinstance(other, MockBucket):
 
 
 class Bucket:
