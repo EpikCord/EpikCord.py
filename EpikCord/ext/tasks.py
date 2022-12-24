@@ -1,6 +1,8 @@
 import asyncio
 import typing
 
+from ..utils import Coroutine
+
 # time constants in seconds
 MINUTE = 60
 HOUR = MINUTE * 60
@@ -9,7 +11,7 @@ WEEK = DAY * 7
 
 
 class Task:
-    def __init__(self, wrapped_func, duration: int, max_runs: int):
+    def __init__(self, wrapped_func: Coroutine, duration: int, max_runs: int):
         self.wrapped_func = wrapped_func
         self.duration = duration
         self.max_runs = max_runs
