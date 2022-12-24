@@ -44,10 +44,9 @@ class Route:
         )
 
 class HTTPClient:
-    error_mapping: Dict[
-        int,
-        Union[Type[NotFound], Type[Forbidden], Type[Unauthorized], Type[BadRequest]],
-    ] = {400: BadRequest, 401: Unauthorized, 403: Forbidden, 404: NotFound}
+    error_mapping: Dict[int, HTTPException] = {
+         400: BadRequest, 401: Unauthorized, 403: Forbidden, 404: NotFound
+    }
 
     def __init__(self, token: str, *, version: int = 10):
         self.token: str = token
