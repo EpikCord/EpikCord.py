@@ -4,15 +4,39 @@ from .. import __version__
 from ..exceptions import NotFound, Forbidden, Unauthorized, BadRequest, HTTPException
 from ..utils import clear_none_values
 
-
 import asyncio
+import mimetypes
+from importlib.util import find_spec
+from io import IOBase
 from logging import getLogger
-from typing import Optional, Dict, Any, Union, Type
+from typing import Optional, Dict, Any, Union, Type, List
+
+_ORJSON = find_spec("orjson")
+
+if _ORJSON:
+    import orjson as json
+else:
+    import json
 
 import aiohttp
 
 logger = getLogger("EpikCord.http")
 
+class File:
+    def __init__(self, *, filename: str, contents: IOBase, mime_type: Optional[str] = None):
+        """
+        Parameters
+        ----------
+        filename: str
+            The filename of the file.
+        contents: IOBase
+            The contents of the file.
+        mime_type: Optional[str]
+            The mime type of the file. If not provided, it will be guessed.
+        """
+        self.filename: str = filename
+        self.contents: IOBase = contents
+        self.mime_type: Optional[str] = mime_type or mimetypes.guess_type(filename)[0]
 
 class MockBucket:
     async def wait(self):
@@ -126,7 +150,7 @@ class TopLevelBucket:
 class HTTPClient:
     error_mapping: Dict[
         int,
-        Union[Type[NotFound], Type[Forbidden], Type[Unauthorized], Type[BadRequest]],
+        Union[Type[NotFound], Type[Forbidden], Type[Unauthorized], Type[BadRequest]]
     ] = {400: BadRequest, 401: Unauthorized, 403: Forbidden, 404: NotFound}
 
     def __init__(self, token: str, *, version: int = 10):
@@ -136,7 +160,10 @@ class HTTPClient:
             headers={
                 "Authorization": f"Bot {self.token}",
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
-            }
+            },
+            json_serialize=lambda x, *__, **___: json.dumps(x).decode("utf-8") # type: ignore
+            if _ORJSON
+            else json.dumps(x),
         )
         self.buckets: Dict[str, Union[Bucket, TopLevelBucket]] = {}
         self.global_event: asyncio.Event = asyncio.Event()
@@ -162,6 +189,8 @@ class HTTPClient:
         guild_id: Optional[int] = None,
         webhook_id: Optional[int] = None,
         webhook_token: Optional[str] = None,
+        json: Optional[Dict] = None,
+        files: Optional[List[File]] = None,
         **kwargs,
     ) -> Optional[aiohttp.ClientResponse]:
         """
@@ -183,6 +212,10 @@ class HTTPClient:
             The webhook id of the request.
         webhook_token: str
             The webhook token of the request.
+        json: Optional[Dict]
+            The json to pass to the ClientSession.request method.
+        files: Optional[List[File]]
+            The files to pass to the request.
         **kwargs
             The kwargs to pass to the ClientSession.request method.
 
@@ -215,6 +248,22 @@ class HTTPClient:
         await bucket.wait()
 
         for _ in range(5):
+            if json and not files:
+                kwargs["json"] = json
+            else:
+                form = aiohttp.FormData()
+                if json:
+                    form.add_field("payload_json", self.session.json_serialize(json))
+                if files:
+                    for i, file in enumerate(files):
+                        form.add_field(
+                            f"files[{i}]",
+                            file.contents,
+                            filename=file.filename,
+                            content_type=file.mime_type,
+                        )
+                kwargs["data"] = form
+
             async with self.session.request(method, url, *args, **kwargs) as response:
                 if isinstance(bucket, MockBucket):
                     bucket = await self.set_bucket(
@@ -229,6 +278,8 @@ class HTTPClient:
 
                 if response.status == 429:
                     await self.handle_ratelimit(data, bucket)
+                elif response.headers.get("X-RateLimit-Remaining", "1") == "0":
+                    await self.handle_exhausted_bucket(response, bucket)
                 elif not response.ok:
                     raise self.error_mapping[response.status](response, data)
 
@@ -276,6 +327,11 @@ class HTTPClient:
         else:
             data = {}
         return data
+
+    async def handle_exhausted_bucket(self, response: aiohttp.ClientResponse, bucket: Union[Bucket, TopLevelBucket]):
+        bucket.clear()
+        await asyncio.sleep(int(response.headers["X-RateLimit-Reset-After"]))
+        bucket.set()
 
     async def handle_ratelimit(
         self, data: Dict[str, Any], bucket: Union[Bucket, TopLevelBucket]
