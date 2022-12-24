@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Type, Union
 
 from .buckets import TopLevelBucket, Bucket, MockBucket
 from .. import __version__
-from ..exceptions import BadRequest, Forbidden, HTTPException, NotFound, Unauthorized
+from ..exceptions import BadRequest, Forbidden, HTTPException, NotFound, Unauthorized, TooManyRetries
 from ..utils import clear_none_values
 from .websocket import GatewayWebsocket
 
@@ -197,7 +197,7 @@ class HTTPClient:
                     raise error(response, data)
                 elif response.ok:
                     return response
-        raise TimeoutError("Attempted request 5 times .")
+        raise TooManyRetries(f"Attempted {method} request to {url} 5 times but failed.")
 
     async def set_bucket(
         self,
