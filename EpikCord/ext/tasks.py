@@ -1,21 +1,15 @@
 import asyncio
+from datetime import timedelta
 import typing
 
 from ..utils import Coroutine
 
-# time constants in seconds
-MINUTE = 60
-HOUR = MINUTE * 60
-DAY = HOUR * 24
-WEEK = DAY * 7
-
-
 class Task:
-    def __init__(self, wrapped_func: Coroutine, duration: int, max_runs: int):
-        self.wrapped_func = wrapped_func
-        self.duration = duration
-        self.max_runs = max_runs
-        self.runs = 0
+    def __init__(self, wrapped_func: Coroutine, duration: float, max_runs: int):
+        self.wrapped_func: Coroutine = wrapped_func
+        self.duration: float = duration
+        self.max_runs: int = max_runs
+        self.runs: int = 0
 
     async def start(self, *args: typing.Any, **kwargs: typing.Any):
         while self.runs < self.max_runs:
@@ -29,15 +23,8 @@ class Task:
     def run(self, *args: typing.Any, **kwargs: typing.Any):
         return asyncio.create_task(self.start(*args, **kwargs))
 
-
-def task(seconds=0, minutes=0, hours=0, days=0, weeks=0, max_runs=-1):
-    duration = seconds
-    duration += minutes * MINUTE
-    duration += hours * HOUR
-    duration += days * DAY
-    duration += weeks * WEEK
-
+def task(duration: timedelta, max_runs=-1):
     def wrap(function):
-        return Task(function, duration, max_runs)
+        return Task(function, duration.total_seconds(), max_runs)
 
     return wrap
