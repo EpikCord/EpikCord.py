@@ -1,15 +1,17 @@
 from __future__ import annotations
 
-from .. import __version__
-from ..exceptions import NotFound, Forbidden, Unauthorized, BadRequest, HTTPException
-from ..utils import clear_none_values
-
 import asyncio
 import mimetypes
 from importlib.util import find_spec
 from io import IOBase
 from logging import getLogger
-from typing import Optional, Dict, Any, Union, Type, List
+from typing import Any, Dict, List, Optional, Type, Union
+
+from .. import __version__
+from ..exceptions import (BadRequest, Forbidden, HTTPException, NotFound,
+                          Unauthorized)
+from ..utils import clear_none_values
+from .websocket import GatewayWebsocket
 
 _ORJSON = find_spec("orjson")
 
@@ -164,6 +166,7 @@ class HTTPClient:
             json_serialize=lambda x, *__, **___: json.dumps(x).decode("utf-8") # type: ignore
             if _ORJSON
             else json.dumps(x),
+            ws_response_class=GatewayWebsocket,
         )
         self.buckets: Dict[str, Union[Bucket, TopLevelBucket]] = {}
         self.global_event: asyncio.Event = asyncio.Event()
@@ -241,6 +244,8 @@ class HTTPClient:
         if not discord:
             return await self.session.request(method, url, *args, **kwargs)
 
+        self.setup_kwargs(kwargs, files=files, json=json)
+
         url = self.clean_url(url)
         bucket = self.buckets.get(f"{method}:{url}") or MockBucket()
 
@@ -248,21 +253,6 @@ class HTTPClient:
         await bucket.wait()
 
         for _ in range(5):
-            if json and not files:
-                kwargs["json"] = json
-            else:
-                form = aiohttp.FormData()
-                if json:
-                    form.add_field("payload_json", self.session.json_serialize(json))
-                if files:
-                    for i, file in enumerate(files):
-                        form.add_field(
-                            f"files[{i}]",
-                            file.contents,
-                            filename=file.filename,
-                            content_type=file.mime_type,
-                        )
-                kwargs["data"] = form
 
             async with self.session.request(method, url, *args, **kwargs) as response:
                 if isinstance(bucket, MockBucket):
@@ -282,7 +272,6 @@ class HTTPClient:
                     await self.handle_exhausted_bucket(response, bucket)
                 elif not response.ok:
                     raise self.error_mapping[response.status](response, data)
-
                 return response
 
     async def set_bucket(
@@ -379,3 +368,24 @@ class HTTPClient:
 
         finally:
             logger.debug("".join(messages))
+
+    def setup_kwargs(self, kwargs, *, files: Optional[List[File]], json: Optional[Dict]) -> None:
+        if not json and not files:
+            return
+        elif json and not files:
+            kwargs["json"] = json
+        else:
+            form = aiohttp.FormData()
+
+            if json:
+                form.add_field("payload_json", self.session.json_serialize(json))
+
+            if files:
+                for i, file in enumerate(files):
+                    form.add_field(
+                        f"files[{i}]",
+                        file.contents,
+                        filename=file.filename,
+                        content_type=file.mime_type,
+                    )
+            kwargs["data"] = form

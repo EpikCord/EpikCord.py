@@ -1,8 +1,9 @@
 import asyncio
-from datetime import timedelta
 import typing
+from datetime import timedelta
 
 from ..utils import Coroutine
+
 
 class Task:
     def __init__(self, wrapped_func: Coroutine, duration: float, max_runs: int):
