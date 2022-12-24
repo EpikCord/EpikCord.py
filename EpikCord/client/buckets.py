@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from ..utils import clear_none_values
-
 import asyncio
 from logging import getLogger
-from typing import Union, Optional, Dict
+from typing import Dict, Optional, Union
 
 import aiohttp
 
+from ..utils import clear_none_values
+
 logger = getLogger("EpikCord.http")
+
 
 class MockBucket:
     async def wait(self):
@@ -22,6 +23,7 @@ class MockBucket:
 
     def __eq__(self, other: MockBucket):
         return isinstance(other, MockBucket)
+
 
 class Bucket:
     def __init__(self, *, bucket_hash: str):
@@ -82,6 +84,7 @@ class Bucket:
         logger.info(f"Bucket {self.hash} exhausted, waiting {retry_after} seconds.")
         await asyncio.sleep(retry_after)
         self.set()
+
 
 class TopLevelBucket:
     def __init__(

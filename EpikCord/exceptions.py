@@ -27,5 +27,6 @@ class Unauthorized(HTTPException):
 class BadRequest(HTTPException):
     ...
 
+
 class TooManyRetries(EpikCordException):
     ...

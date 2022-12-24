@@ -1,6 +1,7 @@
-import mimetypes
 import io
+import mimetypes
 from typing import Optional
+
 
 class File:
     def __init__(

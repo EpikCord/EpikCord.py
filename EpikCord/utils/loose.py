@@ -1,5 +1,5 @@
 from importlib.util import find_spec
-from typing import Dict, Any
+from typing import Any, Dict
 
 _ORJSON = find_spec("orjson")
 
@@ -10,11 +10,13 @@ else:
 
 import aiohttp
 
+
 def clear_none_values(d: dict):
     """
     Clears all the values in a dictionary that are None.
     """
     return {k: v for k, v in d.items() if v is not None}
+
 
 def json_serialize(data, *args, **kwargs):
     return (
@@ -22,6 +24,7 @@ def json_serialize(data, *args, **kwargs):
         if _ORJSON
         else json.dumps(data)
     )
+
 
 def clean_url(url: str, version: int) -> str:
     if url.startswith("/"):
@@ -34,9 +37,9 @@ def clean_url(url: str, version: int) -> str:
 
     return url
 
+
 async def extract_content(response: aiohttp.ClientResponse) -> Dict[str, Any]:
-    if response.headers["Content-Type"] == "application/json":
-        data = await response.json()
-    else:
-        data = {}
+    if response.headers["Content-Type"] != "application/json":
+        return {}
+    data = await response.json()
     return data

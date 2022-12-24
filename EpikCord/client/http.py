@@ -4,15 +4,21 @@ import asyncio
 from logging import getLogger
 from typing import Any, Dict, List, Optional, Type, Union
 
-
-from .buckets import TopLevelBucket, Bucket, MockBucket
-from .. import __version__
-from ..exceptions import BadRequest, Forbidden, HTTPException, NotFound, Unauthorized, TooManyRetries
-from ..file import File
-from ..utils import clear_none_values, json_serialize, clean_url, extract_content
-from .websocket import GatewayWebsocket
-
 import aiohttp
+
+from .. import __version__
+from ..exceptions import (
+    BadRequest,
+    Forbidden,
+    HTTPException,
+    NotFound,
+    TooManyRetries,
+    Unauthorized,
+)
+from ..file import File
+from ..utils import clean_url, clear_none_values, extract_content, json_serialize
+from .buckets import Bucket, MockBucket, TopLevelBucket
+from .websocket import GatewayWebsocket
 
 logger = getLogger("EpikCord.http")
 
@@ -43,6 +49,7 @@ class Route:
             }
         )
 
+
 class HTTPClient:
     error_mapping: Dict[
         int,
@@ -57,16 +64,14 @@ class HTTPClient:
                 "Authorization": f"Bot {self.token}",
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
             },
-            json_serialize=json_serialize, # type: ignore
+            json_serialize=json_serialize,  # type: ignore
             ws_response_class=GatewayWebsocket,
         )
         self.buckets: Dict[str, Union[Bucket, TopLevelBucket]] = {}
         self.global_event: asyncio.Event = asyncio.Event()
         self.global_event.set()
 
-    async def ws_connect(
-        self, url: str, **kwargs
-    ) -> aiohttp.ClientWebSocketResponse:
+    async def ws_connect(self, url: str, **kwargs) -> aiohttp.ClientWebSocketResponse:
         return await self.session.ws_connect(url, **kwargs)
 
     async def request(
@@ -140,7 +145,9 @@ class HTTPClient:
                 if response.status == 429:
                     await self.handle_ratelimit(data, bucket)
                 elif response.headers.get("X-RateLimit-Remaining", "1") == "0":
-                    await bucket.handle_exhaustion(int(response.headers["X-RateLimit-Reset-After"]))
+                    await bucket.handle_exhaustion(
+                        int(response.headers["X-RateLimit-Reset-After"])
+                    )
                 elif not response.ok:
                     error = self.error_mapping.get(response.status, HTTPException)
                     raise error(response, data)
@@ -167,7 +174,7 @@ class HTTPClient:
                 guild_id=guild_id,
                 webhook_id=webhook_id,
                 webhook_token=webhook_token,
-                )
+            )
 
         else:
 

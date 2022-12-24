@@ -1,9 +1,8 @@
 import nox
 
-
 @nox.session(name="format")
 def format_(session: nox.Session):
-    session.install("black", "isort")
+    session.install("black", "isort", ".", "aiohttp", "orjson")
     session.run("isort", "EpikCord")
     session.run("black", "EpikCord")
 

@@ -1,4 +1,3 @@
-from typing import Any, Callable
-from typing import Coroutine
+from typing import Any, Callable, Coroutine
 
 AsyncFunction = Callable[..., Coroutine[Any, Any, Any]]
