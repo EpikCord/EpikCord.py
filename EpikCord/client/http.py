@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import mimetypes
-from functools import partialmethod
 from importlib.util import find_spec
 from io import IOBase
 from logging import getLogger
@@ -42,24 +41,25 @@ class Route:
         self.guild_id: Optional[int] = guild_id
         self.webhook_id: Optional[int] = webhook_id
         self.webhook_token: Optional[str] = webhook_token
-        self.major_parameters: Dict[str, Optional[Union[int, str]]] = clear_none_values({
-            "channel_id": channel_id,
-            "guild_id": guild_id,
-            "webhook_id": webhook_id,
-            "webhook_token": webhook_token,
-        })
+        self.major_parameters: Dict[str, Optional[Union[int, str]]] = clear_none_values(
+            {
+                "channel_id": channel_id,
+                "guild_id": guild_id,
+                "webhook_id": webhook_id,
+                "webhook_token": webhook_token,
+            }
+        )
 
 
 class File:
     def __init__(
         self,
-        *,
         filename: str,
         contents: IOBase,
+        *,
+        description: Optional[str] = None,
         mime_type: Optional[str] = None,
         spoiler: bool = False,
-        ephemeral: bool = False,
-        description: Optional[str] = None,
     ):
         """
         Parameters
@@ -72,6 +72,10 @@ class File:
             The mime type of the file. If not provided, it will be guessed.
         spoiler: bool
             Whether or not the file is a spoiler.
+        ephemeral: bool
+            Whether or not the file is ephemeral.
+        description: Optional[str]
+            The description of the file.
         """
         self.contents: IOBase = contents
         self.mime_type: Optional[str] = mime_type or mimetypes.guess_type(filename)[0]
@@ -79,9 +83,7 @@ class File:
             self.filename: str = f"SPOILER_{filename}"
         else:
             self.filename: str = filename
-        self.ephemeral: bool = ephemeral
         self.description: Optional[str] = description
-
 
 class MockBucket:
     async def wait(self):
@@ -145,21 +147,55 @@ class Bucket:
 
 
 class TopLevelBucket:
-    def __init__(self, *, major_parameters: Dict[str, Any]):
+    def __init__(
+        self,
+        *,
+        channel_id: Optional[int] = None,
+        guild_id: Optional[int] = None,
+        webhook_id: Optional[int] = None,
+        webhook_token: Optional[str] = None,
+    ):
         """
         Parameters
         ----------
-        major_parameters: Dict[str, Any]
-            The major parameters for this Bucket
+        channel_id: Optional[int]
+            The channel ID of the bucket.
+        guild_id: Optional[int]
+            The guild ID of the bucket.
+        webhook_id: Optional[int] = None
+            The webhook ID of the bucket.
+        webhook_token: Optional[str]
+            The webhook token of the bucket.
 
         Attributes
         ----------
+        channel_id: Optional[int]
+            The channel ID of the bucket.
+        guild_id: Optional[int]
+            The guild ID of the bucket.
+        webhook_id: Optional[int] = None
+            The webhook ID of the bucket.
+        webhook_token: Optional[str]
+            The webhook token of the bucket.
         major_parameters: Dict[str, Any]
             The major parameters for this Bucket
+        event: asyncio.Event
+            The event that is used to wait for the bucket to be set.
         """
         self.event = asyncio.Event()
         self.event.set()
-        self.major_parameters: Dict[str, Any] = major_parameters
+        self.channel_id: Optional[int] = channel_id
+        self.guild_id: Optional[int] = guild_id
+        self.webhook_id: Optional[int] = webhook_id
+        self.webhook_token: Optional[str] = webhook_token
+        self.major_parameters: Dict[str, Optional[Union[int, str]]] = clear_none_values(
+            {
+                "channel_id": channel_id,
+                "guild_id": guild_id,
+                "webhook_id": webhook_id,
+                "webhook_token": webhook_token,
+            }
+        )
 
     async def wait(self):
         """
@@ -189,7 +225,9 @@ class TopLevelBucket:
         return False
 
     def __str__(self):
-        return f"channel_id={self.major_parameters.get('channel_id')}, guild_id={self.major_parameters.get('guild_id')}, webhook_id={self.major_parameters.get('webhook_id')}, webhook_token={self.major_parameters.get('webhook_token')}"
+        return (
+            f"{self.channel_id}:{self.guild_id}:{self.webhook_id}:{self.webhook_token}"
+        )
 
 
 class HTTPClient:
@@ -233,7 +271,7 @@ class HTTPClient:
         json: Optional[Dict] = None,
         files: Optional[List[File]] = None,
         **kwargs,
-    ) -> Optional[aiohttp.ClientResponse]:
+    ) -> aiohttp.ClientResponse:
         """
         Parameters
         ----------
@@ -250,8 +288,8 @@ class HTTPClient:
 
         Returns
         -------
-        Optional[aiohttp.ClientResponse]
-            The response of the request. Can be None if the request fails.
+        aiohttp.ClientResponse
+            The response of the request.
 
         Raises
         ------
@@ -299,7 +337,9 @@ class HTTPClient:
                 elif not response.ok:
                     error = self.error_mapping.get(response.status, HTTPException)
                     raise error(response, data)
-                return response
+                elif response.ok:
+                    return response
+        raise TimeoutError("Attempted request 5 times .")
 
     async def set_bucket(
         self,
@@ -315,15 +355,11 @@ class HTTPClient:
 
         if channel_id or guild_id or webhook_id or webhook_token:
             bucket = TopLevelBucket(
-                major_parameters=clear_none_values(
-                    {
-                        "channel_id": channel_id,
-                        "guild_id": guild_id,
-                        "webhook_id": webhook_id,
-                        "webhook_token": webhook_token,
-                    }
+                channel_id=channel_id,
+                guild_id=guild_id,
+                webhook_id=webhook_id,
+                webhook_token=webhook_token,
                 )
-            )
 
         else:
 
@@ -421,7 +457,6 @@ class HTTPClient:
                     attachment = {
                         "filename": file.filename,
                         "id": i,
-                        "ephemeral": file.ephemeral,
                     }
                     if file.description:
                         attachment["description"] = file.description
@@ -435,4 +470,6 @@ class HTTPClient:
     async def close(self) -> None:
         await self.session.close()
 
-    
+    async def get_gateway(self) -> str:
+        response = await self.request(Route("GET", "/gateway"))
+        return (await response.json())["url"]
