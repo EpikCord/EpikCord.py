@@ -5,11 +5,12 @@ from importlib.util import find_spec
 from logging import getLogger
 from typing import Any, Dict, List, Optional, Type, Union
 
+
 from .buckets import TopLevelBucket, Bucket, MockBucket
 from .. import __version__
 from ..exceptions import BadRequest, Forbidden, HTTPException, NotFound, Unauthorized, TooManyRetries
 from ..file import File
-from ..utils import clear_none_values
+from ..utils import clear_none_values, json_serialize
 from .websocket import GatewayWebsocket
 
 _ORJSON = find_spec("orjson")
@@ -64,9 +65,7 @@ class HTTPClient:
                 "Authorization": f"Bot {self.token}",
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
             },
-            json_serialize=lambda x, *__, **___: json.dumps(x).decode("utf-8")  # type: ignore
-            if _ORJSON
-            else json.dumps(x),
+            json_serialize=json_serialize, # type: ignore
             ws_response_class=GatewayWebsocket,
         )
         self.buckets: Dict[str, Union[Bucket, TopLevelBucket]] = {}
