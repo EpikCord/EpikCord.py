@@ -128,21 +128,21 @@ class HTTPClient:
         """
         Parameters
         ----------
-        method : str
+        method: str
             The method of the request.
-        url : str
+        url: str
             The url of the request.
         *args
             The args to pass to the ClientSession.request method.
-        discord : bool
+        discord: bool
             Whether this request is to Discord.
-        channel_id : int
+        channel_id: int
             The channel id of the request.
-        guild_id : int
+        guild_id: int
             The guild id of the request.
-        webhook_id : int
+        webhook_id: int
             The webhook id of the request.
-        webhook_token : str
+        webhook_token: str
             The webhook token of the request.
         **kwargs
             The kwargs to pass to the ClientSession.request method.
