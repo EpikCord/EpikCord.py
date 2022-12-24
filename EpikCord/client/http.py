@@ -431,3 +431,8 @@ class HTTPClient:
             form.add_field("payload_json", self.session.json_serialize(json))
 
             kwargs["data"] = form
+
+    async def close(self) -> None:
+        await self.session.close()
+
+    
