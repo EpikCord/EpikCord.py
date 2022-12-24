@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 import asyncio
-import mimetypes
 from importlib.util import find_spec
-from io import IOBase
 from logging import getLogger
 from typing import Any, Dict, List, Optional, Type, Union
 
 from .buckets import TopLevelBucket, Bucket, MockBucket
 from .. import __version__
 from ..exceptions import BadRequest, Forbidden, HTTPException, NotFound, Unauthorized, TooManyRetries
+from ..file import File
 from ..utils import clear_none_values
 from .websocket import GatewayWebsocket
 
@@ -50,41 +49,6 @@ class Route:
                 "webhook_token": webhook_token,
             }
         )
-
-
-class File:
-    def __init__(
-        self,
-        filename: str,
-        contents: IOBase,
-        *,
-        description: Optional[str] = None,
-        mime_type: Optional[str] = None,
-        spoiler: bool = False,
-    ):
-        """
-        Parameters
-        ----------
-        filename: str
-            The filename of the file.
-        contents: IOBase
-            The contents of the file.
-        mime_type: Optional[str]
-            The mime type of the file. If not provided, it will be guessed.
-        spoiler: bool
-            Whether or not the file is a spoiler.
-        ephemeral: bool
-            Whether or not the file is ephemeral.
-        description: Optional[str]
-            The description of the file.
-        """
-        self.contents: IOBase = contents
-        self.mime_type: Optional[str] = mime_type or mimetypes.guess_type(filename)[0]
-        if spoiler:
-            self.filename: str = f"SPOILER_{filename}"
-        else:
-            self.filename: str = filename
-        self.description: Optional[str] = description
 
 class HTTPClient:
     error_mapping: Dict[
