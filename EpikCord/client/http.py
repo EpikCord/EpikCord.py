@@ -10,15 +10,8 @@ from .buckets import TopLevelBucket, Bucket, MockBucket
 from .. import __version__
 from ..exceptions import BadRequest, Forbidden, HTTPException, NotFound, Unauthorized, TooManyRetries
 from ..file import File
-from ..utils import clear_none_values, json_serialize
+from ..utils import clear_none_values, json_serialize, clean_url
 from .websocket import GatewayWebsocket
-
-_ORJSON = find_spec("orjson")
-
-if _ORJSON:
-    import orjson as json
-else:
-    import json
 
 import aiohttp
 
@@ -73,14 +66,9 @@ class HTTPClient:
         self.global_event.set()
 
     async def ws_connect(
-        self, url: str, headers: Dict = {}, **kwargs
+        self, url: str, **kwargs
     ) -> aiohttp.ClientWebSocketResponse:
-        headers.update(
-            {
-                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})"
-            }
-        )
-        return await self.session.ws_connect(url, headers=headers, **kwargs)
+        return await self.session.ws_connect(url, **kwargs)
 
     async def request(
         self,
@@ -132,7 +120,7 @@ class HTTPClient:
 
         self.setup_kwargs(kwargs, files=files, json=json)
 
-        url = self.clean_url(url)
+        url = clean_url(url, self.version)
         bucket = self.buckets.get(f"{method}:{url}") or MockBucket()
 
         await self.global_event.wait()
@@ -172,6 +160,7 @@ class HTTPClient:
     ) -> Union[Bucket, TopLevelBucket]:
         url = response.url
         method = response.method
+        bucket_key: str = f"{method}:{url}"
 
         if channel_id or guild_id or webhook_id or webhook_token:
             bucket = TopLevelBucket(
@@ -185,11 +174,11 @@ class HTTPClient:
 
             bucket = Bucket(bucket_hash=response.headers["X-RateLimit-Bucket"])
             if bucket in self.buckets.values():
-                self.buckets[f"{method}:{url}"] = list(self.buckets.values())[
+                self.buckets[bucket_key] = list(self.buckets.values())[
                     list(self.buckets.values()).index(bucket)
                 ]
-                bucket = self.buckets[f"{method}:{url}"]
-            self.buckets[f"{method}:{url}"] = bucket
+                bucket = self.buckets[bucket_key]
+            self.buckets[bucket_key] = bucket
 
         return bucket
 
@@ -219,17 +208,6 @@ class HTTPClient:
 
         self.global_event.set()
         bucket.set()
-
-    def clean_url(self, url: str) -> str:
-        if url.startswith("/"):
-            url = f"https://discord.com/api/v{self.version}{url}"
-        else:
-            url = f"https://discord.com/api/v{self.version}/{url}"
-
-        if url.endswith("/"):
-            url = url[:-1]
-
-        return url
 
     @staticmethod
     async def log_request(res, body: Optional[dict] = None):

@@ -19,3 +19,14 @@ def json_serialize(data, *args, **kwargs):
         if _ORJSON
         else json.dumps(data)
     )
+
+def clean_url(url: str, version: int) -> str:
+    if url.startswith("/"):
+        url = f"https://discord.com/api/v{version}{url}"
+    else:
+        url = f"https://discord.com/api/v{version}/{url}"
+
+    if url.endswith("/"):
+        url = url[:-1]
+
+    return url
