@@ -3,15 +3,12 @@ from __future__ import annotations
 from ..exceptions import NotFound, Forbidden, Unauthorized, BadRequest, HTTPException
 from ..utils import clear_none_values
 import asyncio
-from typing import Optional, Dict
+from typing import Optional, Dict, Any
 
 import aiohttp
 
 
 class MockBucket:
-    def __init__(self):
-        self.internal_hash: str = ""
-        self.external_hash: str = ""
 
     async def wait(self):
         ...
@@ -71,29 +68,20 @@ class Bucket:
         return False
 
 
-class TopLevelBucket(Bucket):
+class TopLevelBucket:
     def __init__(self, *, major_parameters: Dict[str, Any]):
         """
         Parameters
         ----------
-        internal_hash: str
-            The internal hash of the bucket.
-        external_hash: str
-            The external hash of the bucket.
         major_parameters: Dict[str, Any]
             The major parameters for this Bucket
 
         Attributes
         ----------
-        internal_hash: str
-            The internal hash of the bucket.
-        external_hash: str
-            The external hash of the bucket.
         major_parameters: Dict[str, Any]
             The major parameters for this Bucket
         """
-        super().__init__(internal_hash=internal_hash, external_hash=external_hash)
-        self.major_parameters: Dict[str, Any] = major_parameters
+       self.major_parameters: Dict[str, Any] = major_parameters
 
     def __eq__(self, other: TopLevelBucket):
         if isinstance(other, TopLevelBucket):
@@ -228,6 +216,6 @@ class HTTPClient:
                 raise Unauthorized(response)
             elif response.status == 400:
                 raise BadRequest(response)
-            elif response.status != 200:
+            elif not response.ok:
                 raise HTTPException(response)
             return response
