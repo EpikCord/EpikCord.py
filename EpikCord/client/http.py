@@ -256,4 +256,5 @@ class HTTPClient:
 
     async def get_gateway(self) -> str:
         response = await self.request(Route("GET", "/gateway"))
-        return (await response.json())["url"]
+        data = await response.json()
+        return data["url"]
