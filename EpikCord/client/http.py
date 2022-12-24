@@ -228,7 +228,8 @@ class HTTPClient:
     ) -> None:
         if not json and not files:
             return
-        elif json and not files:
+        
+        if json and not files:
             kwargs["json"] = json
         elif files:
             if not json:
