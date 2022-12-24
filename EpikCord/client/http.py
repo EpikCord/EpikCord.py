@@ -176,7 +176,6 @@ class HTTPClient:
         await bucket.wait()
 
         for _ in range(5):
-
             async with self.session.request(method, url, *args, **kwargs) as response:
                 if isinstance(bucket, MockBucket):
                     bucket = await self.set_bucket(
