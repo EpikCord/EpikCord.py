@@ -3,7 +3,7 @@ from __future__ import annotations
 from ..exceptions import NotFound, Forbidden, Unauthorized, BadRequest, HTTPException
 from ..utils import clear_none_values
 import asyncio
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Union, Type
 
 import aiohttp
 
@@ -81,7 +81,27 @@ class TopLevelBucket:
         major_parameters: Dict[str, Any]
             The major parameters for this Bucket
         """
-       self.major_parameters: Dict[str, Any] = major_parameters
+        self.event = asyncio.Event()
+        self.event.set()
+        self.major_parameters: Dict[str, Any] = major_parameters
+
+    async def wait(self):
+        """
+        Waits for the bucket to be set.
+        """
+        await self.event.wait()
+
+    def set(self):
+        """
+        Sets the bucket.
+        """
+        self.event.set()
+    
+    def clear(self):
+        """
+        Clears the bucket.
+        """
+        self.event.clear()
 
     def __eq__(self, other: TopLevelBucket):
         if isinstance(other, TopLevelBucket):
@@ -90,13 +110,19 @@ class TopLevelBucket:
 
 
 class HTTPClient:
+    error_mapping: Dict[int, Union[Type[NotFound], Type[Forbidden], Type[Unauthorized], Type[BadRequest]]] = {
+        400: BadRequest,
+        401: Unauthorized,
+        403: Forbidden,
+        404: NotFound
+    }
     def __init__(self, token: str, *, version: int = 10):
         self.token: str = token
         self.version: int = version
         self.session: aiohttp.ClientSession = aiohttp.ClientSession(
             headers={"Authorization": f"Bot {self.token}"}
         )
-        self.buckets: Dict[str, Bucket] = {}
+        self.buckets: Dict[str, Union[Bucket, TopLevelBucket]] = {}
         self.global_event: asyncio.Event = asyncio.Event()
         self.global_event.set()
 
@@ -171,51 +197,62 @@ class HTTPClient:
 
         await self.global_event.wait()
         await bucket.wait()
+        for _ in range(5):
+            async with self.session.request(method, url, *args, **kwargs) as response:
+                if isinstance(bucket, MockBucket):
+                    bucket = await self.set_bucket(response=response, channel_id=channel_id, guild_id=guild_id, webhook_id=webhook_id, webhook_token=webhook_token)
 
-        async with self.session.request(method, url, *args, **kwargs) as response:
-            if isinstance(bucket, MockBucket) and response.headers.get(
-                "X-RateLimit-Bucket"
-            ):
-                if channel_id or guild_id or webhook_id or webhook_token:
-                    bucket = TopLevelBucket(
-                        major_parameters=clear_none_values(
-                            {
-                                "channel_id": channel_id,
-                                "guild_id": guild_id,
-                                "webhook_id": webhook_id,
-                                "webhook_token": webhook_token,
-                            }
-                        )
-                    )
-                    self.buckets[f"{method}:{url}"] = bucket
-                else:
-                    bucket = Bucket(bucket_hash=response.headers["X-RateLimit-Bucket"])
-                    if bucket in self.buckets.values():
-                        self.buckets[f"{method}:{url}"] = list(self.buckets.values())[
-                            list(self.buckets.values()).index(bucket)
-                        ]
-                        bucket = self.buckets[f"{method}:{url}"]
-                    else:
-                        self.buckets[f"{method}:{url}"] = bucket
+                data = await self.extract_content(response)
 
-            if response.status == 429:
-                data = await response.json()
-                if data["global"]:
-                    self.global_event.clear()
-                bucket.clear()
-                await asyncio.sleep(data["retry_after"])
-                self.global_event.set()
-                bucket.set()
-                return await self.request(method, url, *args, **kwargs)
+                if response.status == 429:
+                    await self.handle_ratelimit(data, bucket)
+                elif not response.ok:
+                    raise self.error_mapping[response.status](response, data)
 
-            elif response.status == 404:
-                raise NotFound(response)
-            elif response.status == 403:
-                raise Forbidden(response)
-            elif response.status == 401:
-                raise Unauthorized(response)
-            elif response.status == 400:
-                raise BadRequest(response)
-            elif not response.ok:
-                raise HTTPException(response)
-            return response
+                return response
+
+    async def set_bucket(self, *, response: aiohttp.ClientResponse, channel_id: Optional[int] = None, guild_id: Optional[int] = None, webhook_id: Optional[int] = None, webhook_token: Optional[str] = None) -> Union[Bucket, TopLevelBucket]:
+        url = response.url
+        method = response.method
+
+        if channel_id or guild_id or webhook_id or webhook_token:
+            bucket = TopLevelBucket(
+                major_parameters=clear_none_values(
+                    {
+                        "channel_id": channel_id,
+                        "guild_id": guild_id,
+                        "webhook_id": webhook_id,
+                        "webhook_token": webhook_token,
+                    }
+                )
+            )
+
+        else:
+
+            bucket = Bucket(bucket_hash=response.headers["X-RateLimit-Bucket"])
+            if bucket in self.buckets.values():
+                self.buckets[f"{method}:{url}"] = list(self.buckets.values())[
+                    list(self.buckets.values()).index(bucket)
+                ]
+                bucket = self.buckets[f"{method}:{url}"]
+            self.buckets[f"{method}:{url}"] = bucket
+
+        return bucket
+
+    async def extract_content(self, response: aiohttp.ClientResponse) -> Dict[str, Any]:
+        if response.headers["Content-Type"] == "application/json":
+            data = await response.json()
+        else:
+            data = {}
+        return data
+
+    async def handle_ratelimit(self, data: Dict[str, Any], bucket: Union[Bucket, TopLevelBucket]):
+        bucket.clear()
+
+        if data["global"]:
+            self.global_event.clear()
+
+        await asyncio.sleep(data["retry_after"])
+
+        self.global_event.set()
+        bucket.set()
