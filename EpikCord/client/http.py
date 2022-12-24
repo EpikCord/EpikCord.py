@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import asyncio
 import mimetypes
+from functools import partialmethod
 from importlib.util import find_spec
 from io import IOBase
 from logging import getLogger
 from typing import Any, Dict, List, Optional, Type, Union
 
 from .. import __version__
-from ..exceptions import (BadRequest, Forbidden, HTTPException, NotFound,
-                          Unauthorized)
+from ..exceptions import BadRequest, Forbidden, HTTPException, NotFound, Unauthorized
 from ..utils import clear_none_values
 from .websocket import GatewayWebsocket
 
@@ -24,8 +24,43 @@ import aiohttp
 
 logger = getLogger("EpikCord.http")
 
+
+class Route:
+    def __init__(
+        self,
+        method: str,
+        url: str,
+        *,
+        channel_id: Optional[int] = None,
+        guild_id: Optional[int] = None,
+        webhook_id: Optional[int] = None,
+        webhook_token: Optional[str] = None,
+    ):
+        self.method: str = method
+        self.url: str = url
+        self.channel_id: Optional[int] = channel_id
+        self.guild_id: Optional[int] = guild_id
+        self.webhook_id: Optional[int] = webhook_id
+        self.webhook_token: Optional[str] = webhook_token
+        self.major_parameters: Dict[str, Optional[Union[int, str]]] = clear_none_values({
+            "channel_id": channel_id,
+            "guild_id": guild_id,
+            "webhook_id": webhook_id,
+            "webhook_token": webhook_token,
+        })
+
+
 class File:
-    def __init__(self, *, filename: str, contents: IOBase, mime_type: Optional[str] = None, spoiler: bool = False, ephemeral: bool = False, description: Optional[str] = None):
+    def __init__(
+        self,
+        *,
+        filename: str,
+        contents: IOBase,
+        mime_type: Optional[str] = None,
+        spoiler: bool = False,
+        ephemeral: bool = False,
+        description: Optional[str] = None,
+    ):
         """
         Parameters
         ----------
@@ -46,6 +81,7 @@ class File:
             self.filename: str = filename
         self.ephemeral: bool = ephemeral
         self.description: Optional[str] = description
+
 
 class MockBucket:
     async def wait(self):
@@ -159,7 +195,7 @@ class TopLevelBucket:
 class HTTPClient:
     error_mapping: Dict[
         int,
-        Union[Type[NotFound], Type[Forbidden], Type[Unauthorized], Type[BadRequest]]
+        Union[Type[NotFound], Type[Forbidden], Type[Unauthorized], Type[BadRequest]],
     ] = {400: BadRequest, 401: Unauthorized, 403: Forbidden, 404: NotFound}
 
     def __init__(self, token: str, *, version: int = 10):
@@ -170,7 +206,7 @@ class HTTPClient:
                 "Authorization": f"Bot {self.token}",
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
             },
-            json_serialize=lambda x, *__, **___: json.dumps(x).decode("utf-8") # type: ignore
+            json_serialize=lambda x, *__, **___: json.dumps(x).decode("utf-8")  # type: ignore
             if _ORJSON
             else json.dumps(x),
             ws_response_class=GatewayWebsocket,
@@ -191,14 +227,9 @@ class HTTPClient:
 
     async def request(
         self,
-        method: str,
-        url: str,
+        route: Route,
         *args,
         discord: bool = True,
-        channel_id: Optional[int] = None,
-        guild_id: Optional[int] = None,
-        webhook_id: Optional[int] = None,
-        webhook_token: Optional[str] = None,
         json: Optional[Dict] = None,
         files: Optional[List[File]] = None,
         **kwargs,
@@ -206,22 +237,10 @@ class HTTPClient:
         """
         Parameters
         ----------
-        method: str
-            The method of the request.
-        url: str
-            The url of the request.
         *args
             The args to pass to the ClientSession.request method.
         discord: bool
             Whether this request is to Discord.
-        channel_id: int
-            The channel id of the request.
-        guild_id: int
-            The guild id of the request.
-        webhook_id: int
-            The webhook id of the request.
-        webhook_token: str
-            The webhook token of the request.
         json: Optional[Dict]
             The json to pass to the ClientSession.request method.
         files: Optional[List[File]]
@@ -248,6 +267,9 @@ class HTTPClient:
             If the request returns a status code that is not OK and not any of the other exceptions.
         """
 
+        method = route.method
+        url = route.url
+
         if not discord:
             return await self.session.request(method, url, *args, **kwargs)
 
@@ -265,10 +287,7 @@ class HTTPClient:
                 if isinstance(bucket, MockBucket):
                     bucket = await self.set_bucket(
                         response=response,
-                        channel_id=channel_id,
-                        guild_id=guild_id,
-                        webhook_id=webhook_id,
-                        webhook_token=webhook_token,
+                        **route.major_parameters,
                     )
 
                 data = await self.extract_content(response)
@@ -325,7 +344,9 @@ class HTTPClient:
             data = {}
         return data
 
-    async def handle_exhausted_bucket(self, response: aiohttp.ClientResponse, bucket: Union[Bucket, TopLevelBucket]):
+    async def handle_exhausted_bucket(
+        self, response: aiohttp.ClientResponse, bucket: Union[Bucket, TopLevelBucket]
+    ):
         bucket.clear()
         await asyncio.sleep(int(response.headers["X-RateLimit-Reset-After"]))
         bucket.set()
@@ -357,8 +378,7 @@ class HTTPClient:
     @staticmethod
     async def log_request(res, body: Optional[dict] = None):
         messages = [
-            f"Sent a {res.method} to {res.url} "
-            f"and got a {res.status} response. ",
+            f"Sent a {res.method} to {res.url} " f"and got a {res.status} response. ",
             f"Content-Type: {res.headers['Content-Type']} ",
         ]
 
@@ -377,7 +397,9 @@ class HTTPClient:
         finally:
             logger.debug("".join(messages))
 
-    def setup_kwargs(self, kwargs, *, files: Optional[List[File]] = None, json: Optional[Dict] = None) -> None:
+    def setup_kwargs(
+        self, kwargs, *, files: Optional[List[File]] = None, json: Optional[Dict] = None
+    ) -> None:
         if not json and not files:
             return
         elif json and not files:

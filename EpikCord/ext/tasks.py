@@ -24,6 +24,7 @@ class Task:
     def run(self, *args: typing.Any, **kwargs: typing.Any):
         return asyncio.create_task(self.start(*args, **kwargs))
 
+
 def task(duration: timedelta, max_runs=-1):
     def wrap(function):
         return Task(function, duration.total_seconds(), max_runs)
