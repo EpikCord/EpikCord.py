@@ -25,7 +25,7 @@ import aiohttp
 logger = getLogger("EpikCord.http")
 
 class File:
-    def __init__(self, *, filename: str, contents: IOBase, mime_type: Optional[str] = None):
+    def __init__(self, *, filename: str, contents: IOBase, mime_type: Optional[str] = None, spoiler: bool = False, ephemeral: bool = False, description: Optional[str] = None):
         """
         Parameters
         ----------
@@ -35,10 +35,17 @@ class File:
             The contents of the file.
         mime_type: Optional[str]
             The mime type of the file. If not provided, it will be guessed.
+        spoiler: bool
+            Whether or not the file is a spoiler.
         """
-        self.filename: str = filename
         self.contents: IOBase = contents
         self.mime_type: Optional[str] = mime_type or mimetypes.guess_type(filename)[0]
+        if spoiler:
+            self.filename: str = f"SPOILER_{filename}"
+        else:
+            self.filename: str = filename
+        self.ephemeral: bool = ephemeral
+        self.description: Optional[str] = description
 
 class MockBucket:
     async def wait(self):
@@ -271,7 +278,8 @@ class HTTPClient:
                 elif response.headers.get("X-RateLimit-Remaining", "1") == "0":
                     await self.handle_exhausted_bucket(response, bucket)
                 elif not response.ok:
-                    raise self.error_mapping[response.status](response, data)
+                    error = self.error_mapping.get(response.status, HTTPException)
+                    raise error(response, data)
                 return response
 
     async def set_bucket(
@@ -369,16 +377,16 @@ class HTTPClient:
         finally:
             logger.debug("".join(messages))
 
-    def setup_kwargs(self, kwargs, *, files: Optional[List[File]], json: Optional[Dict]) -> None:
+    def setup_kwargs(self, kwargs, *, files: Optional[List[File]] = None, json: Optional[Dict] = None) -> None:
         if not json and not files:
             return
         elif json and not files:
             kwargs["json"] = json
-        else:
+        elif files:
+            if not json:
+                json = {}
             form = aiohttp.FormData()
-
-            if json:
-                form.add_field("payload_json", self.session.json_serialize(json))
+            json["attachments"] = []
 
             if files:
                 for i, file in enumerate(files):
@@ -388,4 +396,16 @@ class HTTPClient:
                         filename=file.filename,
                         content_type=file.mime_type,
                     )
+                    attachment = {
+                        "filename": file.filename,
+                        "id": i,
+                        "ephemeral": file.ephemeral,
+                    }
+                    if file.description:
+                        attachment["description"] = file.description
+
+                    json["attachments"].append(attachment)
+
+            form.add_field("payload_json", self.session.json_serialize(json))
+
             kwargs["data"] = form
