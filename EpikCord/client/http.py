@@ -1,15 +1,20 @@
 from __future__ import annotations
 
+from .. import __version__
 from ..exceptions import NotFound, Forbidden, Unauthorized, BadRequest, HTTPException
 from ..utils import clear_none_values
+
+
 import asyncio
+from logging import getLogger
 from typing import Optional, Dict, Any, Union, Type
 
 import aiohttp
 
+logger = getLogger("EpikCord.http")
+
 
 class MockBucket:
-
     async def wait(self):
         ...
 
@@ -20,7 +25,7 @@ class MockBucket:
         ...
 
     def __eq__(self, other: MockBucket):
-        return isinstance(other, MockBucket)    
+        return isinstance(other, MockBucket)
 
 
 class Bucket:
@@ -46,18 +51,22 @@ class Bucket:
         """
         Waits for the bucket to be set.
         """
+        logger.info(f"Waiting for bucket {self.hash} to be set.")
         await self.event.wait()
+        logger.info(f"Done waiting for bucket {self.hash}.")
 
     def set(self):
         """
         Sets the bucket.
         """
+        logger.info(f"Setting bucket {self.hash}.")
         self.event.set()
 
     def clear(self):
         """
         Clears the bucket.
         """
+        logger.info(f"Clearing bucket {self.hash}.")
         self.event.clear()
 
     def __eq__(self, other: Bucket):
@@ -87,18 +96,22 @@ class TopLevelBucket:
         """
         Waits for the bucket to be set.
         """
+        logger.info(f"Waiting for bucket {self.major_parameters} to be set.")
         await self.event.wait()
+        logger.info(f"Done waiting for bucket {self.major_parameters}.")
 
     def set(self):
         """
         Sets the bucket.
         """
+        logger.info(f"Setting bucket {self.major_parameters}.")
         self.event.set()
-    
+
     def clear(self):
         """
         Clears the bucket.
         """
+        logger.info(f"Clearing bucket {self.major_parameters}.")
         self.event.clear()
 
     def __eq__(self, other: TopLevelBucket):
@@ -106,26 +119,38 @@ class TopLevelBucket:
             return self.major_parameters == other.major_parameters
         return False
 
+    def __str__(self):
+        return f"channel_id={self.major_parameters.get('channel_id')}, guild_id={self.major_parameters.get('guild_id')}, webhook_id={self.major_parameters.get('webhook_id')}, webhook_token={self.major_parameters.get('webhook_token')}"
+
 
 class HTTPClient:
-    error_mapping: Dict[int, Union[Type[NotFound], Type[Forbidden], Type[Unauthorized], Type[BadRequest]]] = {
-        400: BadRequest,
-        401: Unauthorized,
-        403: Forbidden,
-        404: NotFound
-    }
+    error_mapping: Dict[
+        int,
+        Union[Type[NotFound], Type[Forbidden], Type[Unauthorized], Type[BadRequest]],
+    ] = {400: BadRequest, 401: Unauthorized, 403: Forbidden, 404: NotFound}
+
     def __init__(self, token: str, *, version: int = 10):
         self.token: str = token
         self.version: int = version
         self.session: aiohttp.ClientSession = aiohttp.ClientSession(
-            headers={"Authorization": f"Bot {self.token}"}
+            headers={
+                "Authorization": f"Bot {self.token}",
+                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
+            }
         )
         self.buckets: Dict[str, Union[Bucket, TopLevelBucket]] = {}
         self.global_event: asyncio.Event = asyncio.Event()
         self.global_event.set()
 
-    async def ws_connect(self, url: str) -> aiohttp.ClientWebSocketResponse:
-        return await self.session.ws_connect(url)
+    async def ws_connect(
+        self, url: str, headers: Dict = {}, **kwargs
+    ) -> aiohttp.ClientWebSocketResponse:
+        headers.update(
+            {
+                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})"
+            }
+        )
+        return await self.session.ws_connect(url, headers=headers, **kwargs)
 
     async def request(
         self,
@@ -192,7 +217,13 @@ class HTTPClient:
         for _ in range(5):
             async with self.session.request(method, url, *args, **kwargs) as response:
                 if isinstance(bucket, MockBucket):
-                    bucket = await self.set_bucket(response=response, channel_id=channel_id, guild_id=guild_id, webhook_id=webhook_id, webhook_token=webhook_token)
+                    bucket = await self.set_bucket(
+                        response=response,
+                        channel_id=channel_id,
+                        guild_id=guild_id,
+                        webhook_id=webhook_id,
+                        webhook_token=webhook_token,
+                    )
 
                 data = await self.extract_content(response)
 
@@ -203,7 +234,15 @@ class HTTPClient:
 
                 return response
 
-    async def set_bucket(self, *, response: aiohttp.ClientResponse, channel_id: Optional[int] = None, guild_id: Optional[int] = None, webhook_id: Optional[int] = None, webhook_token: Optional[str] = None) -> Union[Bucket, TopLevelBucket]:
+    async def set_bucket(
+        self,
+        *,
+        response: aiohttp.ClientResponse,
+        channel_id: Optional[int] = None,
+        guild_id: Optional[int] = None,
+        webhook_id: Optional[int] = None,
+        webhook_token: Optional[str] = None,
+    ) -> Union[Bucket, TopLevelBucket]:
         url = response.url
         method = response.method
 
@@ -238,7 +277,9 @@ class HTTPClient:
             data = {}
         return data
 
-    async def handle_ratelimit(self, data: Dict[str, Any], bucket: Union[Bucket, TopLevelBucket]):
+    async def handle_ratelimit(
+        self, data: Dict[str, Any], bucket: Union[Bucket, TopLevelBucket]
+    ):
         bucket.clear()
 
         if data["global"]:
@@ -259,3 +300,26 @@ class HTTPClient:
             url = url[:-1]
 
         return url
+
+    @staticmethod
+    async def log_request(res, body: Optional[dict] = None):
+        messages = [
+            f"Sent a {res.method} to {res.url} "
+            f"and got a {res.status} response. ",
+            f"Content-Type: {res.headers['Content-Type']} ",
+        ]
+
+        if body:
+            messages.append(f"Sent body: {body} ")
+
+        if h := dict(res.request_info.headers):
+            messages.append(f"Sent headers: {h} ")
+
+        if h := dict(res.headers):
+            messages.append(f"Received headers: {h} ")
+
+        try:
+            messages.append(f"Received body: {await res.json()} ")
+
+        finally:
+            logger.debug("".join(messages))
