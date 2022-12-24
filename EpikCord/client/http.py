@@ -88,7 +88,7 @@ class HTTPClient:
         route: Route,
         *args,
         discord: bool = True,
-        json: Optional[Dict] = None,
+        json: Optional[Dict[str, Any]] = None,
         files: Optional[List[File]] = None,
         **kwargs,
     ) -> aiohttp.ClientResponse:
