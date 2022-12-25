@@ -22,6 +22,31 @@ from .websocket import GatewayWebsocket
 
 logger = getLogger("EpikCord.http")
 
+class MajorParameters:
+    def __init__(self, channel_id: Optional[int] = None, guild_id: Optional[int] = None, webhook_id: Optional[int] = None, webhook_token: Optional[str] = None):
+        """
+        Parameters
+        ----------
+        channel_id: Optional[int]
+            The channel id of this
+        """
+        self.channel_id: Optional[int] = channel_id
+        self.guild_id: Optional[int] = guild_id
+        self.webhook_id: Optional[int] = webhook_id
+        self.webhook_token: Optional[str] = webhook_token
+        self.major_parameters: Dict[str, Union[int, str]] = clear_none_values(
+            {
+                "channel_id": self.channel_id,
+                "guild_id": self.guild_id,
+                "webhook_id": self.webhook_id,
+                "webhook_token": self.webhook_token,
+            }
+        )
+
+    def __eq__(self, other: Any):
+        if isinstance(other, MajorParameters):
+            return self.major_parameters == other.major_parameters
+        return False
 
 class Route:
     def __init__(
@@ -29,30 +54,16 @@ class Route:
         method: str,
         url: str,
         *,
-        channel_id: Optional[int] = None,
-        guild_id: Optional[int] = None,
-        webhook_id: Optional[int] = None,
-        webhook_token: Optional[str] = None,
+        major_parameters: MajorParameters = MajorParameters()
     ):
         self.method: str = method
         self.url: str = url
-        self.channel_id: Optional[int] = channel_id
-        self.guild_id: Optional[int] = guild_id
-        self.webhook_id: Optional[int] = webhook_id
-        self.webhook_token: Optional[str] = webhook_token
-        self.major_parameters: Dict[str, Optional[Union[int, str]]] = clear_none_values(
-            {
-                "channel_id": channel_id,
-                "guild_id": guild_id,
-                "webhook_id": webhook_id,
-                "webhook_token": webhook_token,
-            }
-        )
+        self.major_parameters: MajorParameters = major_parameters
 
 
 class HTTPClient:
     error_mapping: Dict[int, Type[HTTPException]] = {
-         400: BadRequest, 401: Unauthorized, 403: Forbidden, 404: NotFound
+        400: BadRequest, 401: Unauthorized, 403: Forbidden, 404: NotFound
     }
 
     def __init__(self, token: str, *, version: int = 10):
@@ -76,8 +87,7 @@ class HTTPClient:
     async def request(
         self,
         route: Route,
-        *args,
-        discord: bool = True,
+        *,
         json: Optional[Dict[str, Any]] = None,
         files: Optional[List[File]] = None,
         **kwargs,
@@ -85,10 +95,8 @@ class HTTPClient:
         """
         Parameters
         ----------
-        *args
-            The args to pass to the ClientSession.request method.
-        discord: bool
-            Whether this request is to Discord.
+        route: Route
+            The Route to make the request to.
         json: Optional[Dict[:class:`str`, Any]]
             The json document to pass to the ClientSession.request method.
         files: Optional[List[File]]
@@ -118,9 +126,6 @@ class HTTPClient:
         method = route.method
         url = route.url
 
-        if not discord:
-            return await self.session.request(method, url, *args, **kwargs)
-
         self.setup_kwargs(kwargs, files=files, json=json)
 
         url = clean_url(url, self.version)
@@ -130,11 +135,12 @@ class HTTPClient:
         await bucket.wait()
 
         for _ in range(5):
-            async with self.session.request(method, url, *args, **kwargs) as response:
+            async with self.session.request(method, url, **kwargs) as response:
                 if isinstance(bucket, MockBucket):
                     bucket = await self.set_bucket(
                         response=response,
-                        **route.major_parameters,
+                        major_parameters=route.major_parameters
+
                     )
 
                 data = await extract_content(response)
@@ -158,25 +164,17 @@ class HTTPClient:
         self,
         *,
         response: aiohttp.ClientResponse,
-        channel_id: Optional[int] = None,
-        guild_id: Optional[int] = None,
-        webhook_id: Optional[int] = None,
-        webhook_token: Optional[str] = None,
+        major_parameters: Optional[MajorParameters] = None
     ) -> Union[Bucket, TopLevelBucket]:
         url = response.url
         method = response.method
         bucket_key: str = f"{method}:{url}"
 
-        if channel_id or guild_id or webhook_id or webhook_token:
+        if major_parameters:
             bucket = TopLevelBucket(
-                channel_id=channel_id,
-                guild_id=guild_id,
-                webhook_id=webhook_id,
-                webhook_token=webhook_token,
+                **major_parameters.major_parameters
             )
-
         else:
-
             bucket = Bucket(bucket_hash=response.headers["X-RateLimit-Bucket"])
             if bucket in self.buckets.values():
                 self.buckets[bucket_key] = list(self.buckets.values())[
