@@ -66,7 +66,7 @@ class Bucket:
         logger.info(f"Clearing bucket {self.hash}.")
         self.event.clear()
 
-    def __eq__(self, other: Bucket):
+    def __eq__(self, other: Any) -> bool:
         if isinstance(other, Bucket):
             return self.hash == other.hash
         return False
