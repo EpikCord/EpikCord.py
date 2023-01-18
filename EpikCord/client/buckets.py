@@ -2,9 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from logging import getLogger
-from typing import Dict, Optional, Union
-
-import aiohttp
+from typing import Dict, Optional, Union, Any
 
 from ..utils import clear_none_values
 
@@ -21,7 +19,7 @@ class MockBucket:
     def set(self):
         ...
 
-    def __eq__(self, other: MockBucket):
+    def __eq__(self, other: Any):
         return isinstance(other, MockBucket)
 
 
@@ -159,7 +157,7 @@ class TopLevelBucket:
         logger.info(f"Clearing bucket {self.major_parameters}.")
         self.event.clear()
 
-    def __eq__(self, other: TopLevelBucket):
+    def __eq__(self, other: Any):
         if isinstance(other, TopLevelBucket):
             return self.major_parameters == other.major_parameters
         return False
