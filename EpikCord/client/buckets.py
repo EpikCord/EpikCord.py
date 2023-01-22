@@ -10,17 +10,25 @@ logger = getLogger("EpikCord.http")
 
 
 class MockBucket:
+    """A mock bucket that does nothing."""
     async def wait(self):
+        """Pretends to wait for the Event to be set"""
         ...
 
     def clear(self):
+        """Pretends to clear the Event"""
         ...
 
     def set(self):
+        """Pretends to set the Event"""
         ...
 
     def __eq__(self, other: Any):
         return isinstance(other, MockBucket)
+
+    async def handle_exhaustion(self, retry_after: int):
+        """Pretends to handle the exhaustion of the bucket"""
+        ...
 
 
 class Bucket:
@@ -44,7 +52,7 @@ class Bucket:
 
     async def wait(self):
         """
-        Waits for the bucket to be set.
+        Waits for the Event to be set.
         """
         logger.info(f"Waiting for bucket {self.hash} to be set.")
         await self.event.wait()
@@ -52,14 +60,14 @@ class Bucket:
 
     def set(self):
         """
-        Sets the bucket.
+        Sets the Event.
         """
         logger.info(f"Setting bucket {self.hash}.")
         self.event.set()
 
     def clear(self):
         """
-        Clears the bucket.
+        Clears the Event.
         """
         logger.info(f"Clearing bucket {self.hash}.")
         self.event.clear()
@@ -137,7 +145,7 @@ class TopLevelBucket:
 
     async def wait(self):
         """
-        Waits for the bucket to be set.
+        Waits for the Event to be set.
         """
         logger.info(f"Waiting for bucket {self.major_parameters} to be set.")
         await self.event.wait()
@@ -145,14 +153,14 @@ class TopLevelBucket:
 
     def set(self):
         """
-        Sets the bucket.
+        Sets the Event.
         """
         logger.info(f"Setting bucket {self.major_parameters}.")
         self.event.set()
 
     def clear(self):
         """
-        Clears the bucket.
+        Clears the Event.
         """
         logger.info(f"Clearing bucket {self.major_parameters}.")
         self.event.clear()

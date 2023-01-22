@@ -49,6 +49,7 @@ class MajorParameters:
         return False
 
 class Route:
+    """Represents a HTTP route."""
     def __init__(
         self,
         method: str,
@@ -56,17 +57,61 @@ class Route:
         *,
         major_parameters: MajorParameters = MajorParameters()
     ):
+        """
+        Parameters
+        ----------
+        method: str
+            The method of the route.
+        url: str
+            The url of the route.
+        major_parameters: MajorParameters
+            The major parameters of the route.
+
+        Attributes
+        ----------
+        method: str
+            The method of the route.
+        url: str
+            The url of the route.
+        major_parameters: MajorParameters
+            The major parameters of the route.    
+        """
         self.method: str = method
         self.url: str = url
         self.major_parameters: MajorParameters = major_parameters
 
 
 class HTTPClient:
+    """The HTTPClient used to make requests to the Discord API."""
+
     error_mapping: Dict[int, Type[HTTPException]] = {
         400: BadRequest, 401: Unauthorized, 403: Forbidden, 404: NotFound
     }
 
     def __init__(self, token: str, *, version: int = 10):
+        """
+        Parameters
+        ----------
+        token: str
+            The token of the bot.
+        version: int
+            The version of the Discord API to use. Defaults to 10.
+
+        Attributes
+        ----------
+        token: str
+            The token of the bot.
+        version: int
+            The version of the Discord API to use.
+        session: aiohttp.ClientSession
+            The ClientSession used to make requests.
+        buckets: Dict[str, Union[Bucket, TopLevelBucket]]
+            The buckets used to ratelimit requests.
+        global_event: asyncio.Event
+            The event used to wait for the global ratelimit to end.
+        error_mapping: Dict[int, Type[HTTPException]]
+            The mapping of status codes to exceptions.
+        """
         self.token: str = token
         self.version: int = version
         self.session: aiohttp.ClientSession = aiohttp.ClientSession(
@@ -126,7 +171,7 @@ class HTTPClient:
         method = route.method
         url = route.url
 
-        self.setup_kwargs(kwargs, files=files, json=json)
+        self.setup_request_kwargs(kwargs, files=files, json=json)
 
         url = clean_url(url, self.version)
         bucket = self.buckets.get(f"{method}:{url}") or MockBucket()
@@ -136,7 +181,7 @@ class HTTPClient:
 
         for _ in range(5):
             async with self.session.request(method, url, **kwargs) as response:
-                if isinstance(bucket, MockBucket):
+                if isinstance(bucket, MockBucket) and response.headers.get("X-RateLimit-Bucket"):
                     bucket = await self.set_bucket(
                         response=response,
                         major_parameters=route.major_parameters
@@ -166,19 +211,39 @@ class HTTPClient:
         response: aiohttp.ClientResponse,
         major_parameters: Optional[MajorParameters] = None
     ) -> Union[Bucket, TopLevelBucket]:
+        """Sets the bucket for the request.
+
+        Parameters
+        ----------
+        response: aiohttp.ClientResponse
+            The response of the request.
+        major_parameters: Optional[MajorParameters]
+            The major parameters of the request.
+        
+        Returns
+        -------
+        Union[Bucket, TopLevelBucket]
+            The bucket for the request.
+        """
         url = response.url
         method = response.method
         bucket_key: str = f"{method}:{url}"
 
+        bucket: Optional[Union[Bucket, TopLevelBucket]] = None
+
         if major_parameters:
             bucket = TopLevelBucket(
-                **major_parameters.major_parameters
+                channel_id=major_parameters.channel_id,
+                guild_id=major_parameters.guild_id,
+                webhook_id=major_parameters.webhook_id,
+                webhook_token=major_parameters.webhook_token
             )
         else:
             bucket = Bucket(bucket_hash=response.headers["X-RateLimit-Bucket"])
             if bucket in self.buckets.values():
-                self.buckets[bucket_key] = list(self.buckets.values())[
-                    list(self.buckets.values()).index(bucket)
+                listed_buckets = list(self.buckets.values())
+                self.buckets[bucket_key] = listed_buckets[
+                    listed_buckets.index(bucket)
                 ]
                 bucket = self.buckets[bucket_key]
             self.buckets[bucket_key] = bucket
@@ -186,8 +251,17 @@ class HTTPClient:
         return bucket
 
     async def handle_ratelimit(
-        self, data: Dict[str, Any], bucket: Union[Bucket, TopLevelBucket]
+        self, data: Dict[str, Any], bucket: Union[Bucket, TopLevelBucket, MockBucket]
     ):
+        """Handles the ratelimit for the request.
+        
+        Parameters
+        ----------
+        data: Dict[str, Any]
+            The data in the response.
+        bucket: Union[Bucket, TopLevelBucket, MockBucket]
+            The bucket for the request.
+        """
         bucket.clear()
 
         if data["global"]:
@@ -200,6 +274,7 @@ class HTTPClient:
 
     @staticmethod
     async def log_request(res, body: Optional[dict] = None):
+        """Logs information about the request."""
         messages = [
             f"Sent a {res.method} to {res.url} " f"and got a {res.status} response. ",
             f"Content-Type: {res.headers['Content-Type']} ",
@@ -220,9 +295,20 @@ class HTTPClient:
         finally:
             logger.debug("".join(messages))
 
-    def setup_kwargs(
+    def setup_request_kwargs(
         self, kwargs, *, files: Optional[List[File]] = None, json: Optional[Dict] = None
     ) -> None:
+        """Sets up the request kwargs.
+
+        Parameters
+        ----------
+        kwargs: Dict[str, Any]
+            The kwargs for the request.
+        files: Optional[List[File]]
+            The files to send with the request.
+        json: Optional[Dict]
+            The json to send with the request.
+        """
         if not json and not files:
             return
         
@@ -256,9 +342,17 @@ class HTTPClient:
             kwargs["data"] = form
 
     async def close(self) -> None:
+        """Closes the session."""
         await self.session.close()
 
     async def get_gateway(self) -> str:
+        """Gets the URL used for connecting to the Gateway.
+        
+        Returns
+        -------
+        str
+            The URL used for connecting to the Gateway.
+        """
         response = await self.request(Route("GET", "/gateway"))
         data = await response.json()
         return data["url"]
