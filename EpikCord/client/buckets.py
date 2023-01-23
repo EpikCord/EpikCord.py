@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from logging import getLogger
-from typing import Dict, Optional, Union, Any
+from typing import Any, Dict, Optional, Union
 
 from ..utils import clear_none_values
 
@@ -11,6 +11,7 @@ logger = getLogger("EpikCord.http")
 
 class MockBucket:
     """A mock bucket that does nothing."""
+
     async def wait(self):
         """Pretends to wait for the Event to be set"""
         ...

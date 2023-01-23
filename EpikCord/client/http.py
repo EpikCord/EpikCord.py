@@ -1,34 +1,64 @@
 from __future__ import annotations
 
 import asyncio
+from enum import IntEnum
 from logging import getLogger
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Type, Union, TYPE_CHECKING
 
 import aiohttp
 
 from .. import __version__
-from ..exceptions import (
-    BadRequest,
-    Forbidden,
-    HTTPException,
-    NotFound,
-    TooManyRetries,
-    Unauthorized,
-)
+from ..exceptions import (BadRequest, Forbidden, HTTPException, NotFound,
+                          TooManyRetries, Unauthorized)
 from ..file import File
-from ..utils import clean_url, clear_none_values, extract_content, json_serialize
+from ..utils import (clean_url, clear_none_values, extract_content,
+                     json_serialize)
 from .buckets import Bucket, MockBucket, TopLevelBucket
-from .websocket import GatewayWebsocket
+from .websocket import GatewayWebSocket
+
+if TYPE_CHECKING:
+    from .client import TokenStore
 
 logger = getLogger("EpikCord.http")
 
+class APIVersion(IntEnum):
+    NINE = 9
+    TEN  = 10
+
+
 class MajorParameters:
-    def __init__(self, channel_id: Optional[int] = None, guild_id: Optional[int] = None, webhook_id: Optional[int] = None, webhook_token: Optional[str] = None):
-        """
+    def __init__(
+        self,
+        channel_id: Optional[int] = None,
+        guild_id: Optional[int] = None,
+        webhook_id: Optional[int] = None,
+        webhook_token: Optional[str] = None,
+    ):
+        """A class to group up all the major parameters of a route.
+
         Parameters
         ----------
         channel_id: Optional[int]
-            The channel id of this
+            The channel id in the route.
+        guild_id: Optional[int]
+            The guild id in the route.
+        webhook_id: Optional[int]
+            The webhook id in the route.
+        webhook_token: Optional[str]
+            The webhook token in the route.
+
+        Attributes
+        ----------
+        channel_id: Optional[int]
+            The channel id in the route.
+        guild_id: Optional[int]
+            The guild id in the route.
+        webhook_id: Optional[int]
+            The webhook id in the route.
+        webhook_token: Optional[str]
+            The webhook token in the route.
+        major_parameters: Dict[str, Union[int, str]]
+            The major parameters compiled into a single dictionary.
         """
         self.channel_id: Optional[int] = channel_id
         self.guild_id: Optional[int] = guild_id
@@ -48,14 +78,16 @@ class MajorParameters:
             return self.major_parameters == other.major_parameters
         return False
 
+
 class Route:
     """Represents a HTTP route."""
+
     def __init__(
         self,
         method: str,
         url: str,
         *,
-        major_parameters: MajorParameters = MajorParameters()
+        major_parameters: MajorParameters = MajorParameters(),
     ):
         """
         Parameters
@@ -74,7 +106,7 @@ class Route:
         url: str
             The url of the route.
         major_parameters: MajorParameters
-            The major parameters of the route.    
+            The major parameters of the route.
         """
         self.method: str = method
         self.url: str = url
@@ -85,22 +117,25 @@ class HTTPClient:
     """The HTTPClient used to make requests to the Discord API."""
 
     error_mapping: Dict[int, Type[HTTPException]] = {
-        400: BadRequest, 401: Unauthorized, 403: Forbidden, 404: NotFound
+        400: BadRequest,
+        401: Unauthorized,
+        403: Forbidden,
+        404: NotFound,
     }
 
-    def __init__(self, token: str, *, version: int = 10):
+    def __init__(self, token: TokenStore, *, version: APIVersion = APIVersion.TEN):
         """
         Parameters
         ----------
         token: str
-            The token of the bot.
+            The token of the bot. Used as authorization. Should be kept private at all times.
         version: int
             The version of the Discord API to use. Defaults to 10.
 
         Attributes
         ----------
         token: str
-            The token of the bot.
+            The token of the bot. Used as authorization. Should be kept private at all times.
         version: int
             The version of the Discord API to use.
         session: aiohttp.ClientSession
@@ -112,15 +147,15 @@ class HTTPClient:
         error_mapping: Dict[int, Type[HTTPException]]
             The mapping of status codes to exceptions.
         """
-        self.token: str = token
-        self.version: int = version
+        self.token: TokenStore = token
+        self.version: APIVersion = version
         self.session: aiohttp.ClientSession = aiohttp.ClientSession(
             headers={
                 "Authorization": f"Bot {self.token}",
                 "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
             },
             json_serialize=json_serialize,  # type: ignore
-            ws_response_class=GatewayWebsocket,
+            ws_response_class=GatewayWebSocket,
         )
         self.buckets: Dict[str, Union[Bucket, TopLevelBucket]] = {}
         self.global_event: asyncio.Event = asyncio.Event()
@@ -173,7 +208,7 @@ class HTTPClient:
 
         self.setup_request_kwargs(kwargs, files=files, json=json)
 
-        url = clean_url(url, self.version)
+        url = clean_url(url, self.version.value)
         bucket = self.buckets.get(f"{method}:{url}") or MockBucket()
 
         await self.global_event.wait()
@@ -181,11 +216,11 @@ class HTTPClient:
 
         for _ in range(5):
             async with self.session.request(method, url, **kwargs) as response:
-                if isinstance(bucket, MockBucket) and response.headers.get("X-RateLimit-Bucket"):
+                if isinstance(bucket, MockBucket) and response.headers.get(
+                    "X-RateLimit-Bucket"
+                ):
                     bucket = await self.set_bucket(
-                        response=response,
-                        major_parameters=route.major_parameters
-
+                        response=response, major_parameters=route.major_parameters
                     )
 
                 data = await extract_content(response)
@@ -209,7 +244,7 @@ class HTTPClient:
         self,
         *,
         response: aiohttp.ClientResponse,
-        major_parameters: Optional[MajorParameters] = None
+        major_parameters: Optional[MajorParameters] = None,
     ) -> Union[Bucket, TopLevelBucket]:
         """Sets the bucket for the request.
 
@@ -219,7 +254,7 @@ class HTTPClient:
             The response of the request.
         major_parameters: Optional[MajorParameters]
             The major parameters of the request.
-        
+
         Returns
         -------
         Union[Bucket, TopLevelBucket]
@@ -236,15 +271,13 @@ class HTTPClient:
                 channel_id=major_parameters.channel_id,
                 guild_id=major_parameters.guild_id,
                 webhook_id=major_parameters.webhook_id,
-                webhook_token=major_parameters.webhook_token
+                webhook_token=major_parameters.webhook_token,
             )
         else:
             bucket = Bucket(bucket_hash=response.headers["X-RateLimit-Bucket"])
             if bucket in self.buckets.values():
                 listed_buckets = list(self.buckets.values())
-                self.buckets[bucket_key] = listed_buckets[
-                    listed_buckets.index(bucket)
-                ]
+                self.buckets[bucket_key] = listed_buckets[listed_buckets.index(bucket)]
                 bucket = self.buckets[bucket_key]
             self.buckets[bucket_key] = bucket
 
@@ -254,7 +287,7 @@ class HTTPClient:
         self, data: Dict[str, Any], bucket: Union[Bucket, TopLevelBucket, MockBucket]
     ):
         """Handles the ratelimit for the request.
-        
+
         Parameters
         ----------
         data: Dict[str, Any]
@@ -311,7 +344,7 @@ class HTTPClient:
         """
         if not json and not files:
             return
-        
+
         if json and not files:
             kwargs["json"] = json
         elif files:
@@ -347,7 +380,7 @@ class HTTPClient:
 
     async def get_gateway(self) -> str:
         """Gets the URL used for connecting to the Gateway.
-        
+
         Returns
         -------
         str
