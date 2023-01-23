@@ -24,7 +24,7 @@ class MockBucket:
         """Pretends to set the Event"""
         ...
 
-    def __eq__(self, other: Any):
+    def __eq__(self, other: Any) -> bool:
         return isinstance(other, MockBucket)
 
     async def handle_exhaustion(self, retry_after: int):
