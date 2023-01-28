@@ -1,4 +1,6 @@
+import asyncio
 from importlib.util import find_spec
+from logging import getLogger
 from typing import Any, Dict
 
 _ORJSON = find_spec("orjson")
@@ -6,9 +8,11 @@ _ORJSON = find_spec("orjson")
 if _ORJSON:
     import orjson as json
 else:
-    import json
+    import json  # type: ignore
 
 import aiohttp
+
+logger = getLogger("EpikCord.utils")
 
 
 def clear_none_values(d: dict):
@@ -56,3 +60,24 @@ def singleton(cls):
         return instance
 
     return wrapper
+
+
+def cancel_tasks(loop) -> None:
+    tasks = {t for t in asyncio.all_tasks(loop=loop) if not t.done()}
+
+    if not tasks:
+        return
+
+    for task in tasks:
+        task.cancel()
+    logger.debug(f"Cancelled {len(tasks)} tasks")
+    loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
+
+
+def cleanup_loop(loop) -> None:
+    try:
+        cancel_tasks(loop)
+        logger.debug("Shutting down async generators.")
+        loop.run_until_complete(loop.shutdown_asyncgens())
+    finally:
+        loop.close()

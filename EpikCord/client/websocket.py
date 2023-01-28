@@ -2,32 +2,28 @@ from __future__ import annotations
 
 import asyncio
 from collections import defaultdict
-from enum import IntEnum
 from sys import platform
 from time import perf_counter_ns
 import zlib
 from datetime import timedelta
-from discord_typings import HelloData, IdentifyConnectionProperties
+from discord_typings import HelloData
 from importlib.util import find_spec
 from typing import (
     Any,
     DefaultDict,
-    Literal,
     Optional,
     TYPE_CHECKING,
     List,
-    TypedDict,
     Union,
 )
-from typing_extensions import NotRequired
 from logging import getLogger
 
 import aiohttp
 
 from ..ext import tasks
 from ..flags import Intents
-from ..presence import Presence, UpdatePresenceData
-from ..utils import AsyncFunction
+from ..presence import Presence
+from ..utils import AsyncFunction, OpCode, IdentifyCommand
 
 _ORJSON = find_spec("orjson")
 
@@ -42,36 +38,6 @@ if TYPE_CHECKING:
     from .http import HTTPClient
 
 logger = getLogger("EpikCord.websocket")
-
-
-class OpCode(IntEnum):
-    DISPATCH = 0
-    HEARTBEAT = 1
-    IDENTIFY = 2
-    STATUS_UPDATE = 3
-    VOICE_STATE_UPDATE = 4
-    VOICE_SERVER_PING = 5
-    RESUME = 6
-    RECONNECT = 7
-    REQUEST_GUILD_MEMBERS = 8
-    INVALID_SESSION = 9
-    HELLO = 10
-    HEARTBEAT_ACK = 11
-
-
-class IdentifyData(TypedDict):
-    token: str
-    intents: int
-    properties: IdentifyConnectionProperties
-    compress: bool
-    large_threshold: int
-    presence: NotRequired[UpdatePresenceData]
-
-
-class IdentifyCommand(TypedDict):
-    op: Literal[OpCode.IDENTIFY]
-    d: IdentifyData
-
 
 class WaitForEvent:
     def __init__(
@@ -152,7 +118,7 @@ class GatewayEventHandler:
         async def heartbeat_task():
             while True:
                 await self.heartbeat()
-        
+
         asyncio.create_task(heartbeat_task())
 
     async def heartbeat(self, *, forced: Optional[bool] = False):
@@ -175,7 +141,9 @@ class GatewayEventHandler:
 
         start = perf_counter_ns()
 
-        await self.wait_for(opcode=OpCode.HEARTBEAT_ACK, timeout=self.client.heartbeat_interval)
+        await self.wait_for(
+            opcode=OpCode.HEARTBEAT_ACK, timeout=self.client.heartbeat_interval
+        )
 
         end = perf_counter_ns()
 
@@ -208,6 +176,7 @@ class GatewayEventHandler:
                         event.future.set_exception(exception)
                 else:
                     event.future.set_result(event)
+
 
 class GatewayRateLimiter:
     def __init__(self):
@@ -285,6 +254,7 @@ class WebSocketClient:
         self.http: HTTPClient = http
 
         self.rate_limiter: GatewayRateLimiter = GatewayRateLimiter()
+        self.event_handler: GatewayEventHandler = GatewayEventHandler(self)
 
         self.sequence: Optional[int] = None
         self.session_id: Optional[str] = None
@@ -300,4 +270,6 @@ class WebSocketClient:
     async def connect(self):
         url = await self.http.get_gateway()
         version = self.http.version.value
-        self.ws = await self.http.ws_connect(url, version=version)
+        self.ws = await self.http.ws_connect(f"{url}?v={version}&encoding=json&compress=zlib-stream")
+        async for message in self.ws:
+            await self.event_handler.handle(message)  # type: ignore
