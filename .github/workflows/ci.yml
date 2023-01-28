@@ -184,15 +184,3 @@ jobs:
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
-
-  review-with-sourcery:
-    needs: black
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.8'
-
-      - uses: sourcery-ai/action@v1
