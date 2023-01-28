@@ -15,7 +15,10 @@ class TokenStore:
 
 
 class Client(WebSocketClient):
-    """The main class of EpikCord. Use this to interact with the Discord API and Gateway."""
+    """
+    The main class of EpikCord.
+    Use this to interact with the Discord API and Gateway.
+    """
 
     def __init__(
         self,

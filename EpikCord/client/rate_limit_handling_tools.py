@@ -198,8 +198,11 @@ class TopLevelBucket:
             return self.major_parameters == other.major_parameters
         return False
 
-    def __str__(self):
-        return f"{self.channel_id}:{self.guild_id}:{self.webhook_id}:{self.webhook_token}"
+    def __str__(self) -> str:
+        return (
+            f"{self.channel_id}:{self.guild_id}"
+            f":{self.webhook_id}:{self.webhook_token}"
+        )
 
     async def handle_exhaustion(self, retry_after: int):
         """

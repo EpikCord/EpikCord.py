@@ -63,14 +63,16 @@ class HTTPClient:
         Parameters
         ----------
         token: str
-            The token of the bot. Used as authorization. Should be kept private at all times.
+            The token of the bot. Used as authorization.
+            Should be kept private at all times.
         version: int
             The version of the Discord API to use. Defaults to 10.
 
         Attributes
         ----------
         token: str
-            The token of the bot. Used as authorization. Should be kept private at all times.
+            The token of the bot. Used as authorization.
+            Should be kept private at all times.
         version: int
             The version of the Discord API to use.
         session: aiohttp.ClientSession
@@ -87,7 +89,10 @@ class HTTPClient:
         self.session: aiohttp.ClientSession = aiohttp.ClientSession(
             headers={
                 "Authorization": f"Bot {self.token}",
-                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
+                "User-Agent": (
+                    "DiscordBot "
+                    f"(https://github.com/EpikCord/EpikCord.py {__version__})"
+                ),
             },
             json_serialize=json_serialize,  # type: ignore
             ws_response_class=GatewayWebSocket,
@@ -135,7 +140,7 @@ class HTTPClient:
         BadRequest
             If the request returns a 400 status code.
         HTTPException
-            If the request returns a status code that is not OK and not any of the other exceptions.
+            Generic Exception for unhandled errors that may occur.
         """
 
         method = route.method
