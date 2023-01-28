@@ -130,7 +130,7 @@ jobs:
         run: pip install nox git+https://github.com/Bluenix2/discord-typings
 
       - name: Check for circular imports
-        run: nox -s circular_imports
+        run: nox -s imports
 
   e2e:
     needs: circular_imports
