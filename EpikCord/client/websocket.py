@@ -62,7 +62,12 @@ class GatewayEventHandler:
         self.event_mapping: Dict[OpCode, AsyncFunction] = {
             OpCode.HELLO: self.hello,
             OpCode.HEARTBEAT: partial(self.heartbeat, forced=True),
+            OpCode.HEARTBEAT_ACK: self.heartbeat_ack,
         }
+
+    async def heartbeat_ack(self, data: Any):
+        """Handle the heartbeat ack event. OpCode 11."""
+        logger.debug("Received heartbeat ack from Gateway")
 
     def wait_for(
         self,
@@ -160,27 +165,23 @@ class GatewayEventHandler:
         except json.JSONDecodeError:
             logger.error("Failed to decode message: %s", message.data)
             return
-        if event["op"] in self.wait_for_events:
-            for event in self.wait_for_events[event["op"]]:
-                if event.check:
-                    try:
-                        if await event.check(event):
-                            event.future.set_result(event)
-                    except Exception as exception:
-                        event.future.set_exception(exception)
-                else:
-                    event.future.set_result(event)
 
+        value: Optional[Union[str, int]] = None
+
+        if event["op"] in self.wait_for_events:
+            value = event["op"]
+        
         elif event.get("t") and event["t"].lower() in self.wait_for_events:
-            for event in self.wait_for_events[event["t"].lower()]:
-                if event.check:
+            value = event["t"].lower()
+
+        if value:
+            for wait_for_event in self.wait_for_events[value]:
+                if wait_for_event.check:
                     try:
-                        if await event.check(event):
-                            event.future.set_result(event)
+                        await wait_for_event.check(event)
                     except Exception as exception:
-                        event.future.set_exception(exception)
-                else:
-                    event.future.set_result(event)
+                        wait_for_event.future.set_exception(exception)
+                wait_for_event.future.set_result(event)
 
         if event["op"] != OpCode.DISPATCH:
             await self.event_mapping[event["op"]](event["d"])
@@ -260,3 +261,6 @@ class WebSocketClient:
         async for message in self.ws:
             logger.debug("Received message: %s", message.json())
             await self.event_handler.handle(message)  # type: ignore
+
+    async def handle_close(self):
+        ...
