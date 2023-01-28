@@ -1,6 +1,12 @@
 import nox
 
 
+@nox.session(name="install")
+def installation(session: nox.Session):
+    session.install("-r", "requirements.txt")
+    session.install(".")
+
+
 @nox.session(name="format")
 def format_(session: nox.Session):
     session.install("black", "isort", ".", "aiohttp", "orjson")

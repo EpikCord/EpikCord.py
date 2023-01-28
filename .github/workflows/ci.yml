@@ -10,9 +10,10 @@ jobs:
       matrix:
         python: [ '3.8', '3.9', '3.10' ]
         os: [ ubuntu, windows, macos ]
+        nox_action: ["install", "lint", "myright"]
       fail-fast: false
 
-    name: Nox - py ${{ matrix.python }} - ${{ matrix.os }}
+    name: Nox - py ${{ matrix.python }} - ${{ matrix.os }} - ${{ matrix.nox_action }}
     steps:
       - uses: actions/checkout@v2
 
@@ -29,4 +30,4 @@ jobs:
         run: pip install nox git+https://github.com/Bluenix2/discord-typings
 
       - name: Run nox
-        run: nox -s lint myright
+        run: nox -s ${{ matrix.nox_action }}
