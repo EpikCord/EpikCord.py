@@ -31,12 +31,24 @@ jobs:
     - name: run Formatter
       run: |
         make pretty
+
     - name: Push changes
       run: |
         git commit -m ":art: Format code automatically" -a || echo "No changes to commit"
         git push || echo "No changes to push"
 
+  codespell:
+    if: ${{ always() }}
+    needs: black
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - run: pip install codespell
+      - run: codespell --skip="./docs/*"
+
   lint:
+    if: ${{ always() }}
     needs: black
     runs-on: ubuntu-latest
     steps:
@@ -58,7 +70,6 @@ jobs:
       run: nox -s lint
 
   pyright:
-    needs: black
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
