@@ -69,9 +69,6 @@ jobs:
         python-version: ${{ matrix.python }}
         architecture: 'x64'
 
-    - name: Update Pip
-      run: pip install -U pip
-
     - name: Install dependencies
       run: pip install nox git+https://github.com/Bluenix2/discord-typings
 
@@ -88,9 +85,6 @@ jobs:
       with:
         python-version: ${{ matrix.python }}
         architecture: 'x64'
-
-    - name: Update Pip
-      run: pip install -U pip
 
     - name: Install dependencies
       run: pip install nox git+https://github.com/Bluenix2/discord-typings
@@ -116,11 +110,48 @@ jobs:
           python-version: ${{ matrix.python }}
           architecture: 'x64'
 
-      - name: Update Pip
-        run: pip install -U pip
-
       - name: Install dependencies
         run: pip install nox git+https://github.com/Bluenix2/discord-typings
 
       - name: Run nox
         run: nox -s install
+
+  circular_imports:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+          architecture: 'x64'
+
+      - name: Install dependencies
+        run: pip install nox git+https://github.com/Bluenix2/discord-typings
+
+      - name: Check for circular imports
+        run: nox -s circular_imports
+
+  e2e:
+    needs: circular_imports
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      matrix:
+        python: [ '3.8', '3.9', '3.10' ]
+        os: [ ubuntu, windows, macos ]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Python Setup
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+          architecture: 'x64'
+
+      - name: Install dependencies
+        run: pip install nox git+https://github.com/Bluenix2/discord-typings
+
+      - name: Run E2E tests
+        run: nox -s e2e
