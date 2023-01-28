@@ -128,12 +128,3 @@ class Permissions(Flag):
 class ChannelFlags(Flag):
     pinned = 1 << 1
     require_tag = 1 << 4
-
-
-__all__ = (
-    "Intents",
-    "SystemChannelFlags",
-    "Permissions",
-    "Flag",
-    "ChannelFlags",
-)
