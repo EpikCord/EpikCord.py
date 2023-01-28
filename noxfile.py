@@ -9,7 +9,7 @@ def installation(session: nox.Session):
 
 @nox.session(name="format")
 def format_(session: nox.Session):
-    session.install("black", "isort", ".", "aiohttp", "orjson")
+    session.install("black", "isort")
     session.run("isort", "EpikCord")
     session.run("black", "EpikCord")
 
@@ -23,4 +23,5 @@ def lint(session: nox.Session):
 @nox.session
 def pyright(session: nox.Session):
     session.install("pyright")
+    session.install("-r", "requirements")
     session.run("pyright", "EpikCord")
