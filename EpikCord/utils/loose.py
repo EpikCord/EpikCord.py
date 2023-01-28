@@ -1,14 +1,18 @@
+import aiohttp
 from importlib.util import find_spec
 from typing import Any, Dict
+from types import ModuleType
 
 _ORJSON = find_spec("orjson")
+json: ModuleType
 
 if _ORJSON:
-    import orjson as json
-else:
-    import json
+    import orjson
+    json = orjson
 
-import aiohttp
+else:
+    import json as _json
+    json = _json
 
 
 def clear_none_values(d: dict):

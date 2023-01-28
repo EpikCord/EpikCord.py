@@ -32,7 +32,7 @@ class File:
         self.contents: io.IOBase = contents
         self.mime_type: Optional[str] = mime_type or mimetypes.guess_type(filename)[0]
         if spoiler:
-            self.filename: str = f"SPOILER_{filename}"
+            self.filename = f"SPOILER_{filename}"
         else:
-            self.filename: str = filename
+            self.filename = filename
         self.description: Optional[str] = description
