@@ -25,8 +25,10 @@ class OpCode(IntEnum):
     HELLO = 10
     HEARTBEAT_ACK = 11
 
+
 class GatewayCloseCode(IntEnum):
     """The close codes used in the Discord Gateway."""
+
     UNKNOWN_ERROR = 4000
     UNKNOWN_OPCODE = 4001
     DECODE_ERROR = 4002
@@ -42,8 +44,10 @@ class GatewayCloseCode(IntEnum):
     INVALID_INTENTS = 4013
     DISALLOWED_INTENTS = 4014
 
+
 class VoiceOpCode(IntEnum):
     """The opcodes used in the Discord Voice WebSocket connection."""
+
     IDENTIFY = 0
     SELECT_PROTOCOL = 1
     READY = 2
@@ -56,8 +60,10 @@ class VoiceOpCode(IntEnum):
     RESUMED = 9
     CLIENT_DISCONNECT = 13
 
+
 class VoiceCloseCode(IntEnum):
     """The close codes used in the Discord Voice WebSocket connection."""
+
     UNKNOWN_OPCODE = 4001
     FAILED_TO_DECODE_PAYLOAD = 4002
     NOT_AUTHENTICATED = 4003
@@ -70,6 +76,7 @@ class VoiceCloseCode(IntEnum):
     DISCONNECTED = 4014
     VOICE_SERVER_CRASHED = 4015
     UNKNOWN_ENCRYPTION_MODE = 4016
+
 
 class IdentifyData(TypedDict):
     """The data used in the identify payload."""

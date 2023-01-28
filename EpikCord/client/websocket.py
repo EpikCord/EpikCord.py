@@ -164,7 +164,7 @@ class GatewayEventHandler:
 
         if event["op"] in self.wait_for_events:
             value = event["op"]
-        
+
         elif event.get("t") and event["t"].lower() in self.wait_for_events:
             value = event["t"].lower()
 
