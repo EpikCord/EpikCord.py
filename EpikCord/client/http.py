@@ -178,7 +178,7 @@ class HTTPClient:
                     error = self.error_mapping.get(
                         response.status, HTTPException
                     )
-                    raise error(response, data)
+                    raise error(data)
                 elif response.ok:
                     return response
         raise TooManyRetries(
