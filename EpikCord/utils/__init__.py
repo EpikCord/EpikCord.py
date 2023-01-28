@@ -10,6 +10,7 @@ from .loose import (
     add_file
 )
 from .types import (
+    AsyncFunction,
     OpCode,
     GatewayCloseCode,
     VoiceOpCode,
@@ -20,6 +21,7 @@ from .types import (
 )
 
 __all__ = (
+    "AsyncFunction",
     "GatewayCloseCode",
     "OpCode",
     "IdentifyData",
