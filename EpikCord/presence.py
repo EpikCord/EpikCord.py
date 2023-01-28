@@ -1,8 +1,10 @@
 from enum import Enum, IntEnum
-from typing import Optional, TypedDict, List
+from typing import List, Optional, TypedDict
+
 from typing_extensions import NotRequired
 
-class ActivityPayload(TypedDict): # Data sent to Discord when updating presence
+
+class ActivityPayload(TypedDict):  # Data sent to Discord when updating presence
     name: str
     type: int
     url: NotRequired[str]
@@ -24,11 +26,13 @@ class ActivityType(IntEnum):
     CUSTOM = 4
     COMPETING = 5
 
-class UpdatePresenceData(TypedDict): # Data sent to Discord when updating presence
+
+class UpdatePresenceData(TypedDict):  # Data sent to Discord when updating presence
     status: NotRequired[str]
     activities: NotRequired[List[ActivityPayload]]
-    afk: NotRequired[bool]
-    since: NotRequired[float]
+    afk: bool
+    since: float
+
 
 class Activity:
     def __init__(self, *, name: str, type: ActivityType, url: Optional[str] = None):
@@ -61,7 +65,9 @@ class Activity:
 
 
 class Presence:
-    def __init__(self, *, status: Optional[Status] = None, activity: Optional[Activity] = None, afk: bool = False, since: float = 0):
+    def __init__(
+        self, *, status: Optional[Status] = None, activity: Optional[Activity] = None
+    ):
         """Represents a Discord presence.
 
         Parameters
@@ -70,32 +76,23 @@ class Presence:
             The status of the presence.
         activity: Optional[:class:`Activity`]
             The activity of the presence.
-        afk: :class:`bool`
-            Whether the the bot is afk or not. Defaults to False.
-        since: Optional[:class:`float`]
-            The time since the bot has been afk. Defaults to 0.
         """
         if not status and not activity:
             raise ValueError("Presence must have either a status or an activity.")
         self.status: Optional[Status] = status
         self.activity: Optional[Activity] = activity
-        self.afk: bool = afk
-        self.since: float = since
 
     def to_dict(self) -> UpdatePresenceData:
         """Converts the presence to a dictionary."""
-        data: UpdatePresenceData = {}
+        data: UpdatePresenceData = {
+            "afk": False,
+            "since": 0.0,
+        }
 
         if self.status is not None:
             data["status"] = self.status.value
 
         if self.activity is not None:
             data["activities"] = [self.activity.to_dict()]
-
-        if self.afk:
-            data["afk"] = self.afk
-
-        if self.since:
-            data["since"] = self.since
 
         return data

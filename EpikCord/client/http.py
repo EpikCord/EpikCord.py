@@ -3,16 +3,22 @@ from __future__ import annotations
 import asyncio
 from enum import IntEnum
 from logging import getLogger
-from typing import Any, Dict, List, Optional, Type, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, TypedDict, Union
 
 import aiohttp
+from typing_extensions import NotRequired
 
 from .. import __version__
-from ..exceptions import (BadRequest, Forbidden, HTTPException, NotFound,
-                          TooManyRetries, Unauthorized)
+from ..exceptions import (
+    BadRequest,
+    Forbidden,
+    HTTPException,
+    NotFound,
+    TooManyRetries,
+    Unauthorized,
+)
 from ..file import File
-from ..utils import (clean_url, clear_none_values, extract_content,
-                     json_serialize)
+from ..utils import clean_url, clear_none_values, extract_content, json_serialize
 from .buckets import Bucket, MockBucket, TopLevelBucket
 from .websocket import GatewayWebSocket
 
@@ -21,9 +27,21 @@ if TYPE_CHECKING:
 
 logger = getLogger("EpikCord.http")
 
+
 class APIVersion(IntEnum):
+    """Represents the version of the Discord HTTP API and Gateway WebSocket to use."""
+
     NINE = 9
-    TEN  = 10
+    TEN = 10
+
+
+class SendingAttachmentData(TypedDict):
+    """The data used to send an attachment."""
+
+    id: int
+    filename: str
+    description: NotRequired[str]
+    ephemeral: NotRequired[bool]
 
 
 class MajorParameters:
@@ -161,8 +179,8 @@ class HTTPClient:
         self.global_event: asyncio.Event = asyncio.Event()
         self.global_event.set()
 
-    async def ws_connect(self, url: str, **kwargs) -> aiohttp.ClientWebSocketResponse:
-        return await self.session.ws_connect(url, **kwargs)
+    async def ws_connect(self, url: str, **kwargs) -> GatewayWebSocket:
+        return await self.session.ws_connect(url, **kwargs)  # type: ignore
 
     async def request(
         self,
@@ -328,9 +346,28 @@ class HTTPClient:
         finally:
             logger.debug("".join(messages))
 
+    def add_file(
+        self, form: aiohttp.FormData, file: File, i: int
+    ) -> SendingAttachmentData:
+        form.add_field(
+            f"files[{i}]",
+            file.contents,
+            filename=file.filename,
+            content_type=file.mime_type,
+        )
+
+        attachment: SendingAttachmentData = {
+            "filename": file.filename,
+            "id": i,
+        }
+        if file.description:
+            attachment["description"] = file.description
+
+        return attachment
+
     def setup_request_kwargs(
         self, kwargs, *, files: Optional[List[File]] = None, json: Optional[Dict] = None
-    ) -> None:
+    ) -> Optional[Dict]:
         """Sets up the request kwargs.
 
         Parameters
@@ -343,10 +380,12 @@ class HTTPClient:
             The json to send with the request.
         """
         if not json and not files:
-            return
+            return None
+
+        return_kwargs = kwargs.copy()
 
         if json and not files:
-            kwargs["json"] = json
+            return_kwargs["json"] = json
         elif files:
             if not json:
                 json = {}
@@ -355,24 +394,14 @@ class HTTPClient:
 
             if files:
                 for i, file in enumerate(files):
-                    form.add_field(
-                        f"files[{i}]",
-                        file.contents,
-                        filename=file.filename,
-                        content_type=file.mime_type,
-                    )
-                    attachment = {
-                        "filename": file.filename,
-                        "id": i,
-                    }
-                    if file.description:
-                        attachment["description"] = file.description
-
+                    attachment = self.add_file(form, file, i)
                     json["attachments"].append(attachment)
 
             form.add_field("payload_json", self.session.json_serialize(json))
 
-            kwargs["data"] = form
+            return_kwargs["data"] = form
+
+        return return_kwargs
 
     async def close(self) -> None:
         """Closes the session."""

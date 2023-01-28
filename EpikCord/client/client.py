@@ -1,29 +1,24 @@
 from ..flags import Intents
-from .http import HTTPClient, APIVersion
-
-def singleton(cls):
-    instance = None
-
-    def wrapper(*args, **kwargs):
-        nonlocal instance
-
-        if instance is None:
-            instance = cls(*args, **kwargs)
-        return instance
-
-    return wrapper
+from ..utils import singleton
+from .http import APIVersion, HTTPClient
 
 
 @singleton
 class TokenStore:
-
     def __init__(self, token: str):
         self.value: str = token
+
 
 class Client:
     """The main class of EpikCord. Use this to interact with the Discord API and Gateway."""
 
-    def __init__(self, token: TokenStore, intents: Intents, *, version: APIVersion = APIVersion.TEN):
+    def __init__(
+        self,
+        token: TokenStore,
+        intents: Intents,
+        *,
+        version: APIVersion = APIVersion.TEN
+    ):
         """
         Parameters
         ----------

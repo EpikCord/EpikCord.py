@@ -43,3 +43,16 @@ async def extract_content(response: aiohttp.ClientResponse) -> Dict[str, Any]:
         return {}
     data = await response.json()
     return data
+
+
+def singleton(cls):
+    instance = None
+
+    def wrapper(*args, **kwargs):
+        nonlocal instance
+
+        if instance is None:
+            instance = cls(*args, **kwargs)
+        return instance
+
+    return wrapper
