@@ -25,7 +25,7 @@ def pyright(session: nox.Session):
     session.install("pyright")
     session.install("orjson", "types-orjson")
     session.install("-r", "requirements.txt")
-    session.run("pyright", "EpikCord", "--outputjson", "pyright.json")
+    session.run("pyright", "EpikCord")
 
 
 @nox.session(name="imports")
