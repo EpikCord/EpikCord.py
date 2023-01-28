@@ -23,5 +23,5 @@ def lint(session: nox.Session):
 @nox.session
 def pyright(session: nox.Session):
     session.install("pyright")
-    session.install("-r", "requirements")
+    session.install("-r", "requirements.txt")
     session.run("pyright", "EpikCord")
