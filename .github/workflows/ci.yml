@@ -162,3 +162,25 @@ jobs:
 
       - name: Run E2E tests
         run: nox -s e2e
+
+  coverage:
+    needs: e2e
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Python Setup
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install nox git+https://github.com/Bluenix2/discord-typings
+
+      - name: Run coverage
+        run: nox -s coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2

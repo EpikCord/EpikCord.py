@@ -42,3 +42,12 @@ def end_to_end(session: nox.Session):
     session.install("-r", "requirements.txt")
     session.install(".")
     session.run("pytest", "tests/e2e")
+
+
+@nox.session
+def coverage_report(session: nox.Session):
+    session.install("pytest", "pytest-cov", "coverage")
+    session.install("-r", "requirements.txt")
+    session.install(".")
+    session.run("pytest", "--cov=EpikCord", "tests")
+    session.run("coverage", "xml")
