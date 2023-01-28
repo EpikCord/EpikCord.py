@@ -10,8 +10,11 @@ jobs:
   bandit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+          cache: 'pip'
       - run: pip install bandit
       - run: bandit --recursive EpikCord
 
@@ -33,9 +36,10 @@ jobs:
         git pull
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.8'
+        cache: 'pip'
 
     - name: run Formatter
       run: |
@@ -51,8 +55,11 @@ jobs:
     needs: black
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+          cache: 'pip'
       - run: pip install codespell
       - run: codespell --skip="./docs/*"
 
@@ -61,13 +68,13 @@ jobs:
     needs: black
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Python Setup
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python }}
-        architecture: 'x64'
+        cache: 'pip'
 
     - name: Install dependencies
       run: pip install nox git+https://github.com/Bluenix2/discord-typings
@@ -78,13 +85,13 @@ jobs:
   pyright:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Python Setup
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python }}
-        architecture: 'x64'
+        cache: 'pip'
 
     - name: Install dependencies
       run: pip install nox git+https://github.com/Bluenix2/discord-typings
@@ -102,13 +109,13 @@ jobs:
 
     name: Nox - py ${{ matrix.python }} - ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Python Setup
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
-          architecture: 'x64'
+          cache: 'pip'
 
       - name: Install dependencies
         run: pip install nox git+https://github.com/Bluenix2/discord-typings
@@ -120,11 +127,11 @@ jobs:
     needs: install
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: 3.8
-          architecture: 'x64'
+          cache: 'pip'
 
       - name: Install dependencies
         run: pip install nox git+https://github.com/Bluenix2/discord-typings
@@ -142,13 +149,13 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Python Setup
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
-          architecture: 'x64'
+          cache: 'pip'
 
       - name: Install dependencies
         run: pip install nox git+https://github.com/Bluenix2/discord-typings
