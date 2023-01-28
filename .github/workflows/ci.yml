@@ -9,7 +9,13 @@ jobs:
   black:
     runs-on: ubuntu-latest
     steps:
+    - name: Get branch names.
+      id: branch-names
+      uses: tj-actions/branch-names@v6
+
     - uses: actions/checkout@v2
+      with:
+          ref: ${{ steps.branch-names.outputs.head_ref_branch }}
 
     - name: Set Up git
       run: |
