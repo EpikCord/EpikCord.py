@@ -2,18 +2,22 @@ import asyncio
 from importlib.util import find_spec
 from logging import getLogger
 from typing import Any, Dict, Optional
+from types import ModuleType
 
+import aiohttp
 from ..file import File
 from . import SendingAttachmentData
 
 _ORJSON = find_spec("orjson")
+json: ModuleType
 
 if _ORJSON:
-    import orjson as json
-else:
-    import json  # type: ignore
+    import orjson
+    json = orjson
 
-import aiohttp
+else:
+    import json as _json
+    json = _json
 
 logger = getLogger("EpikCord.utils")
 

@@ -215,7 +215,7 @@ class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
             message = self.inflator.decompress(self.buffer)
 
             message = message.decode("utf-8")
-            self.buffer: bytearray = bytearray()
+            self.buffer = bytearray()
 
         return DiscordWSMessage(
             data=message, type=ws_message.type, extra=ws_message.extra
