@@ -173,7 +173,7 @@ jobs:
       - name: Python Setup
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python }}
+          python-version: 3.8
           cache: 'pip'
 
       - name: Install dependencies
