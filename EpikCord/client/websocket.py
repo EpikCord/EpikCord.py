@@ -149,6 +149,12 @@ class GatewayEventHandler:
         self.client.heartbeat_interval = data["heartbeat_interval"] / 1000
         await self.identify()
 
+        async def heartbeat_task():
+            while True:
+                await self.heartbeat()
+        
+        asyncio.create_task(heartbeat_task())
+
     async def heartbeat(self, *, forced: Optional[bool] = False):
         """Send a heartbeat to the gateway.
 
