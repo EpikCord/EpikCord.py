@@ -26,3 +26,19 @@ def pyright(session: nox.Session):
     session.install("orjson", "types-orjson")
     session.install("-r", "requirements.txt")
     session.run("pyright", "EpikCord")
+
+
+@nox.session(name="imports")
+def check_circular_imports(session: nox.Session):
+    session.install("pytest")
+    session.install("-r", "requirements.txt")
+    session.install(".")
+    session.run("pytest", "tests/test_circular_imports.py")
+
+
+@nox.session(name="e2e")
+def end_to_end(session: nox.Session):
+    session.install("pytest")
+    session.install("-r", "requirements.txt")
+    session.install(".")
+    session.run("pytest", "tests/e2e")
