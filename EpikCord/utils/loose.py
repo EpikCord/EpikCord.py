@@ -1,12 +1,13 @@
+from __future__ import annotations
+
 import asyncio
 from importlib.util import find_spec
 from logging import getLogger
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 from types import ModuleType
 
 import aiohttp
 from ..file import File
-from . import SendingAttachmentData
 
 _ORJSON = find_spec("orjson")
 json: ModuleType
@@ -18,6 +19,9 @@ if _ORJSON:
 else:
     import json as _json
     json = _json
+
+if TYPE_CHECKING:
+    from . import SendingAttachmentData
 
 logger = getLogger("EpikCord.utils")
 
