@@ -3,10 +3,11 @@ from __future__ import annotations
 import asyncio
 from importlib.util import find_spec
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, Dict, Optional
 from types import ModuleType
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 import aiohttp
+
 from ..file import File
 
 _ORJSON = find_spec("orjson")
@@ -14,10 +15,12 @@ json: ModuleType
 
 if _ORJSON:
     import orjson
+
     json = orjson
 
 else:
     import json as _json
+
     json = _json
 
 if TYPE_CHECKING:
@@ -93,10 +96,12 @@ def cleanup_loop(loop) -> None:
     finally:
         loop.close()
 
+
 async def log_request(res, body: Optional[dict] = None):
     """Logs information about the request."""
     messages = [
-        f"Sent a {res.method} to {res.url} " f"and got a {res.status} response. ",
+        f"Sent a {res.method} to {res.url} "
+        f"and got a {res.status} response. ",
         f"Content-Type: {res.headers['Content-Type']} ",
     ]
 
@@ -114,6 +119,7 @@ async def log_request(res, body: Optional[dict] = None):
 
     finally:
         logger.debug("".join(messages))
+
 
 def add_file(
     form: aiohttp.FormData, file: File, i: int

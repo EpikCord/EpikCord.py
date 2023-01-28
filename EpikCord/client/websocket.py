@@ -1,29 +1,22 @@
 from __future__ import annotations
 
 import asyncio
+import zlib
 from collections import defaultdict
+from functools import partial
+from importlib.util import find_spec
+from logging import getLogger
 from sys import platform
 from time import perf_counter_ns
-import zlib
-from discord_typings import HelloData
-from importlib.util import find_spec
-from functools import partial
-from typing import (
-    Any,
-    DefaultDict,
-    Dict,
-    Optional,
-    TYPE_CHECKING,
-    List,
-    Union,
-)
-from logging import getLogger
+from typing import TYPE_CHECKING, Any, DefaultDict, Dict, List, Optional, Union
 
 import aiohttp
-from .rate_limit_handling_tools import GatewayRateLimiter
+from discord_typings import HelloData
+
 from ..flags import Intents
 from ..presence import Presence
-from ..utils import AsyncFunction, OpCode, IdentifyCommand
+from ..utils import AsyncFunction, IdentifyCommand, OpCode
+from .rate_limit_handling_tools import GatewayRateLimiter
 
 _ORJSON = find_spec("orjson")
 
@@ -38,6 +31,7 @@ if TYPE_CHECKING:
     from .http import HTTPClient
 
 logger = getLogger("EpikCord.websocket")
+
 
 class WaitForEvent:
     def __init__(
@@ -58,7 +52,9 @@ class WaitForEvent:
 class GatewayEventHandler:
     def __init__(self, client: WebSocketClient):
         self.client = client
-        self.wait_for_events: DefaultDict[Union[str, int], List] = defaultdict(list)
+        self.wait_for_events: DefaultDict[Union[str, int], List] = defaultdict(
+            list
+        )
         self.event_mapping: Dict[OpCode, AsyncFunction] = {
             OpCode.HELLO: self.hello,
             OpCode.HEARTBEAT: partial(self.heartbeat, forced=True),
@@ -82,7 +78,9 @@ class GatewayEventHandler:
         elif name and opcode:
             raise ValueError("Only name or opcode can be provided.")
 
-        event = WaitForEvent(name=name, opcode=opcode, timeout=timeout, check=check)
+        event = WaitForEvent(
+            name=name, opcode=opcode, timeout=timeout, check=check
+        )
 
         if name:
             self.wait_for_events[name].append(event)
@@ -93,7 +91,9 @@ class GatewayEventHandler:
 
     async def send_json(self, payload: Any):
         if not self.client.ws:
-            logger.error("Tried to send a payload without a websocket connection.")
+            logger.error(
+                "Tried to send a payload without a websocket connection."
+            )
             return
         await self.client.rate_limiter.tick()
         logger.debug("Sending %s to Gateway", payload)
@@ -170,7 +170,7 @@ class GatewayEventHandler:
 
         if event["op"] in self.wait_for_events:
             value = event["op"]
-        
+
         elif event.get("t") and event["t"].lower() in self.wait_for_events:
             value = event["t"].lower()
 
@@ -185,6 +185,7 @@ class GatewayEventHandler:
 
         if event["op"] != OpCode.DISPATCH:
             await self.event_mapping[event["op"]](event["d"])
+
 
 class DiscordWSMessage:
     def __init__(self, *, data, type, extra):
@@ -257,7 +258,9 @@ class WebSocketClient:
         url = await self.http.get_gateway()
         version = self.http.version.value
         asyncio.create_task(self.rate_limiter.reset.start())
-        self.ws = await self.http.ws_connect(f"{url}?v={version}&encoding=json&compress=zlib-stream")
+        self.ws = await self.http.ws_connect(
+            f"{url}?v={version}&encoding=json&compress=zlib-stream"
+        )
         async for message in self.ws:
             logger.debug("Received message: %s", message.json())
             await self.event_handler.handle(message)  # type: ignore

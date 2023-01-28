@@ -1,16 +1,17 @@
-from ..presence import UpdatePresenceData
-
-
 from enum import IntEnum
 from typing import Any, Callable, Coroutine, TypedDict
-from typing_extensions import NotRequired, Literal
 
 from discord_typings import IdentifyConnectionProperties
+from typing_extensions import Literal, NotRequired
+
+from ..presence import UpdatePresenceData
 
 AsyncFunction = Callable[..., Coroutine[Any, Any, Any]]
 
+
 class OpCode(IntEnum):
     """The opcodes used in the Discord Gateway."""
+
     DISPATCH = 0
     HEARTBEAT = 1
     IDENTIFY = 2
@@ -24,8 +25,10 @@ class OpCode(IntEnum):
     HELLO = 10
     HEARTBEAT_ACK = 11
 
+
 class GatewayCloseCode(IntEnum):
     """The close codes used in the Discord Gateway."""
+
     UNKNOWN_ERROR = 4000
     UNKNOWN_OPCODE = 4001
     DECODE_ERROR = 4002
@@ -41,8 +44,10 @@ class GatewayCloseCode(IntEnum):
     INVALID_INTENTS = 4013
     DISALLOWED_INTENTS = 4014
 
+
 class VoiceOpCode(IntEnum):
     """The opcodes used in the Discord Voice WebSocket connection."""
+
     IDENTIFY = 0
     SELECT_PROTOCOL = 1
     READY = 2
@@ -55,8 +60,10 @@ class VoiceOpCode(IntEnum):
     RESUMED = 9
     CLIENT_DISCONNECT = 13
 
+
 class VoiceCloseCode(IntEnum):
     """The close codes used in the Discord Voice WebSocket connection."""
+
     UNKNOWN_OPCODE = 4001
     FAILED_TO_DECODE_PAYLOAD = 4002
     NOT_AUTHENTICATED = 4003
@@ -70,8 +77,10 @@ class VoiceCloseCode(IntEnum):
     VOICE_SERVER_CRASHED = 4015
     UNKNOWN_ENCRYPTION_MODE = 4016
 
+
 class IdentifyData(TypedDict):
     """The data used in the identify payload."""
+
     token: str
     intents: int
     properties: IdentifyConnectionProperties
@@ -82,11 +91,14 @@ class IdentifyData(TypedDict):
 
 class IdentifyCommand(TypedDict):
     """The data used to identify with the gateway."""
+
     op: Literal[OpCode.IDENTIFY]
     d: IdentifyData
 
+
 class SendingAttachmentData(TypedDict):
     """The data used to send an attachment."""
+
     id: int
     filename: str
     description: NotRequired[str]

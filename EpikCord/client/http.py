@@ -17,8 +17,20 @@ from ..exceptions import (
     Unauthorized,
 )
 from ..file import File
-from ..utils import clean_url, extract_content, json_serialize, log_request, add_file
-from .rate_limit_handling_tools import Bucket, MockBucket, TopLevelBucket, MajorParameters, Route
+from ..utils import (
+    add_file,
+    clean_url,
+    extract_content,
+    json_serialize,
+    log_request,
+)
+from .rate_limit_handling_tools import (
+    Bucket,
+    MajorParameters,
+    MockBucket,
+    Route,
+    TopLevelBucket,
+)
 from .websocket import GatewayWebSocket
 
 if TYPE_CHECKING:
@@ -33,6 +45,7 @@ class APIVersion(IntEnum):
     NINE = 9
     TEN = 10
 
+
 class HTTPClient:
     """The HTTPClient used to make requests to the Discord API."""
 
@@ -43,19 +56,23 @@ class HTTPClient:
         404: NotFound,
     }
 
-    def __init__(self, token: TokenStore, *, version: APIVersion = APIVersion.TEN):
+    def __init__(
+        self, token: TokenStore, *, version: APIVersion = APIVersion.TEN
+    ):
         """
         Parameters
         ----------
         token: str
-            The token of the bot. Used as authorization. Should be kept private at all times.
+            The token of the bot. Used as authorization.
+            Should be kept private at all times.
         version: int
             The version of the Discord API to use. Defaults to 10.
 
         Attributes
         ----------
         token: str
-            The token of the bot. Used as authorization. Should be kept private at all times.
+            The token of the bot. Used as authorization.
+            Should be kept private at all times.
         version: int
             The version of the Discord API to use.
         session: aiohttp.ClientSession
@@ -72,7 +89,10 @@ class HTTPClient:
         self.session: aiohttp.ClientSession = aiohttp.ClientSession(
             headers={
                 "Authorization": f"Bot {self.token}",
-                "User-Agent": f"DiscordBot (https://github.com/EpikCord/EpikCord.py {__version__})",
+                "User-Agent": (
+                    "DiscordBot "
+                    f"(https://github.com/EpikCord/EpikCord.py {__version__})"
+                ),
             },
             json_serialize=json_serialize,  # type: ignore
             ws_response_class=GatewayWebSocket,
@@ -120,7 +140,7 @@ class HTTPClient:
         BadRequest
             If the request returns a 400 status code.
         HTTPException
-            If the request returns a status code that is not OK and not any of the other exceptions.
+            Generic Exception for unhandled errors that may occur.
         """
 
         method = route.method
@@ -140,7 +160,8 @@ class HTTPClient:
                     "X-RateLimit-Bucket"
                 ):
                     bucket = await self.set_bucket(
-                        response=response, major_parameters=route.major_parameters
+                        response=response,
+                        major_parameters=route.major_parameters,
                     )
 
                 data = await extract_content(response)
@@ -154,11 +175,15 @@ class HTTPClient:
                         int(response.headers["X-RateLimit-Reset-After"])
                     )
                 elif not response.ok:
-                    error = self.error_mapping.get(response.status, HTTPException)
+                    error = self.error_mapping.get(
+                        response.status, HTTPException
+                    )
                     raise error(response, data)
                 elif response.ok:
                     return response
-        raise TooManyRetries(f"Attempted {method} request to {url} 5 times but failed.")
+        raise TooManyRetries(
+            f"Attempted {method} request to {url} 5 times but failed."
+        )
 
     async def set_bucket(
         self,
@@ -197,14 +222,18 @@ class HTTPClient:
             bucket = Bucket(bucket_hash=response.headers["X-RateLimit-Bucket"])
             if bucket in self.buckets.values():
                 listed_buckets = list(self.buckets.values())
-                self.buckets[bucket_key] = listed_buckets[listed_buckets.index(bucket)]
+                self.buckets[bucket_key] = listed_buckets[
+                    listed_buckets.index(bucket)
+                ]
                 bucket = self.buckets[bucket_key]
             self.buckets[bucket_key] = bucket
 
         return bucket
 
     async def handle_ratelimit(
-        self, data: Dict[str, Any], bucket: Union[Bucket, TopLevelBucket, MockBucket]
+        self,
+        data: Dict[str, Any],
+        bucket: Union[Bucket, TopLevelBucket, MockBucket],
     ):
         """Handles the ratelimit for the request.
 
@@ -226,7 +255,11 @@ class HTTPClient:
         bucket.set()
 
     def setup_request_kwargs(
-        self, kwargs, *, files: Optional[List[File]] = None, json: Optional[Dict] = None
+        self,
+        kwargs,
+        *,
+        files: Optional[List[File]] = None,
+        json: Optional[Dict] = None,
     ) -> Optional[Dict]:
         """Sets up the request kwargs.
 

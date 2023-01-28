@@ -5,9 +5,11 @@ from datetime import timedelta
 from logging import getLogger
 from typing import Any, Dict, Optional, Union
 
-from ..utils import clear_none_values
 from ..ext import tasks
+from ..utils import clear_none_values
+
 logger = getLogger("EpikCord.http")
+
 
 class GatewayRateLimiter:
     def __init__(self):
@@ -28,6 +30,7 @@ class GatewayRateLimiter:
         self.remaining -= 1
         if self.remaining == 0:
             self.event.clear()
+
 
 class MockBucket:
     """A mock bucket that does nothing."""
@@ -108,7 +111,9 @@ class Bucket:
             The amount of time to wait before retrying.
         """
         self.clear()
-        logger.info(f"Bucket {self.hash} exhausted, waiting {retry_after} seconds.")
+        logger.info(
+            f"Bucket {self.hash} exhausted, waiting {retry_after} seconds."
+        )
         await asyncio.sleep(retry_after)
         self.set()
 
@@ -155,7 +160,9 @@ class TopLevelBucket:
         self.guild_id: Optional[int] = guild_id
         self.webhook_id: Optional[int] = webhook_id
         self.webhook_token: Optional[str] = webhook_token
-        self.major_parameters: Dict[str, Optional[Union[int, str]]] = clear_none_values(
+        self.major_parameters: Dict[
+            str, Optional[Union[int, str]]
+        ] = clear_none_values(
             {
                 "channel_id": channel_id,
                 "guild_id": guild_id,
@@ -191,9 +198,10 @@ class TopLevelBucket:
             return self.major_parameters == other.major_parameters
         return False
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
-            f"{self.channel_id}:{self.guild_id}:{self.webhook_id}:{self.webhook_token}"
+            f"{self.channel_id}:{self.guild_id}"
+            f":{self.webhook_id}:{self.webhook_token}"
         )
 
     async def handle_exhaustion(self, retry_after: int):
@@ -206,9 +214,12 @@ class TopLevelBucket:
             The amount of time to wait before retrying.
         """
         self.clear()
-        logger.info(f"Bucket {str(self)} exhausted, waiting {retry_after} seconds.")
+        logger.info(
+            f"Bucket {str(self)} exhausted, waiting {retry_after} seconds."
+        )
         await asyncio.sleep(retry_after)
         self.set()
+
 
 class MajorParameters:
     def __init__(
@@ -261,6 +272,7 @@ class MajorParameters:
         if isinstance(other, MajorParameters):
             return self.major_parameters == other.major_parameters
         return False
+
 
 class Route:
     """Represents a HTTP route."""

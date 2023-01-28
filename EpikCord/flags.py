@@ -7,7 +7,9 @@ class Flag:
     class_flags: Dict[str, int]
 
     def __init_subclass__(cls) -> None:
-        cls.class_flags = {k: v for k, v in cls.__dict__.items() if isinstance(v, int)}
+        cls.class_flags = {
+            k: v for k, v in cls.__dict__.items() if isinstance(v, int)
+        }
 
     def __init__(self, value: int = 0, **kwargs):
         self.value = value
@@ -126,6 +128,3 @@ class Permissions(Flag):
 class ChannelFlags(Flag):
     pinned = 1 << 1
     require_tag = 1 << 4
-
-
-__all__ = ("Intents", "SystemChannelFlags", "Permissions", "Flag", "ChannelFlags")

@@ -25,3 +25,7 @@ RoboEpikLogs.log
 epikcord.log
 *.mp3
 *.mp4
+
+# Coverage
+.coverage
+coverage.xml

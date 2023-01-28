@@ -30,7 +30,9 @@ class File:
             The description of the file.
         """
         self.contents: io.IOBase = contents
-        self.mime_type: Optional[str] = mime_type or mimetypes.guess_type(filename)[0]
+        self.mime_type: Optional[str] = (
+            mime_type or mimetypes.guess_type(filename)[0]
+        )
         if spoiler:
             self.filename = f"SPOILER_{filename}"
         else:

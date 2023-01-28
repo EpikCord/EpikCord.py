@@ -3,10 +3,9 @@ from typing import Optional
 
 from ..flags import Intents
 from ..presence import Presence
-from ..utils import singleton
-from .websocket import WebSocketClient
+from ..utils import cleanup_loop, singleton
 from .http import APIVersion, HTTPClient
-from ..utils import cleanup_loop
+from .websocket import WebSocketClient
 
 
 @singleton
@@ -16,7 +15,10 @@ class TokenStore:
 
 
 class Client(WebSocketClient):
-    """The main class of EpikCord. Use this to interact with the Discord API and Gateway."""
+    """
+    The main class of EpikCord.
+    Use this to interact with the Discord API and Gateway.
+    """
 
     def __init__(
         self,
@@ -24,7 +26,7 @@ class Client(WebSocketClient):
         intents: Intents,
         *,
         version: APIVersion = APIVersion.TEN,
-        presence: Optional[Presence] = None
+        presence: Optional[Presence] = None,
     ):
         """
         Parameters
@@ -45,7 +47,12 @@ class Client(WebSocketClient):
         http: HTTPClient
             The HTTP client used to interact with the Discord API.
         """
-        super().__init__(token, intents, presence=presence, http=HTTPClient(token, version=version))
+        super().__init__(
+            token,
+            intents,
+            presence=presence,
+            http=HTTPClient(token, version=version),
+        )
 
     def login(self):
         loop = asyncio.get_event_loop()
