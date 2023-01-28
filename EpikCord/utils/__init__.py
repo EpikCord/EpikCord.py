@@ -1,23 +1,23 @@
 from .loose import (
-    clear_none_values,
-    json_serialize,
-    clean_url,
-    extract_content,
-    singleton,
+    add_file,
     cancel_tasks,
+    clean_url,
     cleanup_loop,
+    clear_none_values,
+    extract_content,
+    json_serialize,
     log_request,
-    add_file
+    singleton,
 )
 from .types import (
     AsyncFunction,
-    OpCode,
     GatewayCloseCode,
-    VoiceOpCode,
-    VoiceCloseCode,
-    IdentifyData,
     IdentifyCommand,
-    SendingAttachmentData
+    IdentifyData,
+    OpCode,
+    SendingAttachmentData,
+    VoiceCloseCode,
+    VoiceOpCode,
 )
 
 __all__ = (
