@@ -3,10 +3,9 @@ from __future__ import annotations
 import asyncio
 from enum import IntEnum
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, TypedDict, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union
 
 import aiohttp
-from typing_extensions import NotRequired
 
 from .. import __version__
 from ..exceptions import (
@@ -18,8 +17,8 @@ from ..exceptions import (
     Unauthorized,
 )
 from ..file import File
-from ..utils import clean_url, clear_none_values, extract_content, json_serialize
-from .buckets import Bucket, MockBucket, TopLevelBucket
+from ..utils import clean_url, extract_content, json_serialize, log_request, add_file
+from .rate_limit_handling_tools import Bucket, MockBucket, TopLevelBucket, MajorParameters, Route
 from .websocket import GatewayWebSocket
 
 if TYPE_CHECKING:
@@ -33,103 +32,6 @@ class APIVersion(IntEnum):
 
     NINE = 9
     TEN = 10
-
-
-class SendingAttachmentData(TypedDict):
-    """The data used to send an attachment."""
-
-    id: int
-    filename: str
-    description: NotRequired[str]
-    ephemeral: NotRequired[bool]
-
-
-class MajorParameters:
-    def __init__(
-        self,
-        channel_id: Optional[int] = None,
-        guild_id: Optional[int] = None,
-        webhook_id: Optional[int] = None,
-        webhook_token: Optional[str] = None,
-    ):
-        """A class to group up all the major parameters of a route.
-
-        Parameters
-        ----------
-        channel_id: Optional[int]
-            The channel id in the route.
-        guild_id: Optional[int]
-            The guild id in the route.
-        webhook_id: Optional[int]
-            The webhook id in the route.
-        webhook_token: Optional[str]
-            The webhook token in the route.
-
-        Attributes
-        ----------
-        channel_id: Optional[int]
-            The channel id in the route.
-        guild_id: Optional[int]
-            The guild id in the route.
-        webhook_id: Optional[int]
-            The webhook id in the route.
-        webhook_token: Optional[str]
-            The webhook token in the route.
-        major_parameters: Dict[str, Union[int, str]]
-            The major parameters compiled into a single dictionary.
-        """
-        self.channel_id: Optional[int] = channel_id
-        self.guild_id: Optional[int] = guild_id
-        self.webhook_id: Optional[int] = webhook_id
-        self.webhook_token: Optional[str] = webhook_token
-        self.major_parameters: Dict[str, Union[int, str]] = clear_none_values(
-            {
-                "channel_id": self.channel_id,
-                "guild_id": self.guild_id,
-                "webhook_id": self.webhook_id,
-                "webhook_token": self.webhook_token,
-            }
-        )
-
-    def __eq__(self, other: Any):
-        if isinstance(other, MajorParameters):
-            return self.major_parameters == other.major_parameters
-        return False
-
-
-class Route:
-    """Represents a HTTP route."""
-
-    def __init__(
-        self,
-        method: str,
-        url: str,
-        *,
-        major_parameters: MajorParameters = MajorParameters(),
-    ):
-        """
-        Parameters
-        ----------
-        method: str
-            The method of the route.
-        url: str
-            The url of the route.
-        major_parameters: MajorParameters
-            The major parameters of the route.
-
-        Attributes
-        ----------
-        method: str
-            The method of the route.
-        url: str
-            The url of the route.
-        major_parameters: MajorParameters
-            The major parameters of the route.
-        """
-        self.method: str = method
-        self.url: str = url
-        self.major_parameters: MajorParameters = major_parameters
-
 
 class HTTPClient:
     """The HTTPClient used to make requests to the Discord API."""
@@ -243,7 +145,7 @@ class HTTPClient:
 
                 data = await extract_content(response)
 
-                await self.log_request(response, data)
+                await log_request(response, data)
 
                 if response.status == 429:
                     await self.handle_ratelimit(data, bucket)
@@ -323,48 +225,6 @@ class HTTPClient:
         self.global_event.set()
         bucket.set()
 
-    @staticmethod
-    async def log_request(res, body: Optional[dict] = None):
-        """Logs information about the request."""
-        messages = [
-            f"Sent a {res.method} to {res.url} " f"and got a {res.status} response. ",
-            f"Content-Type: {res.headers['Content-Type']} ",
-        ]
-
-        if body:
-            messages.append(f"Sent body: {body} ")
-
-        if h := dict(res.request_info.headers):
-            messages.append(f"Sent headers: {h} ")
-
-        if h := dict(res.headers):
-            messages.append(f"Received headers: {h} ")
-
-        try:
-            messages.append(f"Received body: {await res.json()} ")
-
-        finally:
-            logger.debug("".join(messages))
-
-    def add_file(
-        self, form: aiohttp.FormData, file: File, i: int
-    ) -> SendingAttachmentData:
-        form.add_field(
-            f"files[{i}]",
-            file.contents,
-            filename=file.filename,
-            content_type=file.mime_type,
-        )
-
-        attachment: SendingAttachmentData = {
-            "filename": file.filename,
-            "id": i,
-        }
-        if file.description:
-            attachment["description"] = file.description
-
-        return attachment
-
     def setup_request_kwargs(
         self, kwargs, *, files: Optional[List[File]] = None, json: Optional[Dict] = None
     ) -> Optional[Dict]:
@@ -394,7 +254,7 @@ class HTTPClient:
 
             if files:
                 for i, file in enumerate(files):
-                    attachment = self.add_file(form, file, i)
+                    attachment = add_file(form, file, i)
                     json["attachments"].append(attachment)
 
             form.add_field("payload_json", self.session.json_serialize(json))

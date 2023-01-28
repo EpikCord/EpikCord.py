@@ -1,7 +1,10 @@
 import asyncio
 from importlib.util import find_spec
 from logging import getLogger
-from typing import Any, Dict
+from typing import Any, Dict, Optional
+
+from ..file import File
+from . import SendingAttachmentData
 
 _ORJSON = find_spec("orjson")
 
@@ -81,3 +84,44 @@ def cleanup_loop(loop) -> None:
         loop.run_until_complete(loop.shutdown_asyncgens())
     finally:
         loop.close()
+
+async def log_request(res, body: Optional[dict] = None):
+    """Logs information about the request."""
+    messages = [
+        f"Sent a {res.method} to {res.url} " f"and got a {res.status} response. ",
+        f"Content-Type: {res.headers['Content-Type']} ",
+    ]
+
+    if body:
+        messages.append(f"Sent body: {body} ")
+
+    if h := dict(res.request_info.headers):
+        messages.append(f"Sent headers: {h} ")
+
+    if h := dict(res.headers):
+        messages.append(f"Received headers: {h} ")
+
+    try:
+        messages.append(f"Received body: {await res.json()} ")
+
+    finally:
+        logger.debug("".join(messages))
+
+def add_file(
+    form: aiohttp.FormData, file: File, i: int
+) -> SendingAttachmentData:
+    form.add_field(
+        f"files[{i}]",
+        file.contents,
+        filename=file.filename,
+        content_type=file.mime_type,
+    )
+
+    attachment: SendingAttachmentData = {
+        "filename": file.filename,
+        "id": i,
+    }
+    if file.description:
+        attachment["description"] = file.description
+
+    return attachment

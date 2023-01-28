@@ -5,12 +5,13 @@ from collections import defaultdict
 from sys import platform
 from time import perf_counter_ns
 import zlib
-from datetime import timedelta
 from discord_typings import HelloData
 from importlib.util import find_spec
+from functools import partial
 from typing import (
     Any,
     DefaultDict,
+    Dict,
     Optional,
     TYPE_CHECKING,
     List,
@@ -19,8 +20,7 @@ from typing import (
 from logging import getLogger
 
 import aiohttp
-
-from ..ext import tasks
+from .rate_limit_handling_tools import GatewayRateLimiter
 from ..flags import Intents
 from ..presence import Presence
 from ..utils import AsyncFunction, OpCode, IdentifyCommand
@@ -59,6 +59,10 @@ class GatewayEventHandler:
     def __init__(self, client: WebSocketClient):
         self.client = client
         self.wait_for_events: DefaultDict[Union[str, int], List] = defaultdict(list)
+        self.event_mapping: Dict[OpCode, AsyncFunction] = {
+            OpCode.HELLO: self.hello,
+            OpCode.HEARTBEAT: partial(self.heartbeat, forced=True),
+        }
 
     def wait_for(
         self,
@@ -73,7 +77,7 @@ class GatewayEventHandler:
         elif name and opcode:
             raise ValueError("Only name or opcode can be provided.")
 
-        event = WaitForEvent(name=name, timeout=timeout, check=check)
+        event = WaitForEvent(name=name, opcode=opcode, timeout=timeout, check=check)
 
         if name:
             self.wait_for_events[name].append(event)
@@ -87,6 +91,7 @@ class GatewayEventHandler:
             logger.error("Tried to send a payload without a websocket connection.")
             return
         await self.client.rate_limiter.tick()
+        logger.debug("Sending %s to Gateway", payload)
         await self.client.ws.send_json(payload)
 
     async def identify(self):
@@ -155,7 +160,6 @@ class GatewayEventHandler:
         except json.JSONDecodeError:
             logger.error("Failed to decode message: %s", message.data)
             return
-
         if event["op"] in self.wait_for_events:
             for event in self.wait_for_events[event["op"]]:
                 if event.check:
@@ -166,7 +170,8 @@ class GatewayEventHandler:
                         event.future.set_exception(exception)
                 else:
                     event.future.set_result(event)
-        elif event["t"].lower() in self.wait_for_events:
+
+        elif event.get("t") and event["t"].lower() in self.wait_for_events:
             for event in self.wait_for_events[event["t"].lower()]:
                 if event.check:
                     try:
@@ -177,28 +182,8 @@ class GatewayEventHandler:
                 else:
                     event.future.set_result(event)
 
-
-class GatewayRateLimiter:
-    def __init__(self):
-
-        self.event = asyncio.Event()
-        self.event.set()
-
-        self.remaining = 120
-        self.limit = 120
-        self.reset.run()
-
-    @tasks.task(duration=timedelta(seconds=60))
-    async def reset(self):
-        self.remaining = self.limit
-        self.event.set()
-
-    async def tick(self):
-        await self.event.wait()
-        self.remaining -= 1
-        if self.remaining == 0:
-            self.event.clear()
-
+        if event["op"] != OpCode.DISPATCH:
+            await self.event_mapping[event["op"]](event["d"])
 
 class DiscordWSMessage:
     def __init__(self, *, data, type, extra):
@@ -270,6 +255,8 @@ class WebSocketClient:
     async def connect(self):
         url = await self.http.get_gateway()
         version = self.http.version.value
+        asyncio.create_task(self.rate_limiter.reset.start())
         self.ws = await self.http.ws_connect(f"{url}?v={version}&encoding=json&compress=zlib-stream")
         async for message in self.ws:
+            logger.debug("Received message: %s", message.json())
             await self.event_handler.handle(message)  # type: ignore

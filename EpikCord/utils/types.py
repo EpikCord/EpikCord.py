@@ -10,6 +10,7 @@ from discord_typings import IdentifyConnectionProperties
 AsyncFunction = Callable[..., Coroutine[Any, Any, Any]]
 
 class OpCode(IntEnum):
+    """The opcodes used in the Discord Gateway."""
     DISPATCH = 0
     HEARTBEAT = 1
     IDENTIFY = 2
@@ -25,6 +26,7 @@ class OpCode(IntEnum):
 
 
 class IdentifyData(TypedDict):
+    """The data used in the identify payload."""
     token: str
     intents: int
     properties: IdentifyConnectionProperties
@@ -34,5 +36,13 @@ class IdentifyData(TypedDict):
 
 
 class IdentifyCommand(TypedDict):
+    """The data used to identify with the gateway."""
     op: Literal[OpCode.IDENTIFY]
     d: IdentifyData
+
+class SendingAttachmentData(TypedDict):
+    """The data used to send an attachment."""
+    id: int
+    filename: str
+    description: NotRequired[str]
+    ephemeral: NotRequired[bool]

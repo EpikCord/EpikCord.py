@@ -1,13 +1,33 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import timedelta
 from logging import getLogger
 from typing import Any, Dict, Optional, Union
 
 from ..utils import clear_none_values
-
+from ..ext import tasks
 logger = getLogger("EpikCord.http")
 
+class GatewayRateLimiter:
+    def __init__(self):
+
+        self.event = asyncio.Event()
+        self.event.set()
+
+        self.remaining = 120
+        self.limit = 120
+
+    @tasks.task(duration=timedelta(seconds=60))
+    async def reset(self):
+        self.remaining = self.limit
+        self.event.set()
+
+    async def tick(self):
+        await self.event.wait()
+        self.remaining -= 1
+        if self.remaining == 0:
+            self.event.clear()
 
 class MockBucket:
     """A mock bucket that does nothing."""
@@ -189,3 +209,88 @@ class TopLevelBucket:
         logger.info(f"Bucket {str(self)} exhausted, waiting {retry_after} seconds.")
         await asyncio.sleep(retry_after)
         self.set()
+
+class MajorParameters:
+    def __init__(
+        self,
+        channel_id: Optional[int] = None,
+        guild_id: Optional[int] = None,
+        webhook_id: Optional[int] = None,
+        webhook_token: Optional[str] = None,
+    ):
+        """A class to group up all the major parameters of a route.
+
+        Parameters
+        ----------
+        channel_id: Optional[int]
+            The channel id in the route.
+        guild_id: Optional[int]
+            The guild id in the route.
+        webhook_id: Optional[int]
+            The webhook id in the route.
+        webhook_token: Optional[str]
+            The webhook token in the route.
+
+        Attributes
+        ----------
+        channel_id: Optional[int]
+            The channel id in the route.
+        guild_id: Optional[int]
+            The guild id in the route.
+        webhook_id: Optional[int]
+            The webhook id in the route.
+        webhook_token: Optional[str]
+            The webhook token in the route.
+        major_parameters: Dict[str, Union[int, str]]
+            The major parameters compiled into a single dictionary.
+        """
+        self.channel_id: Optional[int] = channel_id
+        self.guild_id: Optional[int] = guild_id
+        self.webhook_id: Optional[int] = webhook_id
+        self.webhook_token: Optional[str] = webhook_token
+        self.major_parameters: Dict[str, Union[int, str]] = clear_none_values(
+            {
+                "channel_id": self.channel_id,
+                "guild_id": self.guild_id,
+                "webhook_id": self.webhook_id,
+                "webhook_token": self.webhook_token,
+            }
+        )
+
+    def __eq__(self, other: Any):
+        if isinstance(other, MajorParameters):
+            return self.major_parameters == other.major_parameters
+        return False
+
+class Route:
+    """Represents a HTTP route."""
+
+    def __init__(
+        self,
+        method: str,
+        url: str,
+        *,
+        major_parameters: MajorParameters = MajorParameters(),
+    ):
+        """
+        Parameters
+        ----------
+        method: str
+            The method of the route.
+        url: str
+            The url of the route.
+        major_parameters: MajorParameters
+            The major parameters of the route.
+
+        Attributes
+        ----------
+        method: str
+            The method of the route.
+        url: str
+            The url of the route.
+        major_parameters: MajorParameters
+            The major parameters of the route.
+        """
+        self.method: str = method
+        self.url: str = url
+        self.major_parameters: MajorParameters = major_parameters
