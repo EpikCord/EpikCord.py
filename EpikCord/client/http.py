@@ -17,8 +17,14 @@ from ..exceptions import (
     Unauthorized,
 )
 from ..file import File
-from ..utils import clean_url, extract_content, json_serialize, log_request, add_file
-from .rate_limit_handling_tools import Bucket, MockBucket, TopLevelBucket, MajorParameters, Route
+from ..utils import add_file, clean_url, extract_content, json_serialize, log_request
+from .rate_limit_handling_tools import (
+    Bucket,
+    MajorParameters,
+    MockBucket,
+    Route,
+    TopLevelBucket,
+)
 from .websocket import GatewayWebSocket
 
 if TYPE_CHECKING:
@@ -32,6 +38,7 @@ class APIVersion(IntEnum):
 
     NINE = 9
     TEN = 10
+
 
 class HTTPClient:
     """The HTTPClient used to make requests to the Discord API."""
