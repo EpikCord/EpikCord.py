@@ -17,7 +17,13 @@ from ..exceptions import (
     Unauthorized,
 )
 from ..file import File
-from ..utils import add_file, clean_url, extract_content, json_serialize, log_request
+from ..utils import (
+    add_file,
+    clean_url,
+    extract_content,
+    json_serialize,
+    log_request,
+)
 from .rate_limit_handling_tools import (
     Bucket,
     MajorParameters,
@@ -50,7 +56,9 @@ class HTTPClient:
         404: NotFound,
     }
 
-    def __init__(self, token: TokenStore, *, version: APIVersion = APIVersion.TEN):
+    def __init__(
+        self, token: TokenStore, *, version: APIVersion = APIVersion.TEN
+    ):
         """
         Parameters
         ----------
@@ -147,7 +155,8 @@ class HTTPClient:
                     "X-RateLimit-Bucket"
                 ):
                     bucket = await self.set_bucket(
-                        response=response, major_parameters=route.major_parameters
+                        response=response,
+                        major_parameters=route.major_parameters,
                     )
 
                 data = await extract_content(response)
@@ -161,11 +170,15 @@ class HTTPClient:
                         int(response.headers["X-RateLimit-Reset-After"])
                     )
                 elif not response.ok:
-                    error = self.error_mapping.get(response.status, HTTPException)
+                    error = self.error_mapping.get(
+                        response.status, HTTPException
+                    )
                     raise error(response, data)
                 elif response.ok:
                     return response
-        raise TooManyRetries(f"Attempted {method} request to {url} 5 times but failed.")
+        raise TooManyRetries(
+            f"Attempted {method} request to {url} 5 times but failed."
+        )
 
     async def set_bucket(
         self,
@@ -204,14 +217,18 @@ class HTTPClient:
             bucket = Bucket(bucket_hash=response.headers["X-RateLimit-Bucket"])
             if bucket in self.buckets.values():
                 listed_buckets = list(self.buckets.values())
-                self.buckets[bucket_key] = listed_buckets[listed_buckets.index(bucket)]
+                self.buckets[bucket_key] = listed_buckets[
+                    listed_buckets.index(bucket)
+                ]
                 bucket = self.buckets[bucket_key]
             self.buckets[bucket_key] = bucket
 
         return bucket
 
     async def handle_ratelimit(
-        self, data: Dict[str, Any], bucket: Union[Bucket, TopLevelBucket, MockBucket]
+        self,
+        data: Dict[str, Any],
+        bucket: Union[Bucket, TopLevelBucket, MockBucket],
     ):
         """Handles the ratelimit for the request.
 
@@ -233,7 +250,11 @@ class HTTPClient:
         bucket.set()
 
     def setup_request_kwargs(
-        self, kwargs, *, files: Optional[List[File]] = None, json: Optional[Dict] = None
+        self,
+        kwargs,
+        *,
+        files: Optional[List[File]] = None,
+        json: Optional[Dict] = None,
     ) -> Optional[Dict]:
         """Sets up the request kwargs.
 

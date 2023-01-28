@@ -100,7 +100,8 @@ def cleanup_loop(loop) -> None:
 async def log_request(res, body: Optional[dict] = None):
     """Logs information about the request."""
     messages = [
-        f"Sent a {res.method} to {res.url} " f"and got a {res.status} response. ",
+        f"Sent a {res.method} to {res.url} "
+        f"and got a {res.status} response. ",
         f"Content-Type: {res.headers['Content-Type']} ",
     ]
 
@@ -120,7 +121,9 @@ async def log_request(res, body: Optional[dict] = None):
         logger.debug("".join(messages))
 
 
-def add_file(form: aiohttp.FormData, file: File, i: int) -> SendingAttachmentData:
+def add_file(
+    form: aiohttp.FormData, file: File, i: int
+) -> SendingAttachmentData:
     form.add_field(
         f"files[{i}]",
         file.contents,

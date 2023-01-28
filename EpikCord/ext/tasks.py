@@ -6,7 +6,10 @@ from typing import Callable, Coroutine
 
 class Task:
     def __init__(
-        self, wrapped_func: Callable[..., Coroutine], duration: float, max_runs: int
+        self,
+        wrapped_func: Callable[..., Coroutine],
+        duration: float,
+        max_runs: int,
     ):
         self.wrapped_func: Callable[..., Coroutine] = wrapped_func
         self.duration: float = duration

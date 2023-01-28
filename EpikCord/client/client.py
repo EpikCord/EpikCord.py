@@ -23,7 +23,7 @@ class Client(WebSocketClient):
         intents: Intents,
         *,
         version: APIVersion = APIVersion.TEN,
-        presence: Optional[Presence] = None
+        presence: Optional[Presence] = None,
     ):
         """
         Parameters
@@ -45,7 +45,10 @@ class Client(WebSocketClient):
             The HTTP client used to interact with the Discord API.
         """
         super().__init__(
-            token, intents, presence=presence, http=HTTPClient(token, version=version)
+            token,
+            intents,
+            presence=presence,
+            http=HTTPClient(token, version=version),
         )
 
     def login(self):

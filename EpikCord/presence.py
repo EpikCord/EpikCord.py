@@ -4,7 +4,9 @@ from typing import List, Optional, TypedDict
 from typing_extensions import NotRequired
 
 
-class ActivityPayload(TypedDict):  # Data sent to Discord when updating presence
+class ActivityPayload(
+    TypedDict
+):  # Data sent to Discord when updating presence
     name: str
     type: int
     url: NotRequired[str]
@@ -27,7 +29,9 @@ class ActivityType(IntEnum):
     COMPETING = 5
 
 
-class UpdatePresenceData(TypedDict):  # Data sent to Discord when updating presence
+class UpdatePresenceData(
+    TypedDict
+):  # Data sent to Discord when updating presence
     status: NotRequired[str]
     activities: NotRequired[List[ActivityPayload]]
     afk: bool
@@ -35,7 +39,9 @@ class UpdatePresenceData(TypedDict):  # Data sent to Discord when updating prese
 
 
 class Activity:
-    def __init__(self, *, name: str, type: ActivityType, url: Optional[str] = None):
+    def __init__(
+        self, *, name: str, type: ActivityType, url: Optional[str] = None
+    ):
         """Represents a Discord activity.
 
         Parameters
@@ -66,7 +72,10 @@ class Activity:
 
 class Presence:
     def __init__(
-        self, *, status: Optional[Status] = None, activity: Optional[Activity] = None
+        self,
+        *,
+        status: Optional[Status] = None,
+        activity: Optional[Activity] = None,
     ):
         """Represents a Discord presence.
 
@@ -78,7 +87,9 @@ class Presence:
             The activity of the presence.
         """
         if not status and not activity:
-            raise ValueError("Presence must have either a status or an activity.")
+            raise ValueError(
+                "Presence must have either a status or an activity."
+            )
         self.status: Optional[Status] = status
         self.activity: Optional[Activity] = activity
 

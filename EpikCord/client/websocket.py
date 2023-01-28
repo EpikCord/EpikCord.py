@@ -52,7 +52,9 @@ class WaitForEvent:
 class GatewayEventHandler:
     def __init__(self, client: WebSocketClient):
         self.client = client
-        self.wait_for_events: DefaultDict[Union[str, int], List] = defaultdict(list)
+        self.wait_for_events: DefaultDict[Union[str, int], List] = defaultdict(
+            list
+        )
         self.event_mapping: Dict[OpCode, AsyncFunction] = {
             OpCode.HELLO: self.hello,
             OpCode.HEARTBEAT: partial(self.heartbeat, forced=True),
@@ -76,7 +78,9 @@ class GatewayEventHandler:
         elif name and opcode:
             raise ValueError("Only name or opcode can be provided.")
 
-        event = WaitForEvent(name=name, opcode=opcode, timeout=timeout, check=check)
+        event = WaitForEvent(
+            name=name, opcode=opcode, timeout=timeout, check=check
+        )
 
         if name:
             self.wait_for_events[name].append(event)
@@ -87,7 +91,9 @@ class GatewayEventHandler:
 
     async def send_json(self, payload: Any):
         if not self.client.ws:
-            logger.error("Tried to send a payload without a websocket connection.")
+            logger.error(
+                "Tried to send a payload without a websocket connection."
+            )
             return
         await self.client.rate_limiter.tick()
         logger.debug("Sending %s to Gateway", payload)
