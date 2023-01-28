@@ -10,7 +10,7 @@ jobs:
       matrix:
         python: [ '3.8', '3.9', '3.10' ]
         os: [ ubuntu, windows, macos ]
-        nox_action: ["install", "lint", "myright"]
+        nox_action: ["install", "lint", "pyright"]
       fail-fast: false
 
     name: Nox - py ${{ matrix.python }} - ${{ matrix.os }} - ${{ matrix.nox_action }}
