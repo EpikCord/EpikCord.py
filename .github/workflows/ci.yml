@@ -36,17 +36,57 @@ jobs:
         git commit -m ":art: Format code automatically" -a || echo "No changes to commit"
         git push || echo "No changes to push"
 
-  ci:
+  lint:
     needs: black
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Python Setup
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python }}
+        architecture: 'x64'
+
+    - name: Update Pip
+      run: pip install -U pip
+
+    - name: Install dependencies
+      run: pip install nox git+https://github.com/Bluenix2/discord-typings
+
+    - name: Run nox
+      run: nox -s lint
+
+  pyright:
+    needs: black
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Python Setup
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python }}
+        architecture: 'x64'
+
+    - name: Update Pip
+      run: pip install -U pip
+
+    - name: Install dependencies
+      run: pip install nox git+https://github.com/Bluenix2/discord-typings
+
+    - name: Run nox
+      run: nox -s pyright
+
+  install:
     runs-on: ${{ matrix.os }}-latest
     strategy:
       matrix:
         python: [ '3.8', '3.9', '3.10' ]
         os: [ ubuntu, windows, macos ]
-        nox_action: ["install", "lint", "pyright"]
       fail-fast: false
 
-    name: Nox - py ${{ matrix.python }} - ${{ matrix.os }} - ${{ matrix.nox_action }}
+    name: Nox - py ${{ matrix.python }} - ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
 
@@ -63,4 +103,4 @@ jobs:
         run: pip install nox git+https://github.com/Bluenix2/discord-typings
 
       - name: Run nox
-        run: nox -s ${{ matrix.nox_action }}
+        run: nox -s install
