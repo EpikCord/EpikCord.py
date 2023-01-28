@@ -75,7 +75,6 @@ jobs:
       with:
         python-version: ${{ matrix.python }}
         architecture: 'x64'
-        cache: 'pip'
 
     - name: Install dependencies
       run: pip install nox git+https://github.com/Bluenix2/discord-typings
@@ -93,7 +92,6 @@ jobs:
       with:
         python-version: ${{ matrix.python }}
         architecture: 'x64'
-        cache: 'pip'
 
     - name: Install dependencies
       run: pip install nox git+https://github.com/Bluenix2/discord-typings
