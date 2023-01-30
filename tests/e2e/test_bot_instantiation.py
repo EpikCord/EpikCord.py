@@ -11,12 +11,8 @@ logging.basicConfig(level=logging.INFO)
 
 
 class Bot(Client):
-
     def __init__(self, token: str):
-        super().__init__(
-            token=TokenStore(token),
-            intents=Intents.all()
-        )
+        super().__init__(token=TokenStore(token), intents=Intents.all())
 
 
 def test_bot_instantiation():
