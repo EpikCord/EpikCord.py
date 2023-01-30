@@ -60,11 +60,25 @@ class GatewayEventHandler:
         self.wait_for_events: DefaultDict[Union[str, int], List] = defaultdict(
             list
         )
+        self.events: DefaultDict[str, List[AsyncFunction]] = defaultdict(list)
         self.event_mapping: Dict[OpCode, AsyncFunction] = {
             OpCode.HELLO: self.hello,
             OpCode.HEARTBEAT: partial(self.heartbeat, forced=True),
             OpCode.HEARTBEAT_ACK: self.heartbeat_ack,
         }
+
+    def event(self):
+        """Register an event handler. This is a decorator."""
+        def decorator(func: AsyncFunction):
+            name = func.__name__.lower().replace("on_", "")
+            self.events[name].append(func)
+            return func
+        return decorator
+
+    async def dispatch(self, event_name: str, *args, **kwargs):
+        """Dispatch an event to all event handlers."""
+        for event in self.events[event_name]:
+            asyncio.create_task(event(*args, **kwargs))
 
     async def heartbeat_ack(self, _: Any):
         """Handle the heartbeat ack event. OpCode 11."""
@@ -87,10 +101,10 @@ class GatewayEventHandler:
             name=name, opcode=opcode, timeout=timeout, check=check
         )
 
-        if name:
-            self.wait_for_events[name].append(event)
-        elif opcode:
+        if opcode:
             self.wait_for_events[opcode.value].append(event)
+        elif name:
+            self.wait_for_events[name].append(event)
 
         return asyncio.wait_for(event.future, timeout=timeout)
 
