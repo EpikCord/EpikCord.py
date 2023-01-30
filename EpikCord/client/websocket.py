@@ -70,6 +70,7 @@ class GatewayEventHandler:
     async def heartbeat_ack(self, _: Any):
         """Handle the heartbeat ack event. OpCode 11."""
         ...
+
     def wait_for(
         self,
         *,
