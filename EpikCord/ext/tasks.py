@@ -15,6 +15,7 @@ class Task:
         self.duration: float = duration
         self.max_runs: int = max_runs
         self.runs: int = 0
+        self._task: typing.Optional[asyncio.Task] = None
 
     async def start(self, *args: typing.Any, **kwargs: typing.Any):
         while self.runs < self.max_runs:
@@ -26,7 +27,11 @@ class Task:
             await asyncio.sleep(self.duration)
 
     def run(self, *args: typing.Any, **kwargs: typing.Any):
-        return asyncio.create_task(self.start(*args, **kwargs))
+        self._task = asyncio.create_task(self.start(*args, **kwargs))
+
+    def cancel(self):
+        if self._task is not None:
+            self._task.cancel()
 
 
 def task(duration: timedelta, max_runs=-1):

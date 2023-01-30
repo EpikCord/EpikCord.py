@@ -232,6 +232,9 @@ class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
             data=message, type=ws_message.type, extra=ws_message.extra
         )
 
+    async def close(self, *, code: int = 4000, message: bytes = b"") -> bool:
+        logger.debug("Closing websocket with code %s and message %s", code, message)
+        return await super().close(code=code, message=message)
 
 class WebSocketClient:
     def __init__(
