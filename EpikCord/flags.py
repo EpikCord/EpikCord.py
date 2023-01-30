@@ -13,8 +13,9 @@ class Flag:
 
     def __init__(self, value: int = 0, **kwargs):
         self.turned_on: List[str] = [
-            k.upper() for k, a in kwargs.items() if a
-            and self.class_flags.get(k.upper()) is not None
+            k.upper()
+            for k, a in kwargs.items()
+            if a and self.class_flags.get(k.upper()) is not None
         ]
 
         for k, v in self.class_flags.items():
