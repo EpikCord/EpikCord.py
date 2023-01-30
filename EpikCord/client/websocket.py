@@ -13,14 +13,16 @@ from typing import TYPE_CHECKING, Any, DefaultDict, Dict, List, Optional, Union
 import aiohttp
 from discord_typings import HelloData
 
-from ..exceptions import (
-    ClosedWebSocketConnection
-)
+from ..exceptions import ClosedWebSocketConnection
 from ..flags import Intents
 from ..presence import Presence
-from ..utils import AsyncFunction, IdentifyCommand, OpCode, GatewayCloseCode
+from ..utils import AsyncFunction, GatewayCloseCode, IdentifyCommand, OpCode
 from .rate_limit_tools import GatewayRateLimiter
-from .ws_close_handler import CloseHandlerRaise, CloseHandlerLog, close_dispatcher
+from .ws_close_handler import (
+    CloseHandlerLog,
+    CloseHandlerRaise,
+    close_dispatcher,
+)
 
 _ORJSON = find_spec("orjson")
 
@@ -192,6 +194,7 @@ class GatewayEventHandler:
 
     async def resume(self):
         ...
+
 
 class DiscordWSMessage:
     def __init__(self, *, data, type, extra):

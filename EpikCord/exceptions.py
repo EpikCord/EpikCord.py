@@ -75,6 +75,7 @@ class TooManyRetries(EpikCordException):
 class ClosedWebSocketConnection(EpikCordException):
     ...
 
+
 class DisallowedIntents(ClosedWebSocketConnection):
     ...
 
