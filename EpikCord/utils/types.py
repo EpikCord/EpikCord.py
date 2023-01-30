@@ -3,6 +3,7 @@ from typing import Any, Callable, Coroutine, TypedDict
 from discord_typings import IdentifyConnectionProperties
 from typing_extensions import Literal, NotRequired
 
+from .enums import OpCode
 from ..presence import UpdatePresenceData
 
 AsyncFunction = Callable[..., Coroutine[Any, Any, Any]]
@@ -22,7 +23,7 @@ class IdentifyData(TypedDict):
 class IdentifyCommand(TypedDict):
     """The data used to identify with the gateway."""
 
-    op: Literal[2]
+    op: Literal[OpCode.IDENTIFY]
     d: IdentifyData
 
 

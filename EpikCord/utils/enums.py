@@ -21,6 +21,7 @@ class OpCode(IntEnum):
 class GatewayCloseCode(IntEnum):
     """The close codes used in the Discord Gateway."""
 
+    ABNORMAL_CLOSURE = 1006
     UNKNOWN_ERROR = 4000
     UNKNOWN_OPCODE = 4001
     DECODE_ERROR = 4002

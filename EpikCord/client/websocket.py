@@ -264,6 +264,7 @@ class WebSocketClient:
         async for message in self.ws:
             logger.debug("Received message: %s", message.json())
             await self.event_handler.handle(message)  # type: ignore
+        print(self.ws.close_code)
 
     async def handle_close(self):
         ...

@@ -1,9 +1,6 @@
 from dataclasses import dataclass
 from typing import Dict
 
-import aiohttp
-
-
 class EpikCordException(Exception):
     ...
 
@@ -71,4 +68,19 @@ class BadRequest(HTTPException):
 
 
 class TooManyRetries(EpikCordException):
+    ...
+
+class DisallowedIntents(EpikCordException):
+    ...
+
+class InvalidIntents(EpikCordException):
+    ...
+
+class InvalidToken(EpikCordException):
+    ...
+
+class GatewayRateLimited(EpikCordException):
+    ...
+
+class ShardingRequired(EpikCordException):
     ...
