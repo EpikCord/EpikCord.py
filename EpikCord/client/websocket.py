@@ -54,6 +54,7 @@ class WaitForEvent:
         self.future: asyncio.Future = asyncio.Future()
         self.check = check
 
+
 class GatewayEventHandler:
     def __init__(self, client: WebSocketClient):
         self.client = client
@@ -69,10 +70,12 @@ class GatewayEventHandler:
 
     def event(self):
         """Register an event handler. This is a decorator."""
+
         def decorator(func: AsyncFunction):
             name = func.__name__.lower().replace("on_", "")
             self.events[name].append(func)
             return func
+
         return decorator
 
     async def dispatch(self, event_name: str, *args, **kwargs):
