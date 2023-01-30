@@ -211,7 +211,9 @@ class GatewayEventHandler:
             else:
                 logger.error("Unhandled opcode %s", event["op"])
         else:
-            await self.dispatch(event["t"].lower(), event["d"]) # TODO: Once we have completed the HTTP objects, we can then start to transform them before they reach the end user.
+            await self.dispatch(
+                event["t"].lower(), event["d"]
+            )  # TODO: Once we have completed the HTTP objects, we can then start to transform them before they reach the end user.
 
     async def resume(self):
         ...
