@@ -12,27 +12,26 @@ class Flag:
         }
 
     def __init__(self, value: int = 0, **kwargs):
-        self.value = value
         self.turned_on: List[str] = [k for k, a in kwargs.items() if a]
 
         for k, v in self.class_flags.items():
             if v & value and k not in self.turned_on:
                 self.turned_on.append(k)
 
-        self.calculate_from_turned()
-
-    def calculate_from_turned(self):
-        value = 0
-        for key, flag in self.class_flags.items():
-            if key in self.class_flags:
-                value |= flag
-        self.value = value
+    @property
+    def value(self) -> int:
+        return sum(
+            flag for key, flag in self.class_flags.items()
+            if key in self.turned_on
+        )
 
     def __getattribute__(self, __name: str) -> Any:
         original = super().__getattribute__
-        if __name in original("class_flags"):
-            return __name in original("turned_on")
-        return original(__name)
+        key = type(self).class_flags.get(__name)
+
+        if key is None:
+            return original(__name)
+        return __name in original("turned_on")
 
     def __setattr__(self, __name: str, __value: Any) -> None:
         if __name not in self.class_flags:
@@ -41,7 +40,6 @@ class Flag:
             self.turned_on.append(__name)
         elif not __value and __name in self.turned_on:
             self.turned_on.remove(__name)
-        self.calculate_from_turned()
 
     @classmethod
     def all(cls):
