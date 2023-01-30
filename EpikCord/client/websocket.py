@@ -54,7 +54,6 @@ class WaitForEvent:
         self.future: asyncio.Future = asyncio.Future()
         self.check = check
 
-
 class GatewayEventHandler:
     def __init__(self, client: WebSocketClient):
         self.client = client
