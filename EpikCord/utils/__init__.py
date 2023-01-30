@@ -11,11 +11,14 @@ from .loose import (
 )
 from .types import (
     AsyncFunction,
-    GatewayCloseCode,
     IdentifyCommand,
     IdentifyData,
-    OpCode,
     SendingAttachmentData,
+)
+
+from .enums import (
+    GatewayCloseCode,
+    OpCode,
     VoiceCloseCode,
     VoiceOpCode,
 )
