@@ -64,6 +64,7 @@ class Bucket:
     event: asyncio.Event
         The event that is used to wait for the bucket to be set.
     """
+
     def __init__(self, *, bucket_hash: str):
         """
         Parameters
