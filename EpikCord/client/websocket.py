@@ -203,7 +203,12 @@ class GatewayEventHandler:
                 self.wait_for_events[value].remove(wait_for_event)
 
         if event["op"] != OpCode.DISPATCH:
-            await self.event_mapping[event["op"]](event["d"])
+            if event["op"] in self.event_mapping:
+                await self.event_mapping[event["op"]](event["d"])
+            else:
+                logger.error("Unhandled opcode %s", event["op"])
+        else:
+            await self.dispatch(event["t"].lower(), event["d"]) # TODO: Once we have completed the HTTP objects, we can then start to transform them before they reach the end user.
 
     async def resume(self):
         ...
