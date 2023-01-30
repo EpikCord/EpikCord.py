@@ -13,10 +13,14 @@ from typing import TYPE_CHECKING, Any, DefaultDict, Dict, List, Optional, Union
 import aiohttp
 from discord_typings import HelloData
 
+from ..exceptions import (
+    ClosedWebSocketConnection
+)
 from ..flags import Intents
 from ..presence import Presence
-from ..utils import AsyncFunction, IdentifyCommand, OpCode
+from ..utils import AsyncFunction, IdentifyCommand, OpCode, GatewayCloseCode
 from .rate_limit_tools import GatewayRateLimiter
+from .ws_close_handler import CloseHandlerRaise, CloseHandlerLog, close_dispatcher
 
 _ORJSON = find_spec("orjson")
 
@@ -186,6 +190,8 @@ class GatewayEventHandler:
         if event["op"] != OpCode.DISPATCH:
             await self.event_mapping[event["op"]](event["d"])
 
+    async def resume(self):
+        ...
 
 class DiscordWSMessage:
     def __init__(self, *, data, type, extra):
@@ -264,7 +270,30 @@ class WebSocketClient:
         async for message in self.ws:
             logger.debug("Received message: %s", message.json())
             await self.event_handler.handle(message)  # type: ignore
-        print(self.ws.close_code)
+        await self.handle_close()
 
     async def handle_close(self):
-        ...
+        if not self.ws:
+            logger.debug("No websocket to handle close for.")
+            return
+
+        close_code = self.ws.close_code
+
+        try:
+            gce_code = GatewayCloseCode(close_code)
+            ch_ins = close_dispatcher[gce_code]
+
+        except (ValueError, KeyError) as e:
+            raise ClosedWebSocketConnection(
+                f"Connection has been closed with code {self.ws.close_code}"
+            ) from e
+
+        if isinstance(ch_ins, CloseHandlerRaise):
+            raise ch_ins.exception(ch_ins.message)
+
+        if isinstance(ch_ins, CloseHandlerLog):
+            report_msg = "\n\nReport this immediately" * ch_ins.need_report
+            logger.critical(ch_ins.message + report_msg)
+
+        if ch_ins.resumable:
+            await self.event_handler.resume()

@@ -72,21 +72,24 @@ class TooManyRetries(EpikCordException):
     ...
 
 
-class DisallowedIntents(EpikCordException):
+class ClosedWebSocketConnection(EpikCordException):
+    ...
+
+class DisallowedIntents(ClosedWebSocketConnection):
     ...
 
 
-class InvalidIntents(EpikCordException):
+class InvalidIntents(ClosedWebSocketConnection):
     ...
 
 
-class InvalidToken(EpikCordException):
+class InvalidToken(ClosedWebSocketConnection):
     ...
 
 
-class GatewayRateLimited(EpikCordException):
+class GatewayRateLimited(ClosedWebSocketConnection):
     ...
 
 
-class ShardingRequired(EpikCordException):
+class ShardingRequired(ClosedWebSocketConnection):
     ...
