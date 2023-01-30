@@ -105,7 +105,7 @@ class HTTPCodes(StatusCode):
         if value == HTTPCodes.GATEWAY_UNAVAILABLE:
             return HTTPCodes.GATEWAY_UNAVAILABLE
 
-        if value > HTTPCodes.SERVER_ERROR:
+        if HTTPCodes.SERVER_ERROR < value < 600:
             return HTTPCodes.SERVER_ERROR
 
         raise ValueError(
