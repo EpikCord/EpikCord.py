@@ -61,16 +61,32 @@ class GatewayEventHandler:
         self.wait_for_events: DefaultDict[Union[str, int], List] = defaultdict(
             list
         )
+        self.events: DefaultDict[str, List[AsyncFunction]] = defaultdict(list)
         self.event_mapping: Dict[OpCode, AsyncFunction] = {
             OpCode.HELLO: self.hello,
             OpCode.HEARTBEAT: partial(self.heartbeat, forced=True),
             OpCode.HEARTBEAT_ACK: self.heartbeat_ack,
         }
 
+    def event(self):
+        """Register an event handler. This is a decorator."""
+
+        def decorator(func: AsyncFunction):
+            name = func.__name__.lower().replace("on_", "")
+            self.events[name].append(func)
+            return func
+
+        return decorator
+
+    async def dispatch(self, event_name: str, *args, **kwargs):
+        """Dispatch an event to all event handlers."""
+        for event in self.events[event_name]:
+            asyncio.create_task(event(*args, **kwargs))
+
     @staticmethod
-    async def heartbeat_ack(_: Any):
+    async def heartbeat_ack(self, _: Any):
         """Handle the heartbeat ack event. OpCode 11."""
-        logger.debug("Received heartbeat ack from Gateway")
+        ...
 
     def wait_for(
         self,
@@ -89,10 +105,10 @@ class GatewayEventHandler:
             name=name, opcode=opcode, timeout=timeout, check=check
         )
 
-        if name:
-            self.wait_for_events[name].append(event)
-        elif opcode:
+        if opcode:
             self.wait_for_events[opcode.value].append(event)
+        elif name:
+            self.wait_for_events[name].append(event)
 
         return asyncio.wait_for(event.future, timeout=timeout)
 
@@ -191,7 +207,14 @@ class GatewayEventHandler:
                 self.wait_for_events[value].remove(wait_for_event)
 
         if event["op"] != OpCode.DISPATCH:
-            await self.event_mapping[event["op"]](event["d"])
+            if event["op"] in self.event_mapping:
+                await self.event_mapping[event["op"]](event["d"])
+            else:
+                logger.error("Unhandled opcode %s", event["op"])
+        else:
+            await self.dispatch(
+                event["t"].lower(), event["d"]
+            )  # TODO: Once we have completed the HTTP objects, we can then start to transform them before they reach the end user.
 
     async def resume(self):
         ...
@@ -230,6 +253,12 @@ class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
         return DiscordWSMessage(
             data=message, msg_type=ws_message.type, extra=ws_message.extra
         )
+
+    async def close(self, *, code: int = 4000, message: bytes = b"") -> bool:
+        logger.debug(
+            "Closing websocket with code %s and message %s", code, message
+        )
+        return await super().close(code=code, message=message)
 
 
 class WebSocketClient:

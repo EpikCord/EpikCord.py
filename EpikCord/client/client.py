@@ -77,3 +77,12 @@ class Client(WebSocketClient):
         finally:
             future.remove_done_callback(stop_loop_on_completion)
             cleanup_loop(loop)
+
+    async def close(self):
+        if not self.http.session.closed:
+            await self.http.session.close()
+
+        if self.ws and self.ws.closed:
+            await self.ws.close()
+
+        self.rate_limiter.reset.cancel()
