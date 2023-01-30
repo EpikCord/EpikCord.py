@@ -17,7 +17,6 @@ from ..exceptions import (
     Unauthorized,
 )
 from ..file import File
-from ..status_code import HTTPCodes
 from ..utils import (
     add_file,
     clean_url,
@@ -25,6 +24,7 @@ from ..utils import (
     json_serialize,
     log_request,
 )
+from ..utils.enums import HTTPCodes
 from .rate_limit_tools import (
     Bucket,
     MajorParameters,
