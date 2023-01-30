@@ -88,7 +88,7 @@ class HTTPClient:
         self.version: APIVersion = version
         self.session: aiohttp.ClientSession = aiohttp.ClientSession(
             headers={
-                "Authorization": f"Bot {self.token}",
+                "Authorization": f"Bot {self.token.value}",
                 "User-Agent": (
                     "DiscordBot "
                     f"(https://github.com/EpikCord/EpikCord.py {__version__})"
