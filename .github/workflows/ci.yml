@@ -188,7 +188,7 @@ jobs:
         run: nox -s e2e
 
   coverage:
-    needs: unit e2e
+    needs: [unit, e2e]
     runs-on: ubuntu-latest
 
     steps:
