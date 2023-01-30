@@ -3,8 +3,8 @@ from typing import Any, Callable, Coroutine, TypedDict
 from discord_typings import IdentifyConnectionProperties
 from typing_extensions import Literal, NotRequired
 
-from .enums import OpCode
 from ..presence import UpdatePresenceData
+from .enums import OpCode
 
 AsyncFunction = Callable[..., Coroutine[Any, Any, Any]]
 

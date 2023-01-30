@@ -1,14 +1,14 @@
 import logging
 from typing import Dict, Optional, Type
 
-from ..utils import GatewayCloseCode
 from ..exceptions import (
     DisallowedIntents,
+    GatewayRateLimited,
     InvalidIntents,
     InvalidToken,
-    GatewayRateLimited,
     ShardingRequired,
 )
+from ..utils import GatewayCloseCode
 
 logger = logging.getLogger("EpikCord.websocket")
 
