@@ -164,7 +164,7 @@ jobs:
         run: nox -s unit
 
   e2e:
-    needs: unit
+    needs: circular_imports
     runs-on: ${{ matrix.os }}-latest
     strategy:
       matrix:
@@ -188,7 +188,7 @@ jobs:
         run: nox -s e2e
 
   coverage:
-    needs: e2e
+    needs: unit e2e
     runs-on: ubuntu-latest
 
     steps:
