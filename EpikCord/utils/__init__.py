@@ -1,3 +1,4 @@
+from .enums import GatewayCloseCode, OpCode, VoiceCloseCode, VoiceOpCode
 from .loose import (
     add_file,
     cancel_tasks,
@@ -14,13 +15,6 @@ from .types import (
     IdentifyCommand,
     IdentifyData,
     SendingAttachmentData,
-)
-
-from .enums import (
-    GatewayCloseCode,
-    OpCode,
-    VoiceCloseCode,
-    VoiceOpCode,
 )
 
 __all__ = (
