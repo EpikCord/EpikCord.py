@@ -244,7 +244,9 @@ class HTTPClient:
         bucket: Union[Bucket, TopLevelBucket, MockBucket]
             The bucket for the request.
         """
-        logger.critical(f"Ratelimited bucket {bucket} for {data['retry_after']} seconds.")
+        logger.critical(
+            f"Ratelimited bucket {bucket} for {data['retry_after']} seconds."
+        )
         bucket.clear()
 
         if data["global"]:

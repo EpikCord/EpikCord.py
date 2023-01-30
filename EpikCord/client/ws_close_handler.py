@@ -1,14 +1,14 @@
 import logging
 from typing import Dict, Optional, Type
 
-from ..utils import GatewayCloseCode
 from ..exceptions import (
     DisallowedIntents,
+    GatewayRateLimited,
     InvalidIntents,
     InvalidToken,
-    GatewayRateLimited,
     ShardingRequired,
 )
+from ..utils import GatewayCloseCode
 
 logger = logging.getLogger("EpikCord.websocket")
 
@@ -19,14 +19,18 @@ class CloseHandler:
 
 
 class CloseHandlerRaise(CloseHandler):
-    def __init__(self, exception: Type[Exception], message: Optional[str] = None):
+    def __init__(
+        self, exception: Type[Exception], message: Optional[str] = None
+    ):
         super().__init__(resumable=False)
         self.exception = exception
         self.message = message
 
 
 class CloseHandlerLog(CloseHandler):
-    def __init__(self, message: str, resumable: bool = True, need_report: bool = False):
+    def __init__(
+        self, message: str, resumable: bool = True, need_report: bool = False
+    ):
         super().__init__(resumable=resumable)
         self.message = message
         self.need_report = need_report
@@ -46,7 +50,8 @@ close_dispatcher: Dict[GatewayCloseCode, CloseHandler] = {
         InvalidToken, "The token you provided is invalid."
     ),
     GatewayCloseCode.RATE_LIMITED: CloseHandlerRaise(
-        GatewayRateLimited, "You've been rate limited. Try again in a few minutes."
+        GatewayRateLimited,
+        "You've been rate limited. Try again in a few minutes.",
     ),
     GatewayCloseCode.SHARDING_REQUIRED: CloseHandlerRaise(
         ShardingRequired, "You need to shard the bot."
