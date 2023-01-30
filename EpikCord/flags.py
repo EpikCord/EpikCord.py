@@ -21,7 +21,8 @@ class Flag:
     @property
     def value(self) -> int:
         return sum(
-            flag for key, flag in self.class_flags.items()
+            flag
+            for key, flag in self.class_flags.items()
             if key in self.turned_on
         )
 
