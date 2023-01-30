@@ -172,15 +172,14 @@ class GatewayEventHandler:
             logger.error("Failed to decode message: %s", message.data)
             return
 
-        value: Optional[Union[str, int]] = None
+        values: List[Union[str, int]] = []
 
         if event["op"] in self.wait_for_events:
-            value = event["op"]
+            values.append(event["op"])
+        if event.get("t") and event["t"].lower() in self.wait_for_events:
+            values.append(event["t"].lower())
 
-        elif event.get("t") and event["t"].lower() in self.wait_for_events:
-            value = event["t"].lower()
-
-        if value:
+        for value in values:
             for wait_for_event in self.wait_for_events[value]:
                 if wait_for_event.check:
                     try:
@@ -188,6 +187,7 @@ class GatewayEventHandler:
                     except Exception as exception:
                         wait_for_event.future.set_exception(exception)
                 wait_for_event.future.set_result(event)
+                self.wait_for_events[value].remove(wait_for_event)
 
         if event["op"] != OpCode.DISPATCH:
             await self.event_mapping[event["op"]](event["d"])
