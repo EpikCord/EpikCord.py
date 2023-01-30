@@ -24,7 +24,7 @@ from ..utils import (
     json_serialize,
     log_request,
 )
-from .rate_limit_handling_tools import (
+from .rate_limit_tools import (
     Bucket,
     MajorParameters,
     MockBucket,

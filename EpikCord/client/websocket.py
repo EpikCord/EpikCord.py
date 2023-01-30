@@ -16,7 +16,7 @@ from discord_typings import HelloData
 from ..flags import Intents
 from ..presence import Presence
 from ..utils import AsyncFunction, IdentifyCommand, OpCode
-from .rate_limit_handling_tools import GatewayRateLimiter
+from .rate_limit_tools import GatewayRateLimiter
 
 _ORJSON = find_spec("orjson")
 
