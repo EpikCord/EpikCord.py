@@ -1,9 +1,12 @@
 import asyncio
 from typing import Optional
 
+from EpikCord.utils.enums import OpCode
+
+
 from ..flags import Intents
 from ..presence import Presence
-from ..utils import cleanup_loop, singleton
+from ..utils import cleanup_loop, singleton, OpCode
 from .http import APIVersion, HTTPClient
 from .websocket import WebSocketClient
 
@@ -86,3 +89,8 @@ class Client(WebSocketClient):
             await self.ws.close()
 
         self.rate_limiter.reset.cancel()
+
+    async def change_presence(self, presence: Presence):
+        await self.ws.send_json({
+            "op": OpCode.STATUS_UPDATE
+        })

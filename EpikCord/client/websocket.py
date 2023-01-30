@@ -11,7 +11,7 @@ from time import perf_counter_ns
 from typing import TYPE_CHECKING, Any, DefaultDict, Dict, List, Optional, Union
 
 import aiohttp
-from discord_typings import HelloData
+from discord_typings import HelloData, ReadyData
 
 from ..exceptions import ClosedWebSocketConnection
 from ..flags import Intents
@@ -67,6 +67,11 @@ class GatewayEventHandler:
             OpCode.HEARTBEAT: partial(self.heartbeat, forced=True),
             OpCode.HEARTBEAT_ACK: self.heartbeat_ack,
         }
+
+    async def _ready(self, data: ReadyData):
+        self.client.session_id = data["session_id"]
+        self.client.resume_url = data["resume_gateway_url"]
+        
 
     def event(self):
         """Register an event handler. This is a decorator."""
@@ -281,6 +286,7 @@ class WebSocketClient:
 
         self.sequence: Optional[int] = None
         self.session_id: Optional[str] = None
+        self.resume_url: Optional[str] = None
         self.heartbeat_interval: Optional[float] = None
         self._heartbeats: List[int] = []
 
