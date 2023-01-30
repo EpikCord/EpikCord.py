@@ -81,8 +81,8 @@ class Client(WebSocketClient):
     async def close(self):
         if not self.http.session.closed:
             await self.http.session.close()
-    
+
         if self.ws and self.ws.closed:
             await self.ws.close()
-        
+
         self.rate_limiter.reset.cancel()
