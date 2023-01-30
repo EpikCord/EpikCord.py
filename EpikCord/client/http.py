@@ -75,14 +75,6 @@ class HTTPClient:
             Should be kept private at all times.
         version: int
             The version of the Discord API to use.
-        session: aiohttp.ClientSession
-            The ClientSession used to make requests.
-        buckets: Dict[str, Union[Bucket, TopLevelBucket]]
-            The buckets used to ratelimit requests.
-        global_event: asyncio.Event
-            The event used to wait for the global ratelimit to end.
-        error_mapping: Dict[int, Type[HTTPException]]
-            The mapping of status codes to exceptions.
         """
         self.token: TokenStore = token
         self.version: APIVersion = version

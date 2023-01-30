@@ -23,9 +23,7 @@ class File:
         mime_type: Optional[str]
             The mime type of the file. If not provided, it will be guessed.
         spoiler: bool
-            Whether or not the file is a spoiler.
-        ephemeral: bool
-            Whether or not the file is ephemeral.
+            Whether the file is a spoiler.
         description: Optional[str]
             The description of the file.
         """

@@ -143,7 +143,7 @@ class GatewayEventHandler:
         Parameters
         ----------
         forced : Optional[bool]
-            Whether or not to send the heartbeat now.
+            Whether to send the heartbeat now.
         """
 
         if not self.client.heartbeat_interval:
