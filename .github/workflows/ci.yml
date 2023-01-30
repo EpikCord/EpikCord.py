@@ -139,14 +139,38 @@ jobs:
       - name: Check for circular imports
         run: nox -s imports
 
-  e2e:
+  unit:
     needs: circular_imports
     runs-on: ${{ matrix.os }}-latest
     strategy:
       matrix:
         python: [ '3.8', '3.9', '3.10' ]
         os: [ ubuntu, windows, macos ]
-      fail-fast: false
+      fail-fast: true
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Python Setup
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install nox git+https://github.com/Bluenix2/discord-typings
+
+      - name: Run E2E tests
+        run: nox -s unit
+
+  e2e:
+    needs: unit
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      matrix:
+        python: [ '3.8', '3.9', '3.10' ]
+        os: [ ubuntu, windows, macos ]
+      fail-fast: true
 
     steps:
       - uses: actions/checkout@v3
