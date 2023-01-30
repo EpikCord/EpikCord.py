@@ -17,6 +17,7 @@ from ..exceptions import (
     Unauthorized,
 )
 from ..file import File
+from ..status_code import HTTPCodes
 from ..utils import (
     add_file,
     clean_url,
@@ -157,10 +158,9 @@ class HTTPClient:
                     )
 
                 data = await extract_content(response)
-
                 await log_request(response, data)
 
-                if response.status == 429:
+                if response.status == HTTPCodes.TOO_MANY_REQUESTS:
                     await self.handle_ratelimit(data, bucket)
                 elif response.headers.get("X-RateLimit-Remaining", "1") == "0":
                     await bucket.handle_exhaustion(

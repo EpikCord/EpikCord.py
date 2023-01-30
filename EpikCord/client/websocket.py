@@ -67,7 +67,8 @@ class GatewayEventHandler:
             OpCode.HEARTBEAT_ACK: self.heartbeat_ack,
         }
 
-    async def heartbeat_ack(self, data: Any):
+    @staticmethod
+    async def heartbeat_ack(_: Any):
         """Handle the heartbeat ack event. OpCode 11."""
         logger.debug("Received heartbeat ack from Gateway")
 
@@ -197,9 +198,9 @@ class GatewayEventHandler:
 
 
 class DiscordWSMessage:
-    def __init__(self, *, data, type, extra):
+    def __init__(self, *, data, msg_type, extra):
         self.data = data
-        self.type = type
+        self.type = msg_type
         self.extra = extra
 
     def json(self) -> Any:
@@ -217,19 +218,17 @@ class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
         message = ws_message.data
 
         if isinstance(message, bytes):
-
             self.buffer.extend(message)
 
             if len(message) < 4 or message[-4:] != b"\x00\x00\xff\xff":
                 return
 
             message = self.inflator.decompress(self.buffer)
-
             message = message.decode("utf-8")
             self.buffer = bytearray()
 
         return DiscordWSMessage(
-            data=message, type=ws_message.type, extra=ws_message.extra
+            data=message, msg_type=ws_message.type, extra=ws_message.extra
         )
 
 

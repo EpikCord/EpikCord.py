@@ -29,9 +29,8 @@ class ActivityType(IntEnum):
     COMPETING = 5
 
 
-class UpdatePresenceData(
-    TypedDict
-):  # Data sent to Discord when updating presence
+class UpdatePresenceData(TypedDict):
+    # Data sent to Discord when updating presence
     status: NotRequired[str]
     activities: NotRequired[List[ActivityPayload]]
     afk: bool
@@ -40,7 +39,7 @@ class UpdatePresenceData(
 
 class Activity:
     def __init__(
-        self, *, name: str, type: ActivityType, url: Optional[str] = None
+        self, *, name: str, ac_type: ActivityType, url: Optional[str] = None
     ):
         """Represents a Discord activity.
 
@@ -48,25 +47,26 @@ class Activity:
         ----------
         name: :class:`str`
             The name of the activity.
-        type: :class:`ActivityType`
+        ac_type: :class:`ActivityType`
             The type of the activity.
         url: Optional[:class:`str`]
             The url of the activity. Only used for streaming (activity type 1).
         """
         self.name = name
-        self.type = type
+        self.type = ac_type
         self.url = url
 
     def to_dict(self) -> ActivityPayload:
         """Converts the activity to a dictionary."""
         data: ActivityPayload = {"name": self.name, "type": self.type.value}
 
-        if self.url is not None and not self.type == ActivityType.STREAMING:
+        if self.url is None:
+            return data
+
+        if self.type != ActivityType.STREAMING:
             raise ValueError("URL can only be set for streaming activities.")
 
-        if self.url is not None:
-            data["url"] = self.url
-
+        data["url"] = self.url
         return data
 
 
