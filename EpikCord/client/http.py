@@ -24,7 +24,7 @@ from ..utils import (
     json_serialize,
     log_request,
 )
-from ..utils.enums import HTTPCodes
+from ..utils import HTTPCodes
 from .rate_limit_tools import (
     Bucket,
     MajorParameters,
