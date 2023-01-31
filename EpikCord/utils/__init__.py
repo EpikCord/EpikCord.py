@@ -4,7 +4,7 @@ from .enums import (
     JSONErrorCodes,
     OpCode,
     VoiceCloseCode,
-    VoiceOpCode
+    VoiceOpCode,
 )
 from .loose import (
     add_file,
