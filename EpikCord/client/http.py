@@ -18,13 +18,13 @@ from ..exceptions import (
 )
 from ..file import File
 from ..utils import (
+    HTTPCodes,
     add_file,
     clean_url,
     extract_content,
     json_serialize,
     log_request,
 )
-from ..utils import HTTPCodes
 from .rate_limit_tools import (
     Bucket,
     MajorParameters,
