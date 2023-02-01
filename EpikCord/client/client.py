@@ -3,10 +3,9 @@ from typing import Optional
 
 from EpikCord.utils.enums import OpCode
 
-
 from ..flags import Intents
 from ..presence import Presence
-from ..utils import cleanup_loop, singleton, OpCode
+from ..utils import OpCode, cleanup_loop, singleton
 from .http import APIVersion, HTTPClient
 from .websocket import WebSocketClient
 
