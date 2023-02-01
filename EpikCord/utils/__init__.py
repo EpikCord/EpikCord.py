@@ -1,4 +1,11 @@
-from .enums import GatewayCloseCode, OpCode, VoiceCloseCode, VoiceOpCode
+from .enums import (
+    GatewayCloseCode,
+    HTTPCodes,
+    JSONErrorCodes,
+    OpCode,
+    VoiceCloseCode,
+    VoiceOpCode,
+)
 from .loose import (
     add_file,
     cancel_tasks,
@@ -18,6 +25,8 @@ from .types import (
 )
 
 __all__ = (
+    "HTTPCodes",
+    "JSONErrorCodes",
     "AsyncFunction",
     "GatewayCloseCode",
     "OpCode",

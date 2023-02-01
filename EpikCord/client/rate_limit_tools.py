@@ -55,19 +55,21 @@ class MockBucket:
 
 
 class Bucket:
+    """
+    Attributes
+    ----------
+    hash: str
+        The bucket hash of the bucket provided by Discord.
+    event: asyncio.Event
+        The event that is used to wait for the bucket to be set.
+    """
+
     def __init__(self, *, bucket_hash: str):
         """
         Parameters
         ----------
         bucket_hash: str
             The bucket hash of the bucket provided by Discord.
-
-        Attributes
-        ----------
-        bucket_hash: str
-            The bucket hash of the bucket provided by Discord.
-        event: asyncio.Event
-            The event that is used to wait for the bucket to be set.
         """
         self.hash: str = bucket_hash
         self.event: asyncio.Event = asyncio.Event()
@@ -118,6 +120,23 @@ class Bucket:
 
 
 class TopLevelBucket:
+    """
+    Attributes
+    ----------
+    channel_id: Optional[int]
+        The channel ID of the bucket.
+    guild_id: Optional[int]
+        The guild ID of the bucket.
+    webhook_id: Optional[int] = None
+        The webhook ID of the bucket.
+    webhook_token: Optional[str]
+        The webhook token of the bucket.
+    major_parameters: Dict[str, Any]
+        The major parameters for this Bucket
+    event: asyncio.Event
+        The event that is used to wait for the bucket to be set.
+    """
+
     def __init__(
         self,
         *,
@@ -137,21 +156,6 @@ class TopLevelBucket:
             The webhook ID of the bucket.
         webhook_token: Optional[str]
             The webhook token of the bucket.
-
-        Attributes
-        ----------
-        channel_id: Optional[int]
-            The channel ID of the bucket.
-        guild_id: Optional[int]
-            The guild ID of the bucket.
-        webhook_id: Optional[int] = None
-            The webhook ID of the bucket.
-        webhook_token: Optional[str]
-            The webhook token of the bucket.
-        major_parameters: Dict[str, Any]
-            The major parameters for this Bucket
-        event: asyncio.Event
-            The event that is used to wait for the bucket to be set.
         """
         self.event = asyncio.Event()
         self.event.set()
@@ -221,6 +225,22 @@ class TopLevelBucket:
 
 
 class MajorParameters:
+    """A class to group up all the major parameters of a route.
+
+    Attributes
+    ----------
+    channel_id: Optional[int]
+        The channel id in the route.
+    guild_id: Optional[int]
+        The guild id in the route.
+    webhook_id: Optional[int]
+        The webhook id in the route.
+    webhook_token: Optional[str]
+        The webhook token in the route.
+    major_parameters: Dict[str, Union[int, str]]
+        The major parameters compiled into a single dictionary.
+    """
+
     def __init__(
         self,
         channel_id: Optional[int] = None,
@@ -240,19 +260,6 @@ class MajorParameters:
             The webhook id in the route.
         webhook_token: Optional[str]
             The webhook token in the route.
-
-        Attributes
-        ----------
-        channel_id: Optional[int]
-            The channel id in the route.
-        guild_id: Optional[int]
-            The guild id in the route.
-        webhook_id: Optional[int]
-            The webhook id in the route.
-        webhook_token: Optional[str]
-            The webhook token in the route.
-        major_parameters: Dict[str, Union[int, str]]
-            The major parameters compiled into a single dictionary.
         """
         self.channel_id: Optional[int] = channel_id
         self.guild_id: Optional[int] = guild_id

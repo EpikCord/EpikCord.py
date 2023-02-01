@@ -20,6 +20,15 @@ class Client(WebSocketClient):
     """
     The main class of EpikCord.
     Use this to interact with the Discord API and Gateway.
+
+    Attributes
+    ----------
+    token: str
+        The token of the bot.
+    intents: Intents
+        The intents of the bot.
+    http: HTTPClient
+        The HTTP client used to interact with the Discord API.
     """
 
     def __init__(
@@ -39,15 +48,6 @@ class Client(WebSocketClient):
             The intents of the bot.
         version: int
             The version of the Discord API to use. Defaults to 10.
-
-        Attributes
-        ----------
-        token: str
-            The token of the bot.
-        intents: Intents
-            The intents of the bot.
-        http: HTTPClient
-            The HTTP client used to interact with the Discord API.
         """
         super().__init__(
             token,

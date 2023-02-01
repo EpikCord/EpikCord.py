@@ -12,7 +12,11 @@ class Flag:
         }
 
     def __init__(self, value: int = 0, **kwargs):
-        self.turned_on: List[str] = [k for k, a in kwargs.items() if a]
+        self.turned_on: List[str] = [
+            k.upper()
+            for k, a in kwargs.items()
+            if a and self.class_flags.get(k.upper()) is not None
+        ]
 
         for k, v in self.class_flags.items():
             if v & value and k not in self.turned_on:
@@ -28,19 +32,21 @@ class Flag:
 
     def __getattribute__(self, __name: str) -> Any:
         original = super().__getattribute__
-        key = type(self).class_flags.get(__name)
+        key = type(self).class_flags.get(__name.upper())
 
         if key is None:
             return original(__name)
         return __name in original("turned_on")
 
     def __setattr__(self, __name: str, __value: Any) -> None:
-        if __name not in self.class_flags:
+        __upper_name = __name.upper()
+
+        if __upper_name not in self.class_flags:
             return super().__setattr__(__name, __value)
-        if __value and __name not in self.turned_on:
-            self.turned_on.append(__name)
-        elif not __value and __name in self.turned_on:
-            self.turned_on.remove(__name)
+        if __value and __upper_name not in self.turned_on:
+            self.turned_on.append(__upper_name)
+        elif not __value and __upper_name in self.turned_on:
+            self.turned_on.remove(__upper_name)
 
     @classmethod
     def all(cls):

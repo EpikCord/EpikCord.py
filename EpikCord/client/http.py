@@ -18,6 +18,7 @@ from ..exceptions import (
 )
 from ..file import File
 from ..utils import (
+    HTTPCodes,
     add_file,
     clean_url,
     extract_content,
@@ -75,14 +76,6 @@ class HTTPClient:
             Should be kept private at all times.
         version: int
             The version of the Discord API to use.
-        session: aiohttp.ClientSession
-            The ClientSession used to make requests.
-        buckets: Dict[str, Union[Bucket, TopLevelBucket]]
-            The buckets used to ratelimit requests.
-        global_event: asyncio.Event
-            The event used to wait for the global ratelimit to end.
-        error_mapping: Dict[int, Type[HTTPException]]
-            The mapping of status codes to exceptions.
         """
         self.token: TokenStore = token
         self.version: APIVersion = version
@@ -165,10 +158,9 @@ class HTTPClient:
                     )
 
                 data = await extract_content(response)
-
                 await log_request(response, data)
 
-                if response.status == 429:
+                if response.status == HTTPCodes.TOO_MANY_REQUESTS:
                     await self.handle_ratelimit(data, bucket)
                 elif response.headers.get("X-RateLimit-Remaining", "1") == "0":
                     await bucket.handle_exhaustion(

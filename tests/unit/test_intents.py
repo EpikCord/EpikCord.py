@@ -2,17 +2,17 @@ from EpikCord import Intents
 
 
 def test_intents():
-    intents = Intents(guilds=True, members=True)
-    assert intents.guilds
-    assert intents.members
+    intents = Intents(guilds=True, guild_members=True)
+    assert intents.GUILDS
+    assert intents.GUILD_MEMBERS
 
-    assert intents.turned_on == ["guilds", "members"]
-    intents.guilds = False
+    assert intents.turned_on == ["GUILDS", "GUILD_MEMBERS"]
+    intents.GUILDS = False
 
-    assert intents.turned_on == ["members"]
+    assert intents.turned_on == ["GUILD_MEMBERS"]
 
-    intents.bans = True
-    assert intents.turned_on == ["members", "bans"]
+    intents.GUILD_MODERATION = True
+    assert intents.turned_on == ["GUILD_MEMBERS", "GUILD_MODERATION"]
 
 
 def test_intents_none():
@@ -28,7 +28,7 @@ def test_intents_all():
 
     members = list(Intents.class_flags)
     assert intents.turned_on == members
-    intents.guilds = False
+    intents.GUILDS = False
 
     assert intents.turned_on == members[1:]
-    assert not intents.guilds
+    assert not intents.GUILDS

@@ -87,6 +87,7 @@ class GatewayEventHandler:
         for event in self.events[event_name]:
             asyncio.create_task(event(*args, **kwargs))
 
+    @staticmethod
     async def heartbeat_ack(self, _: Any):
         """Handle the heartbeat ack event. OpCode 11."""
         ...
@@ -163,7 +164,7 @@ class GatewayEventHandler:
         Parameters
         ----------
         forced : Optional[bool]
-            Whether or not to send the heartbeat now.
+            Whether to send the heartbeat now.
         """
 
         if not self.client.heartbeat_interval:
@@ -224,9 +225,9 @@ class GatewayEventHandler:
 
 
 class DiscordWSMessage:
-    def __init__(self, *, data, type, extra):
+    def __init__(self, *, data, msg_type, extra):
         self.data = data
-        self.type = type
+        self.type = msg_type
         self.extra = extra
 
     def json(self) -> Any:
@@ -250,12 +251,11 @@ class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
                 return
 
             message = self.inflator.decompress(self.buffer)
-
             message = message.decode("utf-8")
             self.buffer = bytearray()
 
         return DiscordWSMessage(
-            data=message, type=ws_message.type, extra=ws_message.extra
+            data=message, msg_type=ws_message.type, extra=ws_message.extra
         )
 
     async def close(self, *, code: int = 4000, message: bytes = b"") -> bool:
