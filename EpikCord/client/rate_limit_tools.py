@@ -13,7 +13,6 @@ logger = getLogger("EpikCord.http")
 
 class GatewayRateLimiter:
     def __init__(self):
-
         self.event = asyncio.Event()
         self.event.set()
 

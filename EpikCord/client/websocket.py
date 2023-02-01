@@ -244,7 +244,6 @@ class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
         message = ws_message.data
 
         if isinstance(message, bytes):
-
             self.buffer.extend(message)
 
             if len(message) < 4 or message[-4:] != b"\x00\x00\xff\xff":

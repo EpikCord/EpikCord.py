@@ -4,9 +4,7 @@ from typing import List, Optional, TypedDict
 from typing_extensions import NotRequired
 
 
-class ActivityPayload(
-    TypedDict
-):  # Data sent to Discord when updating presence
+class ActivityPayload(TypedDict):  # Data sent to Discord when updating presence
     name: str
     type: int
     url: NotRequired[str]
