@@ -91,6 +91,9 @@ class Client(WebSocketClient):
         self.rate_limiter.reset.cancel()
 
     async def change_presence(self, presence: Presence):
+        if not self.ws:
+            raise RuntimeError("Client is not connected to the gateway.")
         await self.ws.send_json({
-            "op": OpCode.STATUS_UPDATE
+            "op": OpCode.PRESENCE_UPDATE,
+            "d": presence.to_dict()
         })

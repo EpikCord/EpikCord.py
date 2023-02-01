@@ -71,7 +71,8 @@ class GatewayEventHandler:
     async def _ready(self, data: ReadyData):
         self.client.session_id = data["session_id"]
         self.client.resume_url = data["resume_gateway_url"]
-        
+
+    
 
     def event(self):
         """Register an event handler. This is a decorator."""
