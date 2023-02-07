@@ -188,15 +188,16 @@ class GatewayEventHandler:
 
         self.client._heartbeats.append(end - start)
 
-
     async def resume(self):
-        await self.send_json({
-            "op": OpCode.RESUME,
-            "d": {
-                "seq": self.client.sequence,
-                "session_id": self.client.session_id,
+        await self.send_json(
+            {
+                "op": OpCode.RESUME,
+                "d": {
+                    "seq": self.client.sequence,
+                    "session_id": self.client.session_id,
+                },
             }
-        })
+        )
 
     async def reconnect(self, _):
         if self.client.ws:
@@ -204,7 +205,7 @@ class GatewayEventHandler:
         await self.client.connect()
         if self.client.session_id and self.client.sequence:
             await self.resume()
-    
+
     async def resumed(self, _):
         logger.info(f"Resumed session {self.client.session_id}")
 
