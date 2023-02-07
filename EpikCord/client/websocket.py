@@ -252,7 +252,6 @@ class GatewayEventHandler:
             )  # TODO: Once we have completed the HTTP objects, we can then start to transform them before they reach the end user.
 
 
-
 class DiscordWSMessage:
     def __init__(self, *, data, msg_type, extra):
         self.data = data
