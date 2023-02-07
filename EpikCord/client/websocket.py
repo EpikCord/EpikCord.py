@@ -244,14 +244,12 @@ class GatewayEventHandler:
                 self.wait_for_events[value].remove(wait_for_event)
 
         if event["op"] != OpCode.DISPATCH:
-            if event["op"] in self.opcode_mapping:
-                await self.opcode_mapping[event["op"]](event["d"])
-            else:
-                logger.error("Unhandled opcode %s", event["op"])
+            await self.opcode_mapping[event["op"]](event["d"])
         else:
             await self.dispatch(
                 event["t"].lower(), event["d"]
             )  # TODO: Once we have completed the HTTP objects, we can then start to transform them before they reach the end user.
+
 
 
 class DiscordWSMessage:
