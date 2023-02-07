@@ -35,22 +35,22 @@ class MockBucket:
     """A mock bucket that does nothing."""
 
     async def wait(self):
-        """Pretends to wait for the Event to be set"""
+        """Pretend to wait for the Event to be set."""
         ...
 
     def clear(self):
-        """Pretends to clear the Event"""
+        """Pretend to clear the Event."""
         ...
 
     def set(self):
-        """Pretends to set the Event"""
+        """Pretend to set the Event."""
         ...
 
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, MockBucket)
 
     async def handle_exhaustion(self, retry_after: int):
-        """Pretends to handle the exhaustion of the bucket"""
+        """Pretend to handle the exhaustion of the bucket."""
         ...
 
 
@@ -176,7 +176,7 @@ class TopLevelBucket:
 
     async def wait(self):
         """
-        Waits for the Event to be set.
+        Wait for the Event to be set.
         """
         logger.info(f"Waiting for bucket {self.major_parameters} to be set.")
         await self.event.wait()
@@ -184,14 +184,14 @@ class TopLevelBucket:
 
     def set(self):
         """
-        Sets the Event.
+        Set the Event.
         """
         logger.info(f"Setting bucket {self.major_parameters}.")
         self.event.set()
 
     def clear(self):
         """
-        Clears the Event.
+        Clear the Event.
         """
         logger.info(f"Clearing bucket {self.major_parameters}.")
         self.event.clear()
@@ -209,7 +209,7 @@ class TopLevelBucket:
 
     async def handle_exhaustion(self, retry_after: int):
         """
-        Handles the exhaustion of the bucket.
+        Handle the exhaustion of the bucket.
 
         Parameters
         ----------
@@ -248,8 +248,7 @@ class MajorParameters:
         webhook_id: Optional[int] = None,
         webhook_token: Optional[str] = None,
     ):
-        """A class to group up all the major parameters of a route.
-
+        """
         Parameters
         ----------
         channel_id: Optional[int]
@@ -281,7 +280,7 @@ class MajorParameters:
 
 
 class Route:
-    """Represents a HTTP route."""
+    """Represent a HTTP route."""
 
     def __init__(
         self,

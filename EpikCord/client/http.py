@@ -41,7 +41,7 @@ logger = getLogger("EpikCord.http")
 
 
 class APIVersion(IntEnum):
-    """Represents the version of the Discord HTTP API and Gateway WebSocket to use."""
+    """The version of the Discord HTTP API and Gateway WebSocket to use."""
 
     NINE = 9
     TEN = 10
@@ -183,7 +183,7 @@ class HTTPClient:
         response: aiohttp.ClientResponse,
         major_parameters: Optional[MajorParameters] = None,
     ) -> Union[Bucket, TopLevelBucket]:
-        """Sets the bucket for the request.
+        """Set the bucket for the request.
 
         Parameters
         ----------
@@ -227,7 +227,7 @@ class HTTPClient:
         data: Dict[str, Any],
         bucket: Union[Bucket, TopLevelBucket, MockBucket],
     ):
-        """Handles the ratelimit for the request.
+        """Handle the ratelimit for the request.
 
         Parameters
         ----------
@@ -256,7 +256,7 @@ class HTTPClient:
         files: Optional[List[File]] = None,
         json: Optional[Dict] = None,
     ) -> Optional[Dict]:
-        """Sets up the request kwargs.
+        """Set up the request kwargs.
 
         Parameters
         ----------
@@ -292,11 +292,11 @@ class HTTPClient:
         return return_kwargs
 
     async def close(self) -> None:
-        """Closes the session."""
+        """Close the session."""
         await self.session.close()
 
     async def get_gateway(self) -> str:
-        """Gets the URL used for connecting to the Gateway.
+        """Get the URL used for connecting to the Gateway.
 
         Returns
         -------

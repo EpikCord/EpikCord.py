@@ -88,7 +88,7 @@ class GatewayEventHandler:
             asyncio.create_task(event(*args, **kwargs))
 
     @staticmethod
-    async def heartbeat_ack(self, _: Any):
+    async def heartbeat_ack(_: Any):
         """Handle the heartbeat ack event. OpCode 11."""
         ...
 
