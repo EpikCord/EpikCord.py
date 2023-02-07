@@ -62,15 +62,13 @@ class GatewayEventHandler:
             list
         )
         self.events: DefaultDict[str, List[AsyncFunction]] = defaultdict(list)
-        self.event_mapping: Dict[OpCode, AsyncFunction] = {
-            OpCode.HELLO: self.hello,
+        self.opcode_mapping: Dict[OpCode, AsyncFunction] = {
             OpCode.HEARTBEAT: partial(self.heartbeat, forced=True),
+            OpCode.RECONNECT: self.reconnect,
+            OpCode.INVALID_SESSION: self.invalid_session,
+            OpCode.HELLO: self.hello,
             OpCode.HEARTBEAT_ACK: self.heartbeat_ack,
         }
-
-    async def _ready(self, data: ReadyData):
-        self.client.session_id = data["session_id"]
-        self.client.resume_url = data["resume_gateway_url"]
 
     def event(self):
         """Register an event handler. This is a decorator."""
@@ -125,6 +123,10 @@ class GatewayEventHandler:
         await self.client.rate_limiter.tick()
         logger.debug("Sending %s to Gateway", payload)
         await self.client.ws.send_json(payload)
+
+    async def _ready(self, data: ReadyData):
+        self.client.session_id = data["session_id"]
+        self.client.resume_url = data["resume_gateway_url"]
 
     async def identify(self):
         payload: IdentifyCommand = {
@@ -186,6 +188,37 @@ class GatewayEventHandler:
 
         self.client._heartbeats.append(end - start)
 
+
+    async def resume(self):
+        await self.send_json({
+            "op": OpCode.RESUME,
+            "d": {
+                "seq": self.client.sequence,
+                "session_id": self.client.session_id,
+            }
+        })
+
+    async def reconnect(self, _):
+        if self.client.ws:
+            await self.client.ws.close()
+        await self.client.connect()
+        if self.client.session_id and self.client.sequence:
+            await self.resume()
+    
+    async def resumed(self, _):
+        logger.info(f"Resumed session {self.client.session_id}")
+
+    async def invalid_session(self, resumable: bool):
+        if self.client.ws:
+            await self.client.ws.close()
+
+        await self.client.connect()
+
+        if resumable:
+            await self.resume()
+        else:
+            await self.identify()
+
     async def handle(self, message: DiscordWSMessage):
         try:
             event = message.json()
@@ -211,17 +244,14 @@ class GatewayEventHandler:
                 self.wait_for_events[value].remove(wait_for_event)
 
         if event["op"] != OpCode.DISPATCH:
-            if event["op"] in self.event_mapping:
-                await self.event_mapping[event["op"]](event["d"])
+            if event["op"] in self.opcode_mapping:
+                await self.opcode_mapping[event["op"]](event["d"])
             else:
                 logger.error("Unhandled opcode %s", event["op"])
         else:
             await self.dispatch(
                 event["t"].lower(), event["d"]
             )  # TODO: Once we have completed the HTTP objects, we can then start to transform them before they reach the end user.
-
-    async def resume(self):
-        ...
 
 
 class DiscordWSMessage:
