@@ -1,11 +1,11 @@
 import asyncio
 from typing import Optional
 
-from .http import APIVersion, HTTPClient
-from .websocket import WebSocketClient
 from ..flags import Intents
 from ..presence import Presence
 from ..utils import OpCode, cleanup_loop, singleton
+from .http import APIVersion, HTTPClient
+from .websocket import WebSocketClient
 
 
 @singleton

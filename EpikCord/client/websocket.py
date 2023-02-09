@@ -250,9 +250,7 @@ class GatewayEventHandler:
             # TODO: Once we have completed the HTTP objects,
             #  we can then start to transform them before they reach
             #  the end user.
-            await self.dispatch(
-                event["t"].lower(), event["d"]
-            )
+            await self.dispatch(event["t"].lower(), event["d"])
 
 
 class DiscordWSMessage:
