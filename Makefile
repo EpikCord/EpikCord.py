@@ -51,7 +51,7 @@ endef
 CREATE_NOX_RULE = $(eval $(call _CREATE_NR, $(1), $(addprefix nox_, $(1))))
 $(foreach nr, $(NOX_RULES), $(call CREATE_NOX_RULE, $(nr)))
 
-nox_all: $(foreach nr, $(NOX_RULES), $(addprefix nox_, $(nr))))
+nox_all: $(foreach nr, $(NOX_RULES), $(addprefix nox_, $(nr)))
 
 .PHONY: nox_all
 
