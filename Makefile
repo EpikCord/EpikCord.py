@@ -65,7 +65,11 @@ clean:
 	@ $(RM) $(REQS) $(FORMAT_CODE)
 	@ $(RM) -r $(PY_TEST_CACHE)
 
-fclean:
+fclean: clean
 	@ $(RM) -r $(VENV)
 
 .PHONY: clean fclean
+
+re: fclean all
+
+.PHONY: re
