@@ -381,4 +381,4 @@ class WebSocketClient:
             logger.critical(ch_ins.message + report_msg)
 
         if ch_ins.resumable:
-            await self.event_handler.resume()
+            await self.connect(resume=True)
