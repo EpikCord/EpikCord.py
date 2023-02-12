@@ -289,9 +289,7 @@ class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
         )
 
     async def close(self, *, code: int = 4000, message: bytes = b"") -> bool:
-        logger.debug(
-            "Closing websocket with code %s", code
-        )
+        logger.debug("Closing websocket with code %s", code)
         return await super().close(code=code, message=message)
 
 
