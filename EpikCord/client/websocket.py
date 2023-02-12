@@ -128,6 +128,12 @@ class GatewayEventHandler:
         self.client.session_id = data["session_id"]
         self.client.resume_url = data["resume_gateway_url"]
 
+        await self.dispatch("ready", data)
+    
+    async def _resumed(self, _: Any):
+        logger.info("Resumed session %s", self.client.session_id)
+        await self.dispatch("resumed", self.client.session_id)
+
     async def identify(self):
         payload: IdentifyCommand = {
             "op": OpCode.IDENTIFY,
@@ -205,9 +211,6 @@ class GatewayEventHandler:
         await self.client.connect(resume=True)
         if self.client.session_id and self.client.sequence:
             await self.resume()
-
-    async def resumed(self, _):
-        logger.info(f"Resumed session {self.client.session_id}")
 
     async def invalid_session(self, resumable: bool):
         if self.client.ws:
