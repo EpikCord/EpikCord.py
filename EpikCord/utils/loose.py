@@ -43,15 +43,8 @@ def json_serialize(data, *args, **kwargs):
 
 
 def clean_url(url: str, version: int) -> str:
-    if url.startswith("/"):
-        url = f"https://discord.com/api/v{version}{url}"
-    else:
-        url = f"https://discord.com/api/v{version}/{url}"
-
-    if url.endswith("/"):
-        url = url[:-1]
-
-    return url
+    clean_uri: str = url.strip('/')
+    return f"https://discord.com/api/v{version}/{clean_uri}"
 
 
 async def extract_content(response: aiohttp.ClientResponse) -> Dict[str, Any]:
