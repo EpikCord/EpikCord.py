@@ -43,7 +43,7 @@ jobs:
 
     - name: run Formatter
       run: |
-        make pretty
+        make nox_format
 
     - name: Push changes
       run: |
