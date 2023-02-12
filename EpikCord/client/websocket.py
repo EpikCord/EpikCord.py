@@ -129,7 +129,7 @@ class GatewayEventHandler:
         self.client.resume_url = data["resume_gateway_url"]
 
         await self.dispatch("ready", data)
-    
+
     async def _resumed(self, _: Any):
         logger.info("Resumed session %s", self.client.session_id)
         await self.dispatch("resumed", self.client.session_id)
@@ -336,7 +336,11 @@ class WebSocketClient:
 
         version = self.http.version.value
 
-        url = f"{self._gateway_url}?v={version}&encoding=json&compress=zlib-stream" if not resume else self.resume_url
+        url = (
+            f"{self._gateway_url}?v={version}&encoding=json&compress=zlib-stream"
+            if not resume
+            else self.resume_url
+        )
 
         if not self.resume_url and resume:
             raise ValueError("Cannot resume without a resume url")
