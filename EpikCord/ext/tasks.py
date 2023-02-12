@@ -3,7 +3,6 @@ import typing
 from datetime import timedelta
 from typing import Callable, Coroutine, Final
 
-
 INFINITE_RUNS: Final[int] = -1
 
 

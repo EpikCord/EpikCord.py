@@ -97,7 +97,6 @@ class ShardingRequired(ClosedWebSocketConnection):
 
 
 class UnknownMimeType(EpikCordException):
-
     def __init__(self, filename):
         self.filename = filename
         self.message = f"Cannot resolve mime type for file `{filename}`."

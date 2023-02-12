@@ -43,7 +43,7 @@ def json_serialize(data, *args, **kwargs):
 
 
 def clean_url(url: str, version: int) -> str:
-    clean_uri: str = url.strip('/')
+    clean_uri: str = url.strip("/")
     return f"https://discord.com/api/v{version}/{clean_uri}"
 
 

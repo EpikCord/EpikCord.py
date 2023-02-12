@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Final
+from typing import Any, Dict, Final, List
 
 ALL_VALUE_DISABLED: Final[int] = 0
 
