@@ -1,7 +1,10 @@
 import asyncio
 import typing
 from datetime import timedelta
-from typing import Callable, Coroutine
+from typing import Callable, Coroutine, Final
+
+
+INFINITE_RUNS: Final[int] = -1
 
 
 class Task:
@@ -14,17 +17,21 @@ class Task:
         self.wrapped_func: Callable[..., Coroutine] = wrapped_func
         self.duration: float = duration
         self.max_runs: int = max_runs
-        self.runs: int = 0
+        self.runs_count: int = INFINITE_RUNS
         self._task: typing.Optional[asyncio.Task] = None
 
     async def start(self, *args: typing.Any, **kwargs: typing.Any):
-        while self.runs < self.max_runs:
+        while self.runs_count < self.max_runs:
             await self.wrapped_func(*args, **kwargs)
 
-            if self.max_runs > 0:
-                self.runs += 1
+            if self.has_limited_runs:
+                self.runs_count += 1
 
             await asyncio.sleep(self.duration)
+
+    @property
+    def has_limited_runs(self) -> bool:
+        return self.max_runs != INFINITE_RUNS
 
     def run(self, *args: typing.Any, **kwargs: typing.Any):
         self._task = asyncio.create_task(self.start(*args, **kwargs))
@@ -34,7 +41,7 @@ class Task:
             self._task.cancel()
 
 
-def task(duration: timedelta, max_runs=-1):
+def task(duration: timedelta, max_runs=INFINITE_RUNS):
     def wrap(function):
         return Task(function, duration.total_seconds(), max_runs)
 
