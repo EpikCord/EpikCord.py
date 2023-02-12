@@ -2,6 +2,8 @@ import io
 import mimetypes
 from typing import Optional
 
+from .exceptions import UnknownMimeType
+
 
 class File:
     def __init__(
@@ -28,11 +30,18 @@ class File:
             The description of the file.
         """
         self.contents: io.IOBase = contents
-        self.mime_type: Optional[str] = (
-            mime_type or mimetypes.guess_type(filename)[0]
-        )
+        self.mime_type = mime_type or _guess_mime_type(filename)
+
+        if self.mime_type is None:
+            raise UnknownMimeType(filename)
+
         if spoiler:
             self.filename = f"SPOILER_{filename}"
         else:
             self.filename = filename
         self.description: Optional[str] = description
+
+
+def _guess_mime_type(filename: str) -> Optional[str]:
+    mime_type, _encoding = mimetypes.guess_type(filename)
+    return mime_type
