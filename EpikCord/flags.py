@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Final
+
+ALL_VALUE_DISABLED: Final[int] = 0
 
 
 class Flag:
@@ -11,7 +13,7 @@ class Flag:
             k: v for k, v in cls.__dict__.items() if isinstance(v, int)
         }
 
-    def __init__(self, value: int = 0, **kwargs):
+    def __init__(self, value: int = ALL_VALUE_DISABLED, **kwargs):
         self.turned_on: List[str] = [
             k.upper()
             for k, a in kwargs.items()
