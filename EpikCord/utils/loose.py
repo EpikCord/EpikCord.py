@@ -26,8 +26,6 @@ else:
 if TYPE_CHECKING:
     from . import SendingAttachmentData
 
-logger = getLogger("EpikCord.utils")
-
 
 def clear_none_values(d: dict):
     """
@@ -77,6 +75,7 @@ def singleton(cls):
 
 
 def cancel_tasks(loop) -> None:
+    logger = getLogger("EpikCord.cleanup")
     tasks = {t for t in asyncio.all_tasks(loop=loop) if not t.done()}
 
     if not tasks:
@@ -89,6 +88,7 @@ def cancel_tasks(loop) -> None:
 
 
 def cleanup_loop(loop) -> None:
+    logger = getLogger("EpikCord.cleanup")
     try:
         cancel_tasks(loop)
         logger.debug("Shutting down async generators.")
@@ -99,6 +99,7 @@ def cleanup_loop(loop) -> None:
 
 async def log_request(res, body: Optional[dict] = None):
     """Logs information about the request."""
+    logger = getLogger("EpikCord.http")
     messages = [
         f"Sent a {res.method} to {res.url} "
         f"and got a {res.status} response. ",

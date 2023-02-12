@@ -312,6 +312,8 @@ class WebSocketClient:
         self.rate_limiter: GatewayRateLimiter = GatewayRateLimiter()
         self.event_handler: GatewayEventHandler = GatewayEventHandler(self)
 
+        self._gateway_url: Optional[str] = None
+
         self.sequence: Optional[int] = None
         self.session_id: Optional[str] = None
         self.resume_url: Optional[str] = None
@@ -324,16 +326,26 @@ class WebSocketClient:
             return None
         return sum(self._heartbeats) / len(self._heartbeats)
 
-    async def connect(self):
-        url = await self.http.get_gateway()
+    async def connect(self, *, resume: bool = False):
+        if not self._gateway_url and not resume:
+            self._gateway_url = await self.http.get_gateway()
+
         version = self.http.version.value
+
+        url = f"{self._gateway_url}?v={version}&encoding=json&compress=zlib-stream" if not resume else self.resume_url
+
+        if not self.resume_url and resume:
+            raise ValueError("Cannot resume without a resume url")
+        elif not url:
+            raise ValueError(f"Cannot connect to url {url} (resume: {resume})")
+
+        self.ws = await self.http.ws_connect(url)
         asyncio.create_task(self.rate_limiter.reset.start())
-        self.ws = await self.http.ws_connect(
-            f"{url}?v={version}&encoding=json&compress=zlib-stream"
-        )
+
         async for message in self.ws:
             logger.debug("Received message: %s", message.json())
             await self.event_handler.handle(message)  # type: ignore
+
         await self.handle_close()
 
     async def handle_close(self):

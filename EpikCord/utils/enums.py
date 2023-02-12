@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from enum import IntEnum
+from logging import getLogger
 
 
 class OpCode(IntEnum):
@@ -100,9 +101,6 @@ class HTTPCodes(StatusCode):
     def _missing_(cls, value: object) -> HTTPCodes:
         if not isinstance(value, int):
             raise ValueError(f"{value} is not a valid HTTP status code.")
-
-        if value == HTTPCodes.GATEWAY_UNAVAILABLE:
-            return HTTPCodes.GATEWAY_UNAVAILABLE
 
         if HTTPCodes.SERVER_ERROR < value < 600:
             return HTTPCodes.SERVER_ERROR
@@ -339,4 +337,6 @@ class JSONErrorCodes(StatusCode):
 
     @classmethod
     def _missing_(cls, value: object) -> JSONErrorCodes:
+        logger = getLogger("EpikCord.exceptions")
+        logger.warning(f"Unknown JSON error code: {value}")
         return cls.GENERAL_ERROR
