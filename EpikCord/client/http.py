@@ -200,6 +200,7 @@ class HTTPClient:
         url = response.url
         method = response.method
         bucket_key: str = f"{method}:{url}"
+        bucket: Union[Bucket, TopLevelBucket]
 
         if major_parameters:
             bucket = TopLevelBucket(

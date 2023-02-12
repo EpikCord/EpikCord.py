@@ -209,8 +209,6 @@ class GatewayEventHandler:
         if self.client.ws:
             await self.client.ws.close()
         await self.client.connect(resume=True)
-        if self.client.session_id and self.client.sequence:
-            await self.resume()
 
     async def invalid_session(self, resumable: bool):
         if self.client.ws:
@@ -292,7 +290,7 @@ class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
 
     async def close(self, *, code: int = 4000, message: bytes = b"") -> bool:
         logger.debug(
-            "Closing websocket with code %s and message %s", code, message
+            "Closing websocket with code %s", code
         )
         return await super().close(code=code, message=message)
 
@@ -349,6 +347,9 @@ class WebSocketClient:
 
         self.ws = await self.http.ws_connect(url)
         asyncio.create_task(self.rate_limiter.reset.start())
+
+        if resume:
+            await self.event_handler.resume()
 
         async for message in self.ws:
             logger.debug("Received message: %s", message.json())
