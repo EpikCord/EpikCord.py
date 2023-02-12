@@ -202,7 +202,7 @@ class GatewayEventHandler:
     async def reconnect(self, _):
         if self.client.ws:
             await self.client.ws.close()
-        await self.client.connect()
+        await self.client.connect(resume=True)
         if self.client.session_id and self.client.sequence:
             await self.resume()
 
@@ -213,7 +213,7 @@ class GatewayEventHandler:
         if self.client.ws:
             await self.client.ws.close()
 
-        await self.client.connect()
+        await self.client.connect(resume=resumable)
 
         if resumable:
             await self.resume()
