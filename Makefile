@@ -4,49 +4,72 @@ TEST_DIR = tests
 PY_ENV = venv
 PY_BIN = $(PY_ENV)/bin
 
-all: reqs
+PIP = $(PY_BIN)/pip
 
+CMD_NOT_FOUND = $(error $(strip $(1)) is required for this rule)
+CHECK_CMD = $(if $(shell command -v $(1)),, $(call CMD_NOT_FOUND, $(1)))
 
-$(PY_BIN)/%:
-	python3 -m venv $(PY_ENV)
-	chmod +x $(PY_BIN)/activate
-	./$(PY_BIN)/activate
+SRC = $(shell find $(SRC_DIR) -type f -name "*.py")
 
-reqs: $(PY_BIN)/pip
-	$(PY_BIN)/pip3 install -e .
+REQS = ._deps.lock
+FORMAT_CODE = ._format_code.lock
 
+all: $(REQS) $(FORMAT_CODE)
 
-$(PY_BIN)/nox: $(PY_BIN)/pip
-	$(PY_BIN)/pip3 install nox
+$(PY_ENV):
+	$(call CHECK_CMD, python3)
+	@ python3 -m venv $@
 
+$(REQS): $(PY_ENV)
+	$(call CHECK_CMD, $(PIP))
+	@ $(PIP) install -e .
+	@ $(PIP) install -r requirements.txt
+	@ $(PIP) install -r dev.requirements.txt
+	@ touch $@
 
-lint: $(PY_BIN)/nox
-	$(PY_BIN)/nox -s lint mypy
+$(FORMAT_CODE): $(SRC)
+	@ $(info $(words $?) files changed since last auto-format)
+	@ $(PY_BIN)/black $(SRC_DIR)
+	@ touch $@
 
+NOX_RULES := install
+NOX_RULES += format
+NOX_RULES += lint
+NOX_RULES += pyright
+NOX_RULES += imports
+NOX_RULES += unit
+NOX_RULES += e2e
+NOX_RULES += cov
 
-pretty: $(PY_BIN)/nox
-	$(PY_BIN)/nox -s format
+define _CREATE_NR
+$(2): $(REQS)
+	$(PY_BIN)/nox -s $(1)
 
+.PHONY: $(2)
+endef
 
-dist: reqs
-	python setup.py build sdist
+CREATE_NOX_RULE = $(eval $(call _CREATE_NR, $(1), $(addprefix nox_, $(1))))
+$(foreach nr, $(NOX_RULES), $(call CREATE_NOX_RULE, $(nr)))
 
+nox_all: $(foreach nr, $(NOX_RULES), $(addprefix nox_, $(nr)))
+
+.PHONY: nox_all
+
+NOX_DIR = .nox
+BUILD_DIRS = build *.egg-info
+PY_TEST_CACHE = .pytest_cache
 
 clean:
-	rm -rf */__pycache__
-	rm -rf .pytest_cache
-	rm -rf .mypy_cache
-
-	rm -rf dist
-	rm -rf build
-
-	rm -rf *.egg-info
-
+	@ find $(SRC_DIR) -type f -name "*.pyc" -exec rm -rf {} +
+	@ $(RM) -r $(NOX_DIR) $(BUILD_DIRS)
+	@ $(RM) $(REQS) $(FORMAT_CODE)
+	@ $(RM) -r $(PY_TEST_CACHE)
 
 fclean: clean
-	rm -rf $(PY_ENV)
-	rm -rf .nox
+	@ $(RM) -r $(VENV)
 
+.PHONY: clean fclean
 
-.PHONY: py_test clean fclean reqs lint pretty
+re: fclean all
 
+.PHONY: re

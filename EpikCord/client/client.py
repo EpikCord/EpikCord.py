@@ -1,8 +1,6 @@
 import asyncio
 from typing import Optional
 
-from EpikCord.utils.enums import OpCode
-
 from ..flags import Intents
 from ..presence import Presence
 from ..utils import OpCode, cleanup_loop, singleton

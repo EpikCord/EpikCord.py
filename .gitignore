@@ -29,3 +29,6 @@ epikcord.log
 # Coverage
 .coverage
 coverage.xml
+
+# Makefile deps
+._*.lock

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from enum import IntEnum
 from logging import getLogger
+from typing import Final
 
 
 class OpCode(IntEnum):
@@ -77,6 +78,9 @@ class StatusCode(IntEnum):
     pass
 
 
+_SERVER_ERROR_BOUND: Final[int] = 600
+
+
 class HTTPCodes(StatusCode):
     """HTTP response codes."""
 
@@ -102,7 +106,7 @@ class HTTPCodes(StatusCode):
         if not isinstance(value, int):
             raise ValueError(f"{value} is not a valid HTTP status code.")
 
-        if HTTPCodes.SERVER_ERROR < value < 600:
+        if HTTPCodes.SERVER_ERROR < value < _SERVER_ERROR_BOUND:
             return HTTPCodes.SERVER_ERROR
 
         raise ValueError(

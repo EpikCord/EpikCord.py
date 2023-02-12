@@ -50,11 +50,11 @@ class APIVersion(IntEnum):
 class HTTPClient:
     """The HTTPClient used to make requests to the Discord API."""
 
-    error_mapping: Dict[int, Type[HTTPException]] = {
-        400: BadRequest,
-        401: Unauthorized,
-        403: Forbidden,
-        404: NotFound,
+    error_mapping: Dict[HTTPCodes, Type[HTTPException]] = {
+        HTTPCodes.BAD_REQUEST: BadRequest,
+        HTTPCodes.UNAUTHORIZED: Unauthorized,
+        HTTPCodes.FORBIDDEN: Forbidden,
+        HTTPCodes.NOT_FOUND: NotFound,
     }
 
     def __init__(
@@ -168,7 +168,7 @@ class HTTPClient:
                     )
                 elif not response.ok:
                     error = self.error_mapping.get(
-                        response.status, HTTPException
+                        HTTPCodes(response.status), HTTPException
                     )
                     raise error(data)
                 elif response.ok:
@@ -200,8 +200,6 @@ class HTTPClient:
         url = response.url
         method = response.method
         bucket_key: str = f"{method}:{url}"
-
-        bucket: Optional[Union[Bucket, TopLevelBucket]] = None
 
         if major_parameters:
             bucket = TopLevelBucket(
@@ -237,7 +235,7 @@ class HTTPClient:
             The bucket for the request.
         """
         logger.critical(
-            f"Ratelimited bucket {bucket} for {data['retry_after']} seconds."
+            f"Rate-limited bucket {bucket} for {data['retry_after']} seconds."
         )
         bucket.clear()
 

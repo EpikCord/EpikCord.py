@@ -247,9 +247,10 @@ class GatewayEventHandler:
         if event["op"] != OpCode.DISPATCH:
             await self.opcode_mapping[event["op"]](event["d"])
         else:
-            await self.dispatch(
-                event["t"].lower(), event["d"]
-            )  # TODO: Once we have completed the HTTP objects, we can then start to transform them before they reach the end user.
+            # TODO: Once we have completed the HTTP objects,
+            #  we can then start to transform them before they reach
+            #  the end user.
+            await self.dispatch(event["t"].lower(), event["d"])
 
 
 class DiscordWSMessage:
