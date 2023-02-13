@@ -70,20 +70,21 @@ class GatewayEventHandler:
             OpCode.HEARTBEAT_ACK: self.heartbeat_ack,
         }
 
-    def event(self):
+    def event(self, func: AsyncFunction):
         """Register an event handler. This is a decorator."""
 
-        def decorator(func: AsyncFunction):
-            name = func.__name__.lower().replace("on_", "")
-            self.events[name].append(func)
-            return func
-
-        return decorator
+        name = func.__name__.lower().replace("on_", "")
+        self.events[name].append(func)
+        logger.info("Registered event %s", name)
+        return func
 
     async def dispatch(self, event_name: str, *args, **kwargs):
         """Dispatch an event to all event handlers."""
         for event in self.events[event_name]:
             asyncio.create_task(event(*args, **kwargs))
+
+        logger.debug("Dispatched event %s", event_name)
+
 
     @staticmethod
     async def heartbeat_ack(_: Any):
@@ -248,11 +249,15 @@ class GatewayEventHandler:
         if event["op"] != OpCode.DISPATCH:
             await self.opcode_mapping[event["op"]](event["d"])
         else:
+            event_name = event["t"].lower()
+            event_data = event["d"]
+
+            if event_handler := getattr(self, f"_{event_name}", None):
+                asyncio.create_task(event_handler(event_data))
+
             # TODO: Once we have completed the HTTP objects,
             #  we can then start to transform them before they reach
             #  the end user.
-            await self.dispatch(event["t"].lower(), event["d"])
-
 
 class DiscordWSMessage:
     def __init__(self, *, data, msg_type, extra):
@@ -319,6 +324,8 @@ class WebSocketClient:
         self.resume_url: Optional[str] = None
         self.heartbeat_interval: Optional[float] = None
         self._heartbeats: List[int] = []
+
+        self.event = self.event_handler.event
 
     @property
     def latency(self) -> Optional[float]:
