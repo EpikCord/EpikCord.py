@@ -85,7 +85,6 @@ class GatewayEventHandler:
 
         logger.debug("Dispatched event %s", event_name)
 
-
     @staticmethod
     async def heartbeat_ack(_: Any):
         """Handle the heartbeat ack event. OpCode 11."""
@@ -258,6 +257,7 @@ class GatewayEventHandler:
             # TODO: Once we have completed the HTTP objects,
             #  we can then start to transform them before they reach
             #  the end user.
+
 
 class DiscordWSMessage:
     def __init__(self, *, data, msg_type, extra):
