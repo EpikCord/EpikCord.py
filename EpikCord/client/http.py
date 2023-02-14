@@ -6,6 +6,7 @@ from logging import getLogger
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union
 
 import aiohttp
+from discord_typings import GetGatewayBotData, SessionStartLimitData
 
 from .. import __version__
 from ..exceptions import (
@@ -46,9 +47,78 @@ class APIVersion(IntEnum):
     NINE = 9
     TEN = 10
 
+class SessionStartLimit:
+    """Represents the session start limit data.
+
+    Attributes
+    ----------
+    total: int
+        The total number of sessions that can be started in a 24 hour period.
+    remaining: int
+        The remaining number of sessions that can be started in this 24 hour period.
+    reset_after: int
+        The number of seconds until the remaining number of sessions is reset.
+    max_concurrency: int
+        The maximum number of IDENTIFY requests that can be sent in 5 seconds.
+    """
+
+    def __init__(self, data: SessionStartLimitData):
+        """
+        Parameters
+        ----------
+        data: SessionStartLimitData
+            The data returned by the Discord API.
+        """
+
+        self.total: int = data["total"]
+        self.remaining: int = data["remaining"]
+        self.reset_after: int = data["reset_after"]
+        self.max_concurrency: int = data["max_concurrency"]
+
+class GatewayBotData:
+    """Represents the data returned by the Get Gateway Bot endpoint.
+
+    Attributes
+    ----------
+    url: str
+        The URL to use for connecting to the gateway.
+    shards: int
+        The recommended amount of shards to use.
+    session_start_limit: SessionStartLimit
+        The session start limit data.
+    """
+    def __init__(self, data: GetGatewayBotData):
+        """
+        Parameters
+        ----------
+        data: GetGatewayBotData
+            The data returned by the Discord API.
+        """
+
+        self.url: str = data["url"]
+        self.shards: int = data["shards"]
+        self.session_start_limit: SessionStartLimit = SessionStartLimit(data["session_start_limit"])
+
 
 class HTTPClient:
-    """The HTTPClient used to make requests to the Discord API."""
+    """The HTTPClient used to make requests to the Discord API.
+    
+    Attributes
+    ----------
+    token: str
+        The token of the bot. Used as authorization.
+        Should be kept private at all times.
+    version: int
+        The version of the Discord API to use.
+    session: aiohttp.ClientSession
+        The underlying session used to make HTTP requests.
+    global_event: asyncio.Event
+        The Event used to implement global ratelimits.
+    buckets: Dict[str, Union[Bucket, TopLevelBucket]]
+        A mapping of bucket hashes to Bucket instances.
+    error_mapping: Dict[HTTPCodes, Type[HTTPException]]
+        A mapping of HTTP status codes to their respective exceptions.
+    """
 
     error_mapping: Dict[HTTPCodes, Type[HTTPException]] = {
         HTTPCodes.BAD_REQUEST: BadRequest,
@@ -68,14 +138,6 @@ class HTTPClient:
             Should be kept private at all times.
         version: int
             The version of the Discord API to use. Defaults to 10.
-
-        Attributes
-        ----------
-        token: str
-            The token of the bot. Used as authorization.
-            Should be kept private at all times.
-        version: int
-            The version of the Discord API to use.
         """
         self.token: TokenStore = token
         self.version: APIVersion = version
@@ -305,3 +367,16 @@ class HTTPClient:
         response = await self.request(Route("GET", "/gateway"))
         data = await response.json()
         return data["url"]
+
+    async def get_gateway_bot(self) -> GatewayBotData:
+        """Gets information and recommendations for connecting to the Gateway.
+        
+        Returns
+        -------
+        GatewayBotData
+            The data returned from the request.
+        """
+        response = await self.request(Route("GET", "/gateway/bot"))
+        data = await response.json()
+        return GatewayBotData(data)
+
