@@ -3,6 +3,7 @@ from .enums import (
     HTTPCodes,
     JSONErrorCodes,
     OpCode,
+    TeamMemberMembershipState,
     VoiceCloseCode,
     VoiceOpCode,
     TeamMemberMembershipState,

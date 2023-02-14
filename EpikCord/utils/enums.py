@@ -345,6 +345,7 @@ class JSONErrorCodes(StatusCode):
         logger.warning(f"Unknown JSON error code: {value}")
         return cls.GENERAL_ERROR
 
+
 class TeamMemberMembershipState(IntEnum):
     """The state of a team member."""
 
