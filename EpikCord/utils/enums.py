@@ -386,6 +386,7 @@ class Locale(Enum):
     CHINESE_TAIWAN = "zh-TW"
     KOREAN = "ko"
 
+
 class PremiumType(IntEnum):
     NONE = 0
     NITRO_CLASSIC = 1

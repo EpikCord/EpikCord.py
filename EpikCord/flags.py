@@ -127,6 +127,7 @@ class Permissions(Flag):
     START_EMBEDDED_ACTIVITIES = 1 << 39
     MODERATOR_MEMBERS = 1 << 40
 
+
 class ChannelFlags(Flag):
     PINNED = 1 << 1
     REQUIRE_TAG = 1 << 4
@@ -142,6 +143,7 @@ class ApplicationFlags(Flag):
     GATEWAY_MESSAGE_CONTENT = 1 << 18
     GATEWAY_MESSAGE_CONTENT_LIMITED = 1 << 19
     APPLICATION_COMMAND_BADGE = 1 << 23
+
 
 class UserFlags(Flag):
     STAFF = 1 << 0

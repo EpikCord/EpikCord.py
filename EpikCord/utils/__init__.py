@@ -2,13 +2,12 @@ from .enums import (
     GatewayCloseCode,
     HTTPCodes,
     JSONErrorCodes,
+    Locale,
     OpCode,
+    PremiumType,
     TeamMemberMembershipState,
     VoiceCloseCode,
     VoiceOpCode,
-    TeamMemberMembershipState,
-    Locale,
-    PremiumType
 )
 from .loose import (
     add_file,
