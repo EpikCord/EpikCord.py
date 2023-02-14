@@ -344,3 +344,9 @@ class JSONErrorCodes(StatusCode):
         logger = getLogger("EpikCord.exceptions")
         logger.warning(f"Unknown JSON error code: {value}")
         return cls.GENERAL_ERROR
+
+class TeamMemberMembershipState(IntEnum):
+    """The state of a team member."""
+
+    INVITED = 1
+    ACCEPTED = 2
