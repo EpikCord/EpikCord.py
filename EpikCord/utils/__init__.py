@@ -3,9 +3,9 @@ from .enums import (
     HTTPCodes,
     JSONErrorCodes,
     OpCode,
+    TeamMemberMembershipState,
     VoiceCloseCode,
     VoiceOpCode,
-    TeamMemberMembershipState,
 )
 from .loose import (
     add_file,

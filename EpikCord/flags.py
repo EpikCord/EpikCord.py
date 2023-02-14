@@ -132,6 +132,7 @@ class ChannelFlags(Flag):
     PINNED = 1 << 1
     REQUIRE_TAG = 1 << 4
 
+
 class ApplicationFlags(Flag):
     GATEWAY_PRESENCE = 1 << 12
     GATEWAY_PRESENCE_LIMITED = 1 << 13
