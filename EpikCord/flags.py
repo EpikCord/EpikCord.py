@@ -127,7 +127,6 @@ class Permissions(Flag):
     START_EMBEDDED_ACTIVITIES = 1 << 39
     MODERATOR_MEMBERS = 1 << 40
 
-
 class ChannelFlags(Flag):
     PINNED = 1 << 1
     REQUIRE_TAG = 1 << 4
@@ -142,3 +141,20 @@ class ApplicationFlags(Flag):
     GATEWAY_MESSAGE_CONTENT = 1 << 18
     GATEWAY_MESSAGE_CONTENT_LIMITED = 1 << 19
     APPLICATION_COMMAND_BADGE = 1 << 23
+
+class UserFlags(Flag):
+    STAFF = 1 << 0
+    PARTNER = 1 << 1
+    HYPESQUAD = 1 << 2
+    BUG_HUNTER_LEVEL_ONE = 1 << 3
+    HYPESQUAD_ONLINE_HOUSE_1 = 1 << 6
+    HYPESQUAD_ONLINE_HOUSE_2 = 1 << 7
+    HYPESQUAD_ONLINE_HOUSE_3 = 1 << 8
+    PREMIUM_EARLY_SUPPORTER = 1 << 9
+    TEAM_PSEUDO_USER = 1 << 10
+    BUG_HUNTER_LEVEL_TWO = 1 << 14
+    VERIFIED_BOT = 1 << 16
+    VERIFIED_BOT_DEVELOPER = 1 << 17
+    CERTIFIED_MODERATOR = 1 << 18
+    BOT_HTTP_INTERACTIONS = 1 << 19
+    ACTIVE_DEVELOPER = 1 << 22
