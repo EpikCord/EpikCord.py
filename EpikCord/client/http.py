@@ -47,6 +47,7 @@ class APIVersion(IntEnum):
     NINE = 9
     TEN = 10
 
+
 class SessionStartLimit:
     """Represents the session start limit data.
 
@@ -75,6 +76,7 @@ class SessionStartLimit:
         self.reset_after: int = data["reset_after"]
         self.max_concurrency: int = data["max_concurrency"]
 
+
 class GatewayBotData:
     """Represents the data returned by the Get Gateway Bot endpoint.
 
@@ -87,6 +89,7 @@ class GatewayBotData:
     session_start_limit: SessionStartLimit
         The session start limit data.
     """
+
     def __init__(self, data: GetGatewayBotData):
         """
         Parameters
@@ -97,12 +100,14 @@ class GatewayBotData:
 
         self.url: str = data["url"]
         self.shards: int = data["shards"]
-        self.session_start_limit: SessionStartLimit = SessionStartLimit(data["session_start_limit"])
+        self.session_start_limit: SessionStartLimit = SessionStartLimit(
+            data["session_start_limit"]
+        )
 
 
 class HTTPClient:
     """The HTTPClient used to make requests to the Discord API.
-    
+
     Attributes
     ----------
     token: str
@@ -370,7 +375,7 @@ class HTTPClient:
 
     async def get_gateway_bot(self) -> GatewayBotData:
         """Gets information and recommendations for connecting to the Gateway.
-        
+
         Returns
         -------
         GatewayBotData
@@ -379,4 +384,3 @@ class HTTPClient:
         response = await self.request(Route("GET", "/gateway/bot"))
         data = await response.json()
         return GatewayBotData(data)
-
