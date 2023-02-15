@@ -37,3 +37,4 @@ class User:
         self.public_flags: Optional[UserFlags] = (
             UserFlags(data["public_flags"]) if "public_flags" in data else None
         )
+        self._data: UserData = data

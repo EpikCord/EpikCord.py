@@ -12,6 +12,7 @@ class InstallParams:
     def __init__(self, data: InstallParamsData):
         self.scopes: List[str] = data["scopes"]
         self.permissions: Permissions = Permissions(int(data["permissions"]))
+        self._data: InstallParamsData = data
 
 
 class TeamMember:
@@ -22,6 +23,7 @@ class TeamMember:
         self.permissions: List[str] = data["permissions"]
         self.team_id: int = int(data["team_id"])
         self.user = data["user"]  # TODO: User Object
+        self._data: TeamMemberData = data
 
 
 class Team:
@@ -33,6 +35,7 @@ class Team:
         ]
         self.name: str = data["name"]
         self.owner_user_id: int = int(data["owner_user_id"])
+        self._data: TeamData = data
 
 
 class Application:
@@ -80,3 +83,4 @@ class Application:
             if "role_connections_verification_url" in data
             else None
         )
+        self._data: ApplicationData = data
