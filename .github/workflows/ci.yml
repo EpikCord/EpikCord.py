@@ -61,7 +61,7 @@ jobs:
           python-version: 3.8
           cache: 'pip'
       - run: pip install codespell
-      - run: codespell --skip="./docs/*"
+      - run: codespell --skip="./docs/* ./git/*"
 
   lint:
     if: ${{ always() }}
