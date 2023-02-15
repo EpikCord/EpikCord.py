@@ -54,6 +54,6 @@ class Application:
             InstallParams, data.get("install_params")
         )
         self.custom_install_url = data.get("custom_install_url")
-        self.role_conn_verification_url = data.get(
+        self.role_connections_verification_url = data.get(
             "role_connections_verification_url"
         )
