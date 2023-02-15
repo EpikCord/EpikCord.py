@@ -16,11 +16,11 @@ from .loose import (
     cleanup_loop,
     clear_none_values,
     extract_content,
+    instance_or_none,
+    int_or_none,
     json_serialize,
     log_request,
     singleton,
-    instance_or_none,
-    int_or_none,
 )
 from .types import (
     AsyncFunction,

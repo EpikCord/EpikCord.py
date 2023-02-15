@@ -1,7 +1,7 @@
 from discord_typings import UserData
 
 from .flags import UserFlags
-from .utils import Locale, PremiumType, int_or_none, instance_or_none
+from .utils import Locale, PremiumType, instance_or_none, int_or_none
 
 
 class User:

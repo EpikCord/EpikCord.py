@@ -5,13 +5,13 @@ from functools import partial
 from importlib.util import find_spec
 from logging import getLogger
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Dict, Optional, Type, TypeVar, Callable
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Type, TypeVar
 
 import aiohttp
 
 from ..file import File
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 _ORJSON = find_spec("orjson")

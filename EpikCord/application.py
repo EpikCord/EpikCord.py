@@ -14,9 +14,7 @@ class InstallParams:
 
 class TeamMember:
     def __init__(self, data: TeamMemberData):
-        self.membership_state = (
-            TeamMembershipState(data["membership_state"])
-        )
+        self.membership_state = TeamMembershipState(data["membership_state"])
         self.permissions = data["permissions"]
         self.team_id = int(data["team_id"])
         self.user = data["user"]  # TODO: User Object
