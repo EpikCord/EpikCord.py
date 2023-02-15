@@ -204,7 +204,7 @@ jobs:
         run: pip install nox git+https://github.com/Bluenix2/discord-typings
 
       - name: Run coverage
-        run: nox -s coverage_report
+        run: nox -s cov
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
