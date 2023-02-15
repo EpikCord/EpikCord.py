@@ -32,3 +32,12 @@ def test_intents_all():
 
     assert intents.turned_on == members[1:]
     assert not intents.GUILDS
+
+
+def test_intents_value():
+    intents = Intents()
+
+    assert intents.value == 0
+    intents.GUILDS = True
+
+    assert intents.value == intents.GUILDS
