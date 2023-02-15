@@ -1,11 +1,9 @@
-from typing import List, Optional
-
 from discord_typings import ApplicationData
 from discord_typings import InstallParams as InstallParamsData
 from discord_typings import TeamData, TeamMemberData
 
 from .flags import ApplicationFlags, Permissions
-from .utils import TeamMemberMembershipState, instance_or_none, int_or_none
+from .utils import TeamMembershipState, instance_or_none, int_or_none
 
 
 class InstallParams:
@@ -17,7 +15,7 @@ class InstallParams:
 class TeamMember:
     def __init__(self, data: TeamMemberData):
         self.membership_state = (
-            TeamMemberMembershipState(data["membership_state"])
+            TeamMembershipState(data["membership_state"])
         )
         self.permissions = data["permissions"]
         self.team_id = int(data["team_id"])
@@ -58,6 +56,6 @@ class Application:
             InstallParams, data.get("install_params")
         )
         self.custom_install_url = data.get("custom_install_url")
-        self.role_connections_verification_url = data.get(
+        self.role_conn_verification_url = data.get(
             "role_connections_verification_url"
         )

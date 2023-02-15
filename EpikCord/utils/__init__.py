@@ -5,7 +5,7 @@ from .enums import (
     Locale,
     OpCode,
     PremiumType,
-    TeamMemberMembershipState,
+    TeamMembershipState,
     VoiceCloseCode,
     VoiceOpCode,
 )
@@ -40,7 +40,7 @@ __all__ = (
     "SendingAttachmentData",
     "VoiceCloseCode",
     "VoiceOpCode",
-    "TeamMemberMembershipState",
+    "TeamMembershipState",
     "Locale",
     "PremiumType",
     "add_file",

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from discord_typings import UserData
 
 from .flags import UserFlags

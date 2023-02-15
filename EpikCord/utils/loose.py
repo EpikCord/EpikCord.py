@@ -5,7 +5,7 @@ from functools import partial
 from importlib.util import find_spec
 from logging import getLogger
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Dict, Optional, Type, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, Optional, Type, TypeVar, Callable
 
 import aiohttp
 
