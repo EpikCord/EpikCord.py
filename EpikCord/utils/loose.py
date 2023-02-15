@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 import asyncio
+from functools import partial
 from importlib.util import find_spec
 from logging import getLogger
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional, Type, TypeVar
 
 import aiohttp
 
 from ..file import File
+
+T = TypeVar('T')
+
 
 _ORJSON = find_spec("orjson")
 json: ModuleType
@@ -133,3 +137,13 @@ def add_file(
         attachment["description"] = file.description
 
     return attachment
+
+
+def instance_or_none(cls: Type[T], value: Optional[Any]) -> Optional[T]:
+    if value is not None:
+        return None
+    else:
+        return cls(value)
+
+
+int_or_none = partial(instance_or_none, cls=int)

@@ -19,6 +19,8 @@ from .loose import (
     json_serialize,
     log_request,
     singleton,
+    instance_or_none,
+    int_or_none,
 )
 from .types import (
     AsyncFunction,
@@ -50,4 +52,6 @@ __all__ = (
     "json_serialize",
     "log_request",
     "singleton",
+    "instance_or_none",
+    "int_or_none",
 )

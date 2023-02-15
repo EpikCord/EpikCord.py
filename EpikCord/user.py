@@ -3,37 +3,27 @@ from typing import Optional
 from discord_typings import UserData
 
 from .flags import UserFlags
-from .utils import Locale, PremiumType
+from .utils import Locale, PremiumType, int_or_none, instance_or_none
 
 
 class User:
     def __init__(self, data: UserData):
-        self.id: int = int(data["id"])
-        self.username: str = data["username"]
-        self.discriminator: str = data["discriminator"]
-        self.avatar: Optional[str] = data.get("avatar")
-        self.bot: Optional[bool] = data.get("bot")
-        self.system: Optional[bool] = data.get("system")
-        self.mfa_enabled: Optional[bool] = data.get("mfa_enabled")
-        self.banner: Optional[str] = data.get("banner")
-        self.accent_color: Optional[int] = (
-            int(data["accent_color"])
-            if "accent_color" in data and data["accent_color"]
-            else None
+        self.id = int(data["id"])
+        self.username = data["username"]
+        self.discriminator = data["discriminator"]
+        self.avatar = data.get("avatar")
+        self.bot = data.get("bot")
+        self.system = data.get("system")
+        self.mfa_enabled = data.get("mfa_enabled")
+        self.banner = data.get("banner")
+        self.accent_color = int_or_none(data.get("accent_color"))
+        self.locale = instance_or_none(Locale, data.get("locale"))
+        self.verified = data.get("verified")
+        self.email = data.get("email")
+        self.flags = instance_or_none(UserFlags, data.get("flags"))
+        self.premium_type = instance_or_none(
+            PremiumType, data.get("premium_type")
         )
-        self.locale: Optional[Locale] = (
-            Locale(data["locale"]) if "locale" in data else None
-        )
-        self.verified: Optional[bool] = data.get("verified")
-        self.email: Optional[str] = data.get("email")
-        self.flags: Optional[UserFlags] = (
-            UserFlags(data["flags"]) if "flags" in data else None
-        )
-        self.premium_type: Optional[PremiumType] = (
-            PremiumType(data["premium_type"])
-            if "premium_type" in data
-            else None
-        )
-        self.public_flags: Optional[UserFlags] = (
-            UserFlags(data["public_flags"]) if "public_flags" in data else None
+        self.public_flags = instance_or_none(
+            UserFlags, data.get("public_flags")
         )
