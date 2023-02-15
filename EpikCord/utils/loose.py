@@ -140,7 +140,7 @@ def add_file(
 
 
 def instance_or_none(cls: Type[T], value: Optional[Any]) -> Optional[T]:
-    if value is not None:
+    if value is None:
         return None
     else:
         return cls(value)
