@@ -1,4 +1,5 @@
 from .enums import (
+    ApplicationCommandType,
     GatewayCloseCode,
     HTTPCodes,
     InteractionType,
@@ -10,7 +11,6 @@ from .enums import (
     TeamMembershipState,
     VoiceCloseCode,
     VoiceOpCode,
-    ApplicationCommandType
 )
 from .loose import (
     add_file,
