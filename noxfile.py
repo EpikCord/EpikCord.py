@@ -37,7 +37,7 @@ def check_circular_imports(session: nox.Session):
 
 
 @nox.session(name="unit")
-def end_to_end(session: nox.Session):
+def unit(session: nox.Session):
     session.install("pytest")
     session.install("-r", "requirements.txt")
     session.install(".")
