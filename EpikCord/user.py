@@ -1,11 +1,13 @@
 from discord_typings import UserData
 
+from .client import Client
 from .flags import UserFlags
 from .utils import Locale, PremiumType, instance_or_none, int_or_none
 
 
 class User:
-    def __init__(self, data: UserData):
+    def __init__(self, client: Client, data: UserData):
+        self.client = client
         self.id = int(data["id"])
         self.username = data["username"]
         self.discriminator = data["discriminator"]
