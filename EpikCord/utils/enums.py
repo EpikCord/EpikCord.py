@@ -393,6 +393,7 @@ class PremiumType(IntEnum):
     NITRO = 2
     NITRO_BASIC = 3
 
+
 class InteractionType(IntEnum):
     PING = 1
     APPLICATION_COMMAND = 2

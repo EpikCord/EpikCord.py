@@ -105,4 +105,3 @@ class Presence:
             data["activities"] = [self.activity.to_dict()]
 
         return data
-
