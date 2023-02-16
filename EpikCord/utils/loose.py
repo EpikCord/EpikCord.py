@@ -10,6 +10,7 @@ from typing import (
     Any,
     Callable,
     Dict,
+    List,
     Optional,
     Type,
     TypeVar,
@@ -18,7 +19,9 @@ from typing import (
 
 import aiohttp
 
+
 from ..file import File
+from ..locales import Localization
 
 T = TypeVar("T")
 
@@ -163,3 +166,12 @@ def instance_or_none(
 
 
 int_or_none = partial(instance_or_none, cls=int)
+
+
+def localization_list_to_dict(
+    localizations: List[Localization]
+) -> Dict[str, str]:
+    payload = {}
+    for localization in localizations:
+        payload[localization.locale.value] = localization.value
+    return payload

@@ -10,7 +10,7 @@ from .enums import (
     TeamMembershipState,
     VoiceCloseCode,
     VoiceOpCode,
-    ApplicationCommandType
+    ApplicationCommandType,
 )
 from .loose import (
     add_file,
@@ -24,6 +24,7 @@ from .loose import (
     json_serialize,
     log_request,
     singleton,
+    localization_list_to_dict
 )
 from .types import (
     AsyncFunction,
@@ -60,4 +61,5 @@ __all__ = (
     "singleton",
     "instance_or_none",
     "int_or_none",
+    "localization_list_to_dict"
 )

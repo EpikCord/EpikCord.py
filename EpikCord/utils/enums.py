@@ -401,6 +401,7 @@ class InteractionType(IntEnum):
     APPLICATION_COMMAND_AUTOCOMPLETE = 4
     MODAL_SUBMIT = 5
 
+
 class ApplicationCommandType(IntEnum):
     CHAT_INPUT = 1
     USER = 2

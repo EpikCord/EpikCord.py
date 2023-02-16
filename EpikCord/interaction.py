@@ -1,11 +1,22 @@
-from discord_typings import ApplicationCommandInteractionData, InteractionData, ResolvedInteractionDataData
+from discord_typings import (
+    ApplicationCommandInteractionData,
+    InteractionData,
+    ResolvedInteractionDataData,
+)
 
 from .client import Client
 from .file import Attachment
 from .flags import Permissions
 from .guild import GuildMember, Role
 from .user import User
-from .utils import InteractionType, Locale, instance_or_none, int_or_none, ApplicationCommandType
+from .utils import (
+    InteractionType,
+    Locale,
+    instance_or_none,
+    int_or_none,
+    ApplicationCommandType,
+)
+
 
 class BaseInteraction:
     def __init__(self, client: Client, data: InteractionData):
@@ -33,14 +44,25 @@ class BaseInteraction:
         self.locale = instance_or_none(Locale, data.get("locale"))
         self.guild_locale = instance_or_none(Locale, data.get("guild_locale"))
 
+
 class ResolvedInteractionData:
     def __init__(self, client: Client, data: ResolvedInteractionDataData):
-        self.users = {int(k): User(client, v) for k, v in data.get("users", {}).items()}
-        self.members = {int(k): GuildMember(client, v) for k, v in data.get("members", {}).items()}
-        self.roles = {int(k): Role(client, v) for k, v in data.get("roles", {}).items()}
+        self.users = {
+            int(k): User(client, v) for k, v in data.get("users", {}).items()
+        }
+        self.members = {
+            int(k): GuildMember(client, v)
+            for k, v in data.get("members", {}).items()
+        }
+        self.roles = {
+            int(k): Role(client, v) for k, v in data.get("roles", {}).items()
+        }
         # CHANNELS
         # MESSAGES
-        self.attachments = {int(k): Attachment(v) for k, v in data.get("attachments", {}).items()}
+        self.attachments = {
+            int(k): Attachment(v)
+            for k, v in data.get("attachments", {}).items()
+        }
 
 
 class BaseApplicationCommandInteraction(BaseInteraction):
@@ -49,8 +71,13 @@ class BaseApplicationCommandInteraction(BaseInteraction):
         self.data = data["data"]
         self.command_id = int(self.data["id"])
         self.command_name = self.data["name"]
-        self.command_type: ApplicationCommandType = ApplicationCommandType(self.data["type"])
-        self.resolved = instance_or_none(ResolvedInteractionData, data.get("resolved"))
+        self.command_type: ApplicationCommandType = ApplicationCommandType(
+            self.data["type"]
+        )
+        self.resolved = instance_or_none(
+            ResolvedInteractionData, data.get("resolved")
+        )
+
 
 # class ChatInputCommandInteraction():
 #     def __init__(self, client: Client, data: ApplicationCommandInteractionData):

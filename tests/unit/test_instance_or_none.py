@@ -2,7 +2,6 @@ from EpikCord.utils import instance_or_none
 
 
 class Test:
-
     def __init__(self, value: int):
         self.value = value
 

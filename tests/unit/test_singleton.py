@@ -5,7 +5,6 @@ from EpikCord.utils.loose import singleton
 
 
 class TestClass:
-
     def __init__(self):
         self.time = random.random()
 

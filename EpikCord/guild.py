@@ -37,15 +37,25 @@ class GuildMember:
             datetime.fromisoformat, data.get("communication_disabled_until")
         )
 
+
 class RoleTags:
     def __init__(self, data: RoleTagsData):
         self._data = data
         self.bot_id = int_or_none(data.get("bot_id"))
         self.integration_id = int_or_none(data.get("integration_id"))
-        self.premium_subscriber = True if data.get("premium_subscriber") else False
-        self.subscription_listing_id = int_or_none(data.get("subscription_listing_id"))
-        self.available_for_purchase = True if data.get("available_for_purchase") else False
-        self.guild_connections = True if data.get("guild_connections") else False
+        self.premium_subscriber = (
+            True if data.get("premium_subscriber") else False
+        )
+        self.subscription_listing_id = int_or_none(
+            data.get("subscription_listing_id")
+        )
+        self.available_for_purchase = (
+            True if data.get("available_for_purchase") else False
+        )
+        self.guild_connections = (
+            True if data.get("guild_connections") else False
+        )
+
 
 class Role:
     def __init__(self, client: Client, data: RoleData):
