@@ -5,7 +5,7 @@ from .enums import (
     Locale,
     OpCode,
     PremiumType,
-    TeamMemberMembershipState,
+    TeamMembershipState,
     VoiceCloseCode,
     VoiceOpCode,
 )
@@ -16,6 +16,8 @@ from .loose import (
     cleanup_loop,
     clear_none_values,
     extract_content,
+    instance_or_none,
+    int_or_none,
     json_serialize,
     log_request,
     singleton,
@@ -38,7 +40,7 @@ __all__ = (
     "SendingAttachmentData",
     "VoiceCloseCode",
     "VoiceOpCode",
-    "TeamMemberMembershipState",
+    "TeamMembershipState",
     "Locale",
     "PremiumType",
     "add_file",
@@ -50,4 +52,6 @@ __all__ = (
     "json_serialize",
     "log_request",
     "singleton",
+    "instance_or_none",
+    "int_or_none",
 )
