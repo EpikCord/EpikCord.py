@@ -161,3 +161,10 @@ class UserFlags(Flag):
     CERTIFIED_MODERATOR = 1 << 18
     BOT_HTTP_INTERACTIONS = 1 << 19
     ACTIVE_DEVELOPER = 1 << 22
+
+
+class GuildMemberFlags(Flag):
+    DID_REJOIN = 1 << 0
+    COMPLETED_ONBOARDING = 1 << 1
+    BYPASSES_VERIFICATION = 1 << 2
+    STARTED_ONBOARDING = 1 << 3
