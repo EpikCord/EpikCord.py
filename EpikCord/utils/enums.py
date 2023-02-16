@@ -392,3 +392,10 @@ class PremiumType(IntEnum):
     NITRO_CLASSIC = 1
     NITRO = 2
     NITRO_BASIC = 3
+
+class InteractionType(IntEnum):
+    PING = 1
+    APPLICATION_COMMAND = 2
+    MESSAGE_COMPONENT = 3
+    APPLICATION_COMMAND_AUTOCOMPLETE = 4
+    MODAL_SUBMIT = 5

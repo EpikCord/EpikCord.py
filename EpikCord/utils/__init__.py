@@ -8,6 +8,8 @@ from .enums import (
     TeamMemberMembershipState,
     VoiceCloseCode,
     VoiceOpCode,
+    InteractionType,
+    StatusCode
 )
 from .loose import (
     add_file,
@@ -39,6 +41,8 @@ __all__ = (
     "VoiceCloseCode",
     "VoiceOpCode",
     "TeamMemberMembershipState",
+    "StatusCode",
+    "InteractionType",
     "Locale",
     "PremiumType",
     "add_file",
