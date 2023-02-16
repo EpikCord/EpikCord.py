@@ -2,7 +2,25 @@ import io
 import mimetypes
 from typing import Optional
 
+from discord_typings import AttachmentData
+
+from .client import Client
 from .exceptions import UnknownMimeType
+
+
+class Attachment:
+    def __init__(self, data: AttachmentData):
+        self.id = int(data["id"])
+        self.filename = data["filename"]
+        self.size = data["size"]
+        self.url = data["url"]
+        self.proxy_url = data["proxy_url"]
+        self.description = data.get("description")
+        self.content_type = data.get("content_type")
+        self.height = data.get("height")
+        self.width = data.get("width")
+        self.ephemeral = data.get("ephemeral")
+        self._data = data
 
 
 class File:
