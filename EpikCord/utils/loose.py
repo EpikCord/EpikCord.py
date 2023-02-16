@@ -5,7 +5,16 @@ from functools import partial
 from importlib.util import find_spec
 from logging import getLogger
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Dict, Optional, Type, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+)
 
 import aiohttp
 
@@ -139,11 +148,18 @@ def add_file(
     return attachment
 
 
-def instance_or_none(cls: Type[T], value: Optional[Any]) -> Optional[T]:
+def instance_or_none(
+    cls: Union[Type[T], Callable[..., Any]],
+    value: Optional[Any],
+    *args,
+    ignore_value: bool = False,
+    **kwargs,
+) -> Optional[T]:
     if value is None:
         return None
-    else:
-        return cls(value)
+    if ignore_value:
+        return cls(*args, **kwargs)
+    return cls(value, *args, **kwargs)
 
 
 int_or_none = partial(instance_or_none, cls=int)
