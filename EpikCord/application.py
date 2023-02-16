@@ -48,7 +48,6 @@ class Application:
         self.slug = data.get("slug")
         self.cover_image = data.get("cover_image")
         self.flags = instance_or_none(ApplicationFlags, data.get("flags"))
-        # TODO: Values
         self.tags = data.get("tags")
         self.install_params = instance_or_none(
             InstallParams, data.get("install_params")
