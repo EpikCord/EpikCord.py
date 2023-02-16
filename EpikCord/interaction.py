@@ -10,11 +10,11 @@ from .flags import Permissions
 from .guild import GuildMember, Role
 from .user import User
 from .utils import (
+    ApplicationCommandType,
     InteractionType,
     Locale,
     instance_or_none,
     int_or_none,
-    ApplicationCommandType,
 )
 
 
