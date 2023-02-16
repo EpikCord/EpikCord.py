@@ -54,13 +54,13 @@ class SessionStartLimit:
     Attributes
     ----------
     total: int
-        The total number of sessions that can be started in a 24 hour period.
+        Total number of sessions that can be started in a 24 hour period.
     remaining: int
-        The remaining number of sessions that can be started in this 24 hour period.
+        Remaining sessions left in 24 hours.
     reset_after: int
-        The number of seconds until the remaining number of sessions is reset.
+        Time in seconds until session limit reset
     max_concurrency: int
-        The maximum number of IDENTIFY requests that can be sent in 5 seconds.
+        Maximum of IDENTIFY requests that can be sent in 5 seconds.
     """
 
     def __init__(self, data: SessionStartLimitData):

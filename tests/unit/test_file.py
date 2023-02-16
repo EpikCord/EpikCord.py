@@ -1,6 +1,9 @@
 import io
 
+import pytest
+
 from EpikCord.file import File
+from EpikCord.exceptions import UnknownMimeType
 
 
 def test_file():
@@ -17,3 +20,8 @@ def test_file_spoiler():
     assert file.filename == "SPOILER_test.txt"
     assert file.mime_type == "text/plain"
     assert file.description is None
+
+
+def test_unknown_mime():
+    with pytest.raises(UnknownMimeType):
+        assert File("failing", io.BytesIO(b"\xef"))

@@ -340,7 +340,8 @@ class WebSocketClient:
         version = self.http.version.value
 
         url = (
-            f"{self._gateway_url}?v={version}&encoding=json&compress=zlib-stream"
+            f"{self._gateway_url}?v={version}"
+            "&encoding=json&compress=zlib-stream"
             if not resume
             else self.resume_url
         )

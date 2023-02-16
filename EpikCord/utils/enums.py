@@ -346,7 +346,7 @@ class JSONErrorCodes(StatusCode):
         return cls.GENERAL_ERROR
 
 
-class TeamMemberMembershipState(IntEnum):
+class TeamMembershipState(IntEnum):
     """The state of a team member."""
 
     INVITED = 1

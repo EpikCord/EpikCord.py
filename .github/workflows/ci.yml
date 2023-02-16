@@ -61,7 +61,7 @@ jobs:
           python-version: 3.8
           cache: 'pip'
       - run: pip install codespell
-      - run: codespell --skip="./docs/*"
+      - run: codespell --skip="./docs/* ./git/*"
 
   lint:
     if: ${{ always() }}
@@ -204,7 +204,7 @@ jobs:
         run: pip install nox git+https://github.com/Bluenix2/discord-typings
 
       - name: Run coverage
-        run: nox -s coverage_report
+        run: nox -s cov
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
