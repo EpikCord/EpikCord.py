@@ -11,10 +11,7 @@ from .enums import (
     TeamMembershipState,
     VoiceCloseCode,
     VoiceOpCode,
-<<<<<<< HEAD
     ApplicationCommandType,
-=======
->>>>>>> fde3de68b3b6e94f83f1525f47a68fbd2fc3bee5
 )
 from .loose import (
     add_file,
