@@ -13,6 +13,9 @@ class TokenStore:
     def __init__(self, token: str):
         self.value: str = token
 
+    def remove_from(self, string: str) -> str:
+        return string.replace(self.value, "[REMOVED TOKEN]")
+
 
 class Client(WebSocketClient):
     """

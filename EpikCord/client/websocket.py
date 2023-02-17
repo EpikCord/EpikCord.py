@@ -122,6 +122,9 @@ class GatewayEventHandler:
             return
         await self.client.rate_limiter.tick()
         logger.debug("Sending %s to Gateway", payload)
+        for k, v in payload.items():
+            if isinstance(v, OpCode):
+                payload[k] = v.value
         await self.client.ws.send_json(payload)
 
     async def _ready(self, data: ReadyData):
@@ -369,6 +372,8 @@ class WebSocketClient:
             return
 
         close_code = self.ws.close_code
+
+        logger.critical("Websocket closed with code %s", close_code)
 
         try:
             gce_code = GatewayCloseCode(close_code)
