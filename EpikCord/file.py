@@ -4,7 +4,6 @@ from typing import Optional
 
 from discord_typings import AttachmentData
 
-from .client import Client
 from .exceptions import UnknownMimeType
 
 
