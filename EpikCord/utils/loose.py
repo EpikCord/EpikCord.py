@@ -170,7 +170,8 @@ int_or_none = partial(instance_or_none, cls=int)
 def localization_list_to_dict(
     localizations: List[Localization],
 ) -> Dict[str, str]:
-    payload = {}
-    for localization in localizations:
-        payload[localization.locale.value] = localization.value
+    payload = {
+        localization.locale.value: localization.value
+        for localization in localizations
+    }
     return payload
