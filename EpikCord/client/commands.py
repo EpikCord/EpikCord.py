@@ -2,7 +2,11 @@ from typing import List, Optional
 
 from ..flags import Permissions
 from ..locales import Localization
-from ..utils import AsyncFunction, ApplicationCommandType, localization_list_to_dict
+from ..utils import (
+    ApplicationCommandType,
+    AsyncFunction,
+    localization_list_to_dict,
+)
 
 
 class BaseClientCommand:
@@ -32,7 +36,6 @@ class BaseClientCommand:
         self.nsfw = nsfw
 
     def to_dict(self):
-
         payload = {
             "name": self.name,
             # "description": self.description,
@@ -43,15 +46,20 @@ class BaseClientCommand:
         if self.guild_ids:
             payload["guild_ids"] = self.guild_ids
         if self.default_member_permissions:
-            payload["default_member_permissions"] = self.default_member_permissions.value
+            payload[
+                "default_member_permissions"
+            ] = self.default_member_permissions.value
         if self.guild_only is not None:
             payload["dm_permission"] = not self.guild_only
-        if name_localizations := localization_list_to_dict(self.name_localizations):
+        if name_localizations := localization_list_to_dict(
+            self.name_localizations
+        ):
             payload["name_localizations"] = name_localizations
         # if description_localizations := localization_list_to_dict(self.description_localizations):
         #     payload["description_localizations"] = description_localizations
 
-        return payload  
+        return payload
+
 
 class ClientContextMenuCommand(BaseClientCommand):
     ...

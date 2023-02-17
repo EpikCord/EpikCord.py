@@ -19,7 +19,6 @@ from typing import (
 
 import aiohttp
 
-
 from ..file import File
 from ..locales import Localization
 
@@ -169,7 +168,7 @@ int_or_none = partial(instance_or_none, cls=int)
 
 
 def localization_list_to_dict(
-    localizations: List[Localization]
+    localizations: List[Localization],
 ) -> Dict[str, str]:
     payload = {}
     for localization in localizations:

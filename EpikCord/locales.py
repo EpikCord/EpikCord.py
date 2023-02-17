@@ -1,10 +1,10 @@
 from typing import Dict
+
 from .utils import Locale
 
 
 class Localization:
     def __init__(self, locale: Locale, value: str):
-
         self.locale = locale
         self.value = value
 
