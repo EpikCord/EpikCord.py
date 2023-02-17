@@ -253,6 +253,7 @@ class GatewayEventHandler:
         else:
             event_name = event["t"].lower()
             event_data = event["d"]
+            self.client.sequence = event["s"]
 
             if event_handler := getattr(self, f"_{event_name}", None):
                 asyncio.create_task(event_handler(event_data))

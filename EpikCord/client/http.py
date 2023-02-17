@@ -162,6 +162,7 @@ class HTTPClient:
         self.global_event.set()
 
     async def ws_connect(self, url: str, **kwargs) -> GatewayWebSocket:
+        logger.debug("Connecting websocket to %s", url)
         return await self.session.ws_connect(url, **kwargs)  # type: ignore
 
     async def request(
