@@ -11,6 +11,8 @@ from .enums import (
     TeamMembershipState,
     VoiceCloseCode,
     VoiceOpCode,
+    ApplicationCommandOptionType,
+    ChannelType
 )
 from .loose import (
     add_file,
@@ -48,6 +50,7 @@ __all__ = (
     "InteractionType",
     "ApplicationCommandType",
     "TeamMembershipState",
+    "ApplicationCommandOptionType",
     "Locale",
     "PremiumType",
     "add_file",
@@ -59,6 +62,7 @@ __all__ = (
     "json_serialize",
     "log_request",
     "singleton",
+    "ChannelType",
     "instance_or_none",
     "int_or_none",
     "localization_list_to_dict",
