@@ -1,6 +1,8 @@
 import asyncio
 from typing import Optional
 
+from EpikCord.utils.types import AsyncFunction
+
 from ..flags import Intents
 from ..presence import Presence
 from ..utils import OpCode, cleanup_loop, singleton
@@ -96,3 +98,6 @@ class Client(WebSocketClient):
         await self.ws.send_json(
             {"op": OpCode.PRESENCE_UPDATE, "d": presence.to_dict()}
         )
+
+    def command(self, function: AsyncFunction): # TODO: Add in types for command callbacks
+        ...

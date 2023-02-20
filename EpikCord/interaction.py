@@ -1,6 +1,8 @@
 from discord_typings import (
     ApplicationCommandInteractionData,
     InteractionData,
+    ChatInputCommandInteractionDataData,
+    ContextMenuInteractionDataData,
     ResolvedInteractionDataData,
 )
 
@@ -84,4 +86,7 @@ class BaseApplicationCommandInteraction(BaseInteraction):
 #         super().__init__(client, data)
 #         # OPTIONS
 
-# class ContextMenuInteraction(BaseInteraction):
+class BaseContextMenuInteraction(BaseApplicationCommandInteraction):
+    def __init__(self, client: Client, data):
+        super().__init__(client, data)
+        self.target_id = int(self.data["target_id"])
