@@ -99,5 +99,7 @@ class Client(WebSocketClient):
             {"op": OpCode.PRESENCE_UPDATE, "d": presence.to_dict()}
         )
 
-    def command(self, function: AsyncFunction): # TODO: Add in types for command callbacks
+    def command(
+        self, function: AsyncFunction
+    ):  # TODO: Add in types for command callbacks
         ...

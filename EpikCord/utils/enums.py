@@ -407,9 +407,10 @@ class ApplicationCommandType(IntEnum):
     USER = 2
     MESSAGE = 3
 
+
 class ApplicationCommandOptionType(IntEnum):
-    SUB_COMMAND	= 1
-    SUB_COMMAND_GROUP =	2
+    SUB_COMMAND = 1
+    SUB_COMMAND_GROUP = 2
     STRING = 3
     INTEGER = 4
     BOOLEAN = 5
@@ -419,6 +420,7 @@ class ApplicationCommandOptionType(IntEnum):
     MENTIONABLE = 9
     NUMBER = 10
     ATTACHMENT = 11
+
 
 class ChannelType(IntEnum):
     GUILD_TEXT = 0

@@ -1,8 +1,8 @@
 from discord_typings import (
     ApplicationCommandInteractionData,
-    InteractionData,
     ChatInputCommandInteractionDataData,
     ContextMenuInteractionDataData,
+    InteractionData,
     ResolvedInteractionDataData,
 )
 
@@ -85,6 +85,7 @@ class BaseApplicationCommandInteraction(BaseInteraction):
 #     def __init__(self, client: Client, data: ApplicationCommandInteractionData):
 #         super().__init__(client, data)
 #         # OPTIONS
+
 
 class BaseContextMenuInteraction(BaseApplicationCommandInteraction):
     def __init__(self, client: Client, data):
