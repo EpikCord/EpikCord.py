@@ -2,6 +2,7 @@ from typing import List, Optional, Union
 
 from ..flags import Permissions
 from ..locales import Localization
+from ..types import ApplicationCommandChoiceData
 from ..utils import (
     ApplicationCommandOptionType,
     ApplicationCommandType,
@@ -9,7 +10,6 @@ from ..utils import (
     ChannelType,
     localization_list_to_dict,
 )
-from ..types import ApplicationCommandChoiceData
 
 
 class BaseClientCommand:
@@ -37,7 +37,6 @@ class BaseClientCommand:
         self.guild_only = guild_only or (guild_ids)
         self.default_member_permissions = default_member_permissions
         self.nsfw = nsfw
-
 
     def to_dict(self):
         payload = {

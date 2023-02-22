@@ -1,4 +1,5 @@
 from .interactions import (
+    ApplicationCommandChoiceData,
     ButtonInteractionData,
     ButtonInteractionDataData,
     ChatInputInteractionData,
@@ -13,7 +14,6 @@ from .interactions import (
     SelectMenuInteractionDataData,
     UserContextMenuInteractionData,
     UserContextMenuInteractionDataData,
-    ApplicationCommandChoiceData
 )
 
 __all__ = (
@@ -31,5 +31,5 @@ __all__ = (
     "ChatInputInteractionData",
     "InteractionDataData",
     "InteractionData",
-    "ApplicationCommandChoiceData"
+    "ApplicationCommandChoiceData",
 )
