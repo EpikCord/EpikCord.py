@@ -96,6 +96,7 @@ class ChatInputCommandInteraction(BaseApplicationCommandInteraction):
         super().__init__(client, data)
         # OPTIONS
 
+
 class BaseContextMenuInteraction(BaseApplicationCommandInteraction):
     def __init__(self, client: Client, data: Union[UserContextMenuInteractionData, MessageContextMenuInteractionData]):
         super().__init__(client, data)

@@ -3,11 +3,11 @@ from typing import Dict, List, Optional, Union
 from ..flags import Permissions
 from ..locales import Localization
 from ..utils import (
-    ApplicationCommandType,
     ApplicationCommandOptionType,
+    ApplicationCommandType,
     AsyncFunction,
-    localization_list_to_dict,
     ChannelType,
+    localization_list_to_dict,
 )
 
 
@@ -29,7 +29,13 @@ class BaseClientCommand:
         self.callback = callback
         self.name_localizations = name_localizations
         self.type = type
-        self.guild_only = guild_only if guild_only is not None else False if not self.guild_ids else True
+        self.guild_only = (
+            guild_only
+            if guild_only is not None
+            else False
+            if not self.guild_ids
+            else True
+        )
         self.default_member_permissions = default_member_permissions
         self.nsfw = nsfw
 
@@ -43,7 +49,7 @@ class BaseClientCommand:
             "name": self.name,
             "type": self.type.value,
             "nsfw": self.nsfw,
-            "dm_permission": not self.guild_only
+            "dm_permission": not self.guild_only,
         }
 
         if self.guild_ids:
@@ -60,6 +66,7 @@ class BaseClientCommand:
 
 class ClientContextMenuCommand(BaseClientCommand):
     ...
+
 
 class ClientUserCommand(ClientContextMenuCommand):
     def __init__(
@@ -84,6 +91,7 @@ class ClientUserCommand(ClientContextMenuCommand):
             nsfw=nsfw,
         )
 
+
 class ClientMessageCommand(ClientContextMenuCommand):
     def __init__(
         self,
@@ -106,6 +114,7 @@ class ClientMessageCommand(ClientContextMenuCommand):
             default_member_permissions=default_member_permissions,
             nsfw=nsfw,
         )
+
 
 class ApplicationCommandOptionChoice:
     def __init__(self, name: str, value: str, *, name_localizations: Optional[List[Localization]] = None):
@@ -159,6 +168,7 @@ class BaseApplicationCommandOption:
 
         return payload
 
+
 class BaseStringNumberOption(BaseApplicationCommandOption):
     def __init__(
         self,
@@ -190,6 +200,7 @@ class BaseStringNumberOption(BaseApplicationCommandOption):
         if self.autocomplete:
             payload["autocomplete"] = True
         return payload
+
 
 class BaseIntegerNumberOption(BaseStringNumberOption):
     def __init__(
@@ -227,6 +238,7 @@ class BaseIntegerNumberOption(BaseStringNumberOption):
             payload["max_value"] = self.max_value
         return payload
 
+
 class IntegerOption(BaseIntegerNumberOption):
     def __init__(
         self,
@@ -254,6 +266,7 @@ class IntegerOption(BaseIntegerNumberOption):
             max_value=max_value,
         )
 
+
 class NumberOption(BaseIntegerNumberOption):
     def __init__(
         self,
@@ -280,6 +293,7 @@ class NumberOption(BaseIntegerNumberOption):
             min_value=min_value,
             max_value=max_value,
         )
+
 
 class StringOption(BaseStringNumberOption):
     def __init__(
@@ -336,6 +350,7 @@ class BooleanOption(BaseApplicationCommandOption):
             type=ApplicationCommandOptionType.BOOLEAN,
         )
 
+
 class UserOption(BaseApplicationCommandOption):
     def __init__(
         self,
@@ -354,6 +369,7 @@ class UserOption(BaseApplicationCommandOption):
             required=required,
             type=ApplicationCommandOptionType.USER,
         )
+
 
 class RoleOption(BaseApplicationCommandOption):
     def __init__(
@@ -374,6 +390,7 @@ class RoleOption(BaseApplicationCommandOption):
             type=ApplicationCommandOptionType.ROLE,
         )
 
+
 class AttachmentOption(BaseApplicationCommandOption):
     def __init__(
         self,
@@ -392,6 +409,7 @@ class AttachmentOption(BaseApplicationCommandOption):
             required=required,
             type=ApplicationCommandOptionType.ATTACHMENT,
         )
+
 
 class MentionableOption(BaseApplicationCommandOption):
     def __init__(
@@ -412,6 +430,7 @@ class MentionableOption(BaseApplicationCommandOption):
             type=ApplicationCommandOptionType.MENTIONABLE,
         )
 
+
 class ChannelOption(BaseApplicationCommandOption):
     def __init__(
         self,
@@ -421,7 +440,7 @@ class ChannelOption(BaseApplicationCommandOption):
         name_localizations: Optional[List[Localization]] = None,
         description_localizations: Optional[List[Localization]] = None,
         required: bool = False,
-        channel_types: Optional[List[ChannelType]]
+        channel_types: Optional[List[ChannelType]],
     ):
         super().__init__(
             name,
@@ -438,6 +457,7 @@ class ChannelOption(BaseApplicationCommandOption):
         if self.channel_types:
             payload["channel_types"] = self.channel_types
         return payload
+
 
 ApplicationCommandOption = Union[
     IntegerOption,
@@ -483,7 +503,6 @@ class ClientChatInputCommand(BaseClientCommand):
         self.options = options
 
     def to_dict(self):
-
         payload = super().to_dict()
 
         payload["description"] = self.description
@@ -491,6 +510,6 @@ class ClientChatInputCommand(BaseClientCommand):
         if self.description_localizations:
             payload["description_localizations"] = localization_list_to_dict(self.description_localizations)
         if self.options:
-            payload["options"] = [option.to_dict() for option in self.options] # type: ignore # I still need to create the Option class
+            payload["options"] = [option.to_dict() for option in self.options]  # type: ignore # I still need to create the Option class
 
         return payload
