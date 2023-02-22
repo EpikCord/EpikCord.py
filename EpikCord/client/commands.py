@@ -29,20 +29,14 @@ class BaseClientCommand:
         self.callback = callback
         self.name_localizations = name_localizations
         self.type = type
-        self.guild_only = (
-            guild_only
-            if guild_only is not None
-            else False
-            if not self.guild_ids
-            else True
-        )
+        self.guild_only = guild_only or (guild_ids)
         self.default_member_permissions = default_member_permissions
         self.nsfw = nsfw
-
         if self.guild_ids and not self.guild_only:
             raise ValueError(
                 "Guild IDs cannot be set if the command is not set to guild only."
             )
+
 
     def to_dict(self):
         payload = {
