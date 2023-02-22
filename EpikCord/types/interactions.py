@@ -105,6 +105,7 @@ InteractionData = Union[
     UserContextMenuInteractionData,
 ]
 
+
 class ApplicationCommandChoiceData(TypedDict):
     name: str
     value: Union[str, int, float]
