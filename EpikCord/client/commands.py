@@ -238,6 +238,10 @@ class BaseIntegerNumberOption(BaseStringNumberOption):
         self.min_value = min_value
         self.max_value = max_value
 
+        if min_value and max_value and min_value > max_value:
+            raise ValueError("min_value must be less than max_value")
+
+
     def to_dict(self):
         payload = super().to_dict()
         if self.min_value:
@@ -329,6 +333,9 @@ class StringOption(BaseStringNumberOption):
         )
         self.min_length = min_length
         self.max_length = max_length
+
+        if min_length and max_length and min_length > max_length:
+            raise ValueError("min_length must be less than max_length")
 
     def to_dict(self):
         payload = super().to_dict()
