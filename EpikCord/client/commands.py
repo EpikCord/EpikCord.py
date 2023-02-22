@@ -24,6 +24,10 @@ class BaseClientCommand:
         default_member_permissions: Optional[Permissions] = None,
         nsfw: bool = False,
     ):
+        if guild_ids and not guild_only:
+            raise ValueError(
+                "Guild IDs cannot be set if the command is not set to guild only."
+            )
         self.name = name
         self.guild_ids = guild_ids
         self.callback = callback
@@ -32,10 +36,6 @@ class BaseClientCommand:
         self.guild_only = guild_only or (guild_ids)
         self.default_member_permissions = default_member_permissions
         self.nsfw = nsfw
-        if self.guild_ids and not self.guild_only:
-            raise ValueError(
-                "Guild IDs cannot be set if the command is not set to guild only."
-            )
 
 
     def to_dict(self):
