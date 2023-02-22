@@ -455,7 +455,7 @@ class ChannelOption(BaseApplicationCommandOption):
         name_localizations: Optional[List[Localization]] = None,
         description_localizations: Optional[List[Localization]] = None,
         required: bool = False,
-        channel_types: Optional[List[ChannelType]],
+        channel_types: Optional[List[ChannelType]] = None,
     ):
         super().__init__(
             name,
