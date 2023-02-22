@@ -125,7 +125,7 @@ class ApplicationCommandOptionChoice:
         self.value = value
         self.name_localizations = name_localizations
 
-    def to_dict(self):
+    def to_dict(self) -> ApplicationCommandChoiceData:
         payload: ApplicationCommandChoiceData = {
             "name": self.name,
             "value": self.value,
