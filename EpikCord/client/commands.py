@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union
+from typing import List, Optional, Union
 
 from ..flags import Permissions
 from ..locales import Localization
@@ -9,6 +9,7 @@ from ..utils import (
     ChannelType,
     localization_list_to_dict,
 )
+from ..types import ApplicationCommandChoiceData
 
 
 class BaseClientCommand:
@@ -125,7 +126,7 @@ class ApplicationCommandOptionChoice:
         self.name_localizations = name_localizations
 
     def to_dict(self):
-        payload: Dict[str, Union[str, Dict[str, str]]] = {
+        payload: ApplicationCommandChoiceData = {
             "name": self.name,
             "value": self.value,
         }

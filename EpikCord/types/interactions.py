@@ -1,4 +1,4 @@
-from typing import List, Literal, TypedDict, Union
+from typing import Dict, List, Literal, TypedDict, Union
 
 from discord_typings import (
     ActionRowData,
@@ -104,3 +104,8 @@ InteractionData = Union[
     MessageContextMenuInteractionData,
     UserContextMenuInteractionData,
 ]
+
+class ApplicationCommandChoiceData(TypedDict):
+    name: str
+    value: Union[str, int, float]
+    name_localizations: NotRequired[Dict[str, str]]
