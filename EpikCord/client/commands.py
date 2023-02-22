@@ -241,7 +241,6 @@ class BaseIntegerNumberOption(BaseStringNumberOption):
         if min_value and max_value and min_value > max_value:
             raise ValueError("min_value must be less than max_value")
 
-
     def to_dict(self):
         payload = super().to_dict()
         if self.min_value:
