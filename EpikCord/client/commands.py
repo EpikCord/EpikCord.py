@@ -17,8 +17,8 @@ class BaseClientCommand:
         name: str,
         callback: AsyncFunction,
         *,
-        guild_ids: List[int] = [],
-        name_localizations: List[Localization] = [],
+        guild_ids: Optional[List[int]] = None,
+        name_localizations: Optional[List[Localization]] = None,
         type: ApplicationCommandType = ApplicationCommandType.CHAT_INPUT,
         guild_only: Optional[bool] = None,
         default_member_permissions: Optional[Permissions] = None,
@@ -52,10 +52,8 @@ class BaseClientCommand:
             payload[
                 "default_member_permissions"
             ] = self.default_member_permissions.value
-        if name_localizations := localization_list_to_dict(
-            self.name_localizations
-        ):
-            payload["name_localizations"] = name_localizations
+        if self.name_localizations:
+            payload["name_localizations"] = localization_list_to_dict(self.name_localizations)
 
         return payload
 
@@ -69,8 +67,8 @@ class ClientUserCommand(ClientContextMenuCommand):
         name: str,
         callback: AsyncFunction,
         *,
-        guild_ids: List[int] = [],
-        name_localizations: List[Localization] = [],
+        guild_ids: Optional[List[int]] = None,
+        name_localizations: Optional[List[Localization]] = None,
         guild_only: Optional[bool] = None,
         default_member_permissions: Optional[Permissions] = None,
         nsfw: bool = False,
@@ -92,8 +90,8 @@ class ClientMessageCommand(ClientContextMenuCommand):
         name: str,
         callback: AsyncFunction,
         *,
-        guild_ids: List[int] = [],
-        name_localizations: List[Localization] = [],
+        guild_ids: Optional[List[int]] = None,
+        name_localizations: Optional[List[Localization]] = None,
         guild_only: Optional[bool] = None,
         default_member_permissions: Optional[Permissions] = None,
         nsfw: bool = False,
@@ -110,7 +108,7 @@ class ClientMessageCommand(ClientContextMenuCommand):
         )
 
 class ApplicationCommandOptionChoice:
-    def __init__(self, name: str, value: str, *, name_localizations: List[Localization] = []):
+    def __init__(self, name: str, value: str, *, name_localizations: Optional[List[Localization]] = None):
         self.name = name
         self.value = value
         self.name_localizations = name_localizations
@@ -121,10 +119,8 @@ class ApplicationCommandOptionChoice:
             "value": self.value,
         }
 
-        if name_localizations := localization_list_to_dict(
-            self.name_localizations
-        ):
-            payload["name_localizations"] = name_localizations
+        if self.name_localizations:
+            payload["name_localizations"] = localization_list_to_dict(self.name_localizations)
 
         return payload
 
@@ -135,8 +131,8 @@ class BaseApplicationCommandOption:
         name: str,
         description: str,
         *,
-        name_localizations: List[Localization] = [],
-        description_localizations: List[Localization] = [],
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
         required: bool = False,
         type: ApplicationCommandOptionType,
     ):
@@ -155,15 +151,11 @@ class BaseApplicationCommandOption:
             "type": self.type.value,
         }
 
-        if name_localizations := localization_list_to_dict(
-            self.name_localizations
-        ):
-            payload["name_localizations"] = name_localizations
+        if self.name_localizations:
+            payload["name_localizations"] = localization_list_to_dict(self.name_localizations)
 
-        if description_localizations := localization_list_to_dict(
-            self.description_localizations
-        ):
-            payload["description_localizations"] = description_localizations
+        if self.description_localizations:
+            payload["description_localizations"] = localization_list_to_dict(self.description_localizations)
 
         return payload
 
@@ -173,11 +165,11 @@ class BaseStringNumberOption(BaseApplicationCommandOption):
         name: str,
         description: str,
         *,
-        name_localizations: List[Localization] = [],
-        description_localizations: List[Localization] = [],
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
         required: bool = False,
         type: ApplicationCommandOptionType,
-        choices: List[ApplicationCommandOptionChoice] = [],
+        choices: Optional[List[ApplicationCommandOptionChoice]] = None,
         autocomplete: bool = False
     ):
         super().__init__(
@@ -205,11 +197,11 @@ class BaseIntegerNumberOption(BaseStringNumberOption):
         name: str,
         description: str,
         *,
-        name_localizations: List[Localization] = [],
-        description_localizations: List[Localization] = [],
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
         required: bool = False,
         type: ApplicationCommandOptionType,
-        choices: List[ApplicationCommandOptionChoice] = [],
+        choices: Optional[List[ApplicationCommandOptionChoice]] = None,
         autocomplete: bool = False,
         min_value: Optional[int] = None,
         max_value: Optional[int] = None,
@@ -241,10 +233,10 @@ class IntegerOption(BaseIntegerNumberOption):
         name: str,
         description: str,
         *,
-        name_localizations: List[Localization] = [],
-        description_localizations: List[Localization] = [],
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
         required: bool = False,
-        choices: List[ApplicationCommandOptionChoice] = [],
+        choices: Optional[List[ApplicationCommandOptionChoice]] = None,
         autocomplete: bool = False,
         min_value: Optional[int] = None,
         max_value: Optional[int] = None,
@@ -268,10 +260,10 @@ class NumberOption(BaseIntegerNumberOption):
         name: str,
         description: str,
         *,
-        name_localizations: List[Localization] = [],
-        description_localizations: List[Localization] = [],
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
         required: bool = False,
-        choices: List[ApplicationCommandOptionChoice] = [],
+        choices: Optional[List[ApplicationCommandOptionChoice]] = None,
         autocomplete: bool = False,
         min_value: Optional[int] = None,
         max_value: Optional[int] = None,
@@ -295,10 +287,10 @@ class StringOption(BaseStringNumberOption):
         name: str,
         description: str,
         *,
-        name_localizations: List[Localization] = [],
-        description_localizations: List[Localization] = [],
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
         required: bool = False,
-        choices: List[ApplicationCommandOptionChoice] = [],
+        choices: Optional[List[ApplicationCommandOptionChoice]] = None,
         autocomplete: bool = False,
         min_length: Optional[int] = None,
         max_length: Optional[int] = None,
@@ -331,8 +323,8 @@ class BooleanOption(BaseApplicationCommandOption):
         name: str,
         description: str,
         *,
-        name_localizations: List[Localization] = [],
-        description_localizations: List[Localization] = [],
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
         required: bool = False,
     ):
         super().__init__(
@@ -350,8 +342,8 @@ class UserOption(BaseApplicationCommandOption):
         name: str,
         description: str,
         *,
-        name_localizations: List[Localization] = [],
-        description_localizations: List[Localization] = [],
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
         required: bool = False,
     ):
         super().__init__(
@@ -369,8 +361,8 @@ class RoleOption(BaseApplicationCommandOption):
         name: str,
         description: str,
         *,
-        name_localizations: List[Localization] = [],
-        description_localizations: List[Localization] = [],
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
         required: bool = False,
     ):
         super().__init__(
@@ -388,8 +380,8 @@ class AttachmentOption(BaseApplicationCommandOption):
         name: str,
         description: str,
         *,
-        name_localizations: List[Localization] = [],
-        description_localizations: List[Localization] = [],
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
         required: bool = False,
     ):
         super().__init__(
@@ -407,8 +399,8 @@ class MentionableOption(BaseApplicationCommandOption):
         name: str,
         description: str,
         *,
-        name_localizations: List[Localization] = [],
-        description_localizations: List[Localization] = [],
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
         required: bool = False,
     ):
         super().__init__(
@@ -426,8 +418,8 @@ class ChannelOption(BaseApplicationCommandOption):
         name: str,
         description: str,
         *,
-        name_localizations: List[Localization] = [],
-        description_localizations: List[Localization] = [],
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
         required: bool = False,
         channel_types: Optional[List[ChannelType]]
     ):
@@ -467,9 +459,9 @@ class ClientChatInputCommand(BaseClientCommand):
         description: str,
         callback: AsyncFunction,
         *,
-        guild_ids: List[int] = [],
-        name_localizations: List[Localization] = [],
-        description_localizations: List[Localization] = [],
+        guild_ids: Optional[List[int]] = None,
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
         type: ApplicationCommandType = ApplicationCommandType.CHAT_INPUT,
         guild_only: Optional[bool] = None,
         default_member_permissions: Optional[Permissions] = None,
@@ -496,10 +488,8 @@ class ClientChatInputCommand(BaseClientCommand):
 
         payload["description"] = self.description
 
-        if description_localizations := localization_list_to_dict(
-            self.description_localizations
-        ):
-            payload["description_localizations"] = description_localizations
+        if self.description_localizations:
+            payload["description_localizations"] = localization_list_to_dict(self.description_localizations)
         if self.options:
             payload["options"] = [option.to_dict() for option in self.options] # type: ignore # I still need to create the Option class
 

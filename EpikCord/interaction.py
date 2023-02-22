@@ -1,8 +1,5 @@
+from typing import Union
 from discord_typings import (
-    ApplicationCommandInteractionData,
-    InteractionData,
-    ChatInputCommandInteractionDataData,
-    ContextMenuInteractionDataData,
     ResolvedInteractionDataData,
 )
 
@@ -10,6 +7,14 @@ from .client import Client
 from .file import Attachment
 from .flags import Permissions
 from .guild import GuildMember, Role
+from .types import (
+    ChatInputInteractionData,
+    UserContextMenuInteractionData,
+    MessageContextMenuInteractionData,
+    InteractionData,
+    MessageContextMenuInteractionDataData,
+    UserContextMenuInteractionDataData
+)
 from .user import User
 from .utils import (
     ApplicationCommandType,
@@ -66,6 +71,11 @@ class ResolvedInteractionData:
             for k, v in data.get("attachments", {}).items()
         }
 
+ApplicationCommandInteractionData = Union[
+    ChatInputInteractionData,
+    UserContextMenuInteractionData,
+    MessageContextMenuInteractionData,
+] 
 
 class BaseApplicationCommandInteraction(BaseInteraction):
     def __init__(self, client: Client, data: ApplicationCommandInteractionData):
@@ -81,12 +91,13 @@ class BaseApplicationCommandInteraction(BaseInteraction):
         )
 
 
-# class ChatInputCommandInteraction():
-#     def __init__(self, client: Client, data: ApplicationCommandInteractionData):
-#         super().__init__(client, data)
-#         # OPTIONS
+class ChatInputCommandInteraction(BaseApplicationCommandInteraction):
+    def __init__(self, client: Client, data: ChatInputInteractionData):
+        super().__init__(client, data)
+        # OPTIONS
 
 class BaseContextMenuInteraction(BaseApplicationCommandInteraction):
-    def __init__(self, client: Client, data):
+    def __init__(self, client: Client, data: Union[UserContextMenuInteractionData, MessageContextMenuInteractionData]):
         super().__init__(client, data)
+        self.data: Union[UserContextMenuInteractionDataData, MessageContextMenuInteractionDataData]
         self.target_id = int(self.data["target_id"])
