@@ -1,7 +1,6 @@
 from typing import Union
-from discord_typings import (
-    ResolvedInteractionDataData,
-)
+
+from discord_typings import ResolvedInteractionDataData
 
 from .client import Client
 from .file import Attachment
@@ -9,11 +8,11 @@ from .flags import Permissions
 from .guild import GuildMember, Role
 from .types import (
     ChatInputInteractionData,
-    UserContextMenuInteractionData,
-    MessageContextMenuInteractionData,
     InteractionData,
+    MessageContextMenuInteractionData,
     MessageContextMenuInteractionDataData,
-    UserContextMenuInteractionDataData
+    UserContextMenuInteractionData,
+    UserContextMenuInteractionDataData,
 )
 from .user import User
 from .utils import (
@@ -71,11 +70,13 @@ class ResolvedInteractionData:
             for k, v in data.get("attachments", {}).items()
         }
 
+
 ApplicationCommandInteractionData = Union[
     ChatInputInteractionData,
     UserContextMenuInteractionData,
     MessageContextMenuInteractionData,
-] 
+]
+
 
 class BaseApplicationCommandInteraction(BaseInteraction):
     def __init__(self, client: Client, data: ApplicationCommandInteractionData):
@@ -98,7 +99,16 @@ class ChatInputCommandInteraction(BaseApplicationCommandInteraction):
 
 
 class BaseContextMenuInteraction(BaseApplicationCommandInteraction):
-    def __init__(self, client: Client, data: Union[UserContextMenuInteractionData, MessageContextMenuInteractionData]):
+    def __init__(
+        self,
+        client: Client,
+        data: Union[
+            UserContextMenuInteractionData, MessageContextMenuInteractionData
+        ],
+    ):
         super().__init__(client, data)
-        self.data: Union[UserContextMenuInteractionDataData, MessageContextMenuInteractionDataData]
+        self.data: Union[
+            UserContextMenuInteractionDataData,
+            MessageContextMenuInteractionDataData,
+        ]
         self.target_id = int(self.data["target_id"])

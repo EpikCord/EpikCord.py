@@ -59,7 +59,9 @@ class BaseClientCommand:
                 "default_member_permissions"
             ] = self.default_member_permissions.value
         if self.name_localizations:
-            payload["name_localizations"] = localization_list_to_dict(self.name_localizations)
+            payload["name_localizations"] = localization_list_to_dict(
+                self.name_localizations
+            )
 
         return payload
 
@@ -117,7 +119,13 @@ class ClientMessageCommand(ClientContextMenuCommand):
 
 
 class ApplicationCommandOptionChoice:
-    def __init__(self, name: str, value: str, *, name_localizations: Optional[List[Localization]] = None):
+    def __init__(
+        self,
+        name: str,
+        value: str,
+        *,
+        name_localizations: Optional[List[Localization]] = None,
+    ):
         self.name = name
         self.value = value
         self.name_localizations = name_localizations
@@ -129,7 +137,9 @@ class ApplicationCommandOptionChoice:
         }
 
         if self.name_localizations:
-            payload["name_localizations"] = localization_list_to_dict(self.name_localizations)
+            payload["name_localizations"] = localization_list_to_dict(
+                self.name_localizations
+            )
 
         return payload
 
@@ -161,10 +171,14 @@ class BaseApplicationCommandOption:
         }
 
         if self.name_localizations:
-            payload["name_localizations"] = localization_list_to_dict(self.name_localizations)
+            payload["name_localizations"] = localization_list_to_dict(
+                self.name_localizations
+            )
 
         if self.description_localizations:
-            payload["description_localizations"] = localization_list_to_dict(self.description_localizations)
+            payload["description_localizations"] = localization_list_to_dict(
+                self.description_localizations
+            )
 
         return payload
 
@@ -180,7 +194,7 @@ class BaseStringNumberOption(BaseApplicationCommandOption):
         required: bool = False,
         type: ApplicationCommandOptionType,
         choices: Optional[List[ApplicationCommandOptionChoice]] = None,
-        autocomplete: bool = False
+        autocomplete: bool = False,
     ):
         super().__init__(
             name,
@@ -508,7 +522,9 @@ class ClientChatInputCommand(BaseClientCommand):
         payload["description"] = self.description
 
         if self.description_localizations:
-            payload["description_localizations"] = localization_list_to_dict(self.description_localizations)
+            payload["description_localizations"] = localization_list_to_dict(
+                self.description_localizations
+            )
         if self.options:
             payload["options"] = [option.to_dict() for option in self.options]  # type: ignore # I still need to create the Option class
 

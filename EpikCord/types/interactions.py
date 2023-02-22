@@ -1,5 +1,4 @@
 from typing import List, Literal, TypedDict, Union
-from typing_extensions import NotRequired
 
 from discord_typings import (
     ActionRowData,
@@ -7,8 +6,10 @@ from discord_typings import (
     GuildMemberData,
     MessageData,
     ResolvedInteractionDataData,
-    UserData
+    UserData,
 )
+from typing_extensions import NotRequired
+
 
 class BaseInteractionData(TypedDict):
     id: str
@@ -25,6 +26,7 @@ class BaseInteractionData(TypedDict):
     locale: NotRequired[str]
     guild_locale: NotRequired[str]
 
+
 class BaseApplicationCommandDataData(TypedDict):
     id: str
     name: str
@@ -36,49 +38,62 @@ class ChatInputInteractionDataData(BaseApplicationCommandDataData):
     type: Literal[1]
     options: List[ApplicationCommandOptionInteractionData]
 
+
 class BaseContextMenuInteractionDataData(BaseApplicationCommandDataData):
     target_id: str
+
 
 class MessageContextMenuInteractionDataData(BaseContextMenuInteractionDataData):
     type: Literal[2]
 
+
 class UserContextMenuInteractionDataData(BaseContextMenuInteractionDataData):
     type: Literal[3]
+
 
 class ButtonInteractionDataData(TypedDict):
     custom_id: str
     component_type: Literal[2, 3, 5, 6, 7, 8]
 
+
 class SelectMenuInteractionDataData(ButtonInteractionDataData):
     values: List[str]
+
 
 class ModalSubmitInteractionDataData(TypedDict):
     custom_id: str
     components: List[ActionRowData]
 
+
 class ChatInputInteractionData(BaseInteractionData):
     data: ChatInputInteractionDataData
+
 
 class MessageContextMenuInteractionData(BaseInteractionData):
     data: MessageContextMenuInteractionDataData
 
+
 class UserContextMenuInteractionData(BaseInteractionData):
     data: UserContextMenuInteractionDataData
+
 
 class ButtonInteractionData(BaseInteractionData):
     data: ButtonInteractionDataData
 
+
 class SelectMenuInteractionData(BaseInteractionData):
     data: SelectMenuInteractionDataData
 
+
 class ModalSubmitInteractionData(BaseInteractionData):
     data: ModalSubmitInteractionDataData
+
 
 InteractionDataData = Union[
     ButtonInteractionDataData,
     SelectMenuInteractionDataData,
     ChatInputInteractionDataData,
-    ModalSubmitInteractionDataData
+    ModalSubmitInteractionDataData,
 ]
 
 InteractionData = Union[

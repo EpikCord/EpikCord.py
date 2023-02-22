@@ -1,18 +1,18 @@
 from .interactions import (
-    ChatInputInteractionDataData,
-    MessageContextMenuInteractionDataData,
-    UserContextMenuInteractionDataData,
-    ButtonInteractionDataData,
-    SelectMenuInteractionDataData,
-    ModalSubmitInteractionDataData,
-    ModalSubmitInteractionData,
-    SelectMenuInteractionData,
     ButtonInteractionData,
-    UserContextMenuInteractionData,
-    MessageContextMenuInteractionData,
+    ButtonInteractionDataData,
     ChatInputInteractionData,
+    ChatInputInteractionDataData,
     InteractionData,
-    InteractionDataData
+    InteractionDataData,
+    MessageContextMenuInteractionData,
+    MessageContextMenuInteractionDataData,
+    ModalSubmitInteractionData,
+    ModalSubmitInteractionDataData,
+    SelectMenuInteractionData,
+    SelectMenuInteractionDataData,
+    UserContextMenuInteractionData,
+    UserContextMenuInteractionDataData,
 )
 
 __all__ = (
