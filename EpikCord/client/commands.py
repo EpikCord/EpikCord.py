@@ -1,13 +1,13 @@
 from typing import List, Optional, Union
+
 from typing_extensions import Literal
 
 from ..flags import Permissions
 from ..locales import Localization
 from ..types import (
     ApplicationCommandChoiceData,
+    ApplicationCommandOptionData,
     ChatInputCommandPayload,
-    ApplicationCommandOptionData
-
 )
 from ..utils import (
     ApplicationCommandOptionType,
