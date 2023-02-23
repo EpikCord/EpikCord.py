@@ -1,8 +1,14 @@
 from typing import List, Optional, Union
+from typing_extensions import Literal
 
 from ..flags import Permissions
 from ..locales import Localization
-from ..types import ApplicationCommandChoiceData
+from ..types import (
+    ApplicationCommandChoiceData,
+    ChatInputCommandPayload,
+    ApplicationCommandOptionData
+
+)
 from ..utils import (
     ApplicationCommandOptionType,
     ApplicationCommandType,
@@ -500,7 +506,7 @@ class ClientChatInputCommand(BaseClientCommand):
         guild_only: Optional[bool] = None,
         default_member_permissions: Optional[Permissions] = None,
         nsfw: bool = False,
-        options: Optional[List[str]] = None,
+        options: Optional[List[ApplicationCommandOption]] = None,
     ):
         super().__init__(
             name,
@@ -526,6 +532,6 @@ class ClientChatInputCommand(BaseClientCommand):
                 self.description_localizations
             )
         if self.options:
-            payload["options"] = [option.to_dict() for option in self.options]  # type: ignore # I still need to create the Option class
+            payload["options"] = [option.to_dict() for option in self.options]
 
         return payload

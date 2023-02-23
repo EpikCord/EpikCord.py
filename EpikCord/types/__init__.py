@@ -14,6 +14,19 @@ from .interactions import (
     SelectMenuInteractionDataData,
     UserContextMenuInteractionData,
     UserContextMenuInteractionDataData,
+    ChatInputCommandPayload,
+    MessageContextMenuCommandPayload,
+    UserContextMenuCommandPayload,
+    StringOptionData,
+    IntegerOptionData,
+    BooleanOptionData,
+    UserOptionData,
+    ChannelOptionData,
+    RoleOptionData,
+    MentionableOptionData,
+    NumberOptionData,
+    AttachmentOptionData,
+    ApplicationCommandOptionData
 )
 
 __all__ = (
@@ -32,4 +45,17 @@ __all__ = (
     "InteractionDataData",
     "InteractionData",
     "ApplicationCommandChoiceData",
+    "ChatInputCommandPayload",
+    "MessageContextMenuCommandPayload",
+    "UserContextMenuCommandPayload",
+    "StringOptionData",
+    "IntegerOptionData",
+    "BooleanOptionData",
+    "UserOptionData",
+    "ChannelOptionData",
+    "RoleOptionData",
+    "MentionableOptionData",
+    "NumberOptionData",
+    "AttachmentOptionData",
+    "ApplicationCommandOptionData"
 )
