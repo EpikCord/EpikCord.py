@@ -2,9 +2,7 @@ from typing import List, Optional, Union
 
 from ..flags import Permissions
 from ..locales import Localization
-from ..types import (
-    ApplicationCommandChoiceData,
-)
+from ..types import ApplicationCommandChoiceData
 from ..utils import (
     ApplicationCommandOptionType,
     ApplicationCommandType,
