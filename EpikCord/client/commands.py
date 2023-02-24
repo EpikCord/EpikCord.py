@@ -1,13 +1,9 @@
 from typing import List, Optional, Union
 
-from typing_extensions import Literal
-
 from ..flags import Permissions
 from ..locales import Localization
 from ..types import (
     ApplicationCommandChoiceData,
-    ApplicationCommandOptionData,
-    ChatInputCommandPayload,
 )
 from ..utils import (
     ApplicationCommandOptionType,
@@ -33,7 +29,7 @@ class BaseClientCommand:
     ):
         if guild_ids and not guild_only:
             raise ValueError(
-                "Guild IDs cannot be set if the command is not set to guild only."
+                "Guild IDs cannot be set if a command is not set to guild only."
             )
         self.name = name
         self.guild_ids = guild_ids

@@ -28,7 +28,9 @@ class GuildMember:
         )
         self.deaf = data["deaf"]
         self.mute = data["mute"]
-        self.flags = GuildMemberFlags(data["flags"])  # type: ignore # DiscordTyping/32
+
+        raw_flags = data["flags"]  # type: ignore # DiscordTyping/32
+        self.flags = GuildMemberFlags(raw_flags)
         self.pending = data.get("pending")
         self.permissions = instance_or_none(
             Permissions, data.get("permissions")
