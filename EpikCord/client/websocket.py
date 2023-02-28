@@ -216,6 +216,7 @@ class GatewayEventHandler:
     async def invalid_session(self, resumable: bool):
         if self.client.ws:
             await self.client.ws.close()
+            
 
         await self.client.connect(resume=resumable)
 
@@ -351,9 +352,9 @@ class WebSocketClient:
         )
 
         if not self.resume_url and resume:
-            raise ValueError("Cannot resume without a resume url")
+            raise ValueError("Cannot resume without a resume URL")
         elif not url:
-            raise ValueError(f"Cannot connect to url {url} (resume: {resume})")
+            raise ValueError(f"Cannot connect to URL {url} (resume: {resume})")
 
         self.ws = await self.http.ws_connect(url)
         asyncio.create_task(self.rate_limiter.reset.start())
