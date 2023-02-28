@@ -216,7 +216,6 @@ class GatewayEventHandler:
     async def invalid_session(self, resumable: bool):
         if self.client.ws:
             await self.client.ws.close()
-            
 
         await self.client.connect(resume=resumable)
 
