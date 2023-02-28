@@ -10,6 +10,7 @@ from discord_typings import (
 )
 from typing_extensions import NotRequired
 
+
 class BaseInteractionData(TypedDict):
     id: str
     application_id: str
@@ -104,6 +105,7 @@ InteractionData = Union[
     UserContextMenuInteractionData,
 ]
 
+
 class BaseApplicationCommandOptionData(TypedDict):
     type: Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     name: str
@@ -111,49 +113,65 @@ class BaseApplicationCommandOptionData(TypedDict):
     description: str
     description_localizations: NotRequired[Dict[str, str]]
 
+
 class RequiredOptionData(BaseApplicationCommandOptionData):
     required: NotRequired[bool]
+
 
 class ApplicationCommandChoiceData(TypedDict):
     name: str
     value: Union[str, int, float]
     name_localizations: NotRequired[Dict[str, str]]
 
+
 class BaseStringIntegerNumberOptionData(RequiredOptionData):
     choices: NotRequired[ApplicationCommandChoiceData]
     autocomplete: bool
+
 
 class StringOptionData(BaseStringIntegerNumberOptionData):
     min_length: NotRequired[int]
     max_length: NotRequired[int]
 
+
 class BaseNumberOptionData(BaseStringIntegerNumberOptionData):
     min_value: NotRequired[int]
     max_value: NotRequired[int]
 
+
 class IntegerOptionData(BaseNumberOptionData):
     ...
+
 
 class NumberOptionData(BaseNumberOptionData):
     ...
 
+
 class BooleanOptionData(RequiredOptionData):
     ...
+
 
 class UserOptionData(RequiredOptionData):
     ...
 
+
 class ChannelOptionData(RequiredOptionData):
-    channel_types: NotRequired[List[Literal[0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15]]]
+    channel_types: NotRequired[
+        List[Literal[0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15]]
+    ]
+
 
 class RoleOptionData(RequiredOptionData):
     ...
 
+
 class AttachmentOptionData(RequiredOptionData):
     ...
 
+
 class MentionableOptionData(RequiredOptionData):
     ...
+
 
 ApplicationCommandOptionData = Union[
     StringOptionData,
@@ -167,6 +185,7 @@ ApplicationCommandOptionData = Union[
     AttachmentOptionData,
 ]
 
+
 class BaseApplicationCommandPayload(TypedDict):
     name: str
     name_localizations: NotRequired[Dict[str, str]]
@@ -175,13 +194,16 @@ class BaseApplicationCommandPayload(TypedDict):
     default_member_permissions: NotRequired[Optional[str]]
     nsfw: NotRequired[bool]
 
+
 class ChatInputCommandPayload(BaseApplicationCommandPayload):
     description: str
     description_localizations: NotRequired[Dict[str, str]]
     options: NotRequired[List[ApplicationCommandOptionData]]
 
+
 class MessageContextMenuCommandPayload(BaseApplicationCommandPayload):
     ...
+
 
 class UserContextMenuCommandPayload(BaseApplicationCommandPayload):
     ...
