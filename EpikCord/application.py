@@ -12,6 +12,7 @@ class InstallParams:
         self.permissions = Permissions(int(data["permissions"]))
 
 
+
 class TeamMember:
     def __init__(self, data: TeamMemberData):
         self.membership_state = TeamMembershipState(data["membership_state"])
