@@ -9,6 +9,10 @@ insert_final_newline = false
 max_line_length = 80
 tab_width = 4
 
+[*.nix]
+indent_size = 2
+tab_width = 2
+
 [*.yml]
 tab_width = 2
 indent_size = 2
