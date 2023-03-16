@@ -14,6 +14,28 @@ class LocatedError:
 
 
 class HTTPException(EpikCordException):
+    """Exception raised when the webserver throws error
+    
+    This inherits from :exc:`EpikcordException`.
+
+    Parameters:
+    ----------
+    data: :class:`typing.Dict`
+
+
+    Attributes
+    ----------
+    body: :class:`dict`
+        
+    code: :class:``
+        The error code
+    message: :class:``
+        The message it returns
+    errors: :class:`dict`
+        The errors it returns
+    errors_list: :class:`list`
+
+    """
     def __init__(self, data: Dict):
         self.body = data
         self.code = data.get("code")
@@ -53,50 +75,111 @@ class HTTPException(EpikCordException):
 
 
 class NotFound(HTTPException):
+    """Exception that's raised when status code 404 occurs.
+
+    This inherits from :exc:`HTTPException`
+    """
     ...
 
 
 class Forbidden(HTTPException):
+    """Exception that's raised when status code 403 occurs.
+
+    This inherits from :exc:`HTTPException`
+    """
     ...
 
 
 class Unauthorized(HTTPException):
+    """Exception raised due to unauthorized access 
+
+    This inherits from :exc:`HTTPException`
+    """
     ...
 
 
 class BadRequest(HTTPException):
+    """Exception raised due to
+
+    This inherits from :exc:`HTTPException`
+    """
     ...
 
 
 class TooManyRetries(EpikCordException):
+    """Exception raised due to constant retries
+
+    This inherits from :exc:`EpikCordException`
+    """
     ...
 
 
 class ClosedWebSocketConnection(EpikCordException):
+    """Exception raised due to
+
+    This inherits from :exc:`EpikCordException`
+    """
     ...
 
 
 class DisallowedIntents(ClosedWebSocketConnection):
+    """Exception raised due to
+
+    This inherits from :exc:`EpikCordException`
+    """
     ...
 
 
 class InvalidIntents(ClosedWebSocketConnection):
+    """Exception raised when an intent does not exist
+
+    This inherits from :exc:`EpikCordException`
+    """
     ...
 
 
 class InvalidToken(ClosedWebSocketConnection):
+    """Exception raised when fails to log you in from improper credentials
+
+    This inherits from :exc:`EpikCordException`
+    """
     ...
 
 
 class GatewayRateLimited(ClosedWebSocketConnection):
+    """Exception that's raised when status code 429 occurs
+    and the timeout is greater than the configured maximum
+
+    This inherits from :exc:`EpikCordException`
+    """
     ...
 
 
 class ShardingRequired(ClosedWebSocketConnection):
+    """Exception raised due to
+
+    This inherits from :exc:`EpikCordException`
+    """
     ...
 
 
 class UnknownMimeType(EpikCordException):
+    """Exception raised due to
+    
+    This inherits from :exc:`EpikCordException`
+    
+    Parameters:
+    ----------
+    filename: :class:``
+        The name of the file
+    
+    Attributes:
+    ----------
+    filename: :class:``
+        The name of the file
+    message: :class:`str`
+        The message raised by error
+    """
     def __init__(self, filename):
         self.filename = filename
         self.message = f"Cannot resolve mime type for file `{filename}`."
