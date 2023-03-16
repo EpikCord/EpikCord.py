@@ -75,7 +75,7 @@ class UserSelectMenu(BaseComponent):
     def to_dict(self):
         from .utils import Utils
 
-        settings = Utils.filter_values(
+        return Utils.filter_values(
             {
                 "type": self.type,
                 "custom_id": self.custom_id,
@@ -85,8 +85,6 @@ class UserSelectMenu(BaseComponent):
                 "max_values": self.max_values,
             }
         )
-
-        return settings
 
 
 class RoleSelectMenu(BaseComponent):
@@ -112,7 +110,7 @@ class RoleSelectMenu(BaseComponent):
     def to_dict(self):
         from .utils import Utils
 
-        settings = Utils.filter_values(
+        return Utils.filter_values(
             {
                 "type": self.type,
                 "custom_id": self.custom_id,
@@ -122,8 +120,6 @@ class RoleSelectMenu(BaseComponent):
                 "max_values": self.max_values,
             }
         )
-
-        return settings
 
 
 class MentionableSelectMenu(BaseComponent):
@@ -149,7 +145,7 @@ class MentionableSelectMenu(BaseComponent):
     def to_dict(self):
         from .utils import Utils
 
-        settings = Utils.filter_values(
+        return Utils.filter_values(
             {
                 "type": self.type,
                 "custom_id": self.custom_id,
@@ -159,8 +155,6 @@ class MentionableSelectMenu(BaseComponent):
                 "max_values": self.max_values,
             }
         )
-
-        return settings
 
 
 class ChannelSelectMenu(BaseComponent):
@@ -188,7 +182,7 @@ class ChannelSelectMenu(BaseComponent):
     def to_dict(self):
         from .utils import Utils
 
-        settings = Utils.filter_values(
+        return Utils.filter_values(
             {
                 "type": self.type,
                 "custom_id": self.custom_id,
@@ -199,8 +193,6 @@ class ChannelSelectMenu(BaseComponent):
                 "channel_types": self.channel_types,
             }
         )
-
-        return settings
 
 
 class SelectMenu(BaseComponent):

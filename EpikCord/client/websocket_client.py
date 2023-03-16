@@ -120,9 +120,7 @@ class WebsocketClient:
 
     @property
     def latency(self) -> Optional[int]:
-        if not self.latencies:
-            return None
-        return sum(self.latencies) / len(self.latencies)
+        return sum(self.latencies) / len(self.latencies) if self.latencies else None
 
     async def heartbeat(self, forced: bool = False):
         if not self.heartbeat_interval:
@@ -173,9 +171,8 @@ class WebsocketClient:
 
         if reconnect:
             url = self.resume_gateway_url
-        else:
-            if not self.gateway_url:
-                self.gateway_url = url = (await self.http.get_gateway())["url"]
+        elif not self.gateway_url:
+            self.gateway_url = url = (await self.http.get_gateway())["url"]
 
         logger.info("Connecting to gateway...")
         self.websocket = await self.http.ws_connect(  # type: ignore

@@ -77,7 +77,7 @@ class TypingContextManager:
 
 class Messageable:
     def __init__(self, client: Client, channel_id: int):
-        self.id: int = int(channel_id)
+        self.id: int = channel_id
         self.client = client
 
     async def fetch_pinned_messages(self) -> List[Message]:
