@@ -13,7 +13,6 @@ class LocatedError:
     path: str
 
 
-
 class HTTPException(EpikCordException):
     def __init__(self, data: Dict):
         self.body = data
