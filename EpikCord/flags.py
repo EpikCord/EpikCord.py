@@ -6,6 +6,12 @@ ALL_VALUE_DISABLED: Final[int] = 0
 
 
 class Flag:
+    """
+    Attributes:
+    ----------
+    turned_on: :class:`typing.List`
+        The number of the flag turned on.
+    """
     class_flags: Dict[str, int]
 
     def __init_subclass__(cls) -> None:
@@ -14,6 +20,13 @@ class Flag:
         }
 
     def __init__(self, value: int = ALL_VALUE_DISABLED, **kwargs):
+        """
+        Parameters:
+        ----------
+        value: :class:`int`
+            The value of the flag.
+        
+        """
         self.turned_on: List[str] = [
             k.upper()
             for k, a in kwargs.items()
@@ -26,6 +39,13 @@ class Flag:
 
     @property
     def value(self) -> int:
+        """
+        The value of all of the flags.
+        
+        Returns:
+        -------
+
+        """
         return sum(
             flag
             for key, flag in self.class_flags.items()
@@ -36,9 +56,7 @@ class Flag:
         original = super().__getattribute__
         key = type(self).class_flags.get(__name.upper())
 
-        if key is None:
-            return original(__name)
-        return __name in original("turned_on")
+        return original(__name) if key is None else __name in original("turned_on")
 
     def __setattr__(self, __name: str, __value: Any) -> None:
         __upper_name = __name.upper()

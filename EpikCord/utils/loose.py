@@ -65,8 +65,7 @@ def clean_url(url: str, version: int) -> str:
 async def extract_content(response: aiohttp.ClientResponse) -> Dict[str, Any]:
     if response.headers["Content-Type"] != "application/json":
         return {}
-    data = await response.json()
-    return data
+    return await response.json()
 
 
 def singleton(cls):
@@ -159,9 +158,7 @@ def instance_or_none(
 ) -> Optional[T]:
     if value is None:
         return None
-    if ignore_value:
-        return cls(*args, **kwargs)
-    return cls(value, *args, **kwargs)
+    return cls(*args, **kwargs) if ignore_value else cls(value, *args, **kwargs)
 
 
 int_or_none = partial(instance_or_none, cls=int)

@@ -9,6 +9,21 @@ from .utils import instance_or_none, int_or_none
 
 
 class GuildMember:
+    """
+    Attributes:
+    ----------
+    client: :class:`Epikcord.py.client.Client`.
+        ...
+    user: :class:``
+        The user itself.
+    nick: :class:`str`
+        The nickname the user uses in the guild.
+    avatar: :class:`str`
+        The avatar of the user in the guild.
+    roles: :class:``
+        The roles the user has.
+    joined_at: :class:``
+    """
     def __init__(self, client: Client, data: GuildMemberData):
         self.client = client
         self.user = instance_or_none(
@@ -45,18 +60,12 @@ class RoleTags:
         self._data = data
         self.bot_id = int_or_none(data.get("bot_id"))
         self.integration_id = int_or_none(data.get("integration_id"))
-        self.premium_subscriber = (
-            True if data.get("premium_subscriber") else False
-        )
+        self.premium_subscriber = bool(data.get("premium_subscriber"))
         self.subscription_listing_id = int_or_none(
             data.get("subscription_listing_id")
         )
-        self.available_for_purchase = (
-            True if data.get("available_for_purchase") else False
-        )
-        self.guild_connections = (
-            True if data.get("guild_connections") else False
-        )
+        self.available_for_purchase = bool(data.get("available_for_purchase"))
+        self.guild_connections = bool(data.get("guild_connections"))
 
 
 class Role:
