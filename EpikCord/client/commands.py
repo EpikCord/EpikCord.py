@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import List, Optional, Union
 
 from ..flags import Permissions
@@ -504,7 +506,7 @@ class SubCommandGroup(BaseApplicationCommandOption):
         )
         self.commands: List[SubCommand] = []
 
-    def add_command(self, command: "SubCommand"):
+    def add_command(self, command: SubCommand):
         self.commands.append(command)
     
     def command(self,
