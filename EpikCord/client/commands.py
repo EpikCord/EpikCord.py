@@ -506,14 +506,15 @@ class SubCommandGroup(BaseApplicationCommandOption):
 
     def add_command(self, command: "SubCommand"):
         self.commands.append(command)
-    
-    def command(self,
+
+    def command(
+        self,
         name: str,
         description: str,
         *,
         name_localizations: Optional[List[Localization]] = None,
         description_localizations: Optional[List[Localization]] = None,
-        options: Optional[List[BaseApplicationCommandOption]] = None
+        options: Optional[List[BaseApplicationCommandOption]] = None,
     ):
         def add_command(func):
             command = SubCommand(
@@ -521,11 +522,13 @@ class SubCommandGroup(BaseApplicationCommandOption):
                 description,
                 name_localizations=name_localizations,
                 description_localizations=description_localizations,
-                options=options
+                options=options,
             )
             self.add_command(command)
             return command
+
         return add_command
+
 
 class SubCommand(BaseApplicationCommandOption):
     def __init__(
@@ -535,7 +538,7 @@ class SubCommand(BaseApplicationCommandOption):
         *,
         name_localizations: Optional[List[Localization]] = None,
         description_localizations: Optional[List[Localization]] = None,
-        options: Optional[List[BaseApplicationCommandOption]] = None
+        options: Optional[List[BaseApplicationCommandOption]] = None,
     ):
         super().__init__(
             name,
@@ -545,7 +548,6 @@ class SubCommand(BaseApplicationCommandOption):
             type=ApplicationCommandOptionType.SUB_COMMAND,
         )
         self.options = options
-        
 
 
 class ClientChatInputCommand(BaseClientCommand):
