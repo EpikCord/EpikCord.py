@@ -31,8 +31,6 @@ class Attachment:
         The width of the attachment.
     ephemeral: :class:`bool`
         If the file was sent with an ephemeral.
-    _data: :class:`discord_typings.AttachmentData`
-        The data containing all the information of the file.
     """
     def __init__(self, data: AttachmentData):
         """

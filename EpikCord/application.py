@@ -38,8 +38,6 @@ class TeamMember:
         The id of the team
     user: :class:``
         The user of the team
-    _data: :class:`discord_types.TeamMemberData`
-        The data of the TeamMember
     """
     def __init__(self, data: TeamMemberData):
         """
@@ -130,8 +128,6 @@ class Application:
         ...
     self.role_connections_verification_url: :class:``
         ...
-    _data: :class:`discord_typings.ApplicationData`
-        The data of the Application 
     """
     def __init__(self, data: ApplicationData):
         """
