@@ -486,6 +486,70 @@ ApplicationCommandOption = Union[
 ]
 
 
+class SubCommandGroup(BaseApplicationCommandOption):
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        *,
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
+    ):
+        super().__init__(
+            name,
+            description,
+            name_localizations=name_localizations,
+            description_localizations=description_localizations,
+            type=ApplicationCommandOptionType.SUB_COMMAND_GROUP,
+        )
+        self.commands: List[SubCommand] = []
+
+    def add_command(self, command: "SubCommand"):
+        self.commands.append(command)
+
+    def command(
+        self,
+        name: str,
+        description: str,
+        *,
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
+        options: Optional[List[BaseApplicationCommandOption]] = None,
+    ):
+        def add_command(func):
+            command = SubCommand(
+                name,
+                description,
+                name_localizations=name_localizations,
+                description_localizations=description_localizations,
+                options=options,
+            )
+            self.add_command(command)
+            return command
+
+        return add_command
+
+
+class SubCommand(BaseApplicationCommandOption):
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        *,
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
+        options: Optional[List[BaseApplicationCommandOption]] = None,
+    ):
+        super().__init__(
+            name,
+            description,
+            name_localizations=name_localizations,
+            description_localizations=description_localizations,
+            type=ApplicationCommandOptionType.SUB_COMMAND,
+        )
+        self.options = options
+
+
 class ClientChatInputCommand(BaseClientCommand):
     def __init__(
         self,
