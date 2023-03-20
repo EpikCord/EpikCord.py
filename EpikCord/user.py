@@ -9,7 +9,7 @@ class User:
     """
     Attributes:
     ----------
-    client: :class:`Epikcord.py.client.Client`
+    client: :class:`Epikcord.client.Client`
         The bot itself
     id: :class:`int`
         The id of the user
@@ -29,22 +29,22 @@ class User:
         The banner on the user's profile
     accent_color: :class:``
         The accent color the user has on his profile
-    locale: :class:`Epikcord.py.utils.Locale`
+    locale: :class:`Epikcord.utils.Locale`
         ...
     verified: :class:`bool`
         If the user is verified
     email: :class:`str`
         The email of the user
-    premium_type: :class:`Epikcord.py.utils.PremiumType`
+    premium_type: :class:`Epikcord.utils.PremiumType`
         The type of premium the user has (Nitro Basic or Nitro)
-    public_flags: :class:`Epikcord.py.flags.UserFlags`
+    public_flags: :class:`Epikcord.flags.UserFlags`
         The public flags the user has
     """
     def __init__(self, client: Client, data: UserData):
         """
         Parameters:
         -----------
-        client: :class:`Epikcord.py.client.Client`
+        client: :class:`Epikcord.client.Client`
             The bot itself
         data: :class:`discord_typings.UserData`
             Data containing about the user

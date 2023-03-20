@@ -12,7 +12,7 @@ class InstallParams:
     ----------
     scopes: :class:``
         ...
-    permissions: :class:`Epikcord.py.flags.Permission`
+    permissions: :class:`Epikcord.flags.Permission`
         ...
     """
     def __init__(self, data: InstallParamsData):
@@ -108,7 +108,7 @@ class Application:
         The owner of the application.
     verify_key: :class:``
         ....
-    team: :class:`Epikcord.py.application.Team`
+    team: :class:`Epikcord.application.Team`
         The team the application is in.
     guild_id: :class:`int`
         The id of guild
@@ -118,7 +118,7 @@ class Application:
         ...
     cover_image: :class:``
         ...
-    flags: :class:`Epikcord.py.flags.ApplicationFlags`
+    flags: :class:`Epikcord.flags.ApplicationFlags`
         ...
     tags: :class:``
         ...

@@ -12,7 +12,7 @@ class GuildMember:
     """
     Attributes:
     ----------
-    client: :class:`Epikcord.py.client.Client`.
+    client: :class:`Epikcord.client.Client`.
         ...
     user: :class:``
         The user itself.
@@ -43,7 +43,7 @@ class GuildMember:
         """
         Parameters:
         -----------
-        client: :class:`Epikcord.py.client.Client`
+        client: :class:`Epikcord.client.Client`
             The bot itself.
         data: :class:`discord_typings.GuildMemberData
             The data about the member in the guild.
@@ -115,7 +115,7 @@ class Role:
     """
     Attributes:
     ----------
-    client: :class:`Epikcord.py.client.Client`
+    client: :class:`Epikcord.client.Client`
         The bot itself.
     id: :class:`int`
         The id of the role.
@@ -131,20 +131,20 @@ class Role:
         ...
     position: :class:``
         The position the role is in (in a hierarchy).
-    permissions: :class:`Epikcord.py.flags.Permissions`
+    permissions: :class:`Epikcord.flags.Permissions`
         The permission the role has.
     managed: :class:``
         ...
     mentionable: :class:``
         If the role is pingable
-    tags: :class:`Epikcord.py.guild.RoleTags`
+    tags: :class:`Epikcord.guild.RoleTags`
         ...
     """
     def __init__(self, client: Client, data: RoleData):
         """
         Parameters:
         -----------
-        client: :class:`Epikcord.py.client.Client`
+        client: :class:`Epikcord.client.Client`
             The bot itself
         data: :class:`discord_typings.RoleData`
             Data containing about the role
