@@ -1,10 +1,13 @@
 import asyncio
-from typing import Optional
+from typing import Optional, List, Union
 
 from ..flags import Intents
 from ..presence import Presence
 from ..utils import AsyncFunction, OpCode, cleanup_loop, singleton
 from .http import APIVersion, HTTPClient
+from ..flags import Permissions
+from ..locales import Localization
+from .commands import ClientChatInputCommand, ApplicationCommandType, ApplicationCommandOption, ClientUserCommand, ClientMessageCommand
 from .websocket import WebSocketClient
 
 
@@ -56,6 +59,7 @@ class Client(WebSocketClient):
             presence=presence,
             http=HTTPClient(token, version=version),
         )
+        self.commands: List[Union[ClientChatInputCommand, ClientUserCommand, ClientMessageCommand]] = []
 
     def login(self):
         loop = asyncio.get_event_loop()
@@ -98,6 +102,32 @@ class Client(WebSocketClient):
         )
 
     def command(
-        self, function: AsyncFunction
+        self,
+        name: str,
+        description: str,
+        *,
+        guild_ids: Optional[List[int]] = None,
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
+        guild_only: Optional[bool] = None,
+        default_member_permissions: Optional[Permissions] = None,
+        options: Optional[List[ApplicationCommandOption]] = None,             
+        nsfw: bool = False,
     ):  # TODO: Add in types for command callbacks
-        ...
+        def wrapper(func: AsyncFunction):
+            command = ClientChatInputCommand(
+                    name,
+                    description,
+                    func,
+                    guild_ids=guild_ids,
+                    name_localizations=name_localizations,
+                    description_localizations=description_localizations,
+                    type=ApplicationCommandType.CHAT_INPUT,
+                    guild_only=guild_only,
+                    default_member_permissions=default_member_permissions,
+                    nsfw=nsfw,
+                    options=options,
+                )
+            self.commands.append(command)
+            return command
+        return wrapper

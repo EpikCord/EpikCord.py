@@ -135,7 +135,7 @@ class GatewayEventHandler:
 
     async def _resumed(self, _: Any):
         logger.info("Resumed session %s", self.client.session_id)
-        await self.dispatch("resumed", self.client.session_id)
+        await self.dispatch("resumed")
 
     async def identify(self):
         payload: IdentifyCommand = {
@@ -298,7 +298,7 @@ class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
         )
 
     async def close(self, *, code: int = 4000, message: bytes = b"") -> bool:
-        logger.debug("Closing websocket with code %s", code)
+        logger.debug("Closing websocket with code %s. This is triggered by the library.", code)
         return await super().close(code=code, message=message)
 
 
@@ -394,3 +394,5 @@ class WebSocketClient:
 
         if ch_ins.resumable:
             await self.connect(resume=True)
+        elif close_code in (1000, 1001):
+            await self.connect(resume=False)

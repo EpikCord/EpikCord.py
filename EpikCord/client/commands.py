@@ -496,6 +496,7 @@ class SubCommandGroup(BaseApplicationCommandOption):
         *,
         name_localizations: Optional[List[Localization]] = None,
         description_localizations: Optional[List[Localization]] = None,
+        parent: Optional[SubCommandGroup] = None,
     ):
         super().__init__(
             name,
@@ -504,10 +505,17 @@ class SubCommandGroup(BaseApplicationCommandOption):
             description_localizations=description_localizations,
             type=ApplicationCommandOptionType.SUB_COMMAND_GROUP,
         )
-        self.commands: List[SubCommand] = []
+        self.commands: List[Union[SubCommand, SubCommandGroup]] = []
+        self.parent: Optional[SubCommandGroup] = None
 
-    def add_command(self, command: SubCommand):
-        self.commands.append(command)
+    def add_command(self, command: Union[SubCommand, SubCommandGroup]) -> Union[SubCommand, SubCommandGroup]:
+        if isinstance(command, SubCommandGroup):
+            if command.parent and self.parent:
+                raise ValueError(f"Cannot nest sub commands more than 2 levels deep. {command.parent.name} -> {self.name} -> {command.name}")
+            command.parent = self
+        elif isinstance(command, SubCommand):
+            self.commands.append(command)
+        return command
 
     def command(
         self,
@@ -522,21 +530,43 @@ class SubCommandGroup(BaseApplicationCommandOption):
             command = SubCommand(
                 name,
                 description,
+                func,
                 name_localizations=name_localizations,
                 description_localizations=description_localizations,
                 options=options,
             )
             self.add_command(command)
             return command
-
         return add_command
 
+    def group(
+            self,
+            name: str,
+            description: str,
+            *,
+            name_localizations: Optional[List[Localization]] = None,
+            description_localizations: Optional[List[Localization]] = None,
+    ) -> SubCommandGroup:
+        group = SubCommandGroup(
+            name,
+            description,
+            name_localizations=name_localizations,
+            description_localizations=description_localizations,
+        )
+        self.add_command(group)
+        return group
+
+    def to_dict(self):
+        payload = super().to_dict()
+        payload["options"] = [command.to_dict() for command in self.commands]
+        return payload
 
 class SubCommand(BaseApplicationCommandOption):
     def __init__(
         self,
         name: str,
         description: str,
+        callback: AsyncFunction,
         *,
         name_localizations: Optional[List[Localization]] = None,
         description_localizations: Optional[List[Localization]] = None,
@@ -549,7 +579,11 @@ class SubCommand(BaseApplicationCommandOption):
             description_localizations=description_localizations,
             type=ApplicationCommandOptionType.SUB_COMMAND,
         )
+        for option in (options or []):
+            if isinstance(option, (SubCommand, SubCommandGroup)):
+                raise TypeError("Subcommands cannot have subcommands or sub command groups")
         self.options = options
+        self.callback = callback
 
 
 class ClientChatInputCommand(BaseClientCommand):
@@ -565,8 +599,8 @@ class ClientChatInputCommand(BaseClientCommand):
         type: ApplicationCommandType = ApplicationCommandType.CHAT_INPUT,
         guild_only: Optional[bool] = None,
         default_member_permissions: Optional[Permissions] = None,
-        nsfw: bool = False,
         options: Optional[List[ApplicationCommandOption]] = None,
+        nsfw: bool = False,
     ):
         super().__init__(
             name,
