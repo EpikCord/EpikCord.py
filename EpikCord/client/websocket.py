@@ -376,6 +376,9 @@ class WebSocketClient:
 
         logger.critical("Websocket closed with code %s", close_code)
 
+        if close_code in (GatewayCloseCode.NORMAL_CLOSURE, GatewayCloseCode.ABNORMAL_CLOSURE):
+            await self.connect(resume=False)
+
         try:
             gce_code = GatewayCloseCode(close_code)
             ch_ins = close_dispatcher[gce_code]
@@ -394,5 +397,3 @@ class WebSocketClient:
 
         if ch_ins.resumable:
             await self.connect(resume=True)
-        elif close_code in (1000, 1001):
-            await self.connect(resume=False)
