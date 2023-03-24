@@ -379,7 +379,10 @@ class WebSocketClient:
 
         logger.critical("Websocket closed with code %s", close_code)
 
-        if close_code in (GatewayCloseCode.NORMAL_CLOSURE, GatewayCloseCode.ABNORMAL_CLOSURE):
+        if close_code in (
+            GatewayCloseCode.NORMAL_CLOSURE,
+            GatewayCloseCode.ABNORMAL_CLOSURE,
+        ):
             await self.connect(resume=False)
 
         try:
