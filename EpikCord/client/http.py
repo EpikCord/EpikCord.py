@@ -353,7 +353,6 @@ class HTTPClient:
                     json["attachments"].append(attachment)
 
             form.add_field("payload_json", self.session.json_serialize(json))
-
             return_kwargs["data"] = form
 
         return return_kwargs

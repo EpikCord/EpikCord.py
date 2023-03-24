@@ -1,6 +1,11 @@
-from typing import Union
+from typing import Union, List, Optional
 
-from discord_typings import ResolvedInteractionDataData
+from discord_typings import (
+    ResolvedInteractionDataData,
+    ApplicationCommandOptionInteractionData,
+    UserData,
+    GuildMemberData
+)
 
 from .client import Client
 from .file import Attachment
@@ -17,6 +22,7 @@ from .types import (
 from .user import User
 from .utils import (
     ApplicationCommandType,
+    ApplicationCommandOptionType,
     InteractionType,
     Locale,
     instance_or_none,
@@ -92,10 +98,25 @@ class BaseApplicationCommandInteraction(BaseInteraction):
         )
 
 
+class ReceivedOption:
+    def __init__(self, data: ApplicationCommandOptionInteractionData):
+        self.name = data["name"]
+        self.type: ApplicationCommandOptionType = ApplicationCommandOptionType(
+            data["type"]
+        )
+        self.value = data.get("value")
+        self.options: List[ReceivedOption] = [
+            ReceivedOption(option) for option in data.get("options", [])
+        ]
+        self.focused: Optional[bool] = data.get("focused")
+
+
 class ChatInputCommandInteraction(BaseApplicationCommandInteraction):
     def __init__(self, client: Client, data: ChatInputInteractionData):
         super().__init__(client, data)
-        # OPTIONS
+        self.options: List[ReceivedOption] = [
+            ReceivedOption(option) for option in self.data.get("options", [])
+        ]
 
 
 class BaseContextMenuInteraction(BaseApplicationCommandInteraction):
@@ -112,3 +133,11 @@ class BaseContextMenuInteraction(BaseApplicationCommandInteraction):
             MessageContextMenuInteractionDataData,
         ]
         self.target_id = int(self.data["target_id"])
+
+class UserContextMenuInteraction(BaseContextMenuInteraction):
+    def __init__(self, client: Client, data: UserContextMenuInteractionData):
+        super().__init__(client, data)
+        self.data: UserContextMenuInteractionDataData
+        if self.resolved:
+            user: Optional[User] = self.resolved.users.get(self.target_id)
+            member: Optional[GuildMember] = self.resolved.members.get(self.target_id)
