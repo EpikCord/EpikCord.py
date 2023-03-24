@@ -1,10 +1,10 @@
-from typing import Union, List, Optional
+from typing import List, Optional, Union
 
 from discord_typings import (
-    ResolvedInteractionDataData,
     ApplicationCommandOptionInteractionData,
+    GuildMemberData,
+    ResolvedInteractionDataData,
     UserData,
-    GuildMemberData
 )
 
 from .client import Client
@@ -21,8 +21,8 @@ from .types import (
 )
 from .user import User
 from .utils import (
-    ApplicationCommandType,
     ApplicationCommandOptionType,
+    ApplicationCommandType,
     InteractionType,
     Locale,
     instance_or_none,
@@ -134,10 +134,13 @@ class BaseContextMenuInteraction(BaseApplicationCommandInteraction):
         ]
         self.target_id = int(self.data["target_id"])
 
+
 class UserContextMenuInteraction(BaseContextMenuInteraction):
     def __init__(self, client: Client, data: UserContextMenuInteractionData):
         super().__init__(client, data)
         self.data: UserContextMenuInteractionDataData
         if self.resolved:
             user: Optional[User] = self.resolved.users.get(self.target_id)
-            member: Optional[GuildMember] = self.resolved.members.get(self.target_id)
+            member: Optional[GuildMember] = self.resolved.members.get(
+                self.target_id
+            )
