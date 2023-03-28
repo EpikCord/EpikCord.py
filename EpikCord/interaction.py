@@ -3,8 +3,6 @@ from typing import Union, List, Optional
 from discord_typings import (
     ResolvedInteractionDataData,
     ApplicationCommandOptionInteractionData,
-    UserData,
-    GuildMemberData
 )
 
 from .client import Client
@@ -24,10 +22,11 @@ from .utils import (
     ApplicationCommandType,
     ApplicationCommandOptionType,
     InteractionType,
-    Locale,
     instance_or_none,
     int_or_none,
 )
+
+from .locales import Locale
 
 
 class BaseInteraction:
@@ -96,6 +95,8 @@ class BaseApplicationCommandInteraction(BaseInteraction):
         self.resolved = instance_or_none(
             ResolvedInteractionData, data.get("resolved")
         )
+
+        self._resolved = data.get("resolved")
 
 
 class ReceivedOption:
