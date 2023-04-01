@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Dict
 
+
 class Locale(Enum):
     INDONESIAN = "id"
     DANISH = "da"
@@ -33,6 +34,8 @@ class Locale(Enum):
     JAPANESE = "ja"
     CHINESE_TAIWAN = "zh-TW"
     KOREAN = "ko"
+
+
 class Localization:
     def __init__(self, locale: Locale, value: str):
         self.locale = locale

@@ -1,6 +1,6 @@
 import asyncio
-from typing import List, Optional, Union
 from logging import getLogger
+from typing import List, Optional, Union
 
 from ..flags import Intents, Permissions
 from ..locales import Localization
@@ -17,6 +17,7 @@ from .http import APIVersion, HTTPClient
 from .websocket import WebSocketClient
 
 logger = getLogger("EpikCord.client")
+
 
 @singleton
 class TokenStore:

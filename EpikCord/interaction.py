@@ -9,6 +9,7 @@ from .client import Client
 from .file import Attachment
 from .flags import Permissions
 from .guild import GuildMember, Role
+from .locales import Locale
 from .types import (
     ChatInputInteractionData,
     InteractionData,
@@ -25,8 +26,6 @@ from .utils import (
     instance_or_none,
     int_or_none,
 )
-
-from .locales import Locale
 
 
 class BaseInteraction:

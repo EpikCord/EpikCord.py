@@ -354,6 +354,7 @@ class TeamMembershipState(IntEnum):
     INVITED = 1
     ACCEPTED = 2
 
+
 class PremiumType(IntEnum):
     NONE = 0
     NITRO_CLASSIC = 1
