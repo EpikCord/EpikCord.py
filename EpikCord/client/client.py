@@ -1,5 +1,6 @@
 import asyncio
 from typing import List, Optional, Union
+from logging import getLogger
 
 from ..flags import Intents, Permissions
 from ..locales import Localization
@@ -15,6 +16,7 @@ from .commands import (
 from .http import APIVersion, HTTPClient
 from .websocket import WebSocketClient
 
+logger = getLogger("EpikCord.client")
 
 @singleton
 class TokenStore:
@@ -77,6 +79,7 @@ class Client(WebSocketClient):
             try:
                 await self.connect()
             finally:
+                logger.critical("Final clause triggered.")
                 if not self.http.session.closed:
                     await self.http.close()
 
@@ -95,8 +98,9 @@ class Client(WebSocketClient):
             cleanup_loop(loop)
 
     async def close(self):
+        logger.critical("Close function called")
         if not self.http.session.closed:
-            await self.http.session.close()
+            await self.http.close()
 
         if self.ws and self.ws.closed:
             await self.ws.close()
