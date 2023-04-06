@@ -9,7 +9,7 @@ from ..exceptions import (
     InvalidToken,
     ShardingRequired,
 )
-from ..utils import GatewayCloseCode
+from ..types import GatewayCloseCode
 
 logger = logging.getLogger("EpikCord.websocket")
 

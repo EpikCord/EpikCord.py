@@ -5,7 +5,8 @@ from typing import List, Optional, Union
 from ..flags import Intents, Permissions
 from ..locales import Localization
 from ..presence import Presence
-from ..utils import AsyncFunction, OpCode, cleanup_loop, singleton
+from ..types import OpCode
+from ..utils import AsyncFunction, cleanup_loop, singleton
 from .commands import (
     ApplicationCommandOption,
     ApplicationCommandType,

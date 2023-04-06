@@ -4,7 +4,7 @@ from discord_typings import IdentifyConnectionProperties
 from typing_extensions import Literal, NotRequired
 
 from ..presence import UpdatePresenceData
-from .enums import OpCode
+from ..types import OpCode
 
 AsyncFunction = Callable[..., Coroutine[Any, Any, Any]]
 

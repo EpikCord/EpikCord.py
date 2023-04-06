@@ -29,6 +29,18 @@ from .interactions import (
     UserOptionData,
 )
 
+from .gateway import (
+    OpCode,
+    GatewayCloseCode,
+    IdentifyCommand,
+    IdentifyConnectionProperties,
+    IdentifyData,
+    SendingAttachmentData,
+    VoiceCloseCode,
+    VoiceOpCode,
+    UpdatePresenceData
+)
+
 __all__ = (
     "ChatInputInteractionDataData",
     "MessageContextMenuInteractionDataData",
@@ -58,4 +70,14 @@ __all__ = (
     "NumberOptionData",
     "AttachmentOptionData",
     "ApplicationCommandOptionData",
+    "OpCode",
+    "GatewayCloseCode",
+    "IdentifyCommand",
+    "IdentifyConnectionProperties",
+    "IdentifyData",
+    "SendingAttachmentData",
+    "VoiceCloseCode",
+    "VoiceOpCode",
+    "UpdatePresenceData",
+
 )
