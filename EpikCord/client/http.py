@@ -357,10 +357,6 @@ class HTTPClient:
 
         return return_kwargs
 
-    async def close(self) -> None:
-        """Close the session."""
-        await self.session.close()
-
     async def get_gateway(self) -> str:
         """Get the URL used for connecting to the Gateway.
 

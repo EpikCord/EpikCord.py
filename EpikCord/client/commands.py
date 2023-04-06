@@ -514,7 +514,8 @@ class SubCommandGroup(BaseApplicationCommandOption):
         if isinstance(command, SubCommandGroup):
             if command.parent and self.parent:
                 raise ValueError(
-                    f"Cannot nest sub commands more than 2 levels deep. {command.parent.name} -> {self.name} -> {command.name}"
+                    "Cannot nest sub commands more than 2 levels deep."
+                    f"{command.parent.name} -> {self.name} -> {command.name}"
                 )
             command.parent = self
         elif isinstance(command, SubCommand):

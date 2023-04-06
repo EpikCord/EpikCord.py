@@ -18,6 +18,7 @@ from .websocket import WebSocketClient
 
 logger = getLogger("EpikCord.client")
 
+
 @singleton
 class TokenStore:
     def __init__(self, token: str):
@@ -81,7 +82,7 @@ class Client(WebSocketClient):
             finally:
                 logger.critical("Final clause triggered.")
                 if not self.http.session.closed:
-                    await self.http.close()
+                    await self.http.session.close()
 
         def stop_loop_on_completion(f: asyncio.Future):
             loop.stop()
@@ -98,11 +99,12 @@ class Client(WebSocketClient):
             cleanup_loop(loop)
 
     async def close(self):
-        logger.critical("Close function called")
-        if not self.http.session.closed:
-            await self.http.close()
+        logger.critical("Client.close called")
 
-        if self.ws and self.ws.closed:
+        if not self.http.session.closed:
+            await self.http.session.close()
+
+        if self.ws and not self.ws.closed:
             await self.ws.close()
 
         self.rate_limiter.reset.cancel()
