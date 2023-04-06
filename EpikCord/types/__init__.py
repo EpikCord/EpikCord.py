@@ -1,3 +1,14 @@
+from .gateway import (
+    GatewayCloseCode,
+    IdentifyCommand,
+    IdentifyConnectionProperties,
+    IdentifyData,
+    OpCode,
+    SendingAttachmentData,
+    UpdatePresenceData,
+    VoiceCloseCode,
+    VoiceOpCode,
+)
 from .interactions import (
     ApplicationCommandChoiceData,
     ApplicationCommandOptionData,
@@ -27,18 +38,6 @@ from .interactions import (
     UserContextMenuInteractionData,
     UserContextMenuInteractionDataData,
     UserOptionData,
-)
-
-from .gateway import (
-    OpCode,
-    GatewayCloseCode,
-    IdentifyCommand,
-    IdentifyConnectionProperties,
-    IdentifyData,
-    SendingAttachmentData,
-    VoiceCloseCode,
-    VoiceOpCode,
-    UpdatePresenceData
 )
 
 __all__ = (
@@ -79,5 +78,4 @@ __all__ = (
     "VoiceCloseCode",
     "VoiceOpCode",
     "UpdatePresenceData",
-
 )

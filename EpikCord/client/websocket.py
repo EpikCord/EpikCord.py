@@ -16,8 +16,8 @@ from discord_typings import HelloData, ReadyData
 from ..exceptions import ClosedWebSocketConnection
 from ..flags import Intents
 from ..presence import Presence
-from ..utils import AsyncFunction
 from ..types import GatewayCloseCode, IdentifyCommand, OpCode
+from ..utils import AsyncFunction
 from .rate_limit_tools import GatewayRateLimiter
 from .ws_close_handler import (
     CloseHandlerLog,
