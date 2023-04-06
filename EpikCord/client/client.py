@@ -1,6 +1,6 @@
 import asyncio
-from typing import List, Optional, Union
 from logging import getLogger
+from typing import List, Optional, Union
 
 from ..flags import Intents, Permissions
 from ..locales import Localization
