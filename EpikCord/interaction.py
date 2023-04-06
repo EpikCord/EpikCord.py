@@ -140,7 +140,8 @@ class UserContextMenuInteraction(BaseContextMenuInteraction):
         super().__init__(client, data)
         self.data: UserContextMenuInteractionDataData
         if self.resolved:
-            user: Optional[User] = self.resolved.users.get(self.target_id)
-            member: Optional[GuildMember] = self.resolved.members.get(
-                self.target_id
-            )
+            # user: Optional[User] = self.resolved.users.get(self.target_id)
+            # member: Optional[GuildMember] = self.resolved.members.get(
+            #     self.target_id
+            # )
+            ...
