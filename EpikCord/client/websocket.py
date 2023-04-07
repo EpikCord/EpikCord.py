@@ -11,13 +11,13 @@ from time import perf_counter_ns
 from typing import TYPE_CHECKING, Any, DefaultDict, Dict, List, Optional, Union
 
 import aiohttp
-from discord_typings import HelloData, ReadyData
+from discord_typings import HelloEvent, InvalidSessionEvent, ReadyData
 
 from ..exceptions import ClosedWebSocketConnection
 from ..flags import Intents
 from ..presence import Presence
-from ..types import GatewayCloseCode, IdentifyCommand, OpCode
 from ..utils import AsyncFunction
+from ..types import GatewayCloseCode, IdentifyCommand, OpCode
 from .rate_limit_tools import GatewayRateLimiter
 from .ws_close_handler import (
     CloseHandlerLog,
@@ -69,6 +69,7 @@ class GatewayEventHandler:
             OpCode.INVALID_SESSION: self.invalid_session,
             OpCode.HELLO: self.hello,
             OpCode.HEARTBEAT_ACK: self.heartbeat_ack,
+            OpCode.DISPATCH: self._dispatch_event,
         }
 
     def event(self, func: AsyncFunction):
@@ -80,7 +81,7 @@ class GatewayEventHandler:
         return func
 
     async def dispatch(self, event_name: str, *args, **kwargs):
-        """Dispatch an event to all event handlers."""
+        """Dispatch an event to all relevant event handlers."""
         for event in self.events[event_name]:
             asyncio.create_task(event(*args, **kwargs))
 
@@ -88,8 +89,21 @@ class GatewayEventHandler:
 
     @staticmethod
     async def heartbeat_ack(_: Any):
-        """Handle the heartbeat ack event. OpCode 11."""
+        """Handle the heartbeat ack event (OPCODE 11)."""
         ...
+
+    async def _dispatch_event(self, event: Dict[str, Any]):
+        """Handle the DISPATCH event (OPCODE 0)."""
+        event_name = event["t"].lower()
+        event_data = event["d"]
+        self.client.sequence = event["s"]
+
+        if event_handler := getattr(self, f"_{event_name}", None):
+            asyncio.create_task(event_handler(event_data))
+
+        # TODO: Once we have completed the HTTP objects,
+        #  we can then start to transform them before they reach
+        #  the end user.
 
     def wait_for(
         self,
@@ -129,16 +143,19 @@ class GatewayEventHandler:
         await self.client.ws.send_json(payload)
 
     async def _ready(self, data: ReadyData):
+        """Handle the READY dispatch event."""
         self.client.session_id = data["session_id"]
         self.client.resume_url = data["resume_gateway_url"]
 
         await self.dispatch("ready", data)
 
     async def _resumed(self, _: Any):
+        """Handle the RESUMED dispatch event."""
         logger.info("Resumed session %s", self.client.session_id)
         await self.dispatch("resumed")
 
     async def identify(self):
+        """Send the IDENTIFY payload to the Gateway (OPCODE 2)."""
         payload: IdentifyCommand = {
             "op": OpCode.IDENTIFY,
             "d": {
@@ -159,8 +176,9 @@ class GatewayEventHandler:
 
         await self.send_json(payload)
 
-    async def hello(self, data: HelloData):
-        """Handle the hello event. OpCode 10."""
+    async def hello(self, event: HelloEvent):
+        """Handle the hello event (OPCODE 10)."""
+        data = event["d"]
         self.client.heartbeat_interval = data["heartbeat_interval"] / 1000
         await self.identify()
 
@@ -186,7 +204,10 @@ class GatewayEventHandler:
         if not forced:
             await asyncio.sleep(self.client.heartbeat_interval)
 
-        await self.send_json({"op": OpCode.HEARTBEAT, "d": None})
+        await self.send_json({
+            "op": OpCode.HEARTBEAT,
+            "d": self.client.sequence
+        })
 
         start = perf_counter_ns()
 
@@ -199,6 +220,7 @@ class GatewayEventHandler:
         self.client._heartbeats.append(end - start)
 
     async def resume(self):
+        """Send the RESUME payload to the Gateway (OPCODE 6)."""
         await self.send_json(
             {
                 "op": OpCode.RESUME,
@@ -210,11 +232,14 @@ class GatewayEventHandler:
         )
 
     async def reconnect(self, _):
+        """Handle the RECONNECT event (OPCODE 7)."""
         if self.client.ws:
             await self.client.ws.close()
         await self.client.connect(resume=True)
 
-    async def invalid_session(self, resumable: bool):
+    async def invalid_session(self, event: InvalidSessionEvent):
+        """Handle the INVALID_SESSION event (OPCODE 9)."""
+        resumable = event["d"]
         if self.client.ws:
             await self.client.ws.close()
 
@@ -225,13 +250,8 @@ class GatewayEventHandler:
         else:
             await self.identify()
 
-    async def handle(self, message: DiscordWSMessage):
-        try:
-            event = message.json()
-        except json.JSONDecodeError:
-            logger.error("Failed to decode message: %s", message.data)
-            return
-
+    async def _handle_wait_for(self, event: Dict[str, Any]):
+        """Set the Futures for wait_for events."""
         values: List[Union[str, int]] = []
 
         if event["op"] in self.wait_for_events:
@@ -249,19 +269,15 @@ class GatewayEventHandler:
                 wait_for_event.future.set_result(event)
                 self.wait_for_events[value].remove(wait_for_event)
 
-        if event["op"] != OpCode.DISPATCH:
-            await self.opcode_mapping[event["op"]](event["d"])
-        else:
-            event_name = event["t"].lower()
-            event_data = event["d"]
-            self.client.sequence = event["s"]
+    async def handle(self, message: DiscordWSMessage):
+        try:
+            event = message.json()
+        except json.JSONDecodeError:
+            logger.error("Failed to decode message: %s", message.data)
+            return
 
-            if event_handler := getattr(self, f"_{event_name}", None):
-                asyncio.create_task(event_handler(event_data))
-
-            # TODO: Once we have completed the HTTP objects,
-            #  we can then start to transform them before they reach
-            #  the end user.
+        await self._handle_wait_for(event)
+        await self.opcode_mapping[event["op"]](event)
 
 
 class DiscordWSMessage:
