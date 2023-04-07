@@ -16,8 +16,8 @@ from discord_typings import HelloEvent, InvalidSessionEvent, ReadyData
 from ..exceptions import ClosedWebSocketConnection
 from ..flags import Intents
 from ..presence import Presence
-from ..utils import AsyncFunction
 from ..types import GatewayCloseCode, IdentifyCommand, OpCode
+from ..utils import AsyncFunction
 from .rate_limit_tools import GatewayRateLimiter
 from .ws_close_handler import (
     CloseHandlerLog,
@@ -204,10 +204,9 @@ class GatewayEventHandler:
         if not forced:
             await asyncio.sleep(self.client.heartbeat_interval)
 
-        await self.send_json({
-            "op": OpCode.HEARTBEAT,
-            "d": self.client.sequence
-        })
+        await self.send_json(
+            {"op": OpCode.HEARTBEAT, "d": self.client.sequence}
+        )
 
         start = perf_counter_ns()
 
