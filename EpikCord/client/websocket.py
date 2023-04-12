@@ -319,11 +319,12 @@ class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
         code: Optional[int] = None,
         message: bytes = b""
     ) -> bool:
-        code = code or 4000
         logger.debug(
             "Closing websocket with code %s. This is triggered by the library.",
             code,
         )
+        code = code or 4000
+        print(f"Code turned to {code}")
         return await super().close(code=code, message=message)
 
 
