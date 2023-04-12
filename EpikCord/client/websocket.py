@@ -313,7 +313,13 @@ class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
             data=message, msg_type=ws_message.type, extra=ws_message.extra
         )
 
-    async def close(self, *, code: int = 4000, message: bytes = b"") -> bool:
+    async def close(
+        self,
+        *,
+        code: Optional[int] = None,
+        message: bytes = b""
+    ) -> bool:
+        code = code or 4000
         logger.debug(
             "Closing websocket with code %s. This is triggered by the library.",
             code,
