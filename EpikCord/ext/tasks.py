@@ -24,16 +24,21 @@ class Task:
 
     async def start(self, *args: typing.Any, **kwargs: typing.Any):
         logger.info(f"Starting task {self.wrapped_func.__name__}")
-        while self.runs_count < self.max_runs:
-            await self.wrapped_func(*args, **kwargs)
 
-            if self.has_limited_runs:
+        if self.has_limited_runs:
+            while (
+                self.runs_count < self.max_runs
+                if self.has_limited_runs
+                else True
+            ):
+                await self.wrapped_func(*args, **kwargs)
+
                 self.runs_count += 1
 
-            logger.debug(
-                f"Ran task {self.wrapped_func.__name__} for "
-                f"{self.runs_count} time(s).")
-            await asyncio.sleep(self.duration)
+                logger.debug(
+                    f"Ran task {self.wrapped_func.__name__} for "
+                    f"{self.runs_count} time(s).")
+                await asyncio.sleep(self.duration)
 
     @property
     def has_limited_runs(self) -> bool:
