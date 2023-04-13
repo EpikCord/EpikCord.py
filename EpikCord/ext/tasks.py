@@ -41,6 +41,10 @@ class Task:
 
     def run(self, *args: typing.Any, **kwargs: typing.Any):
         self._task = asyncio.create_task(self.start(*args, **kwargs))
+        self._task.set_name(self.wrapped_func.__name__)
+        self._task.add_done_callback(
+            lambda task: logger.info(f"Task {task.get_name()} finished.")
+        )
 
     def cancel(self):
         logger.info(f"Cancelling task {self.wrapped_func.__name__}")
