@@ -32,7 +32,8 @@ class Task:
 
             logger.debug(
                 f"Ran task {self.wrapped_func.__name__} for "
-                f"{self.runs_count} time(s).")
+                f"{self.runs_count} time(s)."
+            )
             await asyncio.sleep(self.duration)
 
     @property
@@ -55,4 +56,5 @@ class Task:
 def task(duration: timedelta, max_runs=INFINITE_RUNS):
     def wrap(function):
         return Task(function, duration.total_seconds(), max_runs)
+
     return wrap
