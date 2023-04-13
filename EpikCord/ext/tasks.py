@@ -1,8 +1,8 @@
 import asyncio
 import typing
 from datetime import timedelta
-from typing import Callable, Coroutine, Final
 from logging import getLogger
+from typing import Callable, Coroutine, Final
 
 INFINITE_RUNS: Final[int] = -1
 
