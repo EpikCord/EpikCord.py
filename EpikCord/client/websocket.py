@@ -320,8 +320,6 @@ class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
             "Closing websocket with code %s. This is triggered by the library.",
             code,
         )
-        print(f"Code turned to {code}")
-        code = code or 4000
         return await super().close(code=code, message=message)
 
 
