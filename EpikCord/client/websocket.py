@@ -320,8 +320,8 @@ class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
             "Closing websocket with code %s. This is triggered by the library.",
             code,
         )
-        code = code or 4000
         print(f"Code turned to {code}")
+        code = code or 4000
         return await super().close(code=code, message=message)
 
 
@@ -380,7 +380,7 @@ class WebSocketClient:
             raise ValueError(f"Cannot connect to URL {url} (resume: {resume})")
 
         self.ws = await self.http.ws_connect(url)
-        asyncio.create_task(self.rate_limiter.reset.start())
+        self.rate_limiter.reset.run()
 
         if resume:
             await self.event_handler.resume()

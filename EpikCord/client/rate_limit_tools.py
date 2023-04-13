@@ -24,6 +24,7 @@ class GatewayRateLimiter:
 
     @tasks.task(duration=timedelta(seconds=_ONE_MINUTE))
     async def reset(self):
+        logger.debug("Resetting gateway bucket.")
         self.remaining = self.limit
         self.event.set()
 
