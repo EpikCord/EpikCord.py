@@ -22,7 +22,7 @@ class GatewayRateLimiter:
         self.remaining = MAXIMUM_GATEWAY_EVENT
         self.limit = MAXIMUM_GATEWAY_EVENT
 
-    @tasks.task(duration=timedelta(seconds=_ONE_MINUTE))
+    @tasks.task(duration=timedelta(minutes=1))
     async def reset(self):
         self.remaining = self.limit
         self.event.set()
