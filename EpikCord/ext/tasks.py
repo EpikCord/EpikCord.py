@@ -2,8 +2,11 @@ import asyncio
 import typing
 from datetime import timedelta
 from typing import Callable, Coroutine, Final
+from logging import getLogger
 
 INFINITE_RUNS: Final[int] = -1
+
+logger = getLogger("EpikCord.tasks")
 
 
 class Task:
@@ -20,6 +23,7 @@ class Task:
         self._task: typing.Optional[asyncio.Task] = None
 
     async def start(self, *args: typing.Any, **kwargs: typing.Any):
+        logger.info(f"Starting task {self.wrapped_func.__name__}")
         while self.runs_count < self.max_runs:
             await self.wrapped_func(*args, **kwargs)
 
@@ -36,6 +40,7 @@ class Task:
         self._task = asyncio.create_task(self.start(*args, **kwargs))
 
     def cancel(self):
+        logger.info(f"Cancelling task {self.wrapped_func.__name__}")
         if self._task is not None:
             self._task.cancel()
 
