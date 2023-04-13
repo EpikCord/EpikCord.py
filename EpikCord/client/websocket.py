@@ -186,7 +186,7 @@ class GatewayEventHandler:
             while True:
                 await self.heartbeat()
 
-        asyncio.create_task(heartbeat_task())
+        self.client._heartbeat_task = asyncio.create_task(heartbeat_task())
 
     async def heartbeat(self, *, forced: Optional[bool] = False):
         """Send a heartbeat to the gateway.
@@ -351,6 +351,7 @@ class WebSocketClient:
         self.resume_url: Optional[str] = None
         self.heartbeat_interval: Optional[float] = None
         self._heartbeats: List[int] = []
+        self._heartbeat_task: Optional[asyncio.Task] = None
 
         self.event = self.event_handler.event
 

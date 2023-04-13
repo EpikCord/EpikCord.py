@@ -105,6 +105,9 @@ class Client(WebSocketClient):
             await self.http.session.close()
 
         if self.ws and not self.ws.closed:
+            if self._heartbeat_task:
+                self._heartbeat_task.cancel()
+                self._heartbeat_task = None
             await self.ws.close()
 
         self.rate_limiter.reset.cancel()
