@@ -25,6 +25,7 @@ class GatewayRateLimiter:
         logger.debug("Reset gateway rate limit.")
 
     async def tick(self):
+        logger.debug("Ticking gateway rate limit.")
         await self.event.wait()
         self.remaining -= 1
         if self.remaining == 0:

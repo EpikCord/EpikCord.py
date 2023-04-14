@@ -379,7 +379,7 @@ class WebSocketClient:
 
         async def forever_reset():
             while True:
-                await asyncio.sleep(120)
+                await asyncio.sleep(60)
                 await self.rate_limiter.reset()
 
         asyncio.create_task(forever_reset())
