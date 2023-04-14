@@ -383,8 +383,9 @@ class WebSocketClient:
 
         self._rate_limiter_task = asyncio.create_task(forever_reset())
 
-        await self.event_handler.wait_for(opcode=OpCode.HELLO)
-        await self.event_handler.resume()
+        if resume:
+            await self.event_handler.wait_for(opcode=OpCode.HELLO)
+            await self.event_handler.resume()
 
         async for message in self.ws:
             logger.debug("Received message: %s", message.json())
