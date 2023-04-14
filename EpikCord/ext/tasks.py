@@ -19,7 +19,7 @@ class Task:
         self.wrapped_func: Callable[..., Coroutine] = wrapped_func
         self.duration: float = duration
         self.max_runs: int = max_runs
-        self.runs_count: int = INFINITE_RUNS
+        self.runs_count: int = 0
         self._task: typing.Optional[asyncio.Task] = None
 
     async def start(self, *args: typing.Any, **kwargs: typing.Any):

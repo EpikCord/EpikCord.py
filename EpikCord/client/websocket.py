@@ -376,7 +376,13 @@ class WebSocketClient:
             raise ValueError(f"Cannot connect to URL {url} (resume: {resume})")
 
         self.ws = await self.http.ws_connect(url)
-        self.rate_limiter.reset.run()
+
+        async def forever_reset():
+            while True:
+                await asyncio.sleep(120)
+                await self.rate_limiter.reset()
+
+        asyncio.create_task(forever_reset())
 
         if resume:
             await self.event_handler.resume()

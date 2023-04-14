@@ -1,17 +1,13 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import timedelta
 from logging import getLogger
 from typing import Any, Dict, Final, Optional, Union
 
-from ..ext import tasks
 from ..utils import clear_none_values
 
 logger = getLogger("EpikCord.http")
 
-_ONE_MINUTE: Final[timedelta] = timedelta(minutes=1)
-_MAX_RUNS: Final[int] = -1
 MAXIMUM_GATEWAY_EVENT: Final[int] = 120
 
 
@@ -23,7 +19,6 @@ class GatewayRateLimiter:
         self.remaining = MAXIMUM_GATEWAY_EVENT
         self.limit = MAXIMUM_GATEWAY_EVENT
 
-    @tasks.task(duration=_ONE_MINUTE, max_runs=_MAX_RUNS)
     async def reset(self):
         self.remaining = self.limit
         self.event.set()
