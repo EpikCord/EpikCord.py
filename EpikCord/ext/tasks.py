@@ -26,9 +26,7 @@ class Task:
         logger.info(f"Starting task {self.wrapped_func.__name__}")
 
         while (
-            self.runs_count < self.max_runs
-            if self.has_limited_runs
-            else True
+            self.runs_count < self.max_runs if self.has_limited_runs else True
         ):
             await self.wrapped_func(*args, **kwargs)
 
