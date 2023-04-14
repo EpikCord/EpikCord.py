@@ -339,6 +339,7 @@ class WebSocketClient:
 
         self.rate_limiter: GatewayRateLimiter = GatewayRateLimiter()
         self.event_handler: GatewayEventHandler = GatewayEventHandler(self)
+        self._rate_limiter_task: Optional[asyncio.Task] = None
 
         self._gateway_url: Optional[str] = None
 
@@ -382,7 +383,7 @@ class WebSocketClient:
                 await asyncio.sleep(60)
                 await self.rate_limiter.reset()
 
-        asyncio.create_task(forever_reset())
+        self._rate_limiter_task = asyncio.create_task(forever_reset())
 
         if resume:
             await self.event_handler.resume()
@@ -399,6 +400,8 @@ class WebSocketClient:
             return
 
         close_code = self.ws.close_code
+        if self._rate_limiter_task:
+            self._rate_limiter_task.cancel()
 
         logger.critical("Websocket closed with code %s", close_code)
 
