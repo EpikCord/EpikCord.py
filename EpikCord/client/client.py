@@ -99,16 +99,16 @@ class Client(WebSocketClient):
             cleanup_loop(loop)
 
     async def close(self):
-        logger.critical("Client.close called")
-
-        if not self.http.session.closed:
-            await self.http.session.close()
+        logger.critical("Closing connections")
 
         if self.ws and not self.ws.closed:
             if self._heartbeat_task:
                 self._heartbeat_task.cancel()
                 self._heartbeat_task = None
             await self.ws.close()
+
+        if not self.http.session.closed:
+            await self.http.session.close()
 
         self.rate_limiter.reset.cancel()
 

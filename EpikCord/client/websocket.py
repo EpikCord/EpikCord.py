@@ -233,6 +233,8 @@ class GatewayEventHandler:
     async def reconnect(self, _):
         """Handle the RECONNECT event (OPCODE 7)."""
         if self.client.ws:
+            if self.client._heartbeat_task:
+                self.client._heartbeat_task.cancel()
             await self.client.ws.close()
         await self.client.connect(resume=True)
 
@@ -240,6 +242,8 @@ class GatewayEventHandler:
         """Handle the INVALID_SESSION event (OPCODE 9)."""
         resumable = event["d"]
         if self.client.ws:
+            if self.client._heartbeat_task:
+                self.client._heartbeat_task.cancel()
             await self.client.ws.close()
 
         await self.client.connect(resume=resumable)
@@ -314,10 +318,6 @@ class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
         )
 
     async def close(self, *, code: int = 4000, message: bytes = b"") -> bool:
-        logger.debug(
-            "Closing websocket with code %s. This is triggered by the library.",
-            code,
-        )
         return await super().close(code=code, message=message)
 
 
