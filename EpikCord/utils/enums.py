@@ -34,6 +34,22 @@ class HTTPCodes(StatusCode):
 
     @classmethod
     def _missing_(cls, value: object) -> HTTPCodes:
+        """
+        Parameters:
+        ----------
+        value : :class:`object`
+            HTTP Status Code
+        
+        Raises:
+        ------
+        ValueError: When the value isn't a valid HTTP status code
+        ValueError: The HTTP status code isn't documented
+
+        Returns:
+        -------
+        HTTPCodes.SERVER_ERROR
+            A server error code
+        """
         if not isinstance(value, int):
             raise ValueError(f"{value} is not a valid HTTP status code.")
 
@@ -272,6 +288,17 @@ class JSONErrorCodes(StatusCode):
 
     @classmethod
     def _missing_(cls, value: object) -> JSONErrorCodes:
+        """
+        Parameters:
+        ----------
+        value : :class:`object`
+            HTTP Status Code
+
+        Returns:
+        -------
+        JSONErrorCodes.GENERAL_ERROR
+            A JSON error
+        """
         logger = getLogger("EpikCord.exceptions")
         logger.warning(f"Unknown JSON error code: {value}")
         return cls.GENERAL_ERROR

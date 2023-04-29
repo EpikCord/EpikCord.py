@@ -7,7 +7,49 @@ from .utils import PremiumType, instance_or_none, int_or_none
 
 
 class User:
+    """
+    Attributes:
+    ----------
+    client: :class:`Epikcord.client.Client`
+        The bot itself
+    id: :class:`int`
+        The id of the user
+    username: :class:`str`
+        The name of the user
+    discriminator: :class:`int`
+        The 4 digit number on user's profile
+    avatar: :class:``
+        The avatar ...
+    bot: :class:`bool`
+        If the user is a bot
+    system: :class:``
+        ...
+    mfa_enabled: :class:`bool`
+        If the user enabled mfa (Multi factor authentication)
+    banner: :class:``
+        The banner on the user's profile
+    accent_color: :class:``
+        The accent color the user has on his profile
+    locale: :class:`Epikcord.utils.Locale`
+        ...
+    verified: :class:`bool`
+        If the user is verified
+    email: :class:`str`
+        The email of the user
+    premium_type: :class:`Epikcord.utils.PremiumType`
+        The type of premium the user has (Nitro Basic or Nitro)
+    public_flags: :class:`Epikcord.flags.UserFlags`
+        The public flags the user has
+    """
     def __init__(self, client: Client, data: UserData):
+        """
+        Parameters:
+        -----------
+        client: :class:`Epikcord.client.Client`
+            The bot itself
+        data: :class:`discord_typings.UserData`
+            Data containing about the user
+        """
         self.client = client
         self.id = int(data["id"])
         self.username = data["username"]
