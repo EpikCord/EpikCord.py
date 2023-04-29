@@ -12,3 +12,22 @@ exclude = [
     "venv",
     "**/__pycache__"
 ]
+
+[tool.ruff]
+exclude = [
+    ".git",
+    ".nox",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "venv",
+    "__pycache__",
+]
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+line-length = 88
