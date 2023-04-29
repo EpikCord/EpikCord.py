@@ -16,8 +16,8 @@ def format_(session: nox.Session):
 
 @nox.session
 def lint(session: nox.Session):
-    session.install("flake8")
-    session.run("flake8", "EpikCord")
+    session.install("ruff")
+    session.run("ruff", "EpikCord")
 
 
 @nox.session
