@@ -36,9 +36,7 @@ class UpdatePresenceData(TypedDict):
 
 
 class Activity:
-    def __init__(
-        self, *, name: str, ac_type: ActivityType, url: Optional[str] = None
-    ):
+    def __init__(self, *, name: str, ac_type: ActivityType, url: Optional[str] = None):
         """Represents a Discord activity.
 
         Parameters
@@ -85,9 +83,7 @@ class Presence:
             The activity of the presence.
         """
         if not status and not activity:
-            raise ValueError(
-                "Presence must have either a status or an activity."
-            )
+            raise ValueError("Presence must have either a status or an activity.")
         self.status: Optional[Status] = status
         self.activity: Optional[Activity] = activity
 

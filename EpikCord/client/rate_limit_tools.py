@@ -114,9 +114,7 @@ class Bucket:
             The amount of time to wait before retrying.
         """
         self.clear()
-        logger.info(
-            f"Bucket {self.hash} exhausted, waiting {retry_after} seconds."
-        )
+        logger.info(f"Bucket {self.hash} exhausted, waiting {retry_after} seconds.")
         await asyncio.sleep(retry_after)
         self.set()
 
@@ -165,9 +163,7 @@ class TopLevelBucket:
         self.guild_id: Optional[int] = guild_id
         self.webhook_id: Optional[int] = webhook_id
         self.webhook_token: Optional[str] = webhook_token
-        self.major_parameters: Dict[
-            str, Optional[Union[int, str]]
-        ] = clear_none_values(
+        self.major_parameters: Dict[str, Optional[Union[int, str]]] = clear_none_values(
             {
                 "channel_id": channel_id,
                 "guild_id": guild_id,
@@ -219,9 +215,7 @@ class TopLevelBucket:
             The amount of time to wait before retrying.
         """
         self.clear()
-        logger.info(
-            f"Bucket {str(self)} exhausted, waiting {retry_after} seconds."
-        )
+        logger.info(f"Bucket {str(self)} exhausted, waiting {retry_after} seconds.")
         await asyncio.sleep(retry_after)
         self.set()
 

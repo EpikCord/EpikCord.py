@@ -26,13 +26,7 @@ from ..utils import (
     json_serialize,
     log_request,
 )
-from .rate_limit_tools import (
-    Bucket,
-    MajorParameters,
-    MockBucket,
-    Route,
-    TopLevelBucket,
-)
+from .rate_limit_tools import Bucket, MajorParameters, MockBucket, Route, TopLevelBucket
 from .websocket import GatewayWebSocket
 
 if TYPE_CHECKING:
@@ -132,9 +126,7 @@ class HTTPClient:
         HTTPCodes.NOT_FOUND: NotFound,
     }
 
-    def __init__(
-        self, token: TokenStore, *, version: APIVersion = APIVersion.TEN
-    ):
+    def __init__(self, token: TokenStore, *, version: APIVersion = APIVersion.TEN):
         """
         Parameters
         ----------
@@ -241,9 +233,7 @@ class HTTPClient:
                     raise error(data)
                 elif response.ok:
                     return response
-        raise TooManyRetries(
-            f"Attempted {method} request to {url} 5 times but failed."
-        )
+        raise TooManyRetries(f"Attempted {method} request to {url} 5 times but failed.")
 
     async def set_bucket(
         self,
@@ -281,9 +271,7 @@ class HTTPClient:
             bucket = Bucket(bucket_hash=response.headers["X-RateLimit-Bucket"])
             if bucket in self.buckets.values():
                 listed_buckets = list(self.buckets.values())
-                self.buckets[bucket_key] = listed_buckets[
-                    listed_buckets.index(bucket)
-                ]
+                self.buckets[bucket_key] = listed_buckets[listed_buckets.index(bucket)]
                 bucket = self.buckets[bucket_key]
             self.buckets[bucket_key] = bucket
 

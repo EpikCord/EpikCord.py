@@ -23,12 +23,7 @@ from .loose import (
     log_request,
     singleton,
 )
-from .types import (
-    AsyncFunction,
-    IdentifyCommand,
-    IdentifyData,
-    SendingAttachmentData,
-)
+from .types import AsyncFunction, IdentifyCommand, IdentifyData, SendingAttachmentData
 
 __all__ = (
     "HTTPCodes",

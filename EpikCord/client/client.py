@@ -69,9 +69,7 @@ class Client(WebSocketClient):
             http=HTTPClient(token, version=version),
         )
         self.commands: List[
-            Union[
-                ClientChatInputCommand, ClientUserCommand, ClientMessageCommand
-            ]
+            Union[ClientChatInputCommand, ClientUserCommand, ClientMessageCommand]
         ] = []
 
     def login(self):
@@ -115,9 +113,7 @@ class Client(WebSocketClient):
     async def change_presence(self, presence: Presence):
         if not self.ws:
             raise RuntimeError("Client is not connected to the gateway.")
-        await self.ws.send_json(
-            {"op": OpCode.PRESENCE_UPDATE, "d": presence.to_dict()}
-        )
+        await self.ws.send_json({"op": OpCode.PRESENCE_UPDATE, "d": presence.to_dict()})
 
     def command(
         self,

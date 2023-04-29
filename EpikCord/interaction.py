@@ -57,21 +57,15 @@ class BaseInteraction:
 
 class ResolvedInteractionData:
     def __init__(self, client: Client, data: ResolvedInteractionDataData):
-        self.users = {
-            int(k): User(client, v) for k, v in data.get("users", {}).items()
-        }
+        self.users = {int(k): User(client, v) for k, v in data.get("users", {}).items()}
         self.members = {
-            int(k): GuildMember(client, v)
-            for k, v in data.get("members", {}).items()
+            int(k): GuildMember(client, v) for k, v in data.get("members", {}).items()
         }
-        self.roles = {
-            int(k): Role(client, v) for k, v in data.get("roles", {}).items()
-        }
+        self.roles = {int(k): Role(client, v) for k, v in data.get("roles", {}).items()}
         # CHANNELS
         # MESSAGES
         self.attachments = {
-            int(k): Attachment(v)
-            for k, v in data.get("attachments", {}).items()
+            int(k): Attachment(v) for k, v in data.get("attachments", {}).items()
         }
 
 
@@ -91,9 +85,7 @@ class BaseApplicationCommandInteraction(BaseInteraction):
         self.command_type: ApplicationCommandType = ApplicationCommandType(
             self.data["type"]
         )
-        self.resolved = instance_or_none(
-            ResolvedInteractionData, data.get("resolved")
-        )
+        self.resolved = instance_or_none(ResolvedInteractionData, data.get("resolved"))
 
         self._resolved = data.get("resolved")
 
@@ -123,9 +115,7 @@ class BaseContextMenuInteraction(BaseApplicationCommandInteraction):
     def __init__(
         self,
         client: Client,
-        data: Union[
-            UserContextMenuInteractionData, MessageContextMenuInteractionData
-        ],
+        data: Union[UserContextMenuInteractionData, MessageContextMenuInteractionData],
     ):
         super().__init__(client, data)
         self.data: Union[

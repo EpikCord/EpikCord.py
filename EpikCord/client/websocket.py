@@ -19,11 +19,7 @@ from ..presence import Presence
 from ..types import GatewayCloseCode, IdentifyCommand, OpCode
 from ..utils import AsyncFunction
 from .rate_limit_tools import GatewayRateLimiter
-from .ws_close_handler import (
-    CloseHandlerLog,
-    CloseHandlerRaise,
-    close_dispatcher,
-)
+from .ws_close_handler import CloseHandlerLog, CloseHandlerRaise, close_dispatcher
 
 _ORJSON = find_spec("orjson")
 
@@ -59,9 +55,7 @@ class WaitForEvent:
 class GatewayEventHandler:
     def __init__(self, client: WebSocketClient):
         self.client = client
-        self.wait_for_events: DefaultDict[Union[str, int], List] = defaultdict(
-            list
-        )
+        self.wait_for_events: DefaultDict[Union[str, int], List] = defaultdict(list)
         self.events: DefaultDict[str, List[AsyncFunction]] = defaultdict(list)
         self.opcode_mapping: Dict[OpCode, AsyncFunction] = {
             OpCode.HEARTBEAT: partial(self.heartbeat, forced=True),
@@ -118,9 +112,7 @@ class GatewayEventHandler:
         elif name and opcode:
             raise ValueError("Only name or opcode can be provided.")
 
-        event = WaitForEvent(
-            name=name, opcode=opcode, timeout=timeout, check=check
-        )
+        event = WaitForEvent(name=name, opcode=opcode, timeout=timeout, check=check)
 
         if opcode:
             self.wait_for_events[opcode.value].append(event)
@@ -131,9 +123,7 @@ class GatewayEventHandler:
 
     async def send_json(self, payload: Any):
         if not self.client.ws:
-            logger.error(
-                "Tried to send a payload without a websocket connection."
-            )
+            logger.error("Tried to send a payload without a websocket connection.")
             return
         await self.client.rate_limiter.tick()
         logger.debug("Sending %s to Gateway", payload)
@@ -204,9 +194,7 @@ class GatewayEventHandler:
         if not forced:
             await asyncio.sleep(self.client.heartbeat_interval)
 
-        await self.send_json(
-            {"op": OpCode.HEARTBEAT, "d": self.client.sequence}
-        )
+        await self.send_json({"op": OpCode.HEARTBEAT, "d": self.client.sequence})
 
         start = perf_counter_ns()
 

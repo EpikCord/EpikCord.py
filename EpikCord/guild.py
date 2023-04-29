@@ -19,9 +19,7 @@ class GuildMember:
         # self.roles = [Role(client, role) for role in data.get("roles", [])]
         self.roles = data["roles"]
         self.joined_at = (
-            datetime.fromisoformat(data["joined_at"])
-            if data.get("joined_at")
-            else None
+            datetime.fromisoformat(data["joined_at"]) if data.get("joined_at") else None
         )
         self.premium_since = instance_or_none(
             datetime.fromisoformat, data.get("premium_since")
@@ -32,9 +30,7 @@ class GuildMember:
         raw_flags = data["flags"]  # type: ignore # DiscordTyping/32
         self.flags = GuildMemberFlags(raw_flags)
         self.pending = data.get("pending")
-        self.permissions = instance_or_none(
-            Permissions, data.get("permissions")
-        )
+        self.permissions = instance_or_none(Permissions, data.get("permissions"))
         self.communication_disabled_until = instance_or_none(
             datetime.fromisoformat, data.get("communication_disabled_until")
         )
@@ -45,18 +41,12 @@ class RoleTags:
         self._data = data
         self.bot_id = int_or_none(data.get("bot_id"))
         self.integration_id = int_or_none(data.get("integration_id"))
-        self.premium_subscriber = (
-            True if data.get("premium_subscriber") else False
-        )
-        self.subscription_listing_id = int_or_none(
-            data.get("subscription_listing_id")
-        )
+        self.premium_subscriber = True if data.get("premium_subscriber") else False
+        self.subscription_listing_id = int_or_none(data.get("subscription_listing_id"))
         self.available_for_purchase = (
             True if data.get("available_for_purchase") else False
         )
-        self.guild_connections = (
-            True if data.get("guild_connections") else False
-        )
+        self.guild_connections = True if data.get("guild_connections") else False
 
 
 class Role:

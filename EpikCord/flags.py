@@ -9,9 +9,7 @@ class Flag:
     class_flags: Dict[str, int]
 
     def __init_subclass__(cls) -> None:
-        cls.class_flags = {
-            k: v for k, v in cls.__dict__.items() if isinstance(v, int)
-        }
+        cls.class_flags = {k: v for k, v in cls.__dict__.items() if isinstance(v, int)}
 
     def __init__(self, value: int = ALL_VALUE_DISABLED, **kwargs):
         self.turned_on: List[str] = [
@@ -27,9 +25,7 @@ class Flag:
     @property
     def value(self) -> int:
         return sum(
-            flag
-            for key, flag in self.class_flags.items()
-            if key in self.turned_on
+            flag for key, flag in self.class_flags.items() if key in self.turned_on
         )
 
     def __getattribute__(self, __name: str) -> Any:

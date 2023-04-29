@@ -109,8 +109,7 @@ async def log_request(res, body: Optional[dict] = None):
     """Logs information about the request."""
     logger = getLogger("EpikCord.http")
     messages = [
-        f"Sent a {res.method} to {res.url} "
-        f"and got a {res.status} response. ",
+        f"Sent a {res.method} to {res.url} " f"and got a {res.status} response. ",
         f"Content-Type: {res.headers['Content-Type']} ",
     ]
 
@@ -130,9 +129,7 @@ async def log_request(res, body: Optional[dict] = None):
         logger.debug("".join(messages))
 
 
-def add_file(
-    form: aiohttp.FormData, file: File, i: int
-) -> SendingAttachmentData:
+def add_file(form: aiohttp.FormData, file: File, i: int) -> SendingAttachmentData:
     form.add_field(
         f"files[{i}]",
         file.contents,
@@ -171,6 +168,5 @@ def localization_list_to_dict(
     localizations: List[Localization],
 ) -> Dict[str, str]:
     return {
-        localization.locale.value: localization.value
-        for localization in localizations
+        localization.locale.value: localization.value for localization in localizations
     }

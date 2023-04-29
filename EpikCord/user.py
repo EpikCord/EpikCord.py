@@ -22,10 +22,6 @@ class User:
         self.verified = data.get("verified")
         self.email = data.get("email")
         self.flags = instance_or_none(UserFlags, data.get("flags"))
-        self.premium_type = instance_or_none(
-            PremiumType, data.get("premium_type")
-        )
-        self.public_flags = instance_or_none(
-            UserFlags, data.get("public_flags")
-        )
+        self.premium_type = instance_or_none(PremiumType, data.get("premium_type"))
+        self.public_flags = instance_or_none(UserFlags, data.get("public_flags"))
         self._data: UserData = data

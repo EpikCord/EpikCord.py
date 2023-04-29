@@ -22,9 +22,7 @@ class HTTPException(EpikCordException):
         self.errors_list = self.extract_errors(self.errors)
 
         super().__init__(
-            "\n".join(
-                f"{e.path} - {e.code} - {e.message}" for e in self.errors_list
-            )
+            "\n".join(f"{e.path} - {e.code} - {e.message}" for e in self.errors_list)
         )
 
     def extract_errors(self, d, key_path=None):
@@ -37,8 +35,7 @@ class HTTPException(EpikCordException):
                 LocatedError(
                     **error,
                     path=".".join(
-                        f"{k}[{k}]" if isinstance(k, int) else k
-                        for k in key_path[1:]
+                        f"{k}[{k}]" if isinstance(k, int) else k for k in key_path[1:]
                     ),
                 )
                 for error in d.get("_errors", [])
