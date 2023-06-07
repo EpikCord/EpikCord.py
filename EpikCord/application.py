@@ -11,16 +11,19 @@ class InstallParams:
     Attributes:
     ----------
     scopes: :class:``
-        ...
+        The scopes that are used by the install params.
     permissions: :class:`Epikcord.flags.Permission`
-        ...
+        The permissions that the application requires.
     """
     def __init__(self, data: InstallParamsData):
         """
         Parameters:
         ----------
         data: :class:`discord_typings.InstallParamsData`
-            ...
+            The data used to construct the class.
+        Note
+        ----
+        Should never be manually constructed.
         """
         self.scopes = data["scopes"]
         self.permissions = Permissions(int(data["permissions"]))
@@ -31,13 +34,13 @@ class TeamMember:
     Attributes:
     ----------
     membership_state: :class:`discord_typings.TeamMembershipState`
-        ...
-    permissions: :class:``
-        ...
+        The status of the membership of this member.
+    permissions: :class:`list[str]`
+        The permissions that they have. As of now this is always ["*"].
     team_id: :class:`int`
-        The id of the team
-    user: :class:``
-        The user of the team
+        The id of the team.
+    user: :class:`User`
+        The user object for this member.
     """
     def __init__(self, data: TeamMemberData):
         """
@@ -87,27 +90,27 @@ class Application:
     Attributes:
     ----------
     id: :class:`int`
-        The id of the application.
+        The id of the application
     name: :class:`str`
-        The name of the application.
+        The name of the application
     icon: :class:``
-        The icon of the application.
+        The icon of the application
     description: :class:`str`
-        The description of the application.
-    rpc_origins: :class:``
-        ...
-    bot_public: :class:``
-        ...
-    bot_require_code_grant: :class:``
-        ...
+        The description of the application
+    rpc_origins: :class:`list[str]`
+        A list of RPC origins for the application
+    bot_public: :class:`bool`
+        A boolean representing if the bot is public
+    bot_require_code_grant: :class:`bool`
+        A boolean representing if the bot requires a code grant
     terms_of_service_url: :class:`str`
         The Terms of Service url.
     privacy_policy_url = :class:`str`
         The Privacy Policy url 
     owner: :class:``
         The owner of the application.
-    verify_key: :class:``
-        ....
+    verify_key: :class:`str`
+        A string used to verify signatures for receiving interactions via HTTP. 
     team: :class:`Epikcord.application.Team`
         The team the application is in.
     guild_id: :class:`int`
@@ -122,12 +125,12 @@ class Application:
         ...
     tags: :class:``
         ...
-    install_params: :class:``
-        ...
-    self.custom_install_url: :class:``
-        ...
-    self.role_connections_verification_url: :class:``
-        ...
+    install_params: :class:`Optional[InstallParams]`
+        The install parameters of the application.
+    self.custom_install_url: :class:`Optional[str]`
+        The URL to redirect users to once they click "Add Bot" in the client.
+    self.role_connections_verification_url: :class:`Optional[str]`
+        The URL that users are redirected to if they want to link a role.
     """
     def __init__(self, data: ApplicationData):
         """
