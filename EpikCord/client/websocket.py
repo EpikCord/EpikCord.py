@@ -118,7 +118,7 @@ class GatewayEventHandler:
             self.wait_for_events[opcode.value].append(event)
         elif name:
             self.wait_for_events[name].append(event)
-        
+
         logger.debug("Waiting for event %s", name or opcode)
 
         return asyncio.wait_for(event.future, timeout=timeout)
@@ -284,6 +284,7 @@ class DiscordWSMessage:
 
     def json(self) -> Any:
         return json.loads(self.data)
+
 
 class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
     def __init__(self, *args, **kwargs):
