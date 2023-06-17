@@ -11,6 +11,7 @@ from time import perf_counter_ns
 from typing import TYPE_CHECKING, Any, DefaultDict, Dict, List, Optional, Union
 
 import aiohttp
+from aiohttp import WSMsgType
 from discord_typings import HelloEvent, InvalidSessionEvent, ReadyData
 
 from ..exceptions import ClosedWebSocketConnection
@@ -384,9 +385,16 @@ class WebSocketClient:
 
         async for message in self.ws:
             logger.debug("Received message: %s", message.json())
-            await self.event_handler.handle(message)  # type: ignore
-
-        await self.handle_close()
+            if message.type == WSMsgType.TEXT:
+                await self.event_handler.handle(message)  # type: ignore
+            elif message.type in (
+                WSMsgType.CLOSE,
+                WSMsgType.CLOSED,
+                WSMsgType.CLOSING,
+                WSMsgType.ERROR,
+            ):
+                await self.handle_close()
+                break
 
     async def handle_close(self):
         if not self.ws:
