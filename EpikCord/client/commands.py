@@ -531,7 +531,7 @@ class SubCommandGroup(BaseApplicationCommandOption):
         description_localizations: Optional[List[Localization]] = None,
         options: Optional[List[BaseApplicationCommandOption]] = None,
     ):
-        def add_command(func):
+        def add_command(func) -> SubCommand:
             command = SubCommand(
                 name,
                 description,
