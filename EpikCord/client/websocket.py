@@ -199,11 +199,16 @@ class GatewayEventHandler:
         await self.send_json({"op": OpCode.HEARTBEAT, "d": self.client.sequence})
 
         start = perf_counter_ns()
-
-        await self.wait_for(
-            opcode=OpCode.HEARTBEAT_ACK, timeout=self.client.heartbeat_interval
-        )
-
+        try:
+            await self.wait_for(
+                opcode=OpCode.HEARTBEAT_ACK, timeout=self.client.heartbeat_interval
+            )
+        except asyncio.TimeoutError:
+            logger.warning("Heartbeat ACK not received in time.")
+            if self.client.ws:
+                await self.client.ws.close()
+            await self.client.connect(resume=True)
+            return
         end = perf_counter_ns()
 
         self.client._heartbeats.append(end - start)
@@ -238,11 +243,6 @@ class GatewayEventHandler:
 
         await self.client.connect(resume=resumable)
 
-        if resumable:
-            await self.resume()
-        else:
-            await self.identify()
-
     async def _handle_wait_for(self, event: Dict[str, Any]):
         """Set the Futures for wait_for events."""
         values: List[Union[str, int]] = []
@@ -270,6 +270,9 @@ class GatewayEventHandler:
             return
 
         await self._handle_wait_for(event)
+        if self.client._resuming and event["op"] == OpCode.HELLO:
+            await self.resume()
+            return
         await self.opcode_mapping[event["op"]](event)
 
 
@@ -281,7 +284,6 @@ class DiscordWSMessage:
 
     def json(self) -> Any:
         return json.loads(self.data)
-
 
 class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
     def __init__(self, *args, **kwargs):
@@ -339,6 +341,7 @@ class WebSocketClient:
         self.heartbeat_interval: Optional[float] = None
         self._heartbeats: List[int] = []
         self._heartbeat_task: Optional[asyncio.Task] = None
+        self._resuming: bool = False
 
         self.event = self.event_handler.event
 
@@ -351,6 +354,8 @@ class WebSocketClient:
     async def connect(self, *, resume: bool = False):
         if not self._gateway_url and not resume:
             self._gateway_url = await self.http.get_gateway()
+
+        self._resuming = resume
 
         version = self.http.version.value
 
@@ -372,10 +377,6 @@ class WebSocketClient:
                 await self.rate_limiter.reset()
 
         self._rate_limiter_task = asyncio.create_task(forever_reset())
-
-        if resume:
-            await self.event_handler.wait_for(opcode=OpCode.HELLO)
-            await self.event_handler.resume()
 
         async for message in self.ws:
             logger.debug("Received message: %s", message.json())
