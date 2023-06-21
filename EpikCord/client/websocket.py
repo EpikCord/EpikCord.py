@@ -173,7 +173,13 @@ class GatewayEventHandler:
         """Handle the hello event (OPCODE 10)."""
         data = event["d"]
         self.client.heartbeat_interval = data["heartbeat_interval"] / 1000
-        await self.identify()
+        if not self.client._resuming:
+            await self.identify()
+        else:
+            await self.resume()
+
+        if self.client._heartbeat_task:
+            self.client._heartbeat_task.cancel()
 
         async def heartbeat_task():
             while True:
@@ -210,6 +216,7 @@ class GatewayEventHandler:
                 await self.client.ws.close()
             await self.client.connect(resume=True)
             return
+
         end = perf_counter_ns()
 
         self.client._heartbeats.append(end - start)
@@ -271,9 +278,6 @@ class GatewayEventHandler:
             return
 
         await self._handle_wait_for(event)
-        if self.client._resuming and event["op"] == OpCode.HELLO:
-            await self.resume()
-            return
 
         await self.opcode_mapping[event["op"]](event)
 
