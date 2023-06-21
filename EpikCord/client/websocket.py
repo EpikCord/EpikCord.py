@@ -434,7 +434,6 @@ class WebSocketClient:
                 WSMsgType.ERROR,
             ):
                 await self.handle_close()
-                
 
     async def handle_close(self):
         if not self.ws:
