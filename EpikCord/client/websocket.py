@@ -274,6 +274,7 @@ class GatewayEventHandler:
         if self.client._resuming and event["op"] == OpCode.HELLO:
             await self.resume()
             return
+
         await self.opcode_mapping[event["op"]](event)
 
 

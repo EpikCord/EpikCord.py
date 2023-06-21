@@ -97,7 +97,7 @@ class Client(WebSocketClient):
             cleanup_loop(loop)
 
     async def close(self):
-        logger.critical("Closing connections")
+        logger.critical("Closing connection")
 
         if self.ws and not self.ws.closed:
             if self._heartbeat_task:
@@ -108,7 +108,8 @@ class Client(WebSocketClient):
         if not self.http.session.closed:
             await self.http.session.close()
 
-        self.rate_limiter.reset.cancel()
+        if self._rate_limiter_task:
+            self._rate_limiter_task.cancel()
 
     async def change_presence(self, presence: Presence):
         if not self.ws:
