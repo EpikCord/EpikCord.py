@@ -130,8 +130,11 @@ class GatewayEventHandler:
         if not self.client.ws:
             logger.error("Tried to send a payload without a websocket connection.")
             return
+
         await self.client.rate_limiter.tick()
+
         logger.debug("Sending %s to Gateway", payload)
+
         for k, v in payload.items():
             if isinstance(v, OpCode):
                 payload[k] = v.value
@@ -173,6 +176,7 @@ class GatewayEventHandler:
 
     async def hello(self, event: HelloEvent):
         """Handle the hello event (OPCODE 10)."""
+
         data = event["d"]
         self.client.heartbeat_interval = data["heartbeat_interval"] / 1000
 
@@ -417,10 +421,14 @@ class WebSocketClient:
         if self._rate_limiter_task:
             self._rate_limiter_task.cancel()
         self._rate_limiter_task = asyncio.create_task(forever_reset())
-
         async for message in self.ws:
-            logger.debug("Received message: %s", message.json())
-            if message.type == WSMsgType.TEXT:
+            logger.debug(
+                "Received message types: %s. Data: %s", message.type, message.json()
+            )
+            if message.type in (
+                WSMsgType.BINARY,
+                WSMsgType.TEXT
+            ):
                 await self.event_handler.handle(message)  # type: ignore
             elif message.type in (
                 WSMsgType.CLOSE,
