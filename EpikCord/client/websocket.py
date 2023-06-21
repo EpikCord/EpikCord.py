@@ -394,6 +394,13 @@ class WebSocketClient:
         return sum(self._heartbeats) / len(self._heartbeats)
 
     async def connect(self, *, resume: bool = False):
+        if self.http.session.closed:
+            logger.debug(
+                "HTTP session is closed, creating a new one for the websocket."
+            )
+            version = self.http.version
+            self.http = HTTPClient(self.token, version=version)
+
         if not self._gateway_url and not resume:
             self._gateway_url = await self.http.get_gateway()
 
