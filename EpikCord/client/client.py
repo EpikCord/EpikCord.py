@@ -79,7 +79,6 @@ class Client(WebSocketClient):
             try:
                 await self.connect()
             finally:
-                logger.critical("Final clause triggered.")
                 await self.close()
 
         def stop_loop_on_completion(f: asyncio.Future):
