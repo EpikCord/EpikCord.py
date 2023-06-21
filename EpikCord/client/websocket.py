@@ -214,7 +214,7 @@ class GatewayEventHandler:
         except asyncio.TimeoutError:
             logger.warning("Heartbeat ACK not received in time.")
             if self.client.ws:
-                await self.client.ws.close()
+                await self.client.ws.close(client_triggered=True, reason=f"Heartbeat ACK not received in {self.client.heartbeat_interval}s.")
             await self.client.connect(resume=True)
             return
 
@@ -239,7 +239,7 @@ class GatewayEventHandler:
         if self.client.ws:
             if self.client._heartbeat_task:
                 self.client._heartbeat_task.cancel()
-            await self.client.ws.close()
+            await self.client.ws.close(client_triggered=True, reason="OpCode 7 was received.")
         await self.client.connect(resume=True)
 
     async def invalid_session(self, event: InvalidSessionEvent):
@@ -248,7 +248,7 @@ class GatewayEventHandler:
         if self.client.ws:
             if self.client._heartbeat_task:
                 self.client._heartbeat_task.cancel()
-            await self.client.ws.close()
+            await self.client.ws.close(client_triggered=True, reason="OpCode 9 was received.")
 
         await self.client.connect(resume=resumable)
 
@@ -318,15 +318,21 @@ class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
         )
 
     async def close(
-        self, *, code: int = 4000, message: bytes = b"", client_triggered: bool = False
+        self,
+        *,
+        code: int = 4000,
+        message: bytes = b"",
+        client_triggered: bool = False,
+        reason: str = "",
     ) -> bool:
         if self._closed:
             return False
         logger.debug(
-            "Closing websocket with code %s and message %s. %s",
+            "Closing websocket with code %s and message %s. %s. %s",
             code,
             message,
             f"Client triggered: {client_triggered}" if client_triggered else "",
+            f"Reason: {reason}" if reason else "",
         )
         return await super().close(code=code, message=message)
 

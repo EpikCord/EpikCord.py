@@ -103,7 +103,7 @@ class Client(WebSocketClient):
             if self._heartbeat_task:
                 self._heartbeat_task.cancel()
                 self._heartbeat_task = None
-            await self.ws.close()
+            await self.ws.close(client_triggered=True)
 
         if not self.http.session.closed:
             await self.http.session.close()
