@@ -31,8 +31,9 @@ else:
     import json  # type: ignore
 
 if TYPE_CHECKING:
-    from .client import TokenStore
+    from ..utils import TokenStore
     from .http import HTTPClient
+
 
 logger = getLogger("EpikCord.websocket")
 
@@ -399,7 +400,7 @@ class WebSocketClient:
                 "HTTP session is closed, creating a new one for the websocket."
             )
             version = self.http.version
-            self.http = HTTPClient(self.token, version=version)
+            self.http = self.http.clone()
 
         if not self._gateway_url and not resume:
             self._gateway_url = await self.http.get_gateway()

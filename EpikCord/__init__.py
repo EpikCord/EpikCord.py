@@ -1,6 +1,6 @@
 __version__ = "0.6.0"
 
-from .client import APIVersion, Client, HTTPClient, TokenStore
+from .client import APIVersion, Client, HTTPClient
 from .exceptions import (
     BadRequest,
     EpikCordException,
@@ -13,6 +13,7 @@ from .exceptions import (
 from .ext import Task, task
 from .file import File
 from .flags import ChannelFlags, Flag, Intents, Permissions, SystemChannelFlags
+from .utils import TokenStore
 
 __all__ = (
     "APIVersion",

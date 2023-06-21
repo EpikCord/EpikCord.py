@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 import asyncio
 from logging import getLogger
-from typing import List, Optional, Union
+from typing import List, Optional, Union, TYPE_CHECKING
 
 from ..flags import Intents, Permissions
 from ..locales import Localization
 from ..presence import Presence
 from ..types import OpCode
-from ..utils import AsyncFunction, cleanup_loop, singleton
+from ..utils import AsyncFunction, cleanup_loop
 from .commands import (
     ApplicationCommandOption,
     ApplicationCommandType,
@@ -17,16 +19,10 @@ from .commands import (
 from .http import APIVersion, HTTPClient
 from .websocket import WebSocketClient
 
+if TYPE_CHECKING:
+    from ..utils import TokenStore
+
 logger = getLogger("EpikCord.client")
-
-
-@singleton
-class TokenStore:
-    def __init__(self, token: str):
-        self.value: str = token
-
-    def remove_from(self, string: str) -> str:
-        return string.replace(self.value, "[REMOVED TOKEN]")
 
 
 class Client(WebSocketClient):

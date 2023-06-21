@@ -22,6 +22,7 @@ from .loose import (
     localization_list_to_dict,
     log_request,
     singleton,
+    TokenStore
 )
 from .types import AsyncFunction, IdentifyCommand, IdentifyData, SendingAttachmentData
 
@@ -51,4 +52,5 @@ __all__ = (
     "instance_or_none",
     "int_or_none",
     "localization_list_to_dict",
+    "TokenStore",
 )

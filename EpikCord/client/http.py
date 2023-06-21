@@ -368,3 +368,16 @@ class HTTPClient:
         response = await self.request(Route("GET", "/gateway/bot"))
         data = await response.json()
         return GatewayBotData(data)
+
+    def clone(self) -> "HTTPClient":
+        """Clone the HTTPClient.
+
+        Returns
+        -------
+        HTTPClient
+            The cloned HTTPClient.
+        """
+        return HTTPClient(
+            token=self.token,
+            version=self.version
+        )
