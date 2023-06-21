@@ -173,6 +173,7 @@ class GatewayEventHandler:
         """Handle the hello event (OPCODE 10)."""
         data = event["d"]
         self.client.heartbeat_interval = data["heartbeat_interval"] / 1000
+
         if not self.client._resuming:
             await self.identify()
         else:
@@ -316,10 +317,17 @@ class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
             data=message, msg_type=ws_message.type, extra=ws_message.extra
         )
 
-    async def close(self, *, code: int = 4000, message: bytes = b"") -> bool:
+    async def close(
+        self, *, code: int = 4000, message: bytes = b"", client_triggered: bool = False
+    ) -> bool:
         if self._closed:
             return False
-        logger.debug("Closing websocket with code %s and message %s", code, message)
+        logger.debug(
+            "Closing websocket with code %s and message %s. %s",
+            code,
+            message,
+            f"Client triggered: {client_triggered}" if client_triggered else "",
+        )
         return await super().close(code=code, message=message)
 
 
