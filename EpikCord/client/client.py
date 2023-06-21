@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from logging import getLogger
-from typing import List, Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional, Union
 
 from ..flags import Intents, Permissions
 from ..locales import Localization

@@ -171,6 +171,7 @@ def localization_list_to_dict(
         localization.locale.value: localization.value for localization in localizations
     }
 
+
 @singleton
 class TokenStore:
     def __init__(self, token: str):
@@ -178,4 +179,3 @@ class TokenStore:
 
     def remove_from(self, string: str) -> str:
         return string.replace(self.value, "[REMOVED TOKEN]")
-

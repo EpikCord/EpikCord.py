@@ -377,7 +377,4 @@ class HTTPClient:
         HTTPClient
             The cloned HTTPClient.
         """
-        return HTTPClient(
-            token=self.token,
-            version=self.version
-        )
+        return HTTPClient(token=self.token, version=self.version)
