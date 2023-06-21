@@ -56,7 +56,9 @@ class WaitForEvent:
 class GatewayEventHandler:
     def __init__(self, client: WebSocketClient):
         self.client = client
-        self.wait_for_events: DefaultDict[Union[str, int], List] = defaultdict(list)
+        self.wait_for_events: DefaultDict[
+            Union[str, int], List[WaitForEvent]
+        ] = defaultdict(list)
         self.events: DefaultDict[str, List[AsyncFunction]] = defaultdict(list)
         self.opcode_mapping: Dict[OpCode, AsyncFunction] = {
             OpCode.HEARTBEAT: partial(self.heartbeat, forced=True),
@@ -275,7 +277,9 @@ class GatewayEventHandler:
                         await wait_for_event.check(event)
                     except Exception as exception:
                         wait_for_event.future.set_exception(exception)
+
                 wait_for_event.future.set_result(event)
+                logger.debug("Set result for %s with data %s", value, event)
                 self.wait_for_events[value].remove(wait_for_event)
 
     async def handle(self, message: DiscordWSMessage):
