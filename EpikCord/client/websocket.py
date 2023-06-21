@@ -218,7 +218,10 @@ class GatewayEventHandler:
             if self.client.ws:
                 await self.client.ws.close(
                     client_triggered=True,
-                    reason=f"Heartbeat ACK not received in {self.client.heartbeat_interval}s.",
+                    reason=(
+                        "Heartbeat ACK not received in "
+                        f"{self.client.heartbeat_interval}s."
+                    ),
                 )
             await self.client.connect(resume=True)
             return
@@ -411,6 +414,8 @@ class WebSocketClient:
                 await asyncio.sleep(60)
                 await self.rate_limiter.reset()
 
+        if self._rate_limiter_task:
+            self._rate_limiter_task.cancel()
         self._rate_limiter_task = asyncio.create_task(forever_reset())
 
         async for message in self.ws:
