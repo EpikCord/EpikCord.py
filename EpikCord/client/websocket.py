@@ -451,7 +451,7 @@ class WebSocketClient:
             GatewayCloseCode.NORMAL_CLOSURE,
             GatewayCloseCode.ABNORMAL_CLOSURE,
         ):
-            await self.connect(resume=False)
+            return await self.connect(resume=False)
 
         try:
             gce_code = GatewayCloseCode(close_code)
