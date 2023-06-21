@@ -425,10 +425,7 @@ class WebSocketClient:
             logger.debug(
                 "Received message types: %s. Data: %s", message.type, message.json()
             )
-            if message.type in (
-                WSMsgType.BINARY,
-                WSMsgType.TEXT
-            ):
+            if message.type in (WSMsgType.BINARY, WSMsgType.TEXT):
                 await self.event_handler.handle(message)  # type: ignore
             elif message.type in (
                 WSMsgType.CLOSE,
