@@ -92,19 +92,25 @@ class Client(WebSocketClient):
             cleanup_loop(loop)
 
     async def close(self):
-        logger.critical("Closing connection")
-
         if self.ws and not self.ws.closed:
+            logger.debug(
+                "Closing connection to gateway with code %s",
+                self.ws.close_code or "unknown",
+            )
             if self._heartbeat_task:
                 self._heartbeat_task.cancel()
                 self._heartbeat_task = None
-            await self.ws.close(client_triggered=True)
+            await self.ws.close()
 
-        if not self.http.session.closed:
-            await self.http.session.close()
+        # TODO: Fix Close Session
+        # This is currently not done because it raises errors
+
+        # if not self.http.session.closed:
+        #     await self.http.session.close()
 
         if self._rate_limiter_task:
             self._rate_limiter_task.cancel()
+            self._rate_limiter_task = None
 
     async def change_presence(self, presence: Presence):
         if not self.ws:

@@ -22,7 +22,7 @@ from .loose import (
     localization_list_to_dict,
     log_request,
     singleton,
-    TokenStore
+    TokenStore,
 )
 from .types import AsyncFunction, IdentifyCommand, IdentifyData, SendingAttachmentData
 

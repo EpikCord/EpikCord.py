@@ -20,7 +20,6 @@ from ..presence import Presence
 from ..types import GatewayCloseCode, IdentifyCommand, OpCode
 from ..utils import AsyncFunction
 from .rate_limit_tools import GatewayRateLimiter
-from .ws_close_handler import CloseHandlerLog, CloseHandlerRaise, close_dispatcher
 
 _ORJSON = find_spec("orjson")
 
@@ -252,10 +251,11 @@ class GatewayEventHandler:
         if self.client.ws:
             if self.client._heartbeat_task:
                 self.client._heartbeat_task.cancel()
+                self.client._heartbeat_task = None
             await self.client.ws.close(
                 client_triggered=True, reason="OpCode 7 was received."
             )
-        await self.client.connect(resume=True)
+        return await self.client.connect(resume=True)
 
     async def invalid_session(self, event: InvalidSessionEvent):
         """Handle the INVALID_SESSION event (OPCODE 9)."""
@@ -267,7 +267,7 @@ class GatewayEventHandler:
                 client_triggered=True, reason="OpCode 9 was received."
             )
 
-        await self.client.connect(resume=resumable)
+        return await self.client.connect(resume=resumable)
 
     async def _handle_wait_for(self, event: Dict[str, Any]):
         """Set the Futures for wait_for events."""
@@ -346,13 +346,6 @@ class GatewayWebSocket(aiohttp.ClientWebSocketResponse):
     ) -> bool:
         if self._closed:
             return False
-        logger.debug(
-            "Closing websocket with code %s and message %s. %s. %s",
-            code,
-            message,
-            f"Client triggered: {client_triggered}" if client_triggered else "",
-            f"Reason: {reason}" if reason else "",
-        )
         return await super().close(code=code, message=message)
 
 
@@ -395,13 +388,6 @@ class WebSocketClient:
         return sum(self._heartbeats) / len(self._heartbeats)
 
     async def connect(self, *, resume: bool = False):
-        if self.http.session.closed:
-            logger.debug(
-                "HTTP session is closed, creating a new one for the websocket."
-            )
-            version = self.http.version
-            self.http = self.http.clone()
-
         if not self._gateway_url and not resume:
             self._gateway_url = await self.http.get_gateway()
 
@@ -428,7 +414,9 @@ class WebSocketClient:
 
         if self._rate_limiter_task:
             self._rate_limiter_task.cancel()
+
         self._rate_limiter_task = asyncio.create_task(forever_reset())
+
         async for message in self.ws:
             logger.debug(
                 "Received message types: %s. Data: %s", message.type, message.json()
@@ -442,6 +430,7 @@ class WebSocketClient:
                 WSMsgType.ERROR,
             ):
                 await self.handle_close()
+                await self.ws.close()
 
     async def handle_close(self):
         if not self.ws:
@@ -459,22 +448,3 @@ class WebSocketClient:
             GatewayCloseCode.ABNORMAL_CLOSURE,
         ):
             return await self.connect(resume=False)
-
-        try:
-            gce_code = GatewayCloseCode(close_code)
-            ch_ins = close_dispatcher[gce_code]
-
-        except (ValueError, KeyError) as e:
-            raise ClosedWebSocketConnection(
-                f"Connection has been closed with code {self.ws.close_code}"
-            ) from e
-
-        if isinstance(ch_ins, CloseHandlerRaise):
-            raise ch_ins.exception(ch_ins.message)
-
-        if isinstance(ch_ins, CloseHandlerLog):
-            report_msg = "\n\nReport this immediately" * ch_ins.need_report
-            logger.critical(ch_ins.message + report_msg)
-
-        if ch_ins.resumable:
-            await self.connect(resume=True)
