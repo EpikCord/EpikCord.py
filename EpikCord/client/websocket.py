@@ -428,7 +428,6 @@ class WebSocketClient:
             )
 
             if message.type in (WSMsgType.BINARY, WSMsgType.TEXT):
-
                 await self.event_handler.handle(message)
 
             # elif message.type in (

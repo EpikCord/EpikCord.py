@@ -10,6 +10,7 @@ from .enums import (
     TeamMembershipState,
 )
 from .loose import (
+    TokenStore,
     add_file,
     cancel_tasks,
     clean_url,
@@ -22,7 +23,6 @@ from .loose import (
     localization_list_to_dict,
     log_request,
     singleton,
-    TokenStore,
 )
 from .types import AsyncFunction, IdentifyCommand, IdentifyData, SendingAttachmentData
 
