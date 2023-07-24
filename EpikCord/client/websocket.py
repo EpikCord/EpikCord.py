@@ -14,7 +14,7 @@ import aiohttp
 from aiohttp import WSMsgType
 from discord_typings import HelloEvent, InvalidSessionEvent, ReadyData
 
-from ..exceptions import ClosedWebSocketConnection
+# from ..exceptions import ClosedWebSocketConnection
 from ..flags import Intents
 from ..presence import Presence
 from ..types import GatewayCloseCode, IdentifyCommand, OpCode
@@ -417,20 +417,28 @@ class WebSocketClient:
 
         self._rate_limiter_task = asyncio.create_task(forever_reset())
 
-        async for message in self.ws:
+        while True:
+            message = await self.ws.receive()
+
+            if not message:
+                continue
+
             logger.debug(
                 "Received message types: %s. Data: %s", message.type, message.json()
             )
+
             if message.type in (WSMsgType.BINARY, WSMsgType.TEXT):
-                await self.event_handler.handle(message)  # type: ignore
-            elif message.type in (
-                WSMsgType.CLOSE,
-                WSMsgType.CLOSED,
-                WSMsgType.CLOSING,
-                WSMsgType.ERROR,
-            ):
-                await self.handle_close()
-                await self.ws.close()
+
+                await self.event_handler.handle(message)
+
+            # elif message.type in (
+            #     WSMsgType.CLOSE,
+            #     WSMsgType.CLOSED,
+            #     WSMsgType.CLOSING,
+            #     WSMsgType.ERROR,
+            # ):
+            #     await self.handle_close()
+        await self.ws.close()
 
     async def handle_close(self):
         if not self.ws:
@@ -448,3 +456,5 @@ class WebSocketClient:
             GatewayCloseCode.ABNORMAL_CLOSURE,
         ):
             return await self.connect(resume=False)
+
+        return await self.connect(resume=True)
