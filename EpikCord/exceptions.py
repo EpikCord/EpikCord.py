@@ -1,35 +1,8 @@
 from dataclasses import dataclass
+from typing import Dict
 
 
 class EpikCordException(Exception):
-    ...
-
-
-class InvalidApplicationCommandType(EpikCordException):
-    ...
-
-
-class InvalidApplicationCommandOptionType(EpikCordException):
-    ...
-
-
-class InvalidOption(EpikCordException):
-    ...
-
-
-class InvalidStatus(EpikCordException):
-    ...
-
-
-class ClosedWebSocketConnection(EpikCordException):
-    ...
-
-
-class MissingClientSetting(EpikCordException):
-    ...
-
-
-class MissingCustomId(EpikCordException):
     ...
 
 
@@ -40,12 +13,12 @@ class LocatedError:
     path: str
 
 
-class DiscordAPIError(EpikCordException):
-    def __init__(self, body):
-        self.body = body
-        self.code = body.get("code")
-        self.message = body.get("message")
-        self.errors = body.get("errors")
+class HTTPException(EpikCordException):
+    def __init__(self, data: Dict):
+        self.body = data
+        self.code = data.get("code")
+        self.message = data.get("message")
+        self.errors = data.get("errors")
         self.errors_list = self.extract_errors(self.errors)
 
         super().__init__(
@@ -59,7 +32,12 @@ class DiscordAPIError(EpikCordException):
 
         if d.get("_errors"):
             return [
-                LocatedError(**error, path=".".join(key_path[1:]))
+                LocatedError(
+                    **error,
+                    path=".".join(
+                        f"{k}[{k}]" if isinstance(k, int) else k for k in key_path[1:]
+                    ),
+                )
                 for error in d.get("_errors", [])
             ]
 
@@ -71,92 +49,51 @@ class DiscordAPIError(EpikCordException):
         ]
 
 
-class InvalidData(EpikCordException):
+class NotFound(HTTPException):
     ...
 
 
-class InvalidIntents(EpikCordException):
+class Forbidden(HTTPException):
     ...
 
 
-class ShardingRequired(EpikCordException):
+class Unauthorized(HTTPException):
     ...
 
 
-class InvalidToken(EpikCordException):
+class BadRequest(HTTPException):
     ...
 
 
-class UnhandledEpikCordException(EpikCordException):
+class TooManyRetries(EpikCordException):
     ...
 
 
-class DisallowedIntents(EpikCordException):
+class ClosedWebSocketConnection(EpikCordException):
     ...
 
 
-class Unauthorized401(DiscordAPIError):
+class DisallowedIntents(ClosedWebSocketConnection):
     ...
 
 
-class Forbidden403(DiscordAPIError):
+class InvalidIntents(ClosedWebSocketConnection):
     ...
 
 
-class NotFound404(DiscordAPIError):
+class InvalidToken(ClosedWebSocketConnection):
     ...
 
 
-class MethodNotAllowed405(DiscordAPIError):
+class GatewayRateLimited(ClosedWebSocketConnection):
     ...
 
 
-class Ratelimited429(DiscordAPIError):
+class ShardingRequired(ClosedWebSocketConnection):
     ...
 
 
-class GateawayUnavailable502(DiscordAPIError):
-    ...
-
-
-class DiscordServerError5xx(EpikCordException):
-    ...
-
-
-class TooManyComponents(EpikCordException):
-    ...
-
-
-class InvalidComponentStyle(EpikCordException):
-    ...
-
-
-class CustomIdIsTooBig(EpikCordException):
-    ...
-
-
-class InvalidArgumentType(EpikCordException):
-    ...
-
-
-class TooManySelectMenuOptions(EpikCordException):
-    ...
-
-
-class LabelIsTooBig(EpikCordException):
-    ...
-
-
-class ThreadArchived(EpikCordException):
-    ...
-
-
-class FailedToConnectToVoice(EpikCordException):
-    ...
-
-
-class FailedCheck(EpikCordException):
-    ...
-
-
-# TODO: Add __all__ for this file.
+class UnknownMimeType(EpikCordException):
+    def __init__(self, filename):
+        self.filename = filename
+        self.message = f"Cannot resolve mime type for file `{filename}`."

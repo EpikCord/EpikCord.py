@@ -1,41 +1,61 @@
 import asyncio
 import typing
+from datetime import timedelta
+from logging import getLogger
+from typing import Callable, Coroutine, Final
 
-# time constants in seconds
-MINUTE = 60
-HOUR = MINUTE * 60
-DAY = HOUR * 24
-WEEK = DAY * 7
+INFINITE_RUNS: Final[int] = -1
+
+logger = getLogger("EpikCord.tasks")
 
 
 class Task:
-    def __init__(self, wrapped_func, duration: int, max_runs: int):
-        self.wrapped_func = wrapped_func
-        self.duration = duration
-        self.max_runs = max_runs
-        self.runs = 0
+    def __init__(
+        self,
+        wrapped_func: Callable[..., Coroutine],
+        duration: float,
+        max_runs: int,
+    ):
+        self.wrapped_func: Callable[..., Coroutine] = wrapped_func
+        self.duration: float = duration
+        self.max_runs: int = max_runs
+        self.runs_count: int = 0
+        self._task: typing.Optional[asyncio.Task] = None
 
     async def start(self, *args: typing.Any, **kwargs: typing.Any):
-        while self.runs < self.max_runs:
+        logger.info(f"Starting task {self.wrapped_func.__name__}")
+
+        while self.runs_count < self.max_runs if self.has_limited_runs else True:
             await self.wrapped_func(*args, **kwargs)
 
-            if self.max_runs > 0:
-                self.runs += 1
+            self.runs_count += 1
 
             await asyncio.sleep(self.duration)
 
+            logger.debug(
+                f"Ran task {self.wrapped_func.__name__} for "
+                f"{self.runs_count} time(s)."
+            )
+
+    @property
+    def has_limited_runs(self) -> bool:
+        return self.max_runs != INFINITE_RUNS
+
     def run(self, *args: typing.Any, **kwargs: typing.Any):
-        return asyncio.create_task(self.start(*args, **kwargs))
+        self._task = asyncio.create_task(self.start(*args, **kwargs))
+        self._task.set_name(self.wrapped_func.__name__)
+        self._task.add_done_callback(
+            lambda task: logger.info(f"Task {task.get_name()} finished.")
+        )
+
+    def cancel(self):
+        logger.info(f"Cancelling task {self.wrapped_func.__name__}")
+        if self._task is not None:
+            self._task.cancel()
 
 
-def task(seconds=0, minutes=0, hours=0, days=0, weeks=0, max_runs=-1):
-    duration = seconds
-    duration += minutes * MINUTE
-    duration += hours * HOUR
-    duration += days * DAY
-    duration += weeks * WEEK
-
+def task(duration: timedelta, max_runs=INFINITE_RUNS):
     def wrap(function):
-        return Task(function, duration, max_runs)
+        return Task(function, duration.total_seconds(), max_runs)
 
     return wrap

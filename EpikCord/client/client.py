@@ -1,82 +1,150 @@
 from __future__ import annotations
 
+import asyncio
 from logging import getLogger
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Coroutine,
-    Dict,
-    List,
-    Optional,
-    Type,
-    Union,
-)
+from typing import TYPE_CHECKING, List, Optional, Union
 
-from ..flags import Intents
-from ..sticker import Sticker, StickerPack
-from .command_handler import CommandHandler
-from .websocket_client import WebsocketClient
+from ..flags import Intents, Permissions
+from ..locales import Localization
+from ..presence import Presence
+from ..types import OpCode
+from ..utils import AsyncFunction, cleanup_loop
+from .commands import (
+    ApplicationCommandOption,
+    ApplicationCommandType,
+    ClientChatInputCommand,
+    ClientMessageCommand,
+    ClientUserCommand,
+)
+from .http import APIVersion, HTTPClient
+from .websocket import WebSocketClient
 
 if TYPE_CHECKING:
-    import discord_typings
+    from ..utils import TokenStore
 
-    from EpikCord import Presence, Section
-
-logger = getLogger(__name__)
-
-Callback = Callable[..., Coroutine[Any, Any, Any]]
+logger = getLogger("EpikCord.client")
 
 
-class Client(WebsocketClient, CommandHandler):
+class Client(WebSocketClient):
+    """
+    The main class of EpikCord.
+    Use this to interact with the Discord API and Gateway.
+
+    Attributes
+    ----------
+    token: str
+        The token of the bot.
+    intents: Intents
+        The intents of the bot.
+    http: HTTPClient
+        The HTTP client used to interact with the Discord API.
+    """
+
     def __init__(
         self,
-        token: str,
-        intents: Union[Intents, int] = 0,
+        token: TokenStore,
+        intents: Intents,
         *,
-        discord_endpoint: str = "https://discord.com/api/v10",
+        version: APIVersion = APIVersion.TEN,
         presence: Optional[Presence] = None,
     ):
-        super().__init__(token, intents, presence, discord_endpoint=discord_endpoint)
-        CommandHandler.__init__(self)
-        from EpikCord import Utils
+        """
+        Parameters
+        ----------
+        token: str
+            The token of the bot.
+        intents: Intents
+            The intents of the bot.
+        version: int
+            The version of the Discord API to use. Defaults to 10.
+        """
+        super().__init__(
+            token,
+            intents,
+            presence=presence,
+            http=HTTPClient(token, version=version),
+        )
+        self.commands: List[
+            Union[ClientChatInputCommand, ClientUserCommand, ClientMessageCommand]
+        ] = []
 
-        self._components: Dict[str, Callback] = {}
-        self.utils = Utils(self)
+    def login(self):
+        loop = asyncio.get_event_loop()
 
-        self.sections: List[Section] = []
+        async def runner():
+            try:
+                await self.connect()
+            finally:
+                await self.close()
 
-    def load_section(self, section_class: Section):
-        section = section_class(self)  # type: ignore
+        def stop_loop_on_completion(f: asyncio.Future):
+            loop.stop()
 
-        for event in section._events.values():
-            self.events[event.name] = event.callback
+        future = asyncio.ensure_future(runner(), loop=loop)
+        future.add_done_callback(stop_loop_on_completion)
 
-        for command in section._commands.values():
+        try:
+            loop.run_forever()
+        except KeyboardInterrupt:
+            pass
+        finally:
+            future.remove_done_callback(stop_loop_on_completion)
+            cleanup_loop(loop)
 
-            self.commands[command.name] = command
+    async def close(self):
+        if self.ws and not self.ws.closed:
+            logger.debug(
+                "Closing connection to gateway with code %s",
+                self.ws.close_code or "unknown",
+            )
+            if self._heartbeat_task:
+                self._heartbeat_task.cancel()
+                self._heartbeat_task = None
+            await self.ws.close()
 
-    async def fetch_sticker(self, sticker_id: str) -> Sticker:
-        response = await self.http.get(f"/stickers/{sticker_id}")
-        json = await response.json()
-        return Sticker(self, json)  # TODO: Possibly cache this?
+        # TODO: Fix Close Session
+        # This is currently not done because it raises errors
 
-    async def list_nitro_sticker_packs(self) -> List[StickerPack]:
-        response = await self.http.get("/sticker-packs")
-        json = await response.json()
-        return [StickerPack(self, pack) for pack in json["sticker_packs"]]
+        # if not self.http.session.closed:
+        #     await self.http.session.close()
 
-    async def _interaction_create(self, data: discord_typings.InteractionCreateData):
-        await super()._interaction_create(data)
-        interaction = self.utils.interaction_from_type(data)
-        await self.handle_interaction(interaction)
+        if self._rate_limiter_task:
+            self._rate_limiter_task.cancel()
+            self._rate_limiter_task = None
 
-    def component(self, custom_id: str):
-        def wrapper(func):
-            self._components[custom_id] = func
-            return func
+    async def change_presence(self, presence: Presence):
+        if not self.ws:
+            raise RuntimeError("Client is not connected to the gateway.")
+        await self.ws.send_json({"op": OpCode.PRESENCE_UPDATE, "d": presence.to_dict()})
+
+    def command(
+        self,
+        name: str,
+        description: str,
+        *,
+        guild_ids: Optional[List[int]] = None,
+        name_localizations: Optional[List[Localization]] = None,
+        description_localizations: Optional[List[Localization]] = None,
+        guild_only: Optional[bool] = None,
+        default_member_permissions: Optional[Permissions] = None,
+        options: Optional[List[ApplicationCommandOption]] = None,
+        nsfw: bool = False,
+    ):  # TODO: Add in types for command callbacks
+        def wrapper(func: AsyncFunction):
+            command = ClientChatInputCommand(
+                name,
+                description,
+                func,
+                guild_ids=guild_ids,
+                name_localizations=name_localizations,
+                description_localizations=description_localizations,
+                type=ApplicationCommandType.CHAT_INPUT,
+                guild_only=guild_only,
+                default_member_permissions=default_member_permissions,
+                nsfw=nsfw,
+                options=options,
+            )
+            self.commands.append(command)
+            return command
 
         return wrapper
-
-
-__all__ = ("Client",)
