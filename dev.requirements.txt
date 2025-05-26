@@ -1,0 +1,8 @@
+black
+coverage
+flake8
+isort
+nox
+pyright
+pytest
+pytest-cov

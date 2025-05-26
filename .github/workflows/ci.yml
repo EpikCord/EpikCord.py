@@ -2,9 +2,104 @@ name: CI
 
 on:
   pull_request:
+    types: [opened, reopened]
+  workflow_dispatch:
+  push:
 
 jobs:
-  ci:
+  bandit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+          cache: 'pip'
+      - run: pip install bandit
+      - run: bandit --recursive EpikCord
+
+  black:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get branch names.
+      id: branch-names
+      uses: tj-actions/branch-names@v6
+
+    - uses: actions/checkout@v2
+      with:
+          ref: ${{ steps.branch-names.outputs.head_ref_branch }}
+
+    - name: Set Up git
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git pull
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.8'
+        cache: 'pip'
+
+    - name: run Formatter
+      run: |
+        make nox_format
+
+    - name: Push changes
+      run: |
+        git commit -m ":art: Format code automatically" -a || echo "No changes to commit"
+        git push || echo "No changes to push"
+
+  codespell:
+    if: ${{ always() }}
+    needs: black
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+          cache: 'pip'
+      - run: pip install codespell
+      - run: codespell --skip="./docs/*" --skip="./.git/*"
+
+  lint:
+    if: ${{ always() }}
+    needs: black
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Python Setup
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python }}
+        architecture: 'x64'
+
+    - name: Install dependencies
+      run: pip install nox git+https://github.com/Bluenix2/discord-typings
+
+    - name: Run nox
+      run: nox -s lint
+
+  pyright:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Python Setup
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python }}
+        architecture: 'x64'
+
+    - name: Install dependencies
+      run: pip install nox git+https://github.com/Bluenix2/discord-typings
+
+    - name: Run nox
+      run: nox -s pyright
+
+  install:
     runs-on: ${{ matrix.os }}-latest
     strategy:
       matrix:
@@ -14,19 +109,102 @@ jobs:
 
     name: Nox - py ${{ matrix.python }} - ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Python Setup
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
-          architecture: 'x64'
-
-      - name: Update Pip
-        run: pip install -U pip
+          cache: 'pip'
 
       - name: Install dependencies
         run: pip install nox git+https://github.com/Bluenix2/discord-typings
 
       - name: Run nox
-        run: nox -s lint mypy
+        run: nox -s install
+
+  circular_imports:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install nox git+https://github.com/Bluenix2/discord-typings
+
+      - name: Check for circular imports
+        run: nox -s imports
+
+  unit:
+    needs: circular_imports
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      matrix:
+        python: [ '3.8', '3.9', '3.10' ]
+        os: [ ubuntu, windows, macos ]
+      fail-fast: true
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Python Setup
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install nox git+https://github.com/Bluenix2/discord-typings
+
+      - name: Run E2E tests
+        run: nox -s unit
+
+  e2e:
+    needs: circular_imports
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      matrix:
+        python: [ '3.8', '3.9', '3.10' ]
+        os: [ ubuntu, windows, macos ]
+      fail-fast: true
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Python Setup
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install nox git+https://github.com/Bluenix2/discord-typings
+
+      - name: Run E2E tests
+        run: nox -s e2e
+
+  coverage:
+    needs: [unit, e2e]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Python Setup
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install nox git+https://github.com/Bluenix2/discord-typings
+
+      - name: Run coverage
+        run: nox -s cov
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2

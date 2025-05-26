@@ -1,144 +1,103 @@
-from typing import List, Optional
+from enum import Enum, IntEnum
+from typing import List, Optional, TypedDict
 
-from .exceptions import InvalidData, InvalidStatus
+from typing_extensions import NotRequired
 
 
-class Status:
-    """The class which represents a Status.
+class ActivityPayload(TypedDict):  # Data sent to Discord when updating presence
+    name: str
+    type: int
+    url: NotRequired[str]
 
-    Attributes
-    ----------
-    status : str
-        The status of the user.
-    """
 
-    def __init__(self, status: str):
-        """Represents a Status.
+class Status(Enum):
+    ONLINE = "online"
+    IDLE = "idle"
+    DND = "dnd"
+    INVISIBLE = "invisible"
+    OFFLINE = "offline"
 
-        Parameters
-        ----------
-        status : str
-            The status of the user.
-            Either ``online``, ``idle``, ``dnd`` or ``invisible``.
 
-        Raises
-        ------
-        InvalidStatus
-            The status that you supplied is not valid.
-        """
-        if status not in {"online", "dnd", "idle", "invisible", "offline"}:
-            raise InvalidStatus("That is an invalid status.")
+class ActivityType(IntEnum):
+    GAME = 0
+    STREAMING = 1
+    LISTENING = 2
+    WATCHING = 3
+    CUSTOM = 4
+    COMPETING = 5
 
-        self.status: str = status if status != "offline" else "invisible"
+
+class UpdatePresenceData(TypedDict):
+    # Data sent to Discord when updating presence
+    status: NotRequired[str]
+    activities: NotRequired[List[ActivityPayload]]
+    afk: bool
+    since: float
 
 
 class Activity:
-    """Represents a Discord Activity object.
-
-    Attributes
-    ---------
-    name : str
-        The name of the activity.
-    type : int
-        The type of the activity.
-    url : Optional[str]
-        The url of the activity.
-        Only available for the streaming activity
-
-    """
-
-    def __init__(self, *, name: str, type: int, url: Optional[str] = None):
-        """Represents a Discord Activity object.
+    def __init__(self, *, name: str, ac_type: ActivityType, url: Optional[str] = None):
+        """Represents a Discord activity.
 
         Parameters
         ----------
-        name : str
+        name: :class:`str`
             The name of the activity.
-        type : int
+        ac_type: :class:`ActivityType`
             The type of the activity.
-        url : Optional[str]
-            The url of the activity.
-            Only available for the streaming activity.
+        url: Optional[:class:`str`]
+            The url of the activity. Only used for streaming (activity type 1).
         """
         self.name = name
-        self.type = type
+        self.type = ac_type
         self.url = url
 
-    def to_dict(self):
-        """Returns activity class as dict
+    def to_dict(self) -> ActivityPayload:
+        """Converts the activity to a dictionary."""
+        data: ActivityPayload = {"name": self.name, "type": self.type.value}
 
-        Returns
-        -------
-        payload : dict
-            The dict representation of the Activity.
+        if self.url is None:
+            return data
 
-        Raises
-        ------
-            InvalidData
-                You tried to set an url for a non-streaming activity.
-        """
-        payload = {
-            "name": self.name,
-            "type": self.type,
-        }
+        if self.type != ActivityType.STREAMING:
+            raise ValueError("URL can only be set for streaming activities.")
 
-        if self.url:
-            if self.type != 1:
-                raise InvalidData("You cannot set a URL")
-            payload["url"] = self.url
-
-        return payload
+        data["url"] = self.url
+        return data
 
 
 class Presence:
-    """
-    A class representation of a Presence.
-
-    Attributes
-    ----------
-    activity : Optional[Activity]
-        The activity of the user.
-    status : Status
-        The status of the user.
-    """
-
     def __init__(
         self,
         *,
-        activity: Optional[Activity] = None,
         status: Optional[Status] = None,
+        activity: Optional[Activity] = None,
     ):
-        """
+        """Represents a Discord presence.
+
         Parameters
         ----------
-        activity : Optional[Activity]
-            The activity of the user.
-        status : Status
-            The status of the user.
+        status: Optional[:class:`Status`]
+            The status of the presence.
+        activity: Optional[:class:`Activity`]
+            The activity of the presence.
         """
+        if not status and not activity:
+            raise ValueError("Presence must have either a status or an activity.")
+        self.status: Optional[Status] = status
         self.activity: Optional[Activity] = activity
-        self.status: Optional[str] = (
-            status.status if isinstance(status, Status) else status
-        )
 
-    def to_dict(self):
-        """
-        The dict representation of the Presence.
+    def to_dict(self) -> UpdatePresenceData:
+        """Converts the presence to a dictionary."""
+        data: UpdatePresenceData = {
+            "afk": False,
+            "since": 0.0,
+        }
 
-        Returns
-        -------
-        payload : dict
-            The dict representation of the Presence.
-        """
-        payload = {}
+        if self.status is not None:
+            data["status"] = self.status.value
 
-        if self.status:
-            payload["status"] = self.status
+        if self.activity is not None:
+            data["activities"] = [self.activity.to_dict()]
 
-        if self.activity:
-            payload["activity"] = [self.activity.to_dict()]
-
-        return payload
-
-
-__all__ = ("Status", "Activity", "Presence")
+        return data

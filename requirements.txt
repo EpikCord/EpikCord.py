@@ -1,2 +1,2 @@
 aiohttp
-discord_typings
+git+https://github.com/Bluenix2/discord-typings.git
