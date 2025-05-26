@@ -56,9 +56,9 @@ class WaitForEvent:
 class GatewayEventHandler:
     def __init__(self, client: WebSocketClient):
         self.client = client
-        self.wait_for_events: DefaultDict[
-            Union[str, int], List[WaitForEvent]
-        ] = defaultdict(list)
+        self.wait_for_events: DefaultDict[Union[str, int], List[WaitForEvent]] = (
+            defaultdict(list)
+        )
         self.events: DefaultDict[str, List[AsyncFunction]] = defaultdict(list)
         self.opcode_mapping: Dict[OpCode, AsyncFunction] = {
             OpCode.HEARTBEAT: partial(self.heartbeat, forced=True),

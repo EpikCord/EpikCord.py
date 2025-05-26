@@ -51,9 +51,9 @@ class BaseClientCommand:
         if self.guild_ids:
             payload["guild_ids"] = self.guild_ids
         if self.default_member_permissions:
-            payload[
-                "default_member_permissions"
-            ] = self.default_member_permissions.value
+            payload["default_member_permissions"] = (
+                self.default_member_permissions.value
+            )
         if self.name_localizations:
             payload["name_localizations"] = localization_list_to_dict(
                 self.name_localizations
@@ -62,8 +62,7 @@ class BaseClientCommand:
         return payload
 
 
-class ClientContextMenuCommand(BaseClientCommand):
-    ...
+class ClientContextMenuCommand(BaseClientCommand): ...
 
 
 class ClientUserCommand(ClientContextMenuCommand):
